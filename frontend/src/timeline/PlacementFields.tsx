@@ -4,10 +4,12 @@ export function PlacementFields({
   clip,
   project,
   update,
+  section,
 }: {
   clip: Clip;
   project: Project;
   update: (c: Clip) => void;
+  section?: "time" | "visual" | "audio";
 }) {
   const asset = project.assets.find((a) => a.id === clip.assetId);
   if (!asset) return null;
@@ -18,36 +20,38 @@ export function PlacementFields({
   };
   return (
     <>
-      <div className="field-grid">
-        <label>
-          时间线起点 / 秒
-          <input
-            type="number"
-            min={0}
-            step={1 / project.fps}
-            value={clip.start ?? 0}
-            onChange={(e) => numeric("start", e.target.valueAsNumber)}
-          />
-        </label>
-        <label>
-          轨道
-          <select
-            value={clip.trackId}
-            onChange={(e) => update({ ...clip, trackId: e.target.value })}
-          >
-            {tracksOf(project)
-              .filter((t) =>
-                t.kind === "video" ? asset.kind !== "audio" : asset.hasAudio,
-              )
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-          </select>
-        </label>
-      </div>
-      {track?.kind === "video" && (
+      {(!section || section === "time") && (
+        <div className="field-grid">
+          <label>
+            时间线起点 / 秒
+            <input
+              type="number"
+              min={0}
+              step={1 / project.fps}
+              value={Number((clip.start ?? 0).toFixed(3))}
+              onChange={(e) => numeric("start", e.target.valueAsNumber)}
+            />
+          </label>
+          <label>
+            轨道
+            <select
+              value={clip.trackId}
+              onChange={(e) => update({ ...clip, trackId: e.target.value })}
+            >
+              {tracksOf(project)
+                .filter((t) =>
+                  t.kind === "video" ? asset.kind !== "audio" : asset.hasAudio,
+                )
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+        </div>
+      )}
+      {(!section || section === "visual") && track?.kind === "video" && (
         <>
           <div className="field-grid">
             <label>
@@ -95,7 +99,7 @@ export function PlacementFields({
           </label>
         </>
       )}
-      {asset.hasAudio && (
+      {(!section || section === "audio") && asset.hasAudio && (
         <div className="field-grid">
           <label>
             声音淡入 / 秒

@@ -4,11 +4,13 @@ export function ClipFields({
   assetDuration,
   image,
   onUpdate,
+  section,
 }: {
   clip: Clip;
   assetDuration: number;
   image: boolean;
   onUpdate: (clip: Clip) => void;
+  section?: "time" | "audio";
 }) {
   function numeric(
     key: "trimIn" | "trimOut" | "speed" | "volume",
@@ -30,56 +32,64 @@ export function ClipFields({
   }
   return (
     <>
-      <div className="field-grid">
+      {section !== "audio" && (
+        <>
+          <div className="field-grid">
+            <label>
+              入点 / 秒
+              <input
+                type="number"
+                min={0}
+                step={0.1}
+                value={Number(clip.trimIn.toFixed(3))}
+                onChange={(e) => numeric("trimIn", e.target.valueAsNumber)}
+              />
+            </label>
+            <label>
+              出点 / 秒
+              <input
+                type="number"
+                min={0.1}
+                max={image ? undefined : assetDuration}
+                step={0.1}
+                value={Number(clip.trimOut.toFixed(3))}
+                onChange={(e) => numeric("trimOut", e.target.valueAsNumber)}
+              />
+            </label>
+          </div>
+          <label>
+            播放速度
+            <select
+              value={clip.speed}
+              onChange={(e) => numeric("speed", +e.target.value)}
+            >
+              {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map((v) => (
+                <option key={v} value={v}>
+                  {v}× {v === 1 ? "原速" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
+      {section !== "time" && (
         <label>
-          入点 / 秒
+          音量 <span>{Math.round(clip.volume * 100)}%</span>
           <input
-            type="number"
+            type="range"
             min={0}
-            step={0.1}
-            value={clip.trimIn}
-            onChange={(e) => numeric("trimIn", e.target.valueAsNumber)}
+            max={1}
+            step={0.05}
+            value={clip.volume}
+            onChange={(e) => numeric("volume", +e.target.value)}
           />
         </label>
-        <label>
-          出点 / 秒
-          <input
-            type="number"
-            min={0.1}
-            max={image ? undefined : assetDuration}
-            step={0.1}
-            value={clip.trimOut}
-            onChange={(e) => numeric("trimOut", e.target.valueAsNumber)}
-          />
-        </label>
-      </div>
-      <label>
-        播放速度
-        <select
-          value={clip.speed}
-          onChange={(e) => numeric("speed", +e.target.value)}
-        >
-          {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map((v) => (
-            <option key={v} value={v}>
-              {v}× {v === 1 ? "原速" : ""}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        音量 <span>{Math.round(clip.volume * 100)}%</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={clip.volume}
-          onChange={(e) => numeric("volume", +e.target.value)}
-        />
-      </label>
-      <p className="subtle">
-        片段时长 {duration(clip).toFixed(2)} 秒 · 原素材不受影响
-      </p>
+      )}
+      {section !== "audio" && (
+        <p className="subtle">
+          片段时长 {duration(clip).toFixed(2)} 秒 · 原素材不受影响
+        </p>
+      )}
     </>
   );
 }

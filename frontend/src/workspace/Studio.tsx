@@ -1,3 +1,4 @@
+import { initialPanels, toggleStudioPanel } from "./studioPanels";
 import { useSidebarWidths } from "../ui/useSidebarWidths";
 import { GenerationTaskSettings } from "../production/GenerationTaskSettings";
 import type { WorkContext } from "../assistant/workContext";
@@ -35,13 +36,9 @@ export function Studio({ initial, onBack }: StudioProps) {
   const attachments = useAttachments(initial.id, change);
   const [nodeId, setNodeId] = useState<string | null>(null);
   const [clipId, setClipId] = useState<string | null>(null);
-  const [panels, setPanels] = useState({
-    media: true,
-    preview: false,
-    agent: true,
-    inspector: false,
-    timeline: initial.clips.length > 0,
-  });
+  const [panels, setPanels] = useState(() =>
+    initialPanels(initial.clips.length > 0),
+  );
   const [scriptContext, setScriptContext] = useState<WorkContext>({
     view: "script",
   });
@@ -59,7 +56,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   }, []);
   const togglePanel = (key: keyof typeof panels) => {
     if (key === "inspector" && nodeId && !clipId) setEditing(nodeId);
-    else setPanels((p) => ({ ...p, [key]: !p[key] }));
+    else setPanels((p) => toggleStudioPanel(p, key));
   };
   const [editing, setEditing] = useState<string | null>(null);
   const [creationTab, setCreationTab] = useState<string | null>(null);
@@ -151,7 +148,10 @@ export function Studio({ initial, onBack }: StudioProps) {
   useEffect(() => {
     if (settingsOpen) clock.pause();
   }, [settingsOpen, clock]);
-  const sidebarWidths = useSidebarWidths(panels);
+  const sidebarWidths = useSidebarWidths({
+    ...panels,
+    agent: panels.agent || panels.inspector,
+  });
   const editNode = project.nodes.find((n) => n.id === editing);
   return (
     <>
@@ -159,7 +159,7 @@ export function Studio({ initial, onBack }: StudioProps) {
         hidden={settingsOpen}
         style={sidebarWidths.style}
         data-media={panels.media}
-        data-agent={panels.agent}
+        data-agent={panels.agent || panels.inspector}
         className={`studio-shell ${panels.timeline && activeView === "film" ? "" : "timeline-hidden"}`}
       >
         <StudioChrome
@@ -244,7 +244,7 @@ export function Studio({ initial, onBack }: StudioProps) {
           clipId={clipId}
           clock={clock}
           draft={attachments}
-          visible={panels.agent}
+          visible={panels.agent && !panels.inspector}
           flush={m.flush}
           work={activeView === "script" ? scriptContext : { view: activeView }}
           onSettings={() => setDialog("models")}
@@ -277,7 +277,7 @@ export function Studio({ initial, onBack }: StudioProps) {
               clock.pause();
               setClipId(id);
               setNodeId(null);
-              setPanels((p) => ({ ...p, inspector: inspect }));
+              setPanels((p) => ({ ...p, inspector: !!id || inspect }));
             }}
             reference={(id) => {
               attachments.add([{ kind: "clip", id }]);

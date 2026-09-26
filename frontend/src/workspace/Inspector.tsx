@@ -1,3 +1,4 @@
+import { detachAudio } from "../timeline/detachAudio";
 import type { Project, Clip } from "../model";
 import { ClipFields } from "../timeline/ClipFields";
 import { PlacementFields } from "../timeline/PlacementFields";
@@ -16,19 +17,68 @@ export function Inspector({ project, clipId, onChange }: Props) {
     }));
   return (
     <div className="inspector">
-      <header>
-        <h3>{clip ? "片段属性" : "项目设置"}</h3>
-      </header>
       {clip ? (
         <>
-          <h4>{asset?.name}</h4>
-          <PlacementFields clip={clip} project={project} update={updateClip} />
-          <ClipFields
-            clip={clip}
-            assetDuration={asset?.duration || 0}
-            image={asset?.kind === "image"}
-            onUpdate={updateClip}
-          />
+          <h4 className="inspector-asset" title={asset?.name}>
+            {asset?.name}
+          </h4>
+          {asset?.hasAudio &&
+            asset.kind === "video" &&
+            project.tracks.find((t) => t.id === clip.trackId)?.kind ===
+              "video" && (
+              <button
+                className="detach-audio"
+                onClick={() => onChange((p) => detachAudio(p, clip.id))}
+              >
+                分离音频
+              </button>
+            )}
+          <section className="inspector-section">
+            <h3>时间与轨道</h3>
+            <PlacementFields
+              section="time"
+              clip={clip}
+              project={project}
+              update={updateClip}
+            />
+            <ClipFields
+              section="time"
+              clip={clip}
+              assetDuration={asset?.duration || 0}
+              image={asset?.kind === "image"}
+              onUpdate={updateClip}
+            />
+          </section>
+          {project.tracks.find((t) => t.id === clip.trackId)?.kind ===
+            "video" && (
+            <section className="inspector-section">
+              <h3>画面</h3>
+              <PlacementFields
+                section="visual"
+                clip={clip}
+                project={project}
+                update={updateClip}
+              />
+            </section>
+          )}
+          {asset?.hasAudio && (
+            <section className="inspector-section">
+              <h3>声音</h3>
+              <ClipFields
+                section="audio"
+                clip={clip}
+                assetDuration={asset.duration}
+                image={false}
+                onUpdate={updateClip}
+              />
+              <PlacementFields
+                section="audio"
+                clip={clip}
+                project={project}
+                update={updateClip}
+              />
+            </section>
+          )}
         </>
       ) : (
         <>

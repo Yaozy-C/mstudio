@@ -1,3 +1,4 @@
+import { detachAudio } from "./detachAudio";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { useRef } from "react";
 import { duration, type Asset, type Project } from "../model";
@@ -62,6 +63,14 @@ export function TimelineClip({
     <ObjectMenu
       actions={[
         { label: "编辑片段", run: onOpen },
+        ...(asset?.kind === "video" && asset.hasAudio && !audio
+          ? [
+              {
+                label: "分离音频",
+                run: () => onChange((p) => detachAudio(p, clip.id)),
+              },
+            ]
+          : []),
         { label: "引用到对话", run: onReference },
         ...(asset
           ? [
