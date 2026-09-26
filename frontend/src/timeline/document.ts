@@ -26,7 +26,8 @@ export function appendAsset(
   const track =
     tracksOf(p).find((t) => t.id === trackId && t.kind === kind) ??
     tracksOf(p).find((t) => t.kind === kind);
-  if (!track) return p;
+  if (!track)
+    return appendAsset(addTrack(p, kind), asset, at, undefined, shotId);
   const start =
     at ??
     Math.max(
@@ -56,6 +57,14 @@ export function addTrack(p: Project, kind: Track["kind"]) {
         name: `${kind === "video" ? "画面" : "音频"} ${tracks.filter((t) => t.kind === kind).length + 1}`,
       },
     ],
+  };
+}
+export function removeTrack(p: Project, id: string): Project {
+  if (!p.tracks.some((t) => t.id === id)) return p;
+  return {
+    ...p,
+    tracks: p.tracks.filter((t) => t.id !== id),
+    clips: p.clips.filter((c) => c.trackId !== id),
   };
 }
 export function validateClip(c: Clip, asset: Asset) {

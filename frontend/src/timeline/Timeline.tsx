@@ -1,12 +1,6 @@
+import { TrackHeading } from "./TrackHeading";
 import { TimelineToolbar } from "./TimelineToolbar";
 import { memo, useMemo, useRef, useEffect } from "react";
-import {
-  Eye,
-  EyeSlash,
-  SpeakerHigh,
-  SpeakerSlash,
-} from "@phosphor-icons/react";
-
 import { type Project } from "../model";
 import { type PlaybackClock } from "./clock";
 import { ticks, frameTime } from "./geometry";
@@ -40,9 +34,8 @@ export const Timeline = memo(function Timeline({
   onCollapse,
   onReference,
 }: Props) {
-  const { ref, zoom, viewport, changeZoom, onScroll } =
+  const { ref, labels, zoom, viewport, changeZoom, onScroll } =
     useTimelineViewport(clock);
-  const labels = useRef<HTMLDivElement>(null);
   const seekFrame = useRef(0);
   useEffect(() => () => cancelAnimationFrame(seekFrame.current), []);
   const index = useMemo(() => intervals(project.clips), [project.clips]);
@@ -77,14 +70,6 @@ export const Timeline = memo(function Timeline({
         zoom,
     );
   }
-  function trackFlag(id: string, key: "muted" | "hidden") {
-    onChange((p) => ({
-      ...p,
-      tracks: tracksOf(p).map((t) =>
-        t.id === id ? { ...t, [key]: !t[key] } : t,
-      ),
-    }));
-  }
   return (
     <section className="timeline floating-timeline" aria-label="多轨时间线">
       <TimelineToolbar
@@ -112,42 +97,21 @@ export const Timeline = memo(function Timeline({
           <div className="track-labels">
             <div>轨道 · 上层覆盖下层</div>
             {rows.map((t) => (
-              <div key={t.id} className="track-heading">
-                <input
-                  aria-label={`${t.name} 轨道名称`}
-                  value={t.name}
-                  onChange={(e) =>
-                    onChange((p) => ({
-                      ...p,
-                      tracks: tracksOf(p).map((x) =>
-                        x.id === t.id ? { ...x, name: e.target.value } : x,
-                      ),
-                    }))
-                  }
-                />
-                <button
-                  title={t.muted ? "取消静音" : "静音此轨道"}
-                  aria-label={`${t.name}：${t.muted ? "取消静音" : "静音"}`}
-                  aria-pressed={!!t.muted}
-                  onClick={() => trackFlag(t.id, "muted")}
-                >
-                  {t.muted ? (
-                    <SpeakerSlash size={14} />
-                  ) : (
-                    <SpeakerHigh size={14} />
-                  )}
-                </button>
-                {t.kind === "video" && (
-                  <button
-                    title={t.hidden ? "显示画面" : "隐藏画面，声音保持当前设置"}
-                    aria-label={`${t.name}：${t.hidden ? "显示画面" : "隐藏画面"}`}
-                    aria-pressed={!!t.hidden}
-                    onClick={() => trackFlag(t.id, "hidden")}
-                  >
-                    {t.hidden ? <EyeSlash size={14} /> : <Eye size={14} />}
-                  </button>
-                )}
-              </div>
+              <TrackHeading
+                key={t.id}
+                track={t}
+                project={project}
+                onChange={onChange}
+                onRemove={() => {
+                  clock.pause();
+                  if (
+                    project.clips.some(
+                      (c) => c.id === selected && c.trackId === t.id,
+                    )
+                  )
+                    onSelect(null);
+                }}
+              />
             ))}
             <div>字幕</div>
           </div>

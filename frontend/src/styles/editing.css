@@ -13,12 +13,12 @@
   display: none;
 }
 .track-label-viewport {
-  width: 148px;
+  width: 176px;
   flex-shrink: 0;
   overflow: hidden;
 }
 .track-labels {
-  width: 148px;
+  width: 176px;
   padding-bottom: 16px;
 }
 .track-labels > div {

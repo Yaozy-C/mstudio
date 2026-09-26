@@ -25,16 +25,6 @@ export function NativePreview({
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
-  const [diagnostics, setDiagnostics] = useState(false);
-  const [status, setStatus] = useState<Status>({
-    frame: 0,
-    playing: false,
-    total: 0,
-    shown: 0,
-    skipped: 0,
-  });
-  const diagnosticsRef = useRef(diagnostics);
-  diagnosticsRef.current = diagnostics;
   const spec = JSON.stringify({
     width: project.width,
     height: project.height,
@@ -158,7 +148,6 @@ export function NativePreview({
                 : s.frame / doc.fps,
               s.playing,
             );
-            if (diagnosticsRef.current) setStatus(s);
           }
         } catch (e) {
           fail(e);
@@ -204,16 +193,6 @@ export function NativePreview({
           </div>
         )}
       </div>
-      <div className="preview-options">
-        <small>流畅预览 · 640p</small>
-        <button onClick={() => setDiagnostics((v) => !v)}>诊断</button>
-      </div>
-      {diagnostics && (
-        <output className="playback-diagnostics">
-          MLT · 已呈现 {status.shown} 帧 · 跳过 {status.skipped} 帧 ·{" "}
-          {project.fps} fps
-        </output>
-      )}
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       <div className="preview-transport">
         <button

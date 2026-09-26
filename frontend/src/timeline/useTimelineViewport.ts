@@ -3,6 +3,7 @@ import type { PlaybackClock } from "./clock";
 import { clampZoom } from "./geometry";
 export function useTimelineViewport(clock: PlaybackClock) {
   const ref = useRef<HTMLDivElement>(null);
+  const labels = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(() =>
     clampZoom(
       Number(localStorage.getItem("mstudio-time-zoom")) || 64,
@@ -51,6 +52,24 @@ export function useTimelineViewport(clock: PlaybackClock) {
         changeRef.current(Math.exp(-event.deltaY * 0.01), event.clientX);
       }
     };
+    const labelWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      if (event.ctrlKey || event.metaKey) {
+        changeRef.current(Math.exp(-event.deltaY * 0.01));
+        return;
+      }
+      const unit =
+        event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? el.clientHeight
+            : 1;
+      el.scrollTop += event.shiftKey ? 0 : event.deltaY * unit;
+      el.scrollLeft +=
+        (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * unit;
+    };
+    const labelElement = labels.current;
+    labelElement?.addEventListener("wheel", labelWheel, { passive: false });
     const zoomEvent = (event: Event) =>
       changeRef.current((event as CustomEvent<number>).detail);
     el.addEventListener("wheel", wheel, { passive: false });
@@ -68,12 +87,14 @@ export function useTimelineViewport(clock: PlaybackClock) {
     return () => {
       observer.disconnect();
       el.removeEventListener("wheel", wheel);
+      labelElement?.removeEventListener("wheel", labelWheel);
       window.removeEventListener("timeline-zoom", zoomEvent);
       unsubscribe();
     };
   }, [clock]);
   return {
     ref,
+    labels,
     zoom,
     viewport,
     changeZoom,
