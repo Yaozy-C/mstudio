@@ -116,11 +116,6 @@ export function MediaPanel({
         </strong>
         <small>图片、文本、视频、音频、PDF</small>
       </button>
-      <p className="media-scope-hint">
-        {scope === "project"
-          ? "仅当前项目使用。生成结果可在画布或时间线中收录。"
-          : "跨项目复用。加入项目后即可引用和编辑。"}
-      </p>
       {library.error && !removing && (
         <ErrorNotice error={library.error} fallback="ASSET_OPERATION_FAILED">
           <button disabled={disabled} onClick={() => void library.retry()}>
@@ -270,12 +265,6 @@ export function MediaPanel({
           </button>
         ))}
       </nav>
-      <div className="media-foot">
-        <span className="online-dot" />
-        {scope === "project"
-          ? "当前项目 · 保存在本机"
-          : "所有项目可用 · 保存在本机"}
-      </div>
       <MediaPreview
         asset={assets.find((a) => a.id === preview)}
         close={() => setPreview(null)}

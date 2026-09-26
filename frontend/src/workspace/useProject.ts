@@ -1,3 +1,4 @@
+import { normalizeAudioTrackNames } from "./normalizeAudioTrackNames";
 import { materializeFrameCards } from "../production/frameCards";
 import { flushPendingEdits } from "./pendingEdits";
 import { registerExitSave } from "./useSafeExit";
@@ -13,7 +14,9 @@ import type { Project } from "../model";
 import { restoreProject } from "./restoreProject";
 import { createProjectAutosave } from "./projectAutosave";
 export function useProject(initial: Project) {
-  const [project, setProject] = useState(() => materializeFrameCards(initial));
+  const [project, setProject] = useState(() =>
+    materializeFrameCards(normalizeAudioTrackNames(initial)),
+  );
   const [autosave] = useState(() =>
     createProjectAutosave(initial, saveProject),
   );

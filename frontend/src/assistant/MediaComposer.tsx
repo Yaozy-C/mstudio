@@ -149,9 +149,6 @@ export function MediaComposer({
           </div>
         </fieldset>
       </form>
-      <div className="composer-footer">
-        ↵ 生成<span>⇧ ↵ 换行</span>
-      </div>
     </div>
   );
 }

@@ -54,7 +54,7 @@ export function addTrack(p: Project, kind: Track["kind"]) {
       {
         id,
         kind,
-        name: `${kind === "video" ? "画面" : "音频"} ${tracks.filter((t) => t.kind === kind).length + 1}`,
+        name: `${kind === "video" ? "画面" : "音轨"} ${tracks.filter((t) => t.kind === kind).length + 1}`,
       },
     ],
   };

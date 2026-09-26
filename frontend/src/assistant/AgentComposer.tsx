@@ -278,10 +278,6 @@ export function AgentComposer({
           </div>
         </div>
       </ComposerPrimitive.Root>
-      <div className="composer-footer">
-        ↵ 发送
-        <span>⇧ ↵ 换行</span>
-      </div>
     </div>
   );
 }

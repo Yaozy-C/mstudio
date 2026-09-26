@@ -90,6 +90,10 @@
 .timeline-clip.selected .trim-handle {
   background: #e7e4dc55;
 }
+.track-labels > .caption-heading {
+  color: var(--desk-text);
+  font-size: 14px;
+}
 .caption-track {
   height: 64px;
   position: relative;
@@ -97,15 +101,15 @@
 }
 .caption-chip {
   position: absolute;
-  top: 12px;
-  height: 36px;
+  top: 8px;
+  height: 48px;
   display: block;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   background: var(--desk-sidebar);
   border: 1px solid var(--desk-rule);
-  font-size: 10px;
+  font-size: 12px;
   text-align: left;
 }
 .preview-frame {

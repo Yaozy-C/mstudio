@@ -111,8 +111,7 @@ export function newProject(name: string): Project {
     clips: [],
     tracks: [
       { id: "v1", name: "主画面", kind: "video" },
-      { id: "a1", name: "配音", kind: "audio" },
-      { id: "a2", name: "音乐", kind: "audio" },
+      { id: "a1", name: "音轨 1", kind: "audio" },
     ],
     captions: [],
     width: 1080,

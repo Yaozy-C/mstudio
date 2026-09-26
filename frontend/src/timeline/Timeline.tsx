@@ -113,7 +113,7 @@ export const Timeline = memo(function Timeline({
                 }}
               />
             ))}
-            <div>字幕</div>
+            <div className="caption-heading">字幕</div>
           </div>
         </div>
         <div
