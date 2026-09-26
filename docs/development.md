@@ -16,7 +16,7 @@ python3 scripts/build-mlt.py
 python3 scripts/bundle-mlt.py
 ```
 
-构建脚本下载 MLT 7.40.0 并验证 SHA-256，再构建所需模块。源码下载到 `desktop/native/vendor/`，SDK 安装到 `desktop/native/runtime/`；这些目录不提交。打包脚本将运行库及其依赖复制到 `desktop/native/bundle/`，不修改系统安装。
+构建脚本使用 `scripts/mlt-source.json` 固定 MLT 官方提交与 SHA-256，再构建所需模块。当前固定提交 `06c4785f951c087c700de942362d1d1c68ffe500` 包含 [FFmpeg 9 支持修复 #1281](https://github.com/mltframework/mlt/pull/1281)，该修复尚未包含在 7.40.0 正式版中。构建目录按提交隔离，避免旧 CMake 缓存引用另一份源码。源码下载到 `desktop/native/vendor/`，SDK 安装到 `desktop/native/runtime/`；这些目录不提交。打包脚本将运行库及其依赖复制到 `desktop/native/bundle/`，不修改系统安装。
 
 可设置 `MLT_SDK` 使用已有兼容 SDK。原生构建和 Tauri 资源需要 SDK 与 staged bundle，因此直接跳过这两步运行桌面 Cargo 检查会失败。
 

@@ -42,7 +42,8 @@ while queue:
         subprocess.run(['install_name_tool','-id','@rpath/'+file.name,str(file)],check=True,stderr=subprocess.PIPE)
     subprocess.run(['codesign','--force','--sign','-',str(file)],check=True,stderr=subprocess.PIPE)
 licenses=out/'licenses';licenses.mkdir(exist_ok=True)
-for p in (root/'desktop/native/vendor/mlt-7.40.0').glob('COPYING*'): shutil.copy2(p,licenses/p.name)
+revision=json.loads((root/'scripts/mlt-source.json').read_text())['revision']
+for p in (root/f'desktop/native/vendor/mlt-{revision}').glob('COPYING*'): shutil.copy2(p,licenses/p.name)
 # Homebrew dependencies can be read-only. Tauri preserves resource modes and
 # then cannot overwrite them on the next incremental build.
 for p in out.rglob('*'):

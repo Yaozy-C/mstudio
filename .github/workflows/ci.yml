@@ -30,6 +30,11 @@ jobs:
         run: brew install cmake pkgconf ffmpeg sdl2 libxml2 python@3.13
       - name: Select Python
         run: echo "$(brew --prefix python@3.13)/libexec/bin" >> "$GITHUB_PATH"
+      - name: Record and verify FFmpeg 9 toolchain
+        run: |
+          ffmpeg -version
+          pkg-config --modversion libavcodec libavformat
+          test "$(pkg-config --modversion libavcodec | cut -d. -f1)" = 63
       - name: Install frontend dependencies
         working-directory: frontend
         run: bun install --frozen-lockfile
