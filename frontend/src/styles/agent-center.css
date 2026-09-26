@@ -1,0 +1,210 @@
+.agent-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 23px;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 13px;
+  margin-bottom: 25px;
+}
+.agent-avatar {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+  border-radius: 15px;
+  flex-shrink: 0;
+}
+.agent-profile > div:nth-child(2) {
+  flex: 1;
+}
+.agent-profile h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+}
+.agent-profile p {
+  font-size: 11px;
+  margin-bottom: 0;
+  color: var(--desk-muted);
+  line-height: 1.7;
+}
+.agent-config-block {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--desk-rule);
+}
+.agent-config-block > h3,
+.agent-config-block .hub-section-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+.agent-tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.agent-tool-grid > div {
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--desk-bg);
+}
+.agent-tool-grid strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.agent-tool-grid p {
+  font-size: 11px;
+  color: var(--desk-muted);
+  margin: 6px 0 0;
+  line-height: 1.7;
+}
+.agent-config-block .skill-settings > h3 {
+  display: none;
+}
+@media (max-width: 800px) {
+  .settings-page {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .hub-scroll {
+    padding: 20px;
+  }
+  .hub-main > .settings-heading {
+    padding: 16px 20px;
+  }
+  .hub-intro h2 {
+    font-size: 19px;
+  }
+  .hub-model-grid {
+    grid-template-columns: 1fr;
+  }
+  .hub-categories button {
+    font-size: 11px;
+    gap: 4px;
+  }
+  .hub-categories svg {
+    display: none;
+  }
+}
+.agent-skill-choice {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 12px !important;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.agent-skill-choice input {
+  width: auto;
+}
+.agent-skill-choice > span {
+  flex: 1;
+}
+.agent-skill-choice small {
+  display: block;
+  margin-top: 6px;
+}
+.agent-skill-choice em {
+  color: var(--desk-muted);
+  font-size: 10px;
+  font-style: normal;
+}
+.agent-roster {
+  border-top: 1px solid var(--desk-rule);
+}
+.agent-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.agent-roster-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+  flex-shrink: 0;
+}
+.agent-roster-info {
+  flex: 1;
+  min-width: 0;
+}
+.agent-roster-info h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.agent-roster-info h3 small {
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.agent-roster-info p {
+  margin: 5px 0;
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.agent-roster-info > small,
+.agent-roster-status {
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.agent-roster-row > button {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .agent-roster-row {
+    flex-wrap: wrap;
+  }
+  .agent-roster-info {
+    flex-basis: 65%;
+  }
+}
+
+.agent-detail-navigation {
+  position: sticky;
+  top: -32px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  margin-bottom: 24px;
+  background: var(--desk-bg);
+  border-bottom: 1px solid var(--desk-rule);
+}
+.agent-detail-navigation label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto 0 0;
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.agent-detail-navigation .studio-select-trigger {
+  width: 170px;
+}
+.agent-detail-navigation button {
+  white-space: nowrap;
+}
+.hub-scroll > [hidden] {
+  display: none;
+}
+@media (max-width: 800px) {
+  .agent-detail-navigation {
+    top: -20px;
+    flex-wrap: wrap;
+  }
+}

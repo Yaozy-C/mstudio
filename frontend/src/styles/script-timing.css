@@ -1,0 +1,40 @@
+.script-timing {
+  margin: 24px 0;
+  padding: 20px 0;
+  border-block: 1px solid var(--desk-line);
+}
+.script-timing > div {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.script-timing p,
+.script-timing span,
+.script-paragraph-time > span {
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.script-duration {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+}
+.script-duration input {
+  width: 78px;
+  border: 0;
+  border-bottom: 1px solid var(--desk-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  padding: 4px;
+}
+.script-paragraph-time {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+  margin: 12px 0 24px;
+  font-variant-numeric: tabular-nums;
+}

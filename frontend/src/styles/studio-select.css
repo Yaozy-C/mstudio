@@ -1,0 +1,87 @@
+.radix-themes .studio-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: none;
+  text-align: left;
+}
+.radix-themes .studio-select-trigger:hover:not(:disabled),
+.radix-themes .studio-select-trigger[data-state="open"] {
+  background: var(--desk-bg);
+  border-color: var(--desk-rule);
+}
+.radix-themes .studio-select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.studio-select-trigger .rt-SelectTriggerInner {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.studio-select-trigger .rt-SelectIcon {
+  flex-shrink: 0;
+  color: var(--desk-text);
+}
+.radix-themes.studio-select-menu,
+.radix-themes .studio-select-menu {
+  min-width: var(--radix-select-trigger-width);
+  max-width: min(560px, calc(100vw - 32px));
+  max-height: min(360px, var(--radix-select-content-available-height));
+  padding: 5px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  box-shadow: 0 12px 32px #0006;
+}
+.studio-select-menu .rt-SelectItem {
+  min-height: 36px;
+  height: auto;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.studio-select-menu .rt-SelectItem[data-state="checked"] {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+}
+.studio-select-menu .rt-SelectItem[data-highlighted] {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+}
+.studio-select-menu .rt-SelectItem[data-disabled] {
+  color: var(--desk-muted);
+}
+.model-default > .studio-select-trigger {
+  width: min(360px, 100%);
+}
+.model-picker-filter > .studio-select-trigger {
+  width: 170px;
+  flex-shrink: 0;
+}
+
+.radix-themes .agent-detail-navigation .studio-select-trigger {
+  width: 190px;
+}
+@media (max-width: 680px) {
+  .model-default > .studio-select-trigger {
+    width: 100%;
+  }
+  .model-picker-filter > .studio-select-trigger {
+    width: 135px;
+  }
+}

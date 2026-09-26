@@ -1,0 +1,195 @@
+.agent-input-area {
+  flex-shrink: 0;
+  padding: 8px 12px 10px;
+  min-width: 0;
+}
+.agent-composer {
+  position: relative;
+  margin: 0;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 20px;
+  background: var(--desk-bg);
+  box-shadow: 0 3px 12px #00000012;
+  transition: border-color 0.15s;
+}
+.agent-composer:focus-within {
+  border-color: var(--desk-rule);
+}
+.agent-composer textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  max-height: 180px;
+  margin: 0;
+  padding: 2px 4px 10px;
+  resize: none;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--desk-text);
+  font-size: 13px;
+  line-height: 1.65;
+  box-shadow: none;
+}
+.agent-composer textarea:focus {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+.agent-composer textarea::placeholder {
+  color: var(--desk-muted);
+}
+.agent-compose-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  align-items: end;
+  gap: 6px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.agent-compose-actions > .attachment-picker {
+  flex: 0 0 30px;
+}
+.agent-compose-actions > .attachment-picker > button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--desk-text);
+}
+.agent-compose-actions > .attachment-picker > button:hover {
+  background: #e7e4dc0c;
+}
+.agent-compose-actions .composer-model {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 150px;
+  height: 30px;
+  padding: 0 7px;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.composer-model span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.composer-model svg {
+  flex-shrink: 0;
+}
+.agent-compose-actions .composer-model:hover {
+  background: #e7e4dc08;
+  border-radius: 7px;
+}
+.composer-submit {
+  margin-left: auto;
+  flex: 0 0 30px;
+}
+.agent-compose-actions .composer-submit button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--desk-sidebar);
+  color: var(--desk-muted);
+}
+.agent-compose-actions .composer-submit button:disabled {
+  opacity: 1;
+  background: var(--desk-sidebar);
+  color: var(--desk-muted);
+  cursor: not-allowed;
+}
+.composer-footer {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 7px;
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.agent-composer .attachment-popover {
+  bottom: 46px;
+}
+
+.conversation-model {
+  min-width: 0;
+  max-width: 220px;
+}
+.conversation-model .error {
+  display: block;
+  font-size: 10px;
+}
+
+.composer-drop-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--desk-accent);
+  border-radius: inherit;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+/* Keep tool controls and send on one row; only model text can shrink. */
+.composer-tools {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.agent-composer .composer-tools .composer-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.agent-composer .composer-tools .composer-icon-button:hover {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+}
+.composer-tools > .conversation-model {
+  flex: 1 1 65px;
+  min-width: 0;
+  max-width: 100%;
+}
+.composer-tools > .composer-model {
+  flex: 0 1 auto;
+  padding-inline: 3px;
+}
+.composer-tools > .execution-mode {
+  flex-shrink: 0;
+}
+.media-composer-fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.media-composer-fields:disabled {
+  opacity: 0.65;
+}

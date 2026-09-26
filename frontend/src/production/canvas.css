@@ -1,0 +1,140 @@
+.production-workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  --desk-accent: #d6452d;
+}
+.canvas-preview label {
+  display: block;
+  margin: 16px 0;
+}
+.canvas-preview textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+.canvas-empty {
+  position: absolute;
+  left: 40px;
+  top: 90px;
+  color: var(--desk-muted);
+}
+.creation-canvas {
+  position: relative;
+  overflow: clip;
+  flex: 1;
+  min-height: 0;
+  touch-action: none;
+  background-color: #eeece5;
+  background-image: radial-gradient(#c6c1b5 0.8px, transparent 0.8px);
+}
+.canvas-world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+.shot-area {
+  position: absolute;
+  top: 10px;
+  width: 1480px;
+  height: 605px;
+  background: transparent;
+  border: 0;
+  pointer-events: none;
+  padding: 23px 34px;
+}
+.shot-area > span {
+  color: #847f74;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+}
+.shot-area h2 {
+  display: inline;
+  margin-left: 18px;
+  font-size: 18px;
+  font-weight: 550;
+  color: #6f6a60;
+}
+.relations {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+.relations path {
+  fill: none;
+  stroke: #b4a496;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+.pending {
+  position: absolute;
+  inset: 50px 10px;
+  background: #f5f3edde;
+  display: grid;
+  place-content: center;
+  font-size: 14px;
+}
+.canvas-controls {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  background: #faf9f5;
+  border: 1px solid var(--desk-rule);
+  border-radius: 4px;
+  padding: 4px;
+  gap: 2px;
+}
+.canvas-controls button {
+  border: 0;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+.canvas-controls > span {
+  font-size: 11px;
+  min-width: 38px;
+  text-align: center;
+}
+.canvas-help {
+  position: absolute;
+  bottom: 75px;
+  left: 22px;
+  color: #6f6a60;
+  font-size: 10px;
+  pointer-events: none;
+}
+.selection-actions {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  white-space: nowrap;
+  gap: 7px;
+  align-items: center;
+  padding: 5px;
+  border: 1px solid var(--desk-rule);
+  background: #faf9f5;
+  box-shadow: 0 3px 16px #3a332515;
+  border-radius: 4px;
+}
+.selection-actions span {
+  font-size: 11px;
+  padding: 0 8px;
+}
+.selection-actions button {
+  font-size: 12px;
+  padding: 7px 10px;
+  border-color: transparent;
+}
+.selection-actions button[aria-pressed="true"] {
+  background: #e7e4dc;
+}
+.selection-box {
+  position: absolute;
+  background: #d6452d15;
+  border: 1px solid var(--desk-accent);
+  pointer-events: none;
+}

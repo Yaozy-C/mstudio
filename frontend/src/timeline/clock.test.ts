@@ -1,0 +1,73 @@
+import { test, expect } from "bun:test";
+import { PlaybackClock } from "./clock";
+test("clock seeks to frames, clamps bounds, and ends playback without touching project state", () => {
+  const raf = globalThis.requestAnimationFrame;
+  const caf = globalThis.cancelAnimationFrame;
+  let callback: FrameRequestCallback = () => {};
+  globalThis.requestAnimationFrame = (fn) => {
+    callback = fn;
+    return 1;
+  };
+  globalThis.cancelAnimationFrame = () => {};
+  try {
+    const clock = new PlaybackClock();
+    clock.configure(1, 30);
+    clock.seek(0.052);
+    expect(clock.getSnapshot().time).toBe(2 / 30);
+    clock.step(-1);
+    expect(clock.getSnapshot().time).toBe(1 / 30);
+    clock.seek(4);
+    expect(clock.getSnapshot().time).toBe(1);
+    clock.ready = false;
+    clock.play();
+    expect(clock.getSnapshot().playing).toBe(false);
+    clock.ready = true;
+    clock.play();
+    expect(clock.getSnapshot().time).toBe(0);
+    const now = performance.now();
+    for (let i = 1; i <= 12; i++) callback(now + i * 100);
+    expect(clock.getSnapshot()).toEqual({ time: 1, playing: false });
+    clock.dispose();
+  } finally {
+    globalThis.requestAnimationFrame = raf;
+    globalThis.cancelAnimationFrame = caf;
+  }
+});
+
+test("native transport owns time and replay sends one seek before play", () => {
+  const oldRAF = globalThis.requestAnimationFrame,
+    oldCancel = globalThis.cancelAnimationFrame;
+  let rafs = 0;
+  globalThis.requestAnimationFrame = () => {
+    rafs++;
+    return 1;
+  };
+  globalThis.cancelAnimationFrame = () => {};
+  try {
+    const clock = new PlaybackClock();
+    clock.configure(5, 30);
+    const calls: string[] = [];
+    const detach = clock.attachTransport({
+      play: () => calls.push("play"),
+      pause: () => calls.push("pause"),
+      seek: (t) => calls.push(`seek:${t}`),
+    });
+    clock.play();
+    expect(rafs).toBe(0);
+    clock.acceptTransportState(2, true);
+    expect(clock.getSnapshot().time).toBe(2);
+    clock.pause();
+    clock.seek(1.05);
+    expect(calls.at(-1)).toBe(`seek:${32 / 30}`);
+    clock.acceptTransportState(5, false);
+    calls.length = 0;
+    clock.play();
+    expect(calls).toEqual(["seek:0", "play"]);
+    detach();
+    clock.acceptTransportState(3, true);
+    expect(clock.getSnapshot().playing).toBe(false);
+  } finally {
+    globalThis.requestAnimationFrame = oldRAF;
+    globalThis.cancelAnimationFrame = oldCancel;
+  }
+});

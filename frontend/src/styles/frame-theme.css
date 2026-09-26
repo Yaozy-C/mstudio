@@ -1,0 +1,215 @@
+/* Shared identity, control states and typography. Media pixels stay untouched. */
+:root {
+  color-scheme: light;
+}
+.radix-themes {
+  --default-font-family:
+    "Inter", "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+  --color-background: var(--desk-bg);
+  --color-overlay: var(--desk-overlay);
+  font-family: var(--default-font-family);
+  color: var(--desk-text);
+}
+.radix-themes button {
+  border-radius: 4px;
+  font-size: 13px;
+}
+.radix-themes button:hover:not(:disabled) {
+  background: var(--desk-sidebar);
+  border-color: var(--desk-control);
+}
+.radix-themes button.primary {
+  color: var(--desk-surface);
+  background: var(--desk-text);
+  border-color: var(--desk-text);
+}
+.radix-themes button.primary:hover:not(:disabled) {
+  background: #40403b;
+  border-color: #40403b;
+}
+.radix-themes :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 3px;
+}
+.radix-themes :is(input:not([type="checkbox"]), textarea, select) {
+  background: var(--desk-surface);
+  border-radius: 4px;
+}
+.radix-themes :is(input, textarea)::placeholder {
+  color: #76736c;
+}
+input[type="checkbox"],
+input[type="range"] {
+  accent-color: var(--desk-accent);
+}
+.radix-themes
+  :is(
+    .nav-item.active,
+    .settings-nav button[aria-pressed="true"],
+    .hub-categories button[aria-pressed="true"]
+  ) {
+  background: #dedad1;
+  color: var(--desk-text);
+}
+.radix-themes .settings-nav button[aria-pressed="true"] {
+  border-left-color: var(--desk-accent);
+}
+.radix-themes .brand-icon {
+  color: var(--desk-text);
+}
+.radix-themes .agent-roster-toggle button[data-state="checked"] {
+  background: var(--desk-text);
+}
+.radix-themes :is(.hub-status, .hub-status.ready) {
+  color: var(--desk-muted);
+}
+.radix-themes :is(.hub-status.ready, .online-dot) {
+  color: #3c6651;
+}
+.radix-themes :is(.modal, .floating-panel, .plan-canvas) {
+  border-radius: 6px;
+}
+.radix-themes .plan-canvas {
+  box-shadow: 0 4px 16px #22221f0a;
+}
+.radix-themes .plan-canvas.selected {
+  border-color: var(--desk-accent);
+}
+.radix-themes :is(.floating-handle, .plan-dragbar) {
+  background: var(--desk-sidebar);
+}
+.radix-themes .quote-button {
+  background: transparent;
+  color: var(--desk-text);
+}
+.radix-themes .quote-button.attached {
+  color: #ad3523;
+  border-color: var(--desk-accent);
+  background: #f6e6e0;
+}
+.radix-themes .agent-message.user {
+  background: transparent;
+  border-radius: 0;
+  padding: 10px 0;
+}
+.radix-themes .agent-message {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.radix-themes .agent-message > small {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--desk-muted);
+}
+.radix-themes .agent-context {
+  border-left: 3px solid var(--desk-accent);
+  margin: 16px 20px;
+  padding: 0 10px;
+  color: var(--desk-text);
+}
+.radix-themes .agent-composer {
+  background: var(--desk-surface);
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+}
+.radix-themes .agent-composer:focus-within {
+  border-color: var(--desk-muted);
+}
+.radix-themes .agent-welcome-mark {
+  color: var(--desk-text);
+}
+.radix-themes .agent-connect-callout {
+  color: var(--desk-text);
+  background: var(--desk-sidebar);
+  border-color: var(--desk-rule);
+}
+.radix-themes .library-main {
+  padding: 52px 48px;
+}
+.library-heading h1 {
+  font-size: 36px;
+  letter-spacing: -1px;
+  font-weight: 600;
+}
+.library-main > .eyebrow {
+  color: var(--desk-muted);
+  letter-spacing: 1px;
+}
+.radix-themes .project-card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.radix-themes .project-cover {
+  border: 0;
+  border-radius: 0;
+  background: var(--desk-sidebar);
+  overflow: hidden;
+  padding: 0;
+}
+.project-cover > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.project-cover > .project-empty-mark {
+  margin: auto;
+  width: 36px;
+  height: 36px;
+  color: var(--desk-muted);
+}
+.radix-themes .project-meta {
+  padding: 16px 0;
+}
+.radix-themes .project-meta button {
+  background: transparent;
+  border: 0;
+}
+.radix-themes .new-project-card {
+  border-radius: 0;
+  border: 1px dashed var(--desk-control);
+  background: transparent;
+}
+.radix-themes .provider-mark {
+  filter: brightness(0);
+}
+.radix-themes .error {
+  color: #a63727;
+  background: #f5e5df;
+}
+.radix-themes .preview-frame {
+  background: black;
+}
+.radix-themes .shot-play {
+  color: white;
+}
+.radix-themes .shot-picture-tag {
+  color: white;
+  background: #22221fcc;
+}
+.radix-themes .shot-number {
+  background: transparent;
+  border: 0;
+  color: var(--desk-text);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0;
+}
+.radix-themes .plan-grid .plan-shot {
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+}
+.radix-themes .shot-picture {
+  border-radius: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

@@ -1,0 +1,40 @@
+/* Workspace chrome is manipulated; creative text remains selectable. */
+.studio-shell {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.studio-shell
+  :is(
+    input,
+    textarea,
+    [contenteditable]:not([contenteditable="false"]),
+    .plan-reading-scroll,
+    .plan-summary > p,
+    .agent-messages,
+    .agent-activity,
+    .error
+  ) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.studio-shell
+  :is(
+    button,
+    summary,
+    label,
+    .plan-dragbar,
+    .plan-viewbar,
+    .plan-bottom,
+    .floating-handle,
+    .panel-resizer,
+    .plan-resizer,
+    .creative-inline-input > span
+  ) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.studio-shell img {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}

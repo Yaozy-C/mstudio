@@ -1,0 +1,316 @@
+.reference-picker {
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+}
+.reference-picker header,
+.reference-picker footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.reference-picker header strong {
+  font-size: 14px;
+}
+.reference-picker header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+}
+.reference-picker-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin: 12px 0;
+  border-radius: 8px;
+  background: var(--desk-sidebar);
+}
+.reference-picker-tabs button {
+  flex: 1;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 12px;
+  background: transparent;
+}
+.reference-picker-tabs button[aria-pressed="true"] {
+  background: var(--desk-surface);
+}
+.reference-picker input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 12px;
+}
+.reference-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+  margin-top: 12px;
+}
+.reference-picker-grid > button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.reference-picker-grid > button:disabled {
+  opacity: 0.6;
+}
+.reference-picker-grid > button > div {
+  position: relative;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--desk-sidebar);
+}
+.reference-picker-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.reference-picker-grid > button > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  margin-top: 5px;
+}
+.reference-kind,
+.reference-added {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  background: var(--desk-surface);
+}
+.reference-added {
+  top: 3px;
+  bottom: auto;
+}
+.reference-picker footer {
+  margin-top: 14px;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.reference-picker footer button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.reference-picker-empty {
+  padding: 20px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.composer-frame-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.composer-frame-input {
+  position: relative;
+}
+.composer-reference-tile img {
+  width: 54px;
+  height: 42px;
+  object-fit: contain;
+}
+.composer-frame-input .composer-reference-tile {
+  min-height: 76px;
+}
+.composer-frame-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--desk-surface);
+}
+.composer-frame-swap {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+}
+.composer-media-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0 12px;
+}
+.composer-media-strip .composer-reference-tile {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 68px;
+  margin: 0;
+  background: color-mix(in srgb, var(--desk-muted) 6%, var(--desk-bg));
+  color: color-mix(in srgb, var(--desk-muted) 62%, var(--desk-bg));
+  font-size: 10px;
+}
+.composer-media-thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 68px;
+  border-radius: 14px;
+  background: var(--desk-sidebar);
+}
+.composer-media-thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.composer-media-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #242424c9;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.composer-media-thumb:hover .composer-media-remove,
+.composer-media-thumb:focus-within .composer-media-remove {
+  opacity: 1;
+}
+.composer-media-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  color: white;
+  line-height: 0;
+  filter: drop-shadow(0 1px 2px #000);
+}
+@media (hover: none) {
+  .composer-media-remove {
+    opacity: 1;
+  }
+}
+.reference-preview {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: transparent;
+  display: grid;
+  place-items: center;
+}
+.reference-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reference-preview small {
+  font-size: 9px;
+  max-width: 54px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.reference-role {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2px;
+  border-radius: 0 0 12px 12px;
+  font-size: 9px;
+  text-align: center;
+  color: white;
+  background: #242424b0;
+  pointer-events: none;
+}
+.reference-options {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--desk-surface);
+  opacity: 0;
+}
+.composer-media-thumb:hover .reference-options,
+.composer-media-thumb:focus-within .reference-options {
+  opacity: 1;
+}
+.composer-media-thumb.invalid {
+  outline: 1px solid var(--desk-accent, #c54b37);
+}
+.reference-options-menu {
+  display: grid;
+  gap: 4px;
+}
+.reference-options-menu button {
+  border: 0;
+  text-align: left;
+}
+.generation-result {
+  position: relative;
+}
+.result-reference {
+  position: absolute;
+  z-index: 1;
+  top: 6px;
+  right: 6px;
+  border: 0;
+  padding: 5px;
+  border-radius: 6px;
+  opacity: 0;
+}
+.generation-result:hover .result-reference,
+.generation-result:focus-within .result-reference {
+  opacity: 1;
+}
+@media (hover: none) {
+  .reference-options,
+  .result-reference {
+    opacity: 1;
+  }
+}
+.result-locate {
+  right: 38px;
+}

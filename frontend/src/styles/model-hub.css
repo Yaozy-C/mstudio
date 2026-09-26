@@ -1,0 +1,137 @@
+.settings-page {
+  display: grid;
+  grid-template-columns: 226px minmax(0, 1fr);
+  padding: 0;
+  height: 100dvh;
+  width: 100%;
+  color: var(--desk-text);
+  overflow: hidden;
+  background: var(--desk-bg);
+  border: 0;
+  border-radius: 0;
+}
+.hub-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.hub-main > .settings-heading {
+  flex-shrink: 0;
+  padding: 20px 30px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.hub-main > .settings-heading h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.hub-scroll {
+  overflow: auto;
+  padding: 28px 30px 32px;
+}
+.hub-intro {
+  margin-bottom: 25px;
+}
+.hub-intro .eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--desk-muted);
+}
+.hub-intro h2 {
+  margin: 13px 0 10px;
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.hub-intro p,
+.hub-section-head p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--desk-muted);
+  line-height: 1.8;
+}
+.hub-categories {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  margin-bottom: 26px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 10px;
+  background: var(--desk-bg);
+}
+.hub-categories button {
+  flex: 1;
+  padding: 9px 6px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--desk-muted);
+  white-space: nowrap;
+}
+.hub-categories button[aria-pressed="true"] {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+  box-shadow: 0 1px 5px #0002;
+}
+.hub-section-head,
+.hub-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.hub-section-head {
+  margin-bottom: 18px;
+}
+.hub-section-head h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.hub-section-head button {
+  white-space: nowrap;
+}
+.hub-count {
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+
+.studio-shell[hidden] {
+  display: none;
+}
+.settings-page .hub-scroll {
+  padding: 32px clamp(24px, 4vw, 72px);
+}
+.settings-page .hub-scroll > * {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+.settings-page .hub-main > .settings-heading {
+  padding: 24px clamp(24px, 4vw, 72px);
+}
+.settings-breadcrumb {
+  font-size: 11px;
+  color: var(--desk-muted);
+  margin-bottom: 12px;
+}
+.settings-page .settings-heading h1 {
+  font-size: 24px;
+  outline: none;
+}
+
+.settings-back-slot:empty {
+  display: none;
+}
+.settings-page .hub-main > .settings-heading {
+  position: relative;
+}
+.settings-back-slot {
+  position: absolute;
+  left: 18px;
+  top: 23px;
+}
+.settings-back-button {
+  padding: 6px;
+  background: transparent;
+  border-color: transparent;
+}

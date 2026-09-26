@@ -1,0 +1,94 @@
+.project-memory {
+  max-width: 880px;
+}
+.project-memory fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.memory-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.memory-option span {
+  display: grid;
+  gap: 6px;
+}
+.memory-option small,
+.memory-entry > small,
+.memory-footer > span {
+  color: var(--desk-muted);
+}
+.memory-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: #bed493;
+}
+.memory-entry {
+  padding: 20px;
+  margin-bottom: 14px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+}
+.memory-entry > div {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.memory-entry input {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.memory-entry textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+.memory-entry input,
+.memory-entry textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: var(--desk-bg);
+  color: inherit;
+  font: inherit;
+}
+.memory-entry details {
+  margin-top: 12px;
+  font-size: 12px;
+}
+.memory-entry details p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.memory-empty {
+  padding: 40px 20px;
+  text-align: center;
+  border: 1px dashed var(--desk-rule);
+  border-radius: 12px;
+}
+.memory-empty p {
+  color: var(--desk-muted);
+}
+.memory-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  flex-wrap: wrap;
+}
+.memory-footer > span {
+  flex: 1;
+}
+.agent-run-status {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--desk-muted);
+}

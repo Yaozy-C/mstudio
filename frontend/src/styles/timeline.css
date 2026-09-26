@@ -1,0 +1,234 @@
+.timeline {
+  height: 224px;
+  flex-shrink: 0;
+  background: var(--desk-bg);
+  border-top: 1px solid var(--desk-rule);
+}
+.timeline-header {
+  height: 46px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--desk-rule);
+  gap: 24px;
+}
+.timeline-header h3 {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.timeline-header h3 span {
+  color: var(--desk-muted);
+  font-size: 10px;
+  margin-left: 12px;
+  font-weight: 400;
+}
+.timeline-edit {
+  display: flex;
+  gap: 6px;
+}
+.timeline-edit button {
+  border: 0;
+  background: none;
+  padding: 5px 7px;
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.time-display {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--desk-text);
+  letter-spacing: 1px;
+  margin-left: auto;
+}
+.time-display i {
+  font-style: normal;
+  color: var(--desk-muted);
+}
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--desk-muted);
+  font-size: 9px;
+}
+.zoom button {
+  padding: 3px;
+  border: 0;
+  background: none;
+}
+.zoom svg {
+  width: 12px;
+}
+.timeline-body {
+  display: flex;
+  height: 176px;
+}
+.track-labels {
+  width: 132px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--desk-rule);
+  background: var(--desk-bg);
+}
+.track-labels > div {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 9px;
+  color: var(--desk-muted);
+  font-size: 10px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.track-labels > div:first-child {
+  height: 28px;
+}
+.track-labels small {
+  font-size: 8px;
+  margin-left: auto;
+  color: var(--desk-muted);
+}
+.track-scroll {
+  overflow: auto;
+  flex: 1;
+}
+.track-content {
+  position: relative;
+  min-height: 159px;
+}
+.ruler {
+  height: 28px;
+  border-bottom: 1px solid var(--desk-rule);
+  background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 21px,
+      var(--desk-sidebar) 22px,
+      transparent 23px
+    )
+    left bottom/100% 4px no-repeat;
+  cursor: crosshair;
+  position: relative;
+}
+.ruler span {
+  position: absolute;
+  top: 6px;
+  font-family: monospace;
+  font-size: 9px;
+  color: var(--desk-muted);
+  padding-left: 5px;
+}
+.video-track,
+.audio-track {
+  height: 64px;
+  border-bottom: 1px solid var(--desk-rule);
+  position: relative;
+  margin: 0;
+}
+.timeline-clip {
+  position: absolute;
+  top: 7px;
+  height: 50px;
+  border: 1px solid var(--desk-rule);
+  background: var(--desk-sidebar);
+  border-radius: 5px;
+  display: block;
+  text-align: left;
+  padding: 6px 7px 6px 50px;
+  overflow: hidden;
+  min-width: 0;
+  color: var(--desk-text);
+}
+.timeline-clip.selected {
+  border: 2px solid var(--desk-rule);
+  background: var(--desk-sidebar);
+}
+.timeline-clip img {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  height: 42px;
+  width: 40px;
+  object-fit: cover;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+.timeline-clip > span {
+  display: block;
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.6;
+}
+.timeline-clip small {
+  display: block;
+  color: var(--desk-muted);
+  font-size: 9px;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+.clip-grip {
+  position: absolute;
+  top: 17px;
+  width: 2px;
+  height: 14px;
+  background: var(--desk-sidebar);
+  border-radius: 3px;
+  opacity: 0;
+}
+.timeline-clip.selected .clip-grip {
+  opacity: 1;
+}
+.clip-grip.left {
+  left: 1px;
+}
+.clip-grip.right {
+  right: 1px;
+}
+.track-empty {
+  position: absolute;
+  left: 20px;
+  top: 24px;
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.audio-clip {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  height: 43px;
+  background: var(--desk-sidebar);
+  border-color: var(--desk-rule);
+  color: var(--desk-text);
+  font-size: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  justify-content: flex-start;
+}
+.audio-clip.selected {
+  border-color: var(--desk-rule);
+}
+.waveform {
+  letter-spacing: 3px;
+  color: var(--desk-muted);
+  position: absolute;
+  right: 8px;
+  font-size: 20px;
+  opacity: 0.45;
+}
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--desk-rule);
+  pointer-events: none;
+  z-index: 5;
+}
+.playhead > span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: var(--desk-sidebar);
+  transform: translateX(-5.5px);
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}

@@ -1,0 +1,210 @@
+.generation-panel-launcher {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 28;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--desk-surface);
+  border: 1px solid var(--desk-rule);
+  border-radius: 24px;
+  box-shadow: 0 4px 18px #0002;
+  font-size: 12px;
+}
+.generation-floating {
+  background: var(--desk-surface);
+  box-shadow: 0 18px 60px #0003;
+}
+.generation-floating .floating-content {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.generation-panel-list {
+  padding: 14px;
+}
+.generation-panel-list .generation-run {
+  padding: 14px;
+  margin: 0 0 12px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 10px;
+  background: var(--desk-page, #faf9f6);
+}
+.generation-panel-list .run-instruction {
+  max-height: 60px;
+  overflow: auto;
+}
+.generation-panel-empty {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 20px;
+}
+.generation-settings {
+  padding: 24px;
+}
+.generation-settings-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.generation-settings-heading button {
+  border: 0;
+  background: transparent;
+  padding: 3px;
+}
+.generation-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.generation-setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.generation-setting-field select,
+.generation-setting-field input,
+.generation-frame-slot select {
+  width: 100%;
+  padding: 8px 10px;
+  min-height: 36px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  background: var(--desk-surface);
+  color: var(--desk-ink);
+  font: inherit;
+}
+.generation-setting-note {
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.generation-frame-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  margin-top: 18px;
+  min-width: 0;
+}
+.generation-frame-slot > div {
+  height: 112px;
+  background: var(--desk-sidebar);
+  border: 1px dashed var(--desk-rule);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.generation-frame-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.frame-empty {
+  color: var(--desk-muted);
+}
+.generation-settings footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+.generation-settings footer button {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.generation-settings-references {
+  margin-top: 18px;
+  font-size: 12px;
+}
+.generation-settings-references > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+.generation-settings-references > div > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.generation-settings-references select {
+  width: 100px;
+  font-size: 11px;
+}
+.generation-settings-references button {
+  background: transparent;
+  border: 0;
+}
+.generation-settings-prompt {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.generation-settings-prompt textarea {
+  margin-top: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  line-height: 1.6;
+  font: inherit;
+}
+.generation-task-link {
+  margin: 10px 0;
+  font-size: 12px;
+}
+
+.composer-tools {
+  flex-wrap: nowrap;
+}
+.composer-agent-select {
+  max-width: 88px;
+  font-size: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--desk-ink);
+}
+.composer-tools .conversation-model-trigger {
+  max-width: 150px;
+}
+
+.generation-settings-references > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.generation-settings-references .generation-add-reference {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--desk-ink);
+}
+.generation-reference-thumbnail {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--desk-sidebar);
+}

@@ -1,0 +1,111 @@
+.model-library {
+  margin: 0 0 28px;
+}
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.spec-card {
+  min-width: 0;
+  padding: 18px;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+}
+.spec-card header,
+.spec-card footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.spec-card header small {
+  color: var(--desk-muted);
+}
+.spec-card header span,
+.spec-card footer span {
+  color: var(--desk-muted);
+  font-size: 10px;
+}
+.spec-card h3 {
+  font-size: 16px;
+  margin: 14px 0;
+  color: var(--desk-text);
+}
+.spec-card dl {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 9px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.spec-card dt {
+  color: var(--desk-muted);
+}
+.spec-card dd {
+  margin: 0;
+  color: var(--desk-text);
+}
+.spec-card p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--desk-muted);
+}
+.spec-card details {
+  border-top: 1px solid var(--desk-rule);
+  padding: 12px 0;
+  margin-top: 14px;
+  font-size: 11px;
+}
+.spec-card summary {
+  cursor: pointer;
+  color: var(--desk-text);
+  line-height: 1.6;
+}
+.spec-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--desk-surface);
+  padding: 12px;
+  border-radius: 6px;
+  line-height: 1.6;
+  color: var(--desk-text);
+}
+.spec-card a {
+  color: var(--desk-text);
+}
+.spec-card footer {
+  padding-top: 10px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.spec-card button {
+  font-size: 11px;
+  padding: 7px 10px;
+}
+.model-add-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.model-add-heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.model-add-heading .model-custom {
+  margin-left: auto;
+}
+.model-picker-filter {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+.model-picker-filter .studio-select-trigger {
+  min-width: 150px;
+}
+.model-picker-filter .model-search {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}

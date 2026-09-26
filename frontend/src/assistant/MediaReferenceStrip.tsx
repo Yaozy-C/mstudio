@@ -1,0 +1,227 @@
+import { useState } from "react";
+import { Dialog, Popover } from "@radix-ui/themes";
+import {
+  FileText,
+  Image,
+  VideoCamera,
+  X,
+  DotsThree,
+} from "@phosphor-icons/react";
+import { mediaUrl } from "../bridge";
+import type { Project } from "../model";
+import type { ProductionController } from "../production/useProduction";
+import type { ProductionInput } from "../production/types";
+import { roleLabels } from "../production/request";
+import type { AttachmentDraft } from "./useAttachments";
+import { ComposerReference } from "./ComposerReference";
+
+export function MediaReferenceStrip(props: {
+  canvas: ProductionController;
+  project: Project;
+  draft: AttachmentDraft;
+  extrasOnly?: boolean;
+  hiddenRoles?: string[];
+}) {
+  const { canvas, project } = props;
+  const [preview, setPreview] = useState<ProductionInput>();
+  const task = canvas.task;
+  const inputs =
+    task?.inputs.filter((r) => !props.hiddenRoles?.includes(r.role)) ?? [];
+  const asset = project.assets.find((a) => a.id === preview?.assetId);
+  function reorder(key: string, before: string) {
+    if (!task || key === before) return;
+    const moved = task.inputs.find((r) => r.key === key);
+    if (!moved) return;
+    const next = task.inputs.filter((r) => r.key !== key);
+    next.splice(
+      next.findIndex((r) => r.key === before),
+      0,
+      moved,
+    );
+    canvas.update({ inputs: next });
+  }
+  function purpose(ref: ProductionInput, role: ProductionInput["role"]) {
+    if (!task) return;
+    const inputs = task.inputs.map((r): ProductionInput =>
+      r.key === ref.key
+        ? { ...r, role }
+        : ["edit", "first-frame", "last-frame"].includes(role) &&
+            r.role === role
+          ? { ...r, role: "reference" }
+          : r,
+    );
+    canvas.update({
+      inputs,
+      ...(canvas.composerMode === "video"
+        ? {
+            mode: inputs.some((r) => r.role === "last-frame")
+              ? "ends"
+              : inputs.some((r) => r.role === "first-frame")
+                ? "single"
+                : "multi",
+          }
+        : {}),
+    });
+  }
+  return (
+    <>
+      <div className="composer-media-strip" aria-label="本次引用">
+        {inputs.map((ref) => {
+          const a = project.assets.find((a) => a.id === ref.assetId);
+          const node = project.nodes.find((n) => n.id === ref.nodeId);
+          const title = a?.name ?? node?.title ?? "素材已移除";
+          const src = a && (a.preview || (a.kind === "image" ? a.path : ""));
+          const invalid =
+            (!a && !node) ||
+            a?.missing ||
+            (canvas.composerMode !== "agent" && ref.role === "script");
+          return (
+            <div
+              className={`composer-media-thumb${invalid ? " invalid" : ""}`}
+              key={ref.key}
+              title={title}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/x-mstudio-order", ref.key);
+              }}
+              onDragOver={(e) => {
+                if (
+                  e.dataTransfer.types.includes("application/x-mstudio-order")
+                ) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }}
+              onDrop={(e) => {
+                const key = e.dataTransfer.getData(
+                  "application/x-mstudio-order",
+                );
+                if (key) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  reorder(key, ref.key);
+                }
+              }}
+            >
+              <button
+                className="reference-preview"
+                type="button"
+                aria-label={`预览引用 ${title}`}
+                onClick={() => setPreview(ref)}
+              >
+                {src ? (
+                  <img src={mediaUrl(src)} alt={title} />
+                ) : ref.role === "script" ? (
+                  <>
+                    <FileText size={20} />
+                    <small>{title}</small>
+                  </>
+                ) : a?.kind === "video" ? (
+                  <VideoCamera size={22} />
+                ) : (
+                  <Image size={22} />
+                )}
+              </button>
+              {ref.role !== "reference" && (
+                <span className="reference-role">
+                  {ref.role === "edit" ? "修改这张" : roleLabels[ref.role]}
+                </span>
+              )}
+              <button
+                type="button"
+                className="composer-media-remove"
+                aria-label={`移除引用 ${title}`}
+                title="移除"
+                onClick={() =>
+                  canvas.update({
+                    inputs: task!.inputs.filter((r) => r.key !== ref.key),
+                  })
+                }
+              >
+                <X size={11} weight="bold" />
+              </button>
+              <Popover.Root>
+                <Popover.Trigger>
+                  <button
+                    type="button"
+                    className="reference-options"
+                    aria-label={`引用用途 ${title}`}
+                    title="用途与顺序"
+                  >
+                    <DotsThree size={16} />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Content side="top" className="reference-options-menu">
+                  {a?.kind === "image" &&
+                    (canvas.composerMode === "video"
+                      ? (["reference", "first-frame", "last-frame"] as const)
+                      : (["reference", "edit"] as const)
+                    ).map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        aria-pressed={ref.role === role}
+                        onClick={() => purpose(ref, role)}
+                      >
+                        {role === "edit" ? "修改这张" : roleLabels[role]}
+                      </button>
+                    ))}
+                  <button
+                    type="button"
+                    disabled={task?.inputs[0]?.key === ref.key}
+                    onClick={() =>
+                      reorder(
+                        ref.key,
+                        task!.inputs[
+                          task!.inputs.findIndex((r) => r.key === ref.key) - 1
+                        ].key,
+                      )
+                    }
+                  >
+                    向前移
+                  </button>
+                </Popover.Content>
+              </Popover.Root>
+            </div>
+          );
+        })}
+        {!props.extrasOnly && inputs.length < 12 && (
+          <ComposerReference {...props} />
+        )}
+      </div>
+      <Dialog.Root
+        open={!!preview}
+        onOpenChange={(open) => {
+          if (!open) setPreview(undefined);
+        }}
+      >
+        <Dialog.Content
+          className="media-preview-dialog"
+          aria-describedby={undefined}
+        >
+          <header>
+            <Dialog.Title>
+              {asset?.name ??
+                project.nodes.find((n) => n.id === preview?.nodeId)?.title ??
+                "引用预览"}
+            </Dialog.Title>
+            <Dialog.Close>
+              <button aria-label="关闭引用预览">
+                <X />
+              </button>
+            </Dialog.Close>
+          </header>
+          <div className="media-preview-stage">
+            {asset?.kind === "image" ? (
+              <img src={mediaUrl(asset.path)} alt={asset.name} />
+            ) : asset?.kind === "video" ? (
+              <video src={mediaUrl(asset.path)} controls />
+            ) : (
+              <p style={{ whiteSpace: "pre-wrap" }}>{preview?.purpose}</p>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Root>
+    </>
+  );
+}

@@ -1,0 +1,50 @@
+import { useState } from "react";
+import { FloatingPanel } from "../ui/FloatingPanel";
+import { type Project } from "../model";
+import type { PlaybackClock } from "../timeline/clock";
+import { SpeechPanel } from "./SpeechPanel";
+import { SubtitlePanel } from "./SubtitlePanel";
+export function CreationPanel({
+  project,
+  clock,
+  change,
+  onClose,
+  initialTab = "captions",
+}: {
+  project: Project;
+  clock: PlaybackClock;
+  change: (f: (p: Project) => Project) => void;
+  onClose: () => void;
+  initialTab?: string;
+}) {
+  const [tab, setTab] = useState(initialTab);
+  return (
+    <FloatingPanel
+      id="creation"
+      title="制作台"
+      initial={{ x: 320, y: 136, width: 360, height: 460 }}
+      onClose={onClose}
+    >
+      <div className="creation-tabs">
+        {[
+          ["captions", "字幕"],
+          ["voice", "配音"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            className={tab === id ? "active" : ""}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "captions" && (
+        <SubtitlePanel project={project} change={change} clock={clock} />
+      )}
+      {tab === "voice" && (
+        <SpeechPanel project={project} change={change} clock={clock} />
+      )}
+    </FloatingPanel>
+  );
+}

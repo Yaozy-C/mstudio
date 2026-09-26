@@ -1,0 +1,47 @@
+{
+  "name": "mstudio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "bun run typecheck && vite build",
+    "test": "bun test",
+    "format": "prettier --write src vite.config.ts *.json index.html"
+  },
+  "dependencies": {
+    "@assistant-ui/react": "0.15.18",
+    "@assistant-ui/react-markdown": "0.14.14",
+    "@phosphor-icons/react": "2.1.10",
+    "@radix-ui/themes": "3.3.0",
+    "@tauri-apps/api": "2.11.1",
+    "cordis": "4.0.0-rc.10",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "@types/bun": "1.4.2",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "vite": "8.2.2"
+  },
+  "overrides": {
+    "@assistant-ui/core": "0.3.17",
+    "@assistant-ui/store": "0.3.12",
+    "@assistant-ui/tap": "0.9.16",
+    "assistant-stream": "0.3.41",
+    "assistant-cloud": "0.1.43"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yaozy-C/mstudio.git"
+  }
+}

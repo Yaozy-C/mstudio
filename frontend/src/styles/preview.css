@@ -1,0 +1,110 @@
+.preview {
+  padding: 14px 15px 11px;
+}
+.preview > header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--desk-muted);
+  font-size: 11px;
+  margin-bottom: 13px;
+}
+.preview > header small {
+  font-size: 9px;
+  color: var(--desk-muted);
+}
+.preview-stage {
+  height: 230px;
+  display: flex;
+  justify-content: center;
+  background: var(--desk-surface);
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.preview-frame {
+  height: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--desk-surface);
+}
+.preview-frame img,
+.preview-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--desk-muted);
+  white-space: nowrap;
+  font-size: 9px;
+  padding: 10px;
+}
+.preview-transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.preview-transport button {
+  background: transparent;
+  border: 0;
+  padding: 5px;
+}
+.preview-transport .play-button {
+  background: var(--desk-sidebar);
+  border-radius: 50%;
+  height: 28px;
+  width: 28px;
+}
+.preview-transport svg {
+  width: 12px;
+  height: 12px;
+}
+.preview-transport span {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.preview-frame {
+  position: relative;
+}
+.preview-video-slot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.preview-options {
+  display: flex;
+  gap: 6px;
+  padding: 4px 10px;
+  align-items: center;
+}
+.preview-options select {
+  font-size: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 4px;
+}
+.preview-options button {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+.preview-status,
+.playback-diagnostics {
+  font-size: 10px;
+  line-height: 1.5;
+  padding: 4px 10px;
+  color: var(--desk-muted);
+  display: block;
+}

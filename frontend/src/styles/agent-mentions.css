@@ -1,0 +1,114 @@
+.agent-composer .composer-mention-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  margin: 0 0 9px 2px;
+  border-radius: 7px;
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+  font-size: 11px;
+}
+.composer-mention-tag button {
+  border: 0;
+  background: transparent;
+  padding: 2px;
+  color: inherit;
+}
+.agent-compose-actions .composer-mention-trigger {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--desk-text);
+}
+.agent-compose-actions .composer-mention-trigger:hover {
+  background: #e7e4dc0c;
+}
+.agent-mention-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 8px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 13px;
+  background: var(--desk-bg);
+  box-shadow: 0 10px 35px #0006;
+}
+.agent-mention-menu header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 7px 8px;
+  font-size: 11px;
+}
+.agent-mention-menu header button {
+  border: 0;
+  padding: 3px;
+  background: transparent;
+}
+.agent-mention-menu [role="listbox"] {
+  max-height: 230px;
+  overflow-y: auto;
+}
+.agent-mention-menu [role="option"] {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+.agent-mention-menu [role="option"][aria-selected="true"] {
+  background: var(--desk-sidebar);
+}
+.agent-mention-menu [role="option"] span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.agent-mention-menu strong {
+  font-weight: 500;
+}
+.agent-mention-menu small,
+.agent-mention-menu footer {
+  font-size: 10px;
+  color: var(--desk-muted);
+}
+.agent-mention-menu footer {
+  padding: 9px 7px 3px;
+  border-top: 1px solid var(--desk-rule);
+  margin-top: 6px;
+}
+.agent-mention-menu p {
+  padding: 10px;
+  font-size: 11px;
+}
+.message-agent-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: var(--desk-sidebar);
+  border-radius: 5px;
+  color: var(--desk-text);
+}
+.agent-message .agent-activity {
+  padding: 5px 0;
+  max-height: none;
+  overflow: visible;
+  font-size: 10px;
+}
+.agent-message .agent-run-status {
+  padding: 5px 0;
+}

@@ -1,0 +1,252 @@
+/* Frame / Cut: semantic tokens shared by the desktop workspace. */
+:root {
+  --desk-bg: #f5f3ed;
+  --desk-sidebar: #e7e4dc;
+  --desk-surface: #faf9f5;
+  --desk-text: #22221f;
+  --desk-muted: #68665f;
+  --desk-rule: #d5d1c7;
+  --desk-control: #aaa69b;
+  --desk-accent: #d6452d;
+  --desk-overlay: #22221f33;
+}
+.radix-themes {
+  --default-font-family:
+    -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", sans-serif;
+  color: var(--desk-text);
+}
+body,
+.radix-themes .settings-page,
+.radix-themes .studio-shell {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+}
+.radix-themes button {
+  font-size: 13px;
+  border-radius: 6px;
+  color: var(--desk-text);
+  border-color: var(--desk-control);
+  background: var(--desk-surface);
+}
+.radix-themes button:hover:not(:disabled) {
+  background: var(--desk-sidebar);
+  border-color: var(--desk-rule);
+}
+.radix-themes button.primary {
+  background: var(--desk-accent);
+  border-color: var(--desk-accent);
+  color: var(--desk-muted);
+}
+.radix-themes button.primary:hover:not(:disabled) {
+  background: var(--desk-sidebar);
+}
+.radix-themes :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 3px;
+}
+.radix-themes :is(input:not([type="checkbox"]), textarea, select) {
+  color: var(--desk-text);
+  background: var(--desk-surface);
+  border-color: var(--desk-control);
+  font-size: 14px;
+  border-radius: 6px;
+}
+.radix-themes :is(input, textarea)::placeholder {
+  color: var(--desk-muted);
+  opacity: 1;
+}
+.radix-themes
+  :is(
+    .subtle,
+    .model-hint,
+    .hub-intro p,
+    .hub-section-head p,
+    .model-default p,
+    .hub-endpoint,
+    .model-row-copy p,
+    .model-row-copy small,
+    .spec-card p,
+    .spec-card small,
+    .spec-card dd
+  ) {
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.radix-themes
+  :is(
+    .model-form label,
+    .model-form small,
+    .agent-config-block p,
+    .agent-config-block small
+  ) {
+  color: var(--desk-muted);
+  font-size: 13px;
+}
+.radix-themes
+  :is(
+    .model-section-heading h3,
+    .hub-section-head h3,
+    .hub-model-card h3,
+    .spec-card h3
+  ) {
+  color: var(--desk-text);
+  font-size: 16px;
+}
+.radix-themes .studio-sidebar {
+  background: var(--desk-sidebar);
+  border-right: 1px solid var(--desk-rule);
+  padding-top: 28px;
+}
+.radix-themes .brand {
+  font-size: 22px;
+  color: var(--desk-text);
+}
+.radix-themes .brand-icon {
+  background: none;
+  border: 0;
+  color: var(--desk-accent);
+}
+.radix-themes :is(.nav-caption, .nav-bottom, .sidebar-project) {
+  color: var(--desk-muted);
+}
+.radix-themes .nav-item {
+  background: transparent;
+  border-color: transparent;
+  color: var(--desk-muted);
+  font-size: 14px;
+}
+.radix-themes .nav-item.active {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+}
+.radix-themes .settings-nav {
+  margin-top: 14px;
+  gap: 5px;
+}
+.radix-themes .settings-nav button {
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  border-radius: 0 5px 5px 0;
+  padding: 12px 14px;
+  color: var(--desk-muted);
+  font-size: 14px;
+}
+.radix-themes .settings-nav button[aria-pressed="true"] {
+  background: var(--desk-bg);
+  border-left-color: var(--desk-accent);
+  color: var(--desk-text);
+}
+.radix-themes .settings-nav svg {
+  width: 19px;
+  height: 19px;
+}
+.radix-themes .hub-main > .settings-heading {
+  padding: 20px 36px;
+  border-color: var(--desk-rule);
+}
+.radix-themes .settings-heading .eyebrow {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.radix-themes .hub-scroll {
+  padding: 32px 36px;
+}
+.radix-themes .roster-heading h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+.radix-themes .roster-heading p {
+  color: var(--desk-muted);
+  margin: 0;
+  font-size: 14px;
+}
+.radix-themes .agent-roster {
+  margin-top: 30px;
+  border-color: var(--desk-rule);
+}
+.radix-themes .agent-roster-row {
+  display: grid;
+  grid-template-columns: 34px minmax(210px, 1fr) auto auto auto;
+  gap: 22px;
+  padding: 24px 0;
+  border-color: var(--desk-rule);
+}
+.radix-themes .agent-roster-row:hover {
+  background: var(--desk-bg);
+}
+.radix-themes .agent-roster-icon {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border-radius: 0;
+  color: var(--desk-accent);
+}
+.radix-themes .agent-roster-info {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+}
+.radix-themes .agent-roster-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--desk-text);
+  line-height: 1.6;
+}
+.radix-themes .agent-roster-info h3 small {
+  display: block;
+  margin: 2px 0 0;
+  color: var(--desk-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.radix-themes .agent-roster-info p {
+  color: var(--desk-muted);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.7;
+}
+.radix-themes .agent-roster-count {
+  font-size: 13px;
+  color: var(--desk-muted);
+  white-space: nowrap;
+}
+.radix-themes .agent-roster-count > span {
+  margin: 0 8px;
+  color: var(--desk-muted);
+}
+.radix-themes .agent-roster-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--desk-text);
+}
+.radix-themes .agent-roster-toggle button {
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--desk-sidebar);
+}
+.radix-themes .agent-roster-toggle button[data-state="checked"] {
+  background: var(--desk-sidebar);
+}
+.radix-themes .agent-roster-row > button {
+  border: 0;
+  border-left: 1px solid var(--desk-rule);
+  border-radius: 0;
+  background: transparent;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.radix-themes .agent-detail-navigation {
+  background: var(--desk-bg);
+  border-color: var(--desk-rule);
+}

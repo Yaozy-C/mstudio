@@ -1,0 +1,30 @@
+.error-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+.error-notice strong {
+  font-weight: 600;
+}
+.error-notice details {
+  font-size: 12px;
+}
+.error-notice summary {
+  cursor: pointer;
+}
+.error-notice pre {
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow: auto;
+  font: inherit;
+  user-select: text;
+}
+.error-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.error-notice small {
+  margin-left: 8px;
+}

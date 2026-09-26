@@ -1,0 +1,91 @@
+.creative-inline-field {
+  margin: 0 0 8px;
+  min-width: 0;
+}
+.creative-inline-field label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  color: var(--desk-muted);
+  font-size: 10px;
+  cursor: text;
+}
+.creative-inline-field label svg {
+  width: 11px;
+  height: 11px;
+  opacity: 0.65;
+}
+.creative-inline-input {
+  display: grid;
+  margin: 4px -7px 0;
+}
+.creative-inline-input > span,
+.creative-inline-input > textarea {
+  grid-area: 1 / 1;
+  min-width: 0;
+  width: 100%;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.creative-inline-input > span {
+  visibility: hidden;
+}
+.creative-inline-input > textarea {
+  height: 100%;
+  margin: 0;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: var(--desk-text);
+  border-radius: 5px;
+  box-shadow: none;
+}
+.creative-inline-input > textarea::placeholder {
+  color: var(--desk-muted);
+}
+.creative-inline-field:hover textarea {
+  border-color: var(--desk-rule);
+  background: #f5f3ed66;
+}
+.creative-inline-input > textarea:focus {
+  border-color: var(--desk-rule);
+  background: var(--desk-bg);
+  box-shadow: 0 0 0 2px #a9c6830d;
+}
+.creative-inline-field:focus-within label {
+  color: var(--desk-text);
+}
+.creative-inline-hint {
+  display: block;
+  color: var(--desk-muted);
+  font-size: 9px;
+  line-height: 1.6;
+  padding-top: 3px;
+  visibility: hidden;
+}
+.creative-inline-hint.visible {
+  visibility: visible;
+}
+.shot-dialogue .creative-inline-input > textarea {
+  color: var(--desk-text);
+}
+.plan-grid .creative-inline-input > span,
+.plan-grid .creative-inline-input > textarea {
+  font-size: 11px;
+}
+.shot-detail-copy .creative-inline-input > span,
+.shot-detail-copy .creative-inline-input > textarea {
+  font-size: 13px;
+}
+.shot-detail-copy .shot-dialogue {
+  margin: 8px 0 24px;
+  padding: 12px 15px 4px;
+  background: var(--desk-bg);
+  border-radius: 0 7px 7px 0;
+}

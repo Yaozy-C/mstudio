@@ -1,0 +1,146 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--desk-overlay);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+.modal {
+  width: 580px;
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 80px #0007;
+}
+.modal.small {
+  width: 450px;
+}
+.modal h2 {
+  font-size: 22px;
+  margin-bottom: 22px;
+  font-weight: 500;
+}
+.modal h3 {
+  margin: 18px 0 12px;
+}
+.modal .eyebrow {
+  margin-bottom: 10px;
+}
+.modal header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.modal footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+.plugin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--desk-rule);
+  padding: 13px 0;
+  gap: 15px;
+}
+.plugin-row strong {
+  font-size: 12px;
+}
+.plugin-row p {
+  font-size: 11px;
+  color: var(--desk-muted);
+  margin-top: 6px;
+}
+.toggle {
+  border: 0;
+  min-width: 32px;
+  width: 32px;
+  height: 19px;
+  padding: 3px;
+  border-radius: 20px;
+  background: var(--desk-sidebar);
+  justify-content: flex-start;
+}
+.toggle span {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--desk-sidebar);
+}
+.toggle.on {
+  background: var(--desk-sidebar);
+  justify-content: flex-end;
+}
+.toggle.on span {
+  background: var(--desk-bg);
+}
+.export-modal video {
+  display: block;
+  max-width: 100%;
+  max-height: 48vh;
+  margin: auto;
+}
+.export-summary {
+  text-align: center;
+  padding: 34px;
+  background: var(--desk-bg);
+  border-radius: 10px;
+  color: var(--desk-muted);
+}
+.export-summary svg {
+  margin-bottom: 10px;
+}
+.export-summary p {
+  font-size: 12px;
+  color: var(--desk-muted);
+  margin-top: 10px;
+}
+.progress {
+  height: 5px;
+  background: var(--desk-sidebar);
+  border-radius: 5px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  background: var(--desk-sidebar);
+  height: 100%;
+  transition: width 0.3s;
+}
+.code-input {
+  font-family: monospace;
+  margin-top: 10px;
+}
+summary {
+  font-size: 12px;
+  color: var(--desk-muted);
+  cursor: pointer;
+}
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.check-row input {
+  margin-top: 3px;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--desk-sidebar);
+  border-radius: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

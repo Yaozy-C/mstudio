@@ -1,0 +1,325 @@
+.settings-heading,
+.settings-tabs,
+.model-section-heading,
+.model-default,
+.model-row,
+.model-row-actions,
+.model-remove {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.settings-heading,
+.model-section-heading,
+.model-default {
+  justify-content: space-between;
+}
+.settings-heading .eyebrow {
+  margin-bottom: 6px;
+}
+.settings-heading h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.settings-tabs {
+  margin: 22px 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.settings-tabs button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--desk-muted);
+}
+.settings-tabs button[aria-pressed="true"] {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+}
+.model-default {
+  padding: 16px 18px;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.model-default strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.model-default p,
+.model-hint,
+.model-section-heading > span {
+  font-size: 12px;
+  color: var(--desk-muted);
+  line-height: 1.75;
+  margin: 4px 0 0;
+}
+.model-default .studio-select-trigger {
+  max-width: 280px;
+  min-width: 190px;
+}
+.model-section-heading {
+  margin: 0 0 12px;
+}
+.model-section-heading h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 550;
+}
+.model-section-heading h3 span {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.model-search {
+  margin-bottom: 12px;
+  width: 100%;
+}
+.model-list {
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.model-row {
+  padding: 18px 16px;
+  flex-wrap: wrap;
+}
+.model-row + .model-row {
+  border-top: 1px solid var(--desk-rule);
+}
+.model-logo {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--desk-bg);
+  border-radius: 10px;
+  color: var(--desk-muted);
+}
+.model-row-copy {
+  min-width: 0;
+  flex: 1;
+}
+.model-row-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.model-badge {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--desk-text);
+  background: var(--desk-sidebar);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.model-row-copy p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: var(--desk-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-row-copy p span {
+  color: var(--desk-muted);
+  padding-inline: 5px;
+}
+.model-row-copy small {
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.model-row-actions {
+  gap: 6px;
+}
+.model-row-actions button {
+  padding: 5px 8px;
+  font-size: 11px;
+  background: transparent;
+}
+.model-row-actions svg {
+  width: 15px;
+  height: 15px;
+}
+.model-remove {
+  flex-basis: 100%;
+  background: var(--desk-bg);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.model-remove span {
+  flex: 1;
+}
+.model-empty {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  color: var(--desk-muted);
+}
+.model-empty strong {
+  margin-top: 16px;
+  color: var(--desk-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+.model-empty p {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.model-center > .model-hint {
+  margin-top: 12px;
+}
+.model-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(440px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: var(--desk-surface);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 14%);
+  color: var(--desk-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.model-toast-error {
+  border-color: var(--desk-error, #d66);
+}
+.model-toast button {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.model-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.model-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+.model-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  min-width: 0;
+}
+.model-form input:not([type="checkbox"]),
+.model-form .studio-select-trigger {
+  width: 100%;
+}
+.model-field-wide {
+  grid-column: 1 / -1;
+}
+.model-form small {
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.model-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.model-check input {
+  width: auto;
+}
+.model-vision {
+  justify-content: center;
+}
+.model-form footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--desk-rule);
+}
+@media (max-width: 680px) {
+  .model-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .model-default {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .model-default .studio-select-trigger {
+    max-width: none;
+  }
+  .model-row-actions {
+    margin-left: 52px;
+  }
+}
+
+.service-picker > button {
+  margin-top: 10px;
+}
+.service-picker .service-form {
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+}
+.service-form h3 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.model-inputs > strong {
+  font-size: 13px;
+}
+.model-input-evidence {
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.model-input-evidence p {
+  margin: 0 0 8px;
+}
+.model-input-evidence button {
+  margin-left: 10px;
+  font-size: 12px;
+}
+.model-input-group {
+  margin: 14px 0;
+}
+.model-input-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 8px;
+}
+.model-form .model-input-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+}
+.model-input-option small {
+  color: var(--desk-muted);
+}

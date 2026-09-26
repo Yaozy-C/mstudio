@@ -1,0 +1,140 @@
+.radix-themes .floating-timeline {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 252px;
+  border: 0;
+  border-top: 1px solid var(--desk-rule);
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--desk-sidebar);
+}
+.timeline-header {
+  height: 48px;
+}
+.timeline-header h3 {
+  font-size: 14px;
+}
+.timeline-header .time-display {
+  color: var(--desk-text);
+}
+.radix-themes .timeline-clip {
+  border-radius: 2px;
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  border-color: var(--desk-rule);
+}
+.radix-themes .timeline-clip.selected {
+  border: 2px solid transparent;
+  background: var(--desk-surface);
+}
+.radix-themes .sound-clip {
+  background: #dcdad3;
+}
+.timeline-clip img {
+  opacity: 1;
+  border-radius: 0;
+}
+.timeline-clip.selected .trim-handle {
+  background: #d6452d33;
+}
+.playhead {
+  border-color: var(--desk-accent);
+}
+.playhead > span {
+  background: var(--desk-accent);
+  height: 5px;
+  clip-path: none;
+}
+.radix-themes .timeline-collapsed {
+  border-radius: 4px;
+  box-shadow: none;
+  padding: 8px 16px;
+  bottom: 12px;
+  left: calc(var(--rail) + 16px);
+  transform: none;
+}
+.studio-stage.view-film {
+  display: flex;
+  flex-direction: column;
+}
+.view-film > .preview {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 0;
+}
+.view-film > .production-task-panel {
+  position: relative;
+  inset: auto;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 55%;
+  margin: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.view-film .task-panel-heading {
+  flex-shrink: 0;
+}
+.view-film .task-panel-body {
+  min-height: 0;
+}
+.view-film .preview-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.view-film .preview-transport {
+  flex-shrink: 0;
+}
+.studio-shell .floating-error {
+  top: 72px;
+}
+
+.timeline-transport {
+  display: flex;
+  gap: 8px;
+  border-right: 1px solid var(--desk-rule);
+  padding-right: 12px;
+}
+.radix-themes .timeline-transport button {
+  border: 0;
+  background: transparent;
+}
+
+.timeline-clip.selected::after {
+  display: block;
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--desk-accent);
+  pointer-events: none;
+  clip-path: polygon(
+    0 0,
+    14px 0,
+    14px 3px,
+    calc(100% - 14px) 3px,
+    calc(100% - 14px) 0,
+    100% 0,
+    100% 14px,
+    calc(100% - 3px) 14px,
+    calc(100% - 3px) calc(100% - 14px),
+    100% calc(100% - 14px),
+    100% 100%,
+    calc(100% - 14px) 100%,
+    calc(100% - 14px) calc(100% - 3px),
+    14px calc(100% - 3px),
+    14px 100%,
+    0 100%,
+    0 calc(100% - 14px),
+    3px calc(100% - 14px),
+    3px 14px,
+    0 14px
+  );
+}

@@ -1,0 +1,203 @@
+.radix-themes .model-default {
+  background: var(--desk-bg);
+  border-color: var(--desk-rule);
+  border-radius: 8px;
+  padding: 20px;
+}
+.radix-themes .model-default strong {
+  font-size: 14px;
+}
+.radix-themes .model-list {
+  border: 0;
+  border-top: 1px solid var(--desk-rule);
+  border-radius: 0;
+}
+.radix-themes .model-row {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .model-row + .model-row {
+  border-top: 0;
+}
+.radix-themes .model-logo,
+.radix-themes .hub-capability {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--desk-text);
+}
+.provider-mark {
+  display: block;
+  object-fit: contain;
+  filter: brightness(0);
+}
+.provider-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.radix-themes .hub-categories {
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  padding: 0 0 12px;
+  background: none;
+  gap: 12px;
+}
+.radix-themes .hub-categories button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--desk-muted);
+}
+.radix-themes .hub-categories button[aria-pressed="true"] {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  border-color: var(--desk-rule);
+  box-shadow: none;
+}
+.radix-themes :is(.hub-model-card, .spec-card, .hub-provider-list article) {
+  background: var(--desk-bg);
+  border-color: var(--desk-rule);
+  border-radius: 8px;
+  box-shadow: none;
+}
+.radix-themes .hub-status {
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.radix-themes .hub-status.ready {
+  color: var(--desk-muted);
+}
+.radix-themes .hub-tags span {
+  color: var(--desk-muted);
+  background: var(--desk-sidebar);
+}
+.radix-themes .model-badge {
+  color: var(--desk-text);
+  background: var(--desk-sidebar);
+}
+.radix-themes .studio-top {
+  background: var(--desk-bg);
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .chrome-action {
+  color: var(--desk-muted);
+  background: transparent;
+  border-color: transparent;
+}
+.radix-themes .chrome-action[aria-pressed="true"] {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+  border-color: var(--desk-rule);
+}
+.radix-themes .floating-panel {
+  background: var(--desk-bg);
+  border-color: var(--desk-control);
+  box-shadow: 0 14px 44px #0005;
+  border-radius: 10px;
+}
+.radix-themes .floating-handle {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .floating-handle strong {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+}
+.radix-themes .floating-handle strong svg {
+  color: var(--desk-accent);
+}
+.radix-themes .agent-thread {
+  color: var(--desk-text);
+}
+.radix-themes .agent-welcome-mark {
+  background: transparent;
+  border-radius: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--desk-accent);
+  margin-bottom: 16px;
+}
+.radix-themes .agent-welcome .eyebrow {
+  display: none;
+}
+.radix-themes .agent-welcome h3 {
+  color: var(--desk-text);
+  font-size: 21px;
+  font-weight: 600;
+}
+.radix-themes .agent-welcome p {
+  color: var(--desk-muted);
+  font-size: 14px;
+}
+.radix-themes .agent-welcome > small {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.radix-themes .agent-starters button {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  color: var(--desk-text);
+  border-radius: 0;
+  padding: 14px 4px;
+  font-size: 13px;
+}
+.radix-themes .agent-starters button > svg:last-child {
+  color: var(--desk-muted);
+}
+.radix-themes .agent-connect-callout {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  border-color: var(--desk-rule);
+  font-size: 13px;
+}
+.radix-themes .agent-composer {
+  background: var(--desk-surface);
+  border-color: var(--desk-control);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.radix-themes .agent-composer textarea {
+  background: transparent;
+  border: 0;
+  color: var(--desk-text);
+  font-size: 14px;
+}
+.radix-themes .agent-composer:focus-within {
+  border-color: var(--desk-muted);
+}
+.radix-themes :is(.agent-message > small, .agent-model-label, .save-state) {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+@media (max-width: 1200px) {
+  .radix-themes .agent-roster-info {
+    display: block;
+  }
+  .radix-themes .agent-roster-info p {
+    margin-top: 4px;
+  }
+  .radix-themes .agent-roster-row {
+    gap: 16px;
+  }
+}
+@media (max-width: 850px) {
+  .radix-themes .hub-scroll {
+    padding: 24px;
+  }
+  .radix-themes .agent-roster-row {
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+  }
+  .radix-themes .agent-roster-count {
+    grid-column: 2;
+  }
+  .radix-themes .agent-roster-toggle {
+    grid-column: 3;
+    grid-row: auto;
+  }
+}

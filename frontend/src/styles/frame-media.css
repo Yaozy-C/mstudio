@@ -1,0 +1,115 @@
+.media-section-label {
+  display: flex;
+  gap: 8px;
+  color: var(--desk-muted);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.media-scopes {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.radix-themes .media-scopes button {
+  flex: 1;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+}
+.radix-themes .media-scopes button[aria-pressed="true"] {
+  background: var(--desk-sidebar);
+  box-shadow: inset 0 -2px var(--desk-text);
+}
+.media-scope-hint {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--desk-muted);
+  margin: 0 0 12px;
+  flex-shrink: 0;
+}
+.dock-media .media-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.media-empty {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--desk-muted);
+}
+.media-categories {
+  border-top: 1px solid var(--desk-rule);
+  padding-top: 12px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.radix-themes .media-categories button {
+  border: 0;
+  background: transparent;
+  padding: 10px 8px;
+  text-align: left;
+}
+.media-categories button > span {
+  flex: 1;
+}
+.media-categories small {
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.radix-themes .media-categories button[aria-pressed="true"] {
+  background: #dcd8ce;
+}
+.dock-media .media-foot {
+  flex-shrink: 0;
+}
+.dock-agent .agent-input-area {
+  padding: 12px 20px 16px;
+}
+.dock-agent .agent-welcome-mark {
+  display: none;
+}
+.dock-agent .agent-welcome h3 {
+  font-size: 20px;
+}
+.dock-agent .agent-welcome p {
+  font-size: 13px;
+}
+.project-cover > .project-empty-mark {
+  position: static;
+}
+.project-cover .cover-ratio {
+  background: #faf9f5e6;
+  color: var(--desk-text);
+  padding: 4px 6px;
+}
+.project-cover > svg:last-child {
+  color: var(--desk-text);
+  background: #faf9f5e6;
+}
+
+@media (max-height: 850px) {
+  .dock-heading {
+    min-height: 56px;
+  }
+  .media-categories {
+    margin-top: 8px;
+    padding-top: 8px;
+    gap: 0;
+  }
+  .radix-themes .media-categories button {
+    padding-block: 6px;
+  }
+  .dock-media .media-foot {
+    padding-top: 8px;
+    font-size: 10px;
+  }
+  .dock-media .import-box {
+    margin-bottom: 12px;
+  }
+}

@@ -1,0 +1,26 @@
+# 架构
+
+Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。前端管理脚本、画布和剪辑状态，经 Tauri IPC 调用本机 Rust 服务。SQLite 保存工程、对话、任务与模型配置；Cordis 管理前端插件生命周期。
+
+## 核心边界
+
+- `src/`：独立 Rust 媒体核心，调用 FFmpeg / ffprobe 进行媒体探测、代理、混音和导出。`preview_mlt.rs` 将时间线转换为 MLT 图。
+- `desktop/src/`：Tauri 命令、持久化、导入、模型适配、生成任务和 Agent 执行。`assistant/harness/` 负责轮次、工具执行和任务恢复。
+- `desktop/native/`：MLT 播放器与平台显示表面；桌面视频像素不通过 IPC 传输。
+- `frontend/src/creative/`、`production/`：脚本、分镜、画布和生成流程。
+- `frontend/src/timeline/`：多轨编辑、播放时钟、素材拖放及预览控制。
+- `skills/`：应用自带的创作规则，由 Tauri resources 分发，不依赖开发者个人技能目录。
+
+## 媒体与项目
+
+素材记录与时间线片段分离，片段引用素材 ID 并保存开始位置、裁切、速度和变换。图片作为默认三秒的画面片段插入，可继续调整。拖入指定画面轨道时按项目帧率对齐。
+
+工程自动保存在 SQLite；导入的媒体、代理、导出和生成文件位于应用数据目录。原始用户文件不因项目删除而被删除。项目操作通过统一变更入口支持当前会话撤销。
+
+## 预览与导出
+
+桌面预览由 MLT 处理解码、合成与音频，macOS 使用 Core Animation 呈现，Windows 表面仍待实机验证。浏览器界面使用 HTML 媒体预览作为开发模式。导出使用 FFmpeg 合成管线；两条管线需要分别验证。
+
+## 外部服务
+
+模型适配器负责请求转换、凭据和任务轮询。远程服务仅接收本次请求选择的上下文与媒体；配置的端点决定数据接收方。本地凭据数据库不应上传仓库或用于公开复现。

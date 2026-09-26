@@ -1,0 +1,54 @@
+# Build outputs and downloaded dependencies
+**/target/
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+*.app/
+/desktop/gen/
+/desktop/native/vendor/
+/desktop/native/build-mlt/
+/desktop/native/runtime/
+/desktop/native/bundle/
+/desktop/native/windows-resources.json
+
+# Local design explorations, review artifacts and generated media
+/output/
+/design-qa.md
+/frontend/_ui-review/
+/frontend/ui-review.html
+/frontend/workflow-review/
+/examples/*/
+/docs/*
+!/docs/development.md
+!/docs/architecture.md
+
+# Local credentials, settings, project data and logs
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite*
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Editor, OS and test caches
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+.pytest_cache/
+coverage/
+.playwright/
+test-results/
+playwright-report/
+*.swp
+*.swo
+*~
