@@ -63,11 +63,26 @@ export function ClipFields({
               value={clip.speed}
               onChange={(e) => numeric("speed", +e.target.value)}
             >
-              {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map((v) => (
-                <option key={v} value={v}>
-                  {v}× {v === 1 ? "原速" : ""}
-                </option>
-              ))}
+              {[
+                ...new Set([
+                  0.25,
+                  0.5,
+                  0.75,
+                  1,
+                  1.25,
+                  1.5,
+                  2,
+                  3,
+                  4,
+                  clip.speed,
+                ]),
+              ]
+                .sort((a, b) => a - b)
+                .map((v) => (
+                  <option key={v} value={v}>
+                    {Number(v.toFixed(2))}× {v === 1 ? "原速" : ""}
+                  </option>
+                ))}
             </select>
           </label>
         </>

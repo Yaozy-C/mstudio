@@ -13,14 +13,22 @@ export function detachAudio(project: Project, clipId: string): Project {
   )
     return project;
   const next = addTrack(project, "audio");
+  const audioTrack = {
+    ...next.tracks.at(-1)!,
+    muted: track.muted,
+    sourceTrackId: track.id,
+  };
+  const position = project.tracks.findIndex((t) => t.id === track.id) + 1;
   return {
     ...next,
-    tracks: next.tracks.map((t) =>
-      t.id === next.tracks.at(-1)!.id ? { ...t, muted: track.muted } : t,
-    ),
+    tracks: [
+      ...project.tracks.slice(0, position),
+      audioTrack,
+      ...project.tracks.slice(position),
+    ],
     clips: [
       ...next.clips.map((c) => (c.id === clipId ? { ...c, volume: 0 } : c)),
-      { ...clip, id: uid(), trackId: next.tracks.at(-1)!.id },
+      { ...clip, id: uid(), trackId: audioTrack.id },
     ],
   };
 }

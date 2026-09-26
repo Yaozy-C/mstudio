@@ -34,11 +34,13 @@ test("detached audio preserves timing, speed and gain without doubling the video
   expect(audio).toEqual({
     ...clip,
     id: audio.id,
-    trackId: q.tracks.at(-1)!.id,
+    trackId: q.tracks[1].id,
   });
   expect(audio.id).not.toBe(clip.id);
-  expect(q.tracks.at(-1)!.kind).toBe("audio");
-  expect(q.tracks.at(-1)!.muted).toBe(true);
+  expect(q.tracks[1].sourceTrackId).toBe("v1");
+  expect(q.tracks[2]).toBe(p.tracks[1]);
+  expect(q.tracks[1].kind).toBe("audio");
+  expect(q.tracks[1].muted).toBe(true);
   expect(q.assets).toBe(p.assets);
   expect(p.clips).toEqual([clip]);
   expect(detachAudio(q, audio.id)).toBe(q);

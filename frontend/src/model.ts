@@ -31,6 +31,7 @@ export type Clip = {
   shotId?: string;
 };
 export type Track = {
+  sourceTrackId?: string;
   id: string;
   name: string;
   kind: "video" | "audio";

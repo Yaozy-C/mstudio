@@ -1,3 +1,4 @@
+import { stretchClip } from "./stretchClip";
 import { detachAudio } from "./detachAudio";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { useRef } from "react";
@@ -35,6 +36,8 @@ export function TimelineClip({
   const drag = useRef<{ x: number; delta: number } | null>(null);
   const root = useRef<HTMLDivElement>(null);
   function trim(delta: number, side: "left" | "right") {
+    if (asset?.kind === "video" && !audio)
+      return stretchClip(clip, delta, side, fps);
     const frame = clip.speed / fps;
     if (side === "left") {
       const d = Math.max(
@@ -136,13 +139,19 @@ export function TimelineClip({
         <span>{asset?.name || "素材丢失"}</span>
         <small>
           {duration(clip).toFixed(2)}s
-          {clip.speed !== 1 ? ` · ${clip.speed}×` : ""}
+          {clip.speed !== 1 ? ` · ${Number(clip.speed.toFixed(2))}×` : ""}
         </small>
         {(["left", "right"] as const).map((side) => (
           <span
             key={side}
             className={`trim-handle ${side}`}
-            title={side === "left" ? "拖动入点" : "拖动出点"}
+            title={
+              asset?.kind === "video" && !audio
+                ? "拖动调整速度 · 保留片段内容（0.25–4×）"
+                : side === "left"
+                  ? "拖动入点"
+                  : "拖动出点"
+            }
             onDoubleClick={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => {

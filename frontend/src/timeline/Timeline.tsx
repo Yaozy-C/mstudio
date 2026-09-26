@@ -1,3 +1,4 @@
+import { trackRows } from "./trackRows";
 import { TrackHeading } from "./TrackHeading";
 import { TimelineToolbar } from "./TimelineToolbar";
 import { memo, useMemo, useRef, useEffect } from "react";
@@ -46,10 +47,7 @@ export const Timeline = memo(function Timeline({
   const total = endTime(project),
     tracks = tracksOf(project);
   // Top row is the top visual layer, as in the composition preview/export.
-  const rows = [
-    ...tracks.filter((t) => t.kind === "video").reverse(),
-    ...tracks.filter((t) => t.kind === "audio"),
-  ];
+  const rows = trackRows(tracks);
   const width = Math.max(viewport.width, (total + 10) * zoom);
   const visible = useMemo(
     () =>
