@@ -33,7 +33,11 @@ export function useTimelineViewport(clock: PlaybackClock) {
     localStorage.setItem("mstudio-time-zoom", String(next));
     requestAnimationFrame(() => {
       el.scrollLeft = Math.max(0, time * next - offset);
-      setViewport({ left: el.scrollLeft, width: el.clientWidth });
+      setViewport((old) =>
+        old.left === el.scrollLeft && old.width === el.clientWidth
+          ? old
+          : { left: el.scrollLeft, width: el.clientWidth },
+      );
     });
   };
   const changeRef = useRef(changeZoom);
@@ -42,7 +46,11 @@ export function useTimelineViewport(clock: PlaybackClock) {
     const el = ref.current;
     if (!el) return;
     const update = () =>
-      setViewport({ left: el.scrollLeft, width: el.clientWidth });
+      setViewport((old) =>
+        old.left === el.scrollLeft && old.width === el.clientWidth
+          ? old
+          : { left: el.scrollLeft, width: el.clientWidth },
+      );
     const observer = new ResizeObserver(update);
     observer.observe(el);
     update();
@@ -100,9 +108,11 @@ export function useTimelineViewport(clock: PlaybackClock) {
     changeZoom,
     onScroll: () => {
       if (ref.current)
-        setViewport({
-          left: ref.current.scrollLeft,
-          width: ref.current.clientWidth,
+        setViewport((old) => {
+          const el = ref.current!;
+          return old.left === el.scrollLeft && old.width === el.clientWidth
+            ? old
+            : { left: el.scrollLeft, width: el.clientWidth };
         });
     },
   };

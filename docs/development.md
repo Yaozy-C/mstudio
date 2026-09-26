@@ -32,6 +32,7 @@ sh scripts/dev.sh
 ```sh
 sh scripts/check.sh
 python3 scripts/test-mlt.py
+python3 scripts/test-native-player.py
 ```
 
 独立检查：
@@ -44,7 +45,7 @@ cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D war
 cargo test --manifest-path desktop/Cargo.toml --locked
 ```
 
-`test-mlt.py` 使用合成视频验证实际解码、叠加、不透明度、时长与变速音高。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
+`test-mlt.py` 使用合成视频验证实际解码、叠加、不透明度、时长与变速音高。`test-native-player.py` 在 macOS 使用真实 MLT 和 SDL dummy 音频设备，验证定位、暂停、连续定位、末尾重播以及后台回收后重开；不接触用户工程。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
 
 新代码建议拆分为不超过 300 行的模块。`scripts/source_size_baseline.json` 记录首次开源时已有的超长文件；检查禁止新增超长文件或扩大已有文件，重构时应降低或移除对应额度。
 

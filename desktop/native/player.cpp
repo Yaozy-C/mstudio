@@ -3,6 +3,7 @@
 #include <mlt++/Mlt.h>
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
@@ -17,7 +18,8 @@ struct Player {
     std::atomic<int> position{0};
     std::atomic<bool> playing{false}, ended{false};
     std::atomic<uint64_t> shown{0}, skipped{0};
-    std::atomic<int> last{-1};
+    std::atomic<int> last{-1}, target{-1};
+    std::mutex state;
     int total=0;
     ~Player() {
         if (consumer) {consumer->stop(); consumer.reset();}
@@ -31,7 +33,15 @@ void show(mlt_properties,void* opaque,mlt_event_data data) {
     auto* p=static_cast<Player*>(opaque);
     auto frame=mlt_event_data_to_frame(data);
     int position=mlt_frame_get_position(frame);
+    std::lock_guard<std::mutex> guard(p->state);
     if (p->ended) return;
+    // Buffered frames from before a seek must not move the clock backwards or
+    // mark a replay as ended before frames near its new position arrive.
+    int target=p->target.load();
+    if (target>=0) {
+        if (position<target || position>target+(p->playing?5:0)) return;
+        p->target=-1;
+    }
     int w=p->profile->width(),h=p->profile->height();
     auto format=mlt_image_rgba;
     uint8_t* pixels=nullptr;
@@ -41,7 +51,7 @@ void show(mlt_properties,void* opaque,mlt_event_data data) {
     }
     if (p->playing && p->last>=0 && position>p->last+1) p->skipped+=position-p->last-1;
     p->last=position;
-    p->position=position;
+    p->position=std::min(position,p->total-1);
     if (position>=p->total-1) {
         p->ended=true;
         p->playing=false;
@@ -103,27 +113,53 @@ extern "C" void studio_player_rect(double x,double y,double w,double h,int visib
 }
 extern "C" void studio_player_play(int playing) {
     if(!player)return;
-    player->consumer->stop();
-    int position=player->position;
-    if(playing && position>=player->total-1)position=0;
-    player->producer->seek(position);
-    player->producer->set_speed(playing?1:0);
-    player->last=-1;
-    player->ended=false;
-    player->playing=playing!=0;
-    if(playing)player->consumer->start();
+    {
+        std::lock_guard<std::mutex> guard(player->state);
+        if (player->playing == (playing != 0)) return;
+        int position=player->position;
+        if(playing && position>=player->total-1)position=0;
+        player->target=position;
+        player->position=position;
+        player->last=-1;
+        player->ended=false;
+        player->playing=playing!=0;
+        player->producer->set_speed(playing?1:0);
+        player->producer->seek(position);
+    }
+    player->consumer->purge();
+    // One paused frame may already be in flight; refresh both it and the new seek.
+    player->consumer->set("refresh",1);
+    player->consumer->set("refresh",1);
 }
 extern "C" void studio_player_seek(int frame) {
     if(!player)return;
-    player->consumer->stop();
-    frame=std::clamp(frame,0,std::max(0,player->total-1));
-    player->producer->seek(frame);
-    player->position=frame;
-    player->last=-1;
-    player->ended=false;
-    player->producer->set_speed(player->playing?1:0);
-    player->consumer->start();
+    {
+        std::lock_guard<std::mutex> guard(player->state);
+        frame=std::clamp(frame,0,std::max(0,player->total-1));
+        player->target=frame;
+        player->position=frame;
+        player->last=-1;
+        player->ended=false;
+        player->producer->set_speed(player->playing?1:0);
+        player->producer->seek(frame);
+    }
+    player->consumer->purge();
+    // One paused frame may already be in flight; refresh both it and the new seek.
     player->consumer->set("refresh",1);
+    player->consumer->set("refresh",1);
+}
+// Transfer exclusive ownership before stopping the SDL device off the UI thread.
+// Surface lifetime extends past all consumer callbacks and ends on the UI thread.
+extern "C" void* studio_player_retire() {
+    if (player && player->surface) surface_rect(player->surface,0,0,0,0,false);
+    return player.release();
+}
+extern "C" void studio_player_stop_retired(void* handle) {
+    auto* p=static_cast<Player*>(handle);
+    if (p && p->consumer) p->consumer->stop();
+}
+extern "C" void studio_player_destroy_retired(void* handle) {
+    delete static_cast<Player*>(handle);
 }
 extern "C" void studio_player_close() { player.reset(); }
 extern "C" void studio_player_status(int* frame,int* playing,int* total,uint64_t* shown,uint64_t* skipped) {

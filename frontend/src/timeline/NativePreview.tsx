@@ -5,6 +5,8 @@ import type { Project } from "../model";
 import type { PlaybackClock } from "./clock";
 import { prepareCaptions } from "../creation/prepareCaptions";
 import { ClockReadout } from "./ClockReadout";
+import { previewSpec } from "./previewSpec";
+import { PreviewCommands } from "./previewCommands";
 import { ErrorNotice } from "../errors/ErrorNotice";
 type Status = {
   frame: number;
@@ -25,14 +27,20 @@ export function NativePreview({
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
-  const spec = JSON.stringify({
-    width: project.width,
-    height: project.height,
-    fps: project.fps,
-    clips: project.clips,
-    tracks: project.tracks,
-    captions: project.captions ?? [],
+  const requestedSpec = previewSpec(project);
+  const [settled, setSettled] = useState({
+    id: project.id,
+    spec: requestedSpec,
   });
+  const spec = settled.id === project.id ? settled.spec : requestedSpec;
+  // Keep editing responsive; rebuild once after a burst of property changes.
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setSettled({ id: project.id, spec: requestedSpec }),
+      120,
+    );
+    return () => clearTimeout(timer);
+  }, [requestedSpec, project.id]);
   useEffect(
     () => clock.subscribe(() => setPlaying(clock.getSnapshot().playing)),
     [clock],
@@ -40,7 +48,6 @@ export function NativePreview({
   useEffect(() => {
     const token = crypto.randomUUID();
     const doc = JSON.parse(spec);
-    const initialTime = clock.getSnapshot().time;
     let alive = true,
       opened = false,
       polling = false;
@@ -48,23 +55,18 @@ export function NativePreview({
     let pendingRect = 0;
     let observer: ResizeObserver | undefined;
     let mutations: MutationObserver | undefined;
-    let commands = Promise.resolve();
+
     const fail = (e: unknown) => {
       if (alive) {
         setError(String(e));
         clock.acceptTransportState(clock.getSnapshot().time, false);
       }
     };
-    const command = (action: string, frame?: number) => {
-      // Preserve seek/play ordering, especially when replaying from the end.
-      commands = commands
-        .then(() =>
-          alive && opened
-            ? bridge<void>("native_preview_control", { token, action, frame })
-            : undefined,
-        )
-        .catch(fail);
-    };
+    const commands = new PreviewCommands(async ({ action, frame }) => {
+      if (alive && opened)
+        await bridge<void>("native_preview_control", { token, action, frame });
+    }, fail);
+    const command = commands.push;
     const detach = clock.attachTransport({
       play: () => command("play"),
       pause: () => command("pause"),
@@ -125,7 +127,7 @@ export function NativePreview({
         return;
       }
       opened = true;
-      command("seek", Math.round(initialTime * doc.fps));
+      command("seek", Math.round(clock.getSnapshot().time * doc.fps));
       clock.ready = true;
       setReady(true);
       rect();
@@ -137,11 +139,12 @@ export function NativePreview({
       window.addEventListener("scroll", scheduleRect, true);
       document.addEventListener("visibilitychange", scheduleRect);
       timer = setInterval(async () => {
-        if (polling || !alive) return;
+        if (polling || !alive || commands.busy) return;
+        const revision = commands.revision;
         polling = true;
         try {
           const s = await bridge<Status>("native_preview_status", { token });
-          if (alive) {
+          if (alive && revision === commands.revision && !commands.busy) {
             clock.acceptTransportState(
               !s.playing && s.frame >= s.total - 1
                 ? clock.total
@@ -159,6 +162,7 @@ export function NativePreview({
     void load().catch(fail);
     return () => {
       alive = false;
+      commands.clear();
       clock.ready = true;
       detach();
       clearInterval(timer);

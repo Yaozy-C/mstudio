@@ -19,7 +19,9 @@ unsafe extern "C" {
     fn studio_player_rect(x: f64, y: f64, w: f64, h: f64, visible: i32);
     fn studio_player_play(playing: i32);
     fn studio_player_seek(frame: i32);
-    fn studio_player_close();
+    fn studio_player_retire() -> *mut c_void;
+    fn studio_player_stop_retired(handle: *mut c_void);
+    fn studio_player_destroy_retired(handle: *mut c_void);
     fn studio_player_status(
         frame: *mut i32,
         playing: *mut i32,
@@ -28,6 +30,7 @@ unsafe extern "C" {
         skipped: *mut u64,
     );
 }
+static LIFECYCLE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 static SESSION: OnceLock<Mutex<String>> = OnceLock::new();
 fn session() -> &'static Mutex<String> {
     SESSION.get_or_init(|| Mutex::new(String::new()))
@@ -44,6 +47,29 @@ async fn on_main<T: Send + 'static>(
         })
         .map_err(|e| e.to_string())?;
     rx.await.map_err(|e| e.to_string())?
+}
+// Only the owner detached on the UI thread is touched by the blocking worker.
+// Serialize retire/open so an old SDL shutdown cannot tear down a new device.
+async fn retire(window: WebviewWindow) -> Result<(), String> {
+    let handle = on_main(window.clone(), |_| {
+        Ok(unsafe { studio_player_retire() } as usize)
+    })
+    .await?;
+    if handle == 0 {
+        return Ok(());
+    }
+    tauri::async_runtime::spawn_blocking(move || unsafe {
+        studio_player_stop_retired(handle as *mut c_void);
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    on_main(window, move |_| {
+        unsafe {
+            studio_player_destroy_retired(handle as *mut c_void);
+        }
+        Ok(())
+    })
+    .await
 }
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -63,16 +89,11 @@ pub async fn native_preview_open(
     spec: RenderSpec,
 ) -> Result<(), String> {
     *session().lock().unwrap() = token.clone();
-    let opening_token = token.clone();
-    on_main(window.clone(), move |_| {
-        if *session().lock().unwrap() == opening_token {
-            unsafe {
-                studio_player_close();
-            }
-        }
-        Ok(())
-    })
-    .await?;
+    let _lifecycle = LIFECYCLE.lock().await;
+    if *session().lock().unwrap() != token {
+        return Err("预览请求已被替换".into());
+    }
+    retire(window.clone()).await?;
     let _guard = crate::project_storage::working(&app.state::<Store>(), &project_id)
         .await
         .map_err(|e| e.to_string())?;
@@ -139,6 +160,17 @@ pub async fn native_preview_control(
     action: String,
     frame: Option<i32>,
 ) -> Result<(), String> {
+    if action == "close" {
+        let _lifecycle = LIFECYCLE.lock().await;
+        {
+            let mut current = session().lock().unwrap();
+            if *current != token {
+                return Ok(());
+            }
+            current.clear();
+        }
+        return retire(window).await;
+    }
     on_main(window, move |_| {
         if *session().lock().unwrap() != token {
             return Ok(());
@@ -148,10 +180,6 @@ pub async fn native_preview_control(
                 "play" => studio_player_play(1),
                 "pause" => studio_player_play(0),
                 "seek" => studio_player_seek(frame.unwrap_or(0)),
-                "close" => {
-                    session().lock().unwrap().clear();
-                    studio_player_close();
-                }
                 _ => return Err("未知播放指令".into()),
             }
         }

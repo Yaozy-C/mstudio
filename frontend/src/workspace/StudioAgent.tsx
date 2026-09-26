@@ -39,6 +39,7 @@ export function StudioAgent({
     <DockPanel id="agent" title="项目助手" visible={visible} onClose={onClose}>
       <Suspense fallback={<div className="agent-empty">加载 Agent…</div>}>
         <AssistantPanel
+          visible={visible}
           canvas={canvas}
           project={project}
           nodeId={nodeId}

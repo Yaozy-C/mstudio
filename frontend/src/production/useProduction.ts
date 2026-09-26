@@ -33,7 +33,15 @@ export function useProduction(
   open: () => void,
   attachments: AttachmentDraft,
 ) {
-  const rawItems = useMemo(() => productionItems(project), [project]);
+  const rawItems = useMemo(
+    () => productionItems(project),
+    [
+      project.nodes,
+      project.assets,
+      project.production?.positions,
+      project.production?.hidden,
+    ],
+  );
   const { items, measure } = useCardLayout(rawItems, project);
   const [composerMode, setComposerMode] = useState<"agent" | "image" | "video">(
     "agent",

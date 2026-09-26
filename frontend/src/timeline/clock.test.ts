@@ -71,3 +71,29 @@ test("native transport owns time and replay sends one seek before play", () => {
     globalThis.cancelAnimationFrame = oldCancel;
   }
 });
+
+test("stationary clicks do not repeat native pause or seek", () => {
+  const cancel = globalThis.cancelAnimationFrame;
+  globalThis.cancelAnimationFrame = () => {};
+  try {
+    const clock = new PlaybackClock();
+    clock.configure(5, 30);
+    const calls: string[] = [];
+    clock.attachTransport({
+      play: () => calls.push("play"),
+      pause: () => calls.push("pause"),
+      seek: (t) => calls.push(`seek:${t}`),
+    });
+    clock.pause();
+    clock.seek(1);
+    clock.seek(1.001);
+    clock.pause();
+    expect(calls).toEqual(["seek:1"]);
+    clock.play();
+    clock.pause();
+    clock.pause();
+    expect(calls).toEqual(["seek:1", "play", "pause"]);
+  } finally {
+    globalThis.cancelAnimationFrame = cancel;
+  }
+});

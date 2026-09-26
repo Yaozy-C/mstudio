@@ -30,6 +30,7 @@ import { useAgentModel } from "../models/useAgentModel";
 import type { Attachment } from "./attachments";
 import type { AttachmentDraft } from "./useAttachments";
 type Props = {
+  visible?: boolean;
   canvas?: ProductionController;
   project: Project;
   nodeId: string | null;
@@ -114,6 +115,8 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     props.draft.clearSuggestion();
     input.current?.focus();
   }, [props.draft.suggestion, runtime]);
+  // Keep the agent runtime alive while its expensive message tree is hidden.
+  if (props.visible === false) return null;
   const attachments = taskAttachments(
     props.project,
     props.canvas?.task,

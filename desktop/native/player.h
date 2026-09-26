@@ -8,6 +8,9 @@ void studio_player_rect(double x,double y,double width,double height,int visible
 void studio_player_play(int playing);
 void studio_player_seek(int frame);
 void studio_player_close(void);
+void* studio_player_retire(void);
+void studio_player_stop_retired(void*);
+void studio_player_destroy_retired(void*);
 void studio_player_status(int* frame,int* playing,int* total,uint64_t* shown,uint64_t* skipped);
 #ifdef __cplusplus
 }

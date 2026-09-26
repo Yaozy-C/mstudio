@@ -66,11 +66,10 @@ export class PlaybackClock {
       0,
       Math.min(this.total, Math.round(time * this.fps) / this.fps),
     );
+    if (value === this.state.time) return;
     this.seekRevision++;
     this.transport?.seek(value);
-    const same = value === this.state.time;
     this.publish(value);
-    if (same) this.listeners.forEach((fn) => fn());
     this.previous = performance.now();
   };
   step = (frames: number) => {
@@ -102,7 +101,7 @@ export class PlaybackClock {
   };
   pause = () => {
     cancelAnimationFrame(this.frame);
-    this.transport?.pause();
+    if (this.state.playing) this.transport?.pause();
     this.publish(this.state.time, false);
   };
   toggle = () => {
