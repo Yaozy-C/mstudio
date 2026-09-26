@@ -12,6 +12,7 @@ import { Playhead } from "./ClockReadout";
 import { useTimelineViewport } from "./useTimelineViewport";
 import { TimelineClip } from "./TimelineClip";
 type Props = {
+  onCaption?: () => void;
   onOpen: (id: string) => void;
   onPlay: () => void;
   project: Project;
@@ -34,6 +35,7 @@ export const Timeline = memo(function Timeline({
   onSplit,
   onCollapse,
   onReference,
+  onCaption,
 }: Props) {
   const { ref, labels, zoom, viewport, changeZoom, onScroll } =
     useTimelineViewport(clock);
@@ -190,6 +192,7 @@ export const Timeline = memo(function Timeline({
                     <TimelineClip
                       key={e.clip.id}
                       entry={e}
+                      projectId={project.id}
                       asset={assets.get(e.clip.assetId)}
                       zoom={zoom}
                       fps={project.fps}
@@ -238,7 +241,8 @@ export const Timeline = memo(function Timeline({
                       clock.pause();
                       clock.seek(c.start);
                     }}
-                    title={c.text}
+                    onDoubleClick={onCaption}
+                    title={`${c.text} · 双击编辑字幕`}
                   >
                     {c.text}
                   </button>

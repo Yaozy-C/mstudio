@@ -105,7 +105,13 @@ pub fn render(
             let scale = c.scale.unwrap_or(1.);
             let w = ((spec.width as f64 * scale / 2.).round() as u32 * 2).max(2);
             let h = ((spec.height as f64 * scale / 2.).round() as u32 * 2).max(2);
-            graph.push(format!("[{i}:v]setpts=(PTS-STARTPTS)/{},fps={},scale={w}:{h}:force_original_aspect_ratio=decrease,setsar=1,format=rgba,colorchannelmixer=aa={},setpts=PTS+{start}/TB[v{i}]", c.speed,spec.fps,c.opacity.unwrap_or(1.)));
+            let filters = crate::visual::ffmpeg(c.visual.as_ref(), w as i64, h as i64);
+            let filters = if filters.is_empty() {
+                filters
+            } else {
+                format!("{filters},")
+            };
+            graph.push(format!("[{i}:v]setpts=(PTS-STARTPTS)/{},fps={},scale={w}:{h}:force_original_aspect_ratio=decrease,setsar=1,{filters}format=rgba,colorchannelmixer=aa={},setpts=PTS+{start}/TB[v{i}]", c.speed,spec.fps,c.opacity.unwrap_or(1.)));
             layers.push((order,i,format!("overlay=x=W*{}-w/2:y=H*{}-h/2:eof_action=pass:repeatlast=0:enable='gte(t,{start})*lt(t,{end})'",c.x.unwrap_or(0.5),c.y.unwrap_or(0.5))));
         }
         if a.has_audio && !t.muted && c.volume > 0. {

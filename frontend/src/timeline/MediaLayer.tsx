@@ -1,4 +1,5 @@
 import { memo, useLayoutEffect, useMemo, useRef } from "react";
+import { visualCss } from "./visualCss";
 import { mediaUrl } from "../bridge";
 import { MissingAsset } from "../workspace/MissingAsset";
 import type { Asset, Track } from "../model";
@@ -76,6 +77,7 @@ export const MediaLayer = memo(function MediaLayer({
   const c = entry.clip;
   const visual = track.kind === "video" && !track.hidden;
   const style = {
+    ...visualCss(c.visual),
     left: `${(c.x ?? 0.5) * 100}%`,
     top: `${(c.y ?? 0.5) * 100}%`,
     width: `${(c.scale ?? 1) * 100}%`,

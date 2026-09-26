@@ -13,7 +13,15 @@ export type Asset = {
   height: number;
   hasAudio: boolean;
 };
+export type Visual = {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  temperature: number;
+  effect: "none" | "grayscale" | "sepia" | "blur" | "vignette";
+};
 export type Clip = {
+  visual?: Visual;
   id: string;
   assetId: string;
   trimIn: number;
@@ -39,6 +47,12 @@ export type Track = {
   hidden?: boolean;
 };
 export type Caption = {
+  font?: "sans" | "serif" | "mono";
+  color?: string;
+  fontSize?: number;
+  x?: number;
+  y?: number;
+  background?: boolean;
   id: string;
   start: number;
   end: number;

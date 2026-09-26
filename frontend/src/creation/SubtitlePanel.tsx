@@ -1,3 +1,4 @@
+import { CaptionStyleFields } from "./CaptionStyleFields";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useRef, useState } from "react";
 import { bridge } from "../bridge";
@@ -142,6 +143,12 @@ export function SubtitlePanel({
             rows={2}
             value={c.text}
             onChange={(e) => patch(c.id, { text: e.target.value })}
+          />
+          <CaptionStyleFields
+            caption={c}
+            width={project.width}
+            height={project.height}
+            patch={(fields) => patch(c.id, fields)}
           />
           {!validCaption(c) && (
             <small className="error">

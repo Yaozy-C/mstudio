@@ -175,7 +175,7 @@ const BrowserPreview = memo(function BrowserPreview({
               <img
                 key={c.id}
                 className="caption-overlay"
-                src={captionImage(c.text, project.width, project.height)}
+                src={captionImage(c, project.width, project.height)}
                 alt={c.text}
               />
             ))}

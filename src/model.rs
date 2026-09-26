@@ -20,6 +20,8 @@ pub struct Asset {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Clip {
+    #[serde(default)]
+    pub visual: Option<crate::visual::Visual>,
     pub id: String,
     pub asset_id: String,
     pub trim_in: f64,
@@ -40,6 +42,9 @@ impl Clip {
         (self.trim_out - self.trim_in) / self.speed
     }
     pub fn validate(&self, asset: &Asset) -> anyhow::Result<()> {
+        if let Some(v) = &self.visual {
+            v.validate()?;
+        }
         anyhow::ensure!(
             self.trim_in.is_finite()
                 && self.trim_out.is_finite()

@@ -55,6 +55,7 @@ export function Studio({ initial, onBack }: StudioProps) {
     return () => window.removeEventListener("studio-show-script", show);
   }, []);
   const togglePanel = (key: keyof typeof panels) => {
+    if (key === "agent" || key === "inspector") setCreationTab(null);
     if (key === "inspector" && nodeId && !clipId) setEditing(nodeId);
     else setPanels((p) => toggleStudioPanel(p, key));
   };
@@ -150,7 +151,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   }, [settingsOpen, clock]);
   const sidebarWidths = useSidebarWidths({
     ...panels,
-    agent: panels.agent || panels.inspector,
+    agent: panels.agent || panels.inspector || !!creationTab,
   });
   const editNode = project.nodes.find((n) => n.id === editing);
   return (
@@ -159,7 +160,7 @@ export function Studio({ initial, onBack }: StudioProps) {
         hidden={settingsOpen}
         style={sidebarWidths.style}
         data-media={panels.media}
-        data-agent={panels.agent || panels.inspector}
+        data-agent={panels.agent || panels.inspector || !!creationTab}
         className={`studio-shell ${panels.timeline && activeView === "film" ? "" : "timeline-hidden"}`}
       >
         <StudioChrome
@@ -229,7 +230,7 @@ export function Studio({ initial, onBack }: StudioProps) {
             busy={busy}
           />
         )}
-        {panels.inspector && (
+        {panels.inspector && !creationTab && (
           <StudioInspector
             project={project}
             clipId={clipId}
@@ -244,7 +245,7 @@ export function Studio({ initial, onBack }: StudioProps) {
           clipId={clipId}
           clock={clock}
           draft={attachments}
-          visible={panels.agent && !panels.inspector}
+          visible={panels.agent && !panels.inspector && !creationTab}
           flush={m.flush}
           work={activeView === "script" ? scriptContext : { view: activeView }}
           onSettings={() => setDialog("models")}
@@ -273,7 +274,9 @@ export function Studio({ initial, onBack }: StudioProps) {
             split={split}
             play={play}
             toggle={() => togglePanel("timeline")}
+            captions={() => setCreationTab("captions")}
             select={(id, inspect) => {
+              if (id) setCreationTab(null);
               clock.pause();
               setClipId(id);
               setNodeId(null);

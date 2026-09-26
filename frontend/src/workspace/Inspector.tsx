@@ -1,3 +1,4 @@
+import { VisualFields } from "../timeline/VisualFields";
 import { detachAudio } from "../timeline/detachAudio";
 import type { Project, Clip } from "../model";
 import { ClipFields } from "../timeline/ClipFields";
@@ -61,6 +62,8 @@ export function Inspector({ project, clipId, onChange }: Props) {
               />
             </section>
           )}
+          {project.tracks.find((t) => t.id === clip.trackId)?.kind ===
+            "video" && <VisualFields clip={clip} update={updateClip} />}
           {asset?.hasAudio && (
             <section className="inspector-section">
               <h3>声音</h3>

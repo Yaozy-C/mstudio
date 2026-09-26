@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FloatingPanel } from "../ui/FloatingPanel";
+import { DockPanel } from "../ui/DockPanel";
 import { type Project } from "../model";
 import type { PlaybackClock } from "../timeline/clock";
 import { SpeechPanel } from "./SpeechPanel";
@@ -19,12 +19,7 @@ export function CreationPanel({
 }) {
   const [tab, setTab] = useState(initialTab);
   return (
-    <FloatingPanel
-      id="creation"
-      title="制作台"
-      initial={{ x: 320, y: 136, width: 360, height: 460 }}
-      onClose={onClose}
-    >
+    <DockPanel id="creation" title="字幕与配音" onClose={onClose}>
       <div className="creation-tabs">
         {[
           ["captions", "字幕"],
@@ -45,6 +40,6 @@ export function CreationPanel({
       {tab === "voice" && (
         <SpeechPanel project={project} change={change} clock={clock} />
       )}
-    </FloatingPanel>
+    </DockPanel>
   );
 }

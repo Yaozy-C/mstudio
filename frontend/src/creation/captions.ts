@@ -1,18 +1,28 @@
 import { uid, type Caption } from "../model";
+import { captionFonts, captionKey } from "./captionStyle";
 const images = new Map<string, string>();
 /** Identical raster used by preview and native export; no platform subtitle-font mismatch. */
-export function captionImage(text: string, width: number, height: number) {
-  const key = `${width}x${height}:${text}`;
+export function captionImage(
+  input: string | Caption,
+  width: number,
+  height: number,
+) {
+  const caption: Caption =
+    typeof input === "string"
+      ? { id: "", start: 0, end: 1, text: input }
+      : input;
+  const text = caption.text;
+  const key = `${width}x${height}:${captionKey(caption)}`;
   const cached = images.get(key);
   if (cached) return cached;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d")!;
-  let size = Math.round(Math.min(width, height) * 0.048),
+  let size = Math.round(Math.min(width, height) * (caption.fontSize ?? 0.048)),
     lines: string[] = [];
   const wrap = () => {
-    ctx.font = `600 ${size}px -apple-system, BlinkMacSystemFont, sans-serif`;
+    ctx.font = `600 ${size}px ${captionFonts[caption.font ?? "sans"].family}`;
     lines = [];
     let line = "";
     for (const ch of text) {
@@ -32,7 +42,20 @@ export function captionImage(text: string, width: number, height: number) {
     wrap();
   }
   const lineHeight = size * 1.35,
-    y = height * 0.89 - lines.length * lineHeight;
+    blockHeight = lines.length * lineHeight,
+    y = Math.max(
+      size * 0.2,
+      Math.min(
+        height - blockHeight - size * 0.2,
+        caption.y === undefined
+          ? height * 0.89 - blockHeight
+          : height * caption.y - blockHeight / 2,
+      ),
+    );
+  const x = Math.max(
+    width * 0.07,
+    Math.min(width * 0.93, width * (caption.x ?? 0.5)),
+  );
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const boxWidth = Math.min(
@@ -40,14 +63,17 @@ export function captionImage(text: string, width: number, height: number) {
     Math.max(0, ...lines.map((l) => ctx.measureText(l).width)) + size,
   );
   ctx.fillStyle = "rgba(0,0,0,.65)";
-  ctx.fillRect(
-    (width - boxWidth) / 2,
-    y - size * 0.2,
-    boxWidth,
-    lines.length * lineHeight + size * 0.4,
-  );
-  ctx.fillStyle = "#fff";
-  lines.forEach((l, i) => ctx.fillText(l, width / 2, y + i * lineHeight));
+  if (caption.background !== false)
+    ctx.fillRect(
+      x - boxWidth / 2,
+      y - size * 0.2,
+      boxWidth,
+      lines.length * lineHeight + size * 0.4,
+    );
+  ctx.fillStyle = caption.color ?? "#ffffff";
+  ctx.shadowColor = "rgba(0,0,0,.8)";
+  ctx.shadowBlur = caption.background === false ? size * 0.08 : 0;
+  lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
   const url = canvas.toDataURL("image/png");
   if (images.size >= 32) images.delete(images.keys().next().value!);
   images.set(key, url);
@@ -61,7 +87,14 @@ export function validCaption(c: Caption) {
     c.end > c.start &&
     c.end <= 86400 &&
     c.text.trim().length > 0 &&
-    c.text.length <= 1000
+    c.text.length <= 1000 &&
+    (c.font === undefined || c.font in captionFonts) &&
+    (c.color === undefined || /^#[0-9a-f]{6}$/i.test(c.color)) &&
+    [c.x, c.y].every(
+      (v) => v === undefined || (Number.isFinite(v) && v >= 0 && v <= 1),
+    ) &&
+    (c.fontSize === undefined ||
+      (Number.isFinite(c.fontSize) && c.fontSize >= 0.02 && c.fontSize <= 0.12))
   );
 }
 const parseTime = (s: string) => {

@@ -11,3 +11,5 @@ pub mod text_asset;
 pub mod preview_mlt;
 
 pub mod preview_audio;
+
+pub mod visual;

@@ -13,7 +13,9 @@ export function StudioTimeline({
   toggle,
   select,
   reference,
+  captions,
 }: {
+  captions: () => void;
   project: Project;
   clock: PlaybackClock;
   visible: boolean;
@@ -37,6 +39,7 @@ export function StudioTimeline({
       onOpen={(id) => select(id, true)}
       onSelect={(id) => select(id, false)}
       onReference={reference}
+      onCaption={captions}
     />
   ) : (
     <button className="timeline-collapsed" onClick={toggle}>

@@ -20,6 +20,7 @@ mod project_storage;
 mod projects;
 mod reference_commands;
 mod storage;
+mod waveform;
 use tauri::{Emitter, Manager};
 #[tauri::command]
 fn finish_exit(app: tauri::AppHandle) {
@@ -41,6 +42,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             finish_exit,
+            waveform::audio_waveform,
             native_preview::native_preview_open,
             native_preview::native_preview_control,
             native_preview::native_preview_rect,

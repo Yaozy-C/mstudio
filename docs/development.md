@@ -34,6 +34,7 @@ sh scripts/check.sh
 python3 scripts/test-mlt.py
 python3 scripts/test-native-player.py
 python3 scripts/test-detached-audio.py
+python3 scripts/test-visual-effects.py
 ```
 
 独立检查：
@@ -47,6 +48,10 @@ cargo test --manifest-path desktop/Cargo.toml --locked
 ```
 
 `test-mlt.py` 使用合成视频验证实际解码、叠加、不透明度、时长与变速音高。`test-detached-audio.py` 对比原速及变速片段分离前后的实际 PCM，验证音量、起点和静音行为。`test-native-player.py` 在 macOS 使用真实 MLT 和 SDL dummy 音频设备，验证定位、暂停、连续定位、末尾重播以及后台回收后重开；不接触用户工程。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
+
+`test-visual-effects.py` 使用合成素材验证黑白、复古、柔焦、暗角和调色的原生预览与 FFmpeg 导出，比较实际输出像素。音轨波形在后台按素材采样并缓存，裁切、变速和时间线缩放复用缓存。
+
+双击视频片段，在右侧「调色与特效」选择效果或调整亮度、对比度、饱和度、色温。「创作 → 字幕 / 配音」可选择字幕字体、颜色、字号和底色；拖动位置示意框中的文字调整成片位置。字幕样式随项目保存，并烘焙到导出视频；SRT 仅保存文字与时间。
 
 新代码建议拆分为不超过 300 行的模块。`scripts/source_size_baseline.json` 记录首次开源时已有的超长文件；检查禁止新增超长文件或扩大已有文件，重构时应降低或移除对应额度。
 

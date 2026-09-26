@@ -1,3 +1,4 @@
+import { Waveform } from "./Waveform";
 import { stretchClip } from "./stretchClip";
 import { detachAudio } from "./detachAudio";
 import { ObjectMenu } from "../ui/ObjectMenu";
@@ -9,6 +10,7 @@ import { MissingAsset } from "../workspace/MissingAsset";
 import type { IndexedClip } from "./geometry";
 export function TimelineClip({
   entry,
+  projectId,
   asset,
   zoom,
   fps,
@@ -21,6 +23,7 @@ export function TimelineClip({
   onChange,
 }: {
   entry: IndexedClip;
+  projectId: string;
   asset?: Asset;
   zoom: number;
   fps: number;
@@ -141,6 +144,9 @@ export function TimelineClip({
           {duration(clip).toFixed(2)}s
           {clip.speed !== 1 ? ` · ${Number(clip.speed.toFixed(2))}×` : ""}
         </small>
+        {audio && asset?.hasAudio && !asset.missing && (
+          <Waveform asset={asset} clip={clip} projectId={projectId} />
+        )}
         {(["left", "right"] as const).map((side) => (
           <span
             key={side}
