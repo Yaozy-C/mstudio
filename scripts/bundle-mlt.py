@@ -30,12 +30,21 @@ while queue:
     file=queue.pop()
     if file in seen: continue
     seen.add(file)
+    # sdl2-compat dlopens SDL3 by name; it is absent from otool's dependency list.
+    if file.name.startswith('libSDL2') and b'libSDL3.dylib' in file.read_bytes():
+        libdir=Path(subprocess.check_output(['pkg-config','--variable=libdir','sdl3'],text=True).strip())
+        src=libdir/'libSDL3.dylib'
+        if not src.is_file(): raise SystemExit(f'SDL2 compatibility runtime requires {src}')
+        dst=out/'lib/libSDL3.dylib'
+        shutil.copy2(src,dst,follow_symlinks=True)
+        dst.chmod(dst.stat().st_mode | 0o200)
+        queue.append(dst)
     deps=subprocess.check_output(['otool','-L',str(file)],text=True).splitlines()[1:]
     for line in deps:
         dep=line.strip().split(' (')[0]
         if not dep.startswith('/opt/') and not dep.startswith(str(sdk)): continue
         src=Path(dep);dst=out/'lib'/src.name
-        if not dst.exists(): shutil.copy2(src,dst);dst.chmod(dst.stat().st_mode | 0o200);queue.append(dst)
+        if dst not in seen and dst not in queue: shutil.copy2(src,dst);dst.chmod(dst.stat().st_mode | 0o200);queue.append(dst)
         replacement=('@loader_path/../' if file.parent.name=='mlt' else '@loader_path/')+src.name
         subprocess.run(['install_name_tool','-change',dep,replacement,str(file)],check=True,stderr=subprocess.PIPE)
     if file.suffix=='.dylib':

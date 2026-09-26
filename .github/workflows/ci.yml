@@ -43,6 +43,7 @@ jobs:
         run: |
           python3 scripts/build-mlt.py
           python3 scripts/bundle-mlt.py
+          python3 scripts/test-bundled-audio.py
       - name: Verify native media composition
         run: python3 scripts/test-mlt.py
       - name: Check source, formatting, builds and tests
