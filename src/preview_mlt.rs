@@ -103,7 +103,9 @@ pub fn graph(spec: &RenderSpec, assets: &[Asset]) -> Result<String> {
         out += &prop("eof", "pause");
         out += &prop("length", end + 1);
         out += &prop("threads", 2);
-        if t.muted || !a.has_audio {
+        // A zero-gain stream must be excluded, not left as an unmixed silent input.
+        let audible = a.has_audio && !t.muted && c.volume > 0.;
+        if !audible {
             out += &prop("audio_index", -1);
         }
         if t.kind == "audio" || t.hidden {
@@ -131,14 +133,14 @@ pub fn graph(spec: &RenderSpec, assets: &[Asset]) -> Result<String> {
         }
         out += &format!("<entry producer=\"p{id}\" in=\"{trim}\" out=\"{end}\"/></playlist>");
         let hide = if t.kind == "audio" || t.hidden {
-            if t.muted { "both" } else { "video" }
-        } else if t.muted || !a.has_audio {
+            if audible { "video" } else { "both" }
+        } else if !audible {
             "audio"
         } else {
             "none"
         };
         track_xml += &format!("<track producer=\"list{id}\" hide=\"{hide}\"/>");
-        if a.has_audio && !t.muted && c.volume > 0. {
+        if audible {
             transitions += &format!(
                 "<transition>{}{}{}{}{}</transition>",
                 prop("mlt_service", "mix"),
@@ -268,6 +270,19 @@ mod tests {
         let text = graph(&s, &a).unwrap();
         assert!(text.contains("hide=\"audio\""));
         assert!(text.contains("name=\"mlt_service\">affine"));
+        assert!(!text.contains("name=\"mlt_service\">mix"));
+    }
+    #[test]
+    fn zero_gain_does_not_override_other_audio_tracks() {
+        let (mut s, a) = fixture();
+        s.clips[0].volume = 0.;
+        let text = graph(&s, &a).unwrap();
+        assert!(text.contains("hide=\"audio\""));
+        assert!(text.contains("name=\"mlt_service\">affine"));
+        s.tracks[0].kind = "audio".into();
+        let text = graph(&s, &a).unwrap();
+        assert!(text.contains("hide=\"both\""));
+        assert!(text.contains("name=\"audio_index\">-1"));
         assert!(!text.contains("name=\"mlt_service\">mix"));
     }
     #[test]
