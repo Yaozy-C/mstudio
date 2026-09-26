@@ -2,7 +2,7 @@
 
 ## 环境
 
-- macOS，Xcode Command Line Tools，Rust 1.97.0（由 `rust-toolchain.toml` 固定，Rust 2024 edition）。
+- macOS，Xcode Command Line Tools，Rust 1.97.1（由 `rust-toolchain.toml` 固定，Rust 2024 edition）。
 - Bun：前端开发及测试；提交 `frontend/bun.lock`，安装时使用 `--frozen-lockfile`。
 - Python 3.12+、CMake、pkg-config，以及 FFmpeg、SDL2、libxml2 开发库。
 - `ffmpeg` 和 `ffprobe` 必须在 PATH 中，渲染测试使用合成媒体，不需要个人样片。

@@ -16,7 +16,7 @@
 
 ## 从源码运行（macOS）
 
-安装 Rust 1.97.0（由 `rust-toolchain.toml` 固定）、Bun、Python 3.12+ 和 Xcode Command Line Tools。原生依赖可通过 Homebrew 安装：
+安装 Rust 1.97.1（由 `rust-toolchain.toml` 固定）、Bun、Python 3.12+ 和 Xcode Command Line Tools。原生依赖可通过 Homebrew 安装：
 
 ```sh
 xcode-select --install
