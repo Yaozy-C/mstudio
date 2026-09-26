@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Real decoder/compositor smoke test, isolated from user projects."""
 from pathlib import Path
-import subprocess, tempfile, json, os
+import subprocess, tempfile, json, os, sys
 root=Path(__file__).resolve().parents[1]
 sdk=Path(os.environ.get('MLT_SDK',root/'desktop/native/runtime'))
 with tempfile.TemporaryDirectory(prefix='mstudio-mlt-') as folder:
     work=Path(folder)
-    def run(args,**kwargs):return subprocess.run(args,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,**kwargs)
+    def run(args,**kwargs):
+        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+        if result.returncode:
+            sys.stderr.write(result.stderr.decode(errors='replace'))
+            sys.stderr.write(result.stdout.decode(errors='replace'))
+            result.check_returncode()
+        return result
     for color in ['red','blue']:
         run(['ffmpeg','-v','error','-y','-f','lavfi','-i',f'color={color}:s=320x240:r=30:d=4','-f','lavfi','-i','sine=frequency=440:duration=4','-c:v','libx264','-preset','ultrafast','-c:a','aac','-shortest',str(work/f'{color}.mp4')])
     assets=[dict(id=c,name=c,kind='video',path=str(work/f'{c}.mp4'),preview='',duration=4,width=320,height=240,hasAudio=True) for c in ['red','blue']]
