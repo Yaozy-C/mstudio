@@ -1,3 +1,4 @@
+import { CaptionTrack } from "./CaptionTrack";
 import { trackRows } from "./trackRows";
 import { TrackHeading } from "./TrackHeading";
 import { TimelineToolbar } from "./TimelineToolbar";
@@ -222,32 +223,9 @@ export const Timeline = memo(function Timeline({
                 )}
               </div>
             ))}
-            <div className="caption-track">
-              {(project.captions ?? [])
-                .filter(
-                  (c) =>
-                    c.end * zoom >= viewport.left &&
-                    c.start * zoom <= viewport.left + viewport.width,
-                )
-                .map((c) => (
-                  <button
-                    key={c.id}
-                    className="caption-chip"
-                    style={{
-                      left: c.start * zoom,
-                      width: (c.end - c.start) * zoom,
-                    }}
-                    onClick={() => {
-                      clock.pause();
-                      clock.seek(c.start);
-                    }}
-                    onDoubleClick={onCaption}
-                    title={`${c.text} · 双击编辑字幕`}
-                  >
-                    {c.text}
-                  </button>
-                ))}
-            </div>
+            <CaptionTrack
+              {...{ project, clock, zoom, viewport, onChange, onCaption }}
+            />
             <Playhead clock={clock} zoom={zoom} />
           </div>
         </div>
