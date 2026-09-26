@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory(prefix='mstudio-mlt-') as folder:
     xml=run(['cargo','run','--quiet','--example','mlt_graph',str(fixture),str(work/'audio-cache')],cwd=root).stdout
     graph=work/'graph.mlt';graph.write_bytes(xml)
     env=dict(os.environ,MLT_DATA=str(sdk/'share/mlt'),MLT_REPOSITORY=str(sdk/'lib/mlt'))
-    result=run([str(sdk/'bin/melt'),str(graph),'-consumer',f'avformat:{work}/result.mp4','vcodec=libx264','acodec=aac','real_time=-1','preset=ultrafast'],env=env)
+    result=run([str(sdk/'bin/melt'),'-repository',str(sdk/'lib/mlt'),str(graph),'-consumer',f'avformat:{work}/result.mp4','vcodec=libx264','acodec=aac','real_time=-1','preset=ultrafast'],env=env)
     assert b'failed to load' not in result.stderr,result.stderr.decode()
     meta=json.loads(run(['ffprobe','-v','error','-show_entries','format=duration','-of','json',str(work/'result.mp4')]).stdout)
     assert abs(float(meta['format']['duration'])-3)<0.1
