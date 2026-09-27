@@ -1,3 +1,4 @@
+import { patchVisual } from "../timeline/visualSettings";
 import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
 import { saveTask } from "../production/document";
 import { creativeExtras } from "../creative/operations";
@@ -44,12 +45,15 @@ function clipPatch(clip: Clip, op: Operation, p: Project) {
     ),
   };
   if (op.trackId !== undefined) next.trackId = string(op.trackId, 100);
+  if (op.visual !== undefined)
+    next.visual = patchVisual(clip.visual, op.visual);
   const asset = p.assets.find((a) => a.id === next.assetId);
   const track = tracksOf(p).find((t) => t.id === next.trackId);
   if (
     !asset ||
     !track ||
     !validateClip(next, asset) ||
+    (op.visual !== undefined && track.kind !== "video") ||
     (track.kind === "video" ? asset.kind === "audio" : !asset.hasAudio)
   )
     throw new Error("片段参数或轨道无效");

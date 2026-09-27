@@ -29,6 +29,13 @@ pub fn schema() -> Value {
             .push(json!(name));
     }
     let properties = operation["properties"].as_object_mut().unwrap();
+    properties.insert("visual".into(), json!({"type":["object","null"],"description":"update_clip 的非破坏式调色；只覆盖指定参数，保留其余效果；null 清除。由本地 FFmpeg 滤镜执行并同步到 MLT 预览与成片导出，不是生成新视频。参数是绝对值。","additionalProperties":false,"properties":{
+        "brightness":{"type":"number","minimum":-0.5,"maximum":0.5,"description":"亮度，默认0，FFmpeg eq"},
+        "contrast":{"type":"number","minimum":0.5,"maximum":1.5,"description":"对比度，默认1，FFmpeg eq"},
+        "saturation":{"type":"number","minimum":0,"maximum":2,"description":"饱和度，默认1，FFmpeg eq"},
+        "temperature":{"type":"number","minimum":-1,"maximum":1,"description":"冷暖，默认0，负冷正暖，FFmpeg colorbalance"},
+        "effect":{"type":"string","enum":["none","grayscale","sepia","blur","vignette"],"description":"单个特效；调色时保留现有效果，除非用户要求改变"}
+    }}));
     for name in ["start", "end", "scale", "opacity", "fadeIn", "fadeOut"] {
         properties.insert(name.into(), json!({"type":"number"}));
     }

@@ -1,3 +1,4 @@
+import { useColorComparison } from "./useColorComparison";
 import { NativePreview } from "./NativePreview";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -16,7 +17,12 @@ import { native } from "../bridge";
 import { useAudioMix } from "./useAudioMix";
 import { MixPlayer } from "./MixPlayer";
 export function Preview(props: { project: Project; clock: PlaybackClock }) {
-  return native ? <NativePreview {...props} /> : <BrowserPreview {...props} />;
+  const project = useColorComparison(props.project);
+  return native ? (
+    <NativePreview {...props} project={project} />
+  ) : (
+    <BrowserPreview {...props} project={project} />
+  );
 }
 const BrowserPreview = memo(function BrowserPreview({
   project,

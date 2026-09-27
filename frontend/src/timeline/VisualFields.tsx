@@ -1,11 +1,6 @@
 import type { Clip, Visual } from "../model";
-export const defaultVisual: Visual = {
-  brightness: 0,
-  contrast: 1,
-  saturation: 1,
-  temperature: 0,
-  effect: "none",
-};
+import { defaultVisual } from "./visualSettings";
+export { defaultVisual } from "./visualSettings";
 export function VisualFields({
   clip,
   update,
@@ -19,7 +14,7 @@ export function VisualFields({
   return (
     <section className="inspector-section">
       <div className="inline">
-        <h3>调色与特效</h3>
+        <h3>手动微调</h3>
         <button onClick={() => update({ ...clip, visual: undefined })}>
           重置画面效果
         </button>

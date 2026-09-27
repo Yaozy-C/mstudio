@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ColorRequest } from "../timeline/ColorRequest";
 import { VisualFields } from "../timeline/VisualFields";
 import { detachAudio } from "../timeline/detachAudio";
 import type { Project, Clip } from "../model";
@@ -9,8 +11,13 @@ type Props = {
   onChange: (fn: (p: Project) => Project) => void;
 };
 export function Inspector({ project, clipId, onChange }: Props) {
+  const [tab, setTab] = useState("visual");
   const clip = project.clips.find((c) => c.id === clipId);
   const asset = project.assets.find((a) => a.id === clip?.assetId);
+  const video =
+    project.tracks.find((t) => t.id === clip?.trackId)?.kind === "video";
+  const activeTab =
+    !video && (tab === "visual" || tab === "color") ? "audio" : tab;
   const updateClip = (updated: Clip) =>
     onChange((p) => ({
       ...p,
@@ -23,7 +30,33 @@ export function Inspector({ project, clipId, onChange }: Props) {
           <h4 className="inspector-asset" title={asset?.name}>
             {asset?.name}
           </h4>
-          {asset?.hasAudio &&
+          <div
+            className="inspector-tabs"
+            role="group"
+            aria-label="片段编辑分类"
+          >
+            {[
+              ["visual", "画面"],
+              ["color", "调色"],
+              ["audio", "声音"],
+              ["time", "时间"],
+            ]
+              .filter(
+                ([key]) =>
+                  key === "time" || (key === "audio" ? asset?.hasAudio : video),
+              )
+              .map(([key, label]) => (
+                <button
+                  key={key}
+                  aria-pressed={activeTab === key}
+                  onClick={() => setTab(key)}
+                >
+                  {label}
+                </button>
+              ))}
+          </div>
+          {activeTab === "audio" &&
+            asset?.hasAudio &&
             asset.kind === "video" &&
             project.tracks.find((t) => t.id === clip.trackId)?.kind ===
               "video" && (
@@ -34,37 +67,44 @@ export function Inspector({ project, clipId, onChange }: Props) {
                 分离音频
               </button>
             )}
-          <section className="inspector-section">
-            <h3>时间与轨道</h3>
-            <PlacementFields
-              section="time"
-              clip={clip}
-              project={project}
-              update={updateClip}
-            />
-            <ClipFields
-              section="time"
-              clip={clip}
-              assetDuration={asset?.duration || 0}
-              image={asset?.kind === "image"}
-              onUpdate={updateClip}
-            />
-          </section>
-          {project.tracks.find((t) => t.id === clip.trackId)?.kind ===
-            "video" && (
+          {activeTab === "time" && (
             <section className="inspector-section">
-              <h3>画面</h3>
+              <h3>时间与轨道</h3>
               <PlacementFields
-                section="visual"
+                section="time"
                 clip={clip}
                 project={project}
                 update={updateClip}
               />
+              <ClipFields
+                section="time"
+                clip={clip}
+                assetDuration={asset?.duration || 0}
+                image={asset?.kind === "image"}
+                onUpdate={updateClip}
+              />
             </section>
           )}
-          {project.tracks.find((t) => t.id === clip.trackId)?.kind ===
-            "video" && <VisualFields clip={clip} update={updateClip} />}
-          {asset?.hasAudio && (
+          {activeTab === "visual" &&
+            project.tracks.find((t) => t.id === clip.trackId)?.kind ===
+              "video" && (
+              <section className="inspector-section">
+                <h3>画面</h3>
+                <PlacementFields
+                  section="visual"
+                  clip={clip}
+                  project={project}
+                  update={updateClip}
+                />
+              </section>
+            )}
+          {activeTab === "color" && video && (
+            <>
+              <ColorRequest key={clip.id} clip={clip} />
+              <VisualFields clip={clip} update={updateClip} />
+            </>
+          )}
+          {activeTab === "audio" && asset?.hasAudio && (
             <section className="inspector-section">
               <h3>声音</h3>
               <ClipFields

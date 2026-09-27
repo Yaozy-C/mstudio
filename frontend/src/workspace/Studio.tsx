@@ -91,7 +91,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   );
   useCreativeEvents({
     assist: () => {
-      setPanels((p) => ({ ...p, agent: true }));
+      setPanels((p) => ({ ...p, agent: true, inspector: false }));
       setEditing(null);
       setDialog(null);
     },
@@ -239,6 +239,7 @@ export function Studio({ initial, onBack }: StudioProps) {
           />
         )}
         <StudioAgent
+          onInspect={() => togglePanel("inspector")}
           canvas={canvas}
           project={project}
           nodeId={nodeId}

@@ -22,6 +22,7 @@ export function StudioAgent({
   work,
   onSettings,
   onClose,
+  onInspect,
 }: {
   canvas?: ProductionController;
   project: Project;
@@ -34,9 +35,22 @@ export function StudioAgent({
   work?: WorkContext;
   onSettings: () => void;
   onClose: () => void;
+  onInspect: () => void;
 }) {
   return (
     <DockPanel id="agent" title="项目助手" visible={visible} onClose={onClose}>
+      {visible && clipId && (
+        <div className="agent-clip-context">
+          <span>
+            当前片段 ·{" "}
+            {project.assets.find(
+              (a) =>
+                a.id === project.clips.find((c) => c.id === clipId)?.assetId,
+            )?.name ?? "视频"}
+          </span>
+          <button onClick={onInspect}>返回片段属性</button>
+        </div>
+      )}
       <Suspense fallback={<div className="agent-empty">加载 Agent…</div>}>
         <AssistantPanel
           visible={visible}

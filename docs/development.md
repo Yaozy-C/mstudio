@@ -74,3 +74,9 @@ sh scripts/bundle.sh
 ## Windows 状态
 
 原生 HWND 播放表面已有源码，但尚未完成 Windows 编译、安装器、DPI、声画同步与退出流程的实机验证。需要匹配的 MSVC MLT SDK，配置 `MLT_SDK` 后运行 `scripts/bundle-mlt.py`，使用生成的 `desktop/native/windows-resources.json` 作为 Tauri 附加配置。根目录 `.command` 和 shell 启动入口面向 macOS。
+
+## Agent 调色与属性栏
+
+选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持引用素材的输入类型。Agent 通过 `update_clip.visual` 合并结构化调色参数，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期 revision。它复用 FFmpeg/MLT 渲染，不执行模型提供的任意命令。
+
+「对比原片」仅临时移除当前片段的预览调色；退出调色页后恢复，不写入项目，也不改变导出。Agent 对话中保留选中片段与返回属性入口。
