@@ -81,3 +81,44 @@ test("Agent starts an empty project with ordinary cards and revises one without 
   expect(revised.creation).toEqual(drafted.creation);
   expect(revised.assets).toHaveLength(0);
 });
+
+test("reorders and inserts shots atomically, validating only the final order", () => {
+  const p = applyOperations(newProject("Reorder"), 0, [
+    { op: "add_node", id: "plan", kind: "plan", title: "Plan" },
+    ...Array.from({ length: 7 }, (_, i) => ({
+      op: "add_node",
+      id: `s${i + 1}`,
+      kind: "shot",
+      title: `Shot ${i + 1}`,
+      shot: { planId: "plan", order: i + 1, duration: 2 },
+    })),
+  ]);
+  const next = applyOperations(p, 0, [
+    {
+      op: "add_node",
+      id: "cta",
+      kind: "shot",
+      title: "CTA",
+      shot: { planId: "plan", order: 7, duration: 1.5 },
+    },
+    ...[4, 5, 6, 7].map((i) => ({
+      op: "update_node",
+      id: `s${i}`,
+      shot: { order: i === 4 ? 8 : i - 1 },
+    })),
+  ]);
+  expect(
+    next.nodes
+      .filter((n) => n.shot)
+      .map((n) => n.shot!.order)
+      .sort(),
+  ).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  expect(next.nodes.find((n) => n.id === "s4")?.shot?.order).toBe(8);
+  expect(p.nodes.find((n) => n.id === "s4")?.shot?.order).toBe(4);
+  expect(() =>
+    applyOperations(p, 0, [
+      { op: "update_node", id: "s4", shot: { order: 7 } },
+    ]),
+  ).toThrow("相同顺序");
+  expect(p.nodes).toHaveLength(8);
+});

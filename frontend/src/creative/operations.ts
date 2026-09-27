@@ -78,15 +78,6 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
       duration > 3600
     )
       throw new Error("镜头顺序或时长无效");
-    if (
-      p.nodes.some(
-        (n) =>
-          n.id !== node.id &&
-          n.shot?.planId === planId &&
-          n.shot.order === order,
-      )
-    )
-      throw new Error("方案中已有相同顺序的镜头");
     node = {
       ...node,
       shot: {
@@ -134,4 +125,15 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
     node = addShotResult({ ...p, nodes: [node] }, asset, node.id).nodes[0];
   }
   return node;
+}
+
+// Order is a batch invariant: swaps may temporarily occupy the same slot.
+export function validateShotOrder(p: Project) {
+  const seen = new Set<string>();
+  for (const node of p.nodes) {
+    if (!node.shot) continue;
+    const key = `${node.shot.planId}:${node.shot.order}`;
+    if (seen.has(key)) throw new Error("方案中已有相同顺序的镜头");
+    seen.add(key);
+  }
 }

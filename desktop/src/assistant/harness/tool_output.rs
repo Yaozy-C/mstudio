@@ -16,6 +16,10 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     // Never turn an applied edit or a real error into a synthetic failure.
     for key in [
         "ok",
+        "stopReason",
+        "agentId",
+        "childId",
+        "status",
         "applied",
         "revision",
         "code",

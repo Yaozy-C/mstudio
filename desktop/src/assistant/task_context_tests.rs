@@ -11,7 +11,7 @@ fn scope(id: &str, agent: &str, targets: &[&str]) -> Scope {
     }
 }
 #[test]
-fn follows_same_task_but_isolates_role_and_changed_targets() {
+fn follows_same_task_across_views_and_targets_but_isolates_roles() {
     let old = scope("a", "color", &["clip:1"]);
     assert_eq!(
         choose(
@@ -24,18 +24,17 @@ fn follows_same_task_but_isolates_role_and_changed_targets() {
         ),
         old
     );
-    assert_eq!(
-        choose(
-            Some(old.clone()),
-            "color",
-            "b",
-            vec!["clip:2".into()],
-            "film".into(),
-            false
-        )
-        .task_id,
-        "b"
+    let continued = choose(
+        Some(old.clone()),
+        "color",
+        "b",
+        vec!["clip:2".into()],
+        "storyboard".into(),
+        false,
     );
+    assert_eq!(continued.task_id, "a");
+    assert_eq!(continued.targets, vec!["clip:2"]);
+    assert_eq!(continued.view, "storyboard");
     assert_eq!(
         choose(
             Some(old.clone()),

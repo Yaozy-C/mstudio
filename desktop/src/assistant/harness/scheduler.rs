@@ -80,6 +80,9 @@ async fn group(
             if let Err(error) = result {
                 failure.get_or_insert(error);
             } else {
+                session
+                    .edit_progress
+                    .observe(&call.function.name, &canonical);
                 session.messages.push(message);
             }
             committed += 1;

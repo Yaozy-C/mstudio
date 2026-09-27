@@ -44,3 +44,4 @@ pub use budget::compact_manual;
 pub(crate) use budget::tokens as estimate_message;
 pub use driver::run;
 pub use registry::ProjectHost;
+mod progress;

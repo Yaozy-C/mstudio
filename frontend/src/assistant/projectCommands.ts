@@ -2,7 +2,7 @@ import { setTransition } from "../timeline/transitions";
 import { patchVisual } from "../timeline/visualSettings";
 import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
 import { saveTask } from "../production/document";
-import { creativeExtras } from "../creative/operations";
+import { creativeExtras, validateShotOrder } from "../creative/operations";
 import { assemblePlan, chooseTake } from "../creative/timeline";
 import { appendAsset, tracksOf, validateClip } from "../timeline/document";
 import { creationOperation, nodeExtras } from "./creationOperations";
@@ -231,6 +231,7 @@ export function applyOperations(
     }
   }
   if (next.nodes.length > 5000) throw new Error("节点数量超过上限");
+  validateShotOrder(next);
   return next;
 }
 export { inspectProject } from "./inspectProject";

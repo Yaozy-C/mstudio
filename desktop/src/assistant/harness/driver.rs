@@ -57,7 +57,8 @@ pub async fn run_until(
             return Ok(session.text);
         }
     }
-    Err("本轮已达到 16 个执行步骤；已完成操作保留，可继续下一轮".into())
+    host.record("model/stop", json!({"stopReason":"step-limit"}))?;
+    Err("本轮达到执行步数上限；已完成操作保留，剩余任务需继续处理".into())
 }
 async fn step(
     model: &impl CompletionModel,
@@ -146,6 +147,10 @@ async fn step(
         return Ok(true);
     }
     scheduler::execute(host, session, &calls).await?;
+    if let Some(error) = session.edit_progress.stalled() {
+        host.record("model/stop", json!({"stopReason":"no-progress"}))?;
+        return Err(error);
+    }
     if !session.text.is_empty() && !session.text.ends_with("\n\n") {
         session.publish(host, "\n\n")?;
     }

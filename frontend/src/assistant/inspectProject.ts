@@ -10,7 +10,19 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   const offset = offsetOf(args.offset),
     textOffset = offsetOf(args.textOffset);
   const ids = Array.isArray(args.nodeIds) ? args.nodeIds.slice(0, 12) : [];
-  const fields = Array.isArray(args.fields) ? args.fields : ["plan"];
+  const explicit = Array.isArray(args.fields);
+  const fields = explicit
+    ? (args.fields as string[])
+    : [
+        "plan",
+        "text",
+        "title",
+        "shot",
+        "shots",
+        "dialogue",
+        "assetId",
+        "resultAssetId",
+      ];
   const wants = (field: string) => fields.includes(field);
   const revision = p.revision ?? 0;
   const detailLimit = ids.length === 1 || args.taskKey ? 4000 : 1000;
@@ -125,10 +137,15 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       .map((n) => ({
         id: n.id,
         kind: n.kind,
-        title: n.title.slice(0, 80),
-        ...snippet(n.text, detailLimit),
-        assetId: n.assetId,
-        resultAssetId: n.resultAssetId,
+        title: wants("title") ? n.title.slice(0, 80) : undefined,
+        ...(wants("text") ? snippet(n.text, detailLimit) : {}),
+        assetId: wants("assetId") ? n.assetId : undefined,
+        resultAssetId: wants("resultAssetId") ? n.resultAssetId : undefined,
+        omittedFields: explicit
+          ? ["title", "text", "shot", "plan", "references"].filter(
+              (f) => !wants(f),
+            )
+          : undefined,
         plan:
           wants("plan") && n.plan
             ? {
@@ -150,11 +167,19 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
               }
             : undefined,
         shot: n.shot && {
-          planId: n.shot.planId,
-          scriptId: n.shot.scriptId,
-          scriptChanged: scriptChanged(p, n),
-          order: n.shot.order,
-          duration: n.shot.duration,
+          ...(wants("shot")
+            ? {
+                planId: n.shot.planId,
+                scriptId: n.shot.scriptId,
+                scriptChanged: scriptChanged(p, n),
+              }
+            : {}),
+          order:
+            wants("shot") || wants("shot.order") ? n.shot.order : undefined,
+          duration:
+            wants("shot") || wants("shot.duration") || wants("duration")
+              ? n.shot.duration
+              : undefined,
           frames: wants("frames")
             ? framesOf(n)
                 .slice(offset, offset + 5)
@@ -167,12 +192,13 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
           framePrompt: wants("framePrompt")
             ? snippet(n.shot.framePrompt ?? "", detailLimit)
             : undefined,
-          visualChanged: n.shot.visualChanged,
-          dialogue: snippet(n.shot.dialogue),
+          visualChanged: wants("shot") ? n.shot.visualChanged : undefined,
+          dialogue: wants("dialogue") ? snippet(n.shot.dialogue) : undefined,
           prompt: wants("prompt")
             ? snippet(n.shot.prompt ?? "", detailLimit)
             : undefined,
-          promptStale: promptStale(p, n),
+          promptStale:
+            wants("shot") || wants("prompt") ? promptStale(p, n) : undefined,
           takes: wants("takes")
             ? n.shot.takes
                 ?.slice(offset, offset + 5)
@@ -180,7 +206,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
             : undefined,
         },
         shots:
-          n.kind === "plan"
+          wants("shots") && n.kind === "plan"
             ? p.nodes
                 .filter((s) => s.shot?.planId === n.id)
                 .sort((a, b) => a.shot!.order - b.shot!.order)
@@ -193,6 +219,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
                 }))
             : undefined,
         nextShotOffset:
+          wants("shots") &&
           n.kind === "plan" &&
           p.nodes.filter((s) => s.shot?.planId === n.id).length > offset + 10
             ? offset + 10

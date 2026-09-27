@@ -86,7 +86,7 @@ pub fn schema() -> Value {
       "path":{"type":"string","description":"相对 skill 根目录的 Markdown 路径，默认 SKILL.md；支持链接到其他已启用技能"},
       "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect 按需读取的内容区，省略为精简工程摘要"},
       "revision":{"type":"integer","description":"inspect 返回的最新工程 revision；edit 必填"},
-      "fields":{"type":"array","items":{"type":"string","enum":["plan","framePrompt","prompt","frames","takes","references","assetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden"]},"description":"仅返回选中的大字段；空数组仅取镜头动作、时长等基础结构。整组镜头请一次批量读取"},
+      "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","plan","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden"]},"description":"nodeIds：fields 只返回选定字段，id/kind 始终返回。shot 为基础结构，shot.order/shot.duration 仅取顺序/时长；shots 为方案镜头目录，text 为动作。省略 fields 返回常用内容，整组镜头批量读取"},
       "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions：按精确 ID 读取；fields 选择返回字段"},
       "nodeIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect: 批量读取最多 12 个节点；建议配合 fields 选择字段，文字按 textOffset 分页"},
       "taskId":{"type":"string","description":"history：按 taskScope.taskId 筛选任务历史"},

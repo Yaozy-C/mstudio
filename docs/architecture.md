@@ -31,7 +31,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 所有内置和自定义角色共用 `assistant/task_context.rs`、`harness/session_selection.rs` 和工具执行管线。完整聊天与工具原文保存在 SQLite；模型读取任务范围内的投影。
 
-- 消息 attribution 保存任务 ID、角色、引用对象、工作区及原始要求。同角色同对象或无新对象的后续消息继续任务；对象或工作区变化开启新任务。对话顶部的“新任务”显式另起任务，不删除聊天或共享约束。程序不靠关键词猜话题变化。
+- 消息 attribution 保存任务 ID、角色、引用对象、工作区及原始要求。同角色的后续消息继续任务；对象或工作区变化只更新当前操作上下文。对话顶部的“新任务”显式另起任务，不删除聊天或共享约束。程序不靠关键词猜话题变化。
 - 会话恢复按项目、角色、任务及模型路由匹配；重试沿用原任务和已提交操作。缺少任务上下文的记录不支持重试，需重新发起任务；重置会阻止恢复旧任务。
 - 没有可恢复会话时，仅读取同任务最近六个已完成轮次，按 turn ID 配对。首轮可选上下文预算为模型预算与 12,000 估算 tokens 的较小值；当前用户输入及必要规则不会为了达标而静默删除。恢复会话继续使用已有压缩机制。
 - 保留共享项目约束、格式、版本和对象数量；指定目标后省略无关节点目录。`inspect` 支持 `ids/nodeIds/fields`，返回缺失对象、已省略字段和分页信息。约束截断时通过 `section=creation` 补读；`history` 支持按 `taskId` 查询。
@@ -42,3 +42,5 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 测试覆盖角色/任务隔离、连续修改、新任务重试、重置、共享约束、字段读取、Unicode 回读和跨项目拒绝。此次优化不改变原始媒体附件策略，也不承诺固定比例的 token 节省。
 
 参考：[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)、[Deep Agents](https://www.langchain.com/blog/context-management-for-deepagents)。
+
+编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。工程编辑版本忽略画布视口、卡片位置与尺寸变化，内容修改仍使用严格版本检查。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。同一子任务连续三次修改遇到相同错误会停止重复尝试，读取操作不会清零计数，成功修改才清零；16 步上限保留，以 `step-limit` 返回给统筹。

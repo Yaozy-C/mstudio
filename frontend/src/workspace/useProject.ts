@@ -1,4 +1,5 @@
 import { normalizeAudioTrackNames } from "./normalizeAudioTrackNames";
+import { contentChanged } from "./projectRevision";
 import { materializeFrameCards } from "../production/frameCards";
 import { flushPendingEdits } from "./pendingEdits";
 import { registerExitSave } from "./useSafeExit";
@@ -36,9 +37,12 @@ export function useProject(initial: Project) {
       const previous = latest.current;
       const value = fn(previous);
       if (value === previous) return;
+      const materialized = materializeFrameCards(value);
       const next = {
-        ...materializeFrameCards(value),
-        revision: (previous.revision || 0) + 1,
+        ...materialized,
+        revision:
+          (previous.revision || 0) +
+          Number(contentChanged(previous, materialized)),
       };
       latest.current = next;
       autosave.update(next);

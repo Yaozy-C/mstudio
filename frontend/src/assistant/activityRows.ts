@@ -31,7 +31,12 @@ export function activityRows(events: ActivityEvent[]) {
     callId?: string;
     name?: string;
     arguments?: { action?: string; operations?: { op: string }[] };
-    result?: { error?: string; status?: string; generationTasks?: unknown[] };
+    result?: {
+      error?: string;
+      status?: string;
+      stopReason?: string;
+      generationTasks?: unknown[];
+    };
   };
   return events
     .filter((e) => e.kind === "tool/call")
@@ -57,11 +62,23 @@ export function activityRows(events: ActivityEvent[]) {
               ),
             ].join("、") || "修改项目"
           : (actions[action ?? ""] ?? "执行操作");
+      const limited =
+        action === "delegate" && result?.result?.stopReason === "step-limit";
+      const completed = events.some(
+        (v) =>
+          v.kind === "turn/end" &&
+          (v.payload as { status?: string }).status === "completed",
+      );
       return {
         id: e.seq,
         title,
-        error: !!result?.result?.error,
+        error: !!result?.result?.error && !limited,
         detail:
+          (limited
+            ? completed
+              ? "此次委派达到步数上限；统筹后续已完成本轮任务"
+              : "专业 Agent 达到步数上限，已完成的修改保留，待统筹处理"
+            : undefined) ??
           result?.result?.error ??
           (!result
             ? "执行中"

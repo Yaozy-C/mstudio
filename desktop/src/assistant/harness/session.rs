@@ -5,6 +5,7 @@ use rig_core::message::{AssistantContent, Message, ToolCall, ToolResultContent, 
 use serde_json::{Value, json};
 
 pub struct Session {
+    pub edit_progress: super::progress::EditProgress,
     pub messages: Vec<Message>,
     pub text: String,
     pub usage_anchor: Option<super::budget::UsageAnchor>,
@@ -12,6 +13,7 @@ pub struct Session {
 impl Session {
     pub fn new(messages: Vec<Message>) -> Self {
         Self {
+            edit_progress: Default::default(),
             messages,
             text: String::new(),
             usage_anchor: None,

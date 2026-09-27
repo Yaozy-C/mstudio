@@ -1,16 +1,16 @@
 import type { Project } from "../model";
+import { contentChanged } from "./projectRevision";
 export function restoreProject(snapshot: Project, current: Project): Project {
   const drafts = { ...snapshot.production?.drafts };
   for (const [key, task] of Object.entries(current.production?.drafts ?? {})) {
     if (task.turnId) drafts[key] = task;
   }
-  return {
+  const restored = {
     ...snapshot,
-    revision: (current.revision || 0) + 1,
     production: {
       ...snapshot.production,
       models: current.production?.models,
-      drafts,
+      drafts: Object.keys(drafts).length ? drafts : snapshot.production?.drafts,
     },
     assets: [
       ...snapshot.assets,
@@ -22,5 +22,10 @@ export function restoreProject(snapshot: Project, current: Project): Project {
         snapshot.assets.some((s) => s.id === a.id) ||
         !snapshot.removedAssetIds?.includes(a.id),
     ),
+  };
+  return {
+    ...restored,
+    revision:
+      (current.revision || 0) + Number(contentChanged(current, restored)),
   };
 }

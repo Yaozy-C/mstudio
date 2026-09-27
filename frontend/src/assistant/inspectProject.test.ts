@@ -81,7 +81,10 @@ test("targeted reads keep local context without unrelated pagination and can fin
       },
     })),
   ]);
-  const first = inspectProject(p, { nodeIds: ["s0"], fields: ["prompt"] });
+  const first = inspectProject(p, {
+    nodeIds: ["s0"],
+    fields: ["prompt", "text", "shot"],
+  });
   expect(first.details).toHaveLength(1);
   expect(first.brief).toBeUndefined();
   expect(first.tracks).toEqual([]);
@@ -91,7 +94,7 @@ test("targeted reads keep local context without unrelated pagination and can fin
   const next = first.details?.[0].nextTextOffset;
   expect(next).toBe(4000);
   const second = inspectProject(p, { nodeIds: ["s0"], textOffset: next });
-  expect(first.details![0].text + second.details![0].text).toBe(text);
+  expect(first.details![0].text! + second.details![0].text!).toBe(text);
   expect(second.details?.[0].nextTextOffset).toBeNull();
   const overview = inspectProject(p, {});
   expect(overview.nextOffset).toBe(10);
@@ -128,4 +131,47 @@ test("exact clip reads exclude other targets and expose omitted fields", () => {
   expect(result.missingIds).toEqual(["missing"]);
   const full = inspectProject(p, { section: "clips", ids: ["b"] });
   expect(full.items).toEqual([p.clips[1]]);
+});
+
+test("shot ordering reads exclude long text and scripts, with explicit fields", () => {
+  const p = applyOperations(newProject("Fields"), 0, [
+    {
+      op: "add_node",
+      id: "plan",
+      kind: "plan",
+      title: "Plan",
+      text: "unrelated".repeat(1000),
+    },
+    {
+      op: "add_node",
+      id: "shot",
+      kind: "shot",
+      title: "Thermal",
+      text: "long action".repeat(1000),
+      shot: {
+        planId: "plan",
+        order: 1,
+        duration: 2,
+        dialogue: "long speech".repeat(400),
+      },
+    },
+  ]);
+  const result = inspectProject(p, {
+    nodeIds: ["shot"],
+    fields: ["title", "shot.order", "shot.duration"],
+  });
+  expect(result.details?.[0].title).toBe("Thermal");
+  expect(result.details?.[0].shot?.order).toBe(1);
+  expect(result.details?.[0].shot?.duration).toBe(2);
+  expect(result.details?.[0].text).toBeUndefined();
+  expect(result.details?.[0].shot?.dialogue).toBeUndefined();
+  expect(JSON.stringify(result).length).toBeLessThan(1000);
+  const plan = inspectProject(p, { nodeIds: ["plan"], fields: ["shots"] });
+  expect(plan.details?.[0].shots).toEqual([
+    { id: "shot", title: "Thermal", order: 1, duration: 2 },
+  ]);
+  expect(plan.details?.[0].plan).toBeUndefined();
+  expect(
+    inspectProject(p, { nodeIds: ["shot"] }).details?.[0].text,
+  ).toBeDefined();
 });

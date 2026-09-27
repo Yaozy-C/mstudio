@@ -68,3 +68,42 @@ test("delegation return and media task creation do not claim generation completi
     expect(rows[0].detail).toBe(expected);
   }
 });
+
+test("a limited child run is shown as recovered only when its parent completes", () => {
+  const events = [
+    {
+      seq: 1,
+      created: 1,
+      kind: "tool/call",
+      payload: { callId: "a", name: "mstudio_delegate" },
+    },
+    {
+      seq: 2,
+      created: 2,
+      kind: "tool/result",
+      payload: {
+        callId: "a",
+        result: { error: "limit", stopReason: "step-limit" },
+      },
+    },
+  ];
+  expect(activityRows(events)[0].error).toBe(false);
+  expect(activityRows(events)[0].detail).toContain("待统筹处理");
+  expect(
+    activityRows([
+      ...events,
+      {
+        seq: 3,
+        created: 3,
+        kind: "turn/end",
+        payload: { status: "completed" },
+      },
+    ])[0].detail,
+  ).toContain("已完成本轮任务");
+  expect(
+    activityRows([
+      ...events,
+      { seq: 3, created: 3, kind: "turn/end", payload: { status: "failed" } },
+    ])[0].detail,
+  ).toContain("待统筹处理");
+});

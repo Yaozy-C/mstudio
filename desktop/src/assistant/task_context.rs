@@ -83,11 +83,13 @@ fn choose(
     new_task: bool,
 ) -> Scope {
     if !new_task
-        && let Some(prior) = prior
+        && let Some(mut prior) = prior
         && prior.agent_id == agent
-        && prior.view == view
-        && (targets.is_empty() || targets == prior.targets)
     {
+        prior.view = view;
+        if !targets.is_empty() {
+            prior.targets = targets;
+        }
         return prior;
     }
     Scope {
