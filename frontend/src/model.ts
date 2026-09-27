@@ -14,6 +14,7 @@ export type Asset = {
   hasAudio: boolean;
 };
 export type Visual = {
+  grade?: import("./timeline/grading").Grade;
   brightness: number;
   contrast: number;
   saturation: number;

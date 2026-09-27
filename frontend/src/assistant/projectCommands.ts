@@ -1,4 +1,5 @@
 import { setTransition } from "../timeline/transitions";
+import { agentTimelineEdit } from "../timeline/agentEdits";
 import { patchVisual } from "../timeline/visualSettings";
 import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
 import { saveTask } from "../production/document";
@@ -81,6 +82,11 @@ export function applyOperations(
       throw new Error("操作格式无效");
     const op = value as Operation;
     switch (op.op) {
+      case "move_clip":
+      case "retime_clip":
+      case "slip_clip":
+        next = agentTimelineEdit(next, op);
+        break;
       case "add_node": {
         const id = string(op.id, 80),
           kind = string(op.kind, 20) as BoardNode["kind"];
@@ -210,6 +216,7 @@ export function applyOperations(
           string(op.id, 80),
           op.kind,
           op.duration,
+          op.design,
         );
         break;
       }

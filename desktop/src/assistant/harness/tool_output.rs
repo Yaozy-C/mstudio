@@ -6,6 +6,23 @@ use tauri::Manager;
 const LIMIT: usize = 6000;
 
 pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
+    // Bounded editing pages/receipts must not immediately require another read-result call.
+    let limit = if (call.function.name == "mstudio_inspect"
+        && matches!(
+            call.function.arguments["section"].as_str(),
+            Some("clips" | "assets" | "tracks" | "captions")
+        ))
+        || (call.function.name == "mstudio_edit" && value.get("savedClips").is_some())
+        || (call.function.name == "mstudio_delegate"
+            && value["changes"].as_array().is_some_and(|changes| {
+                changes
+                    .iter()
+                    .any(|change| change["result"].get("savedClips").is_some())
+            })) {
+        14_000
+    } else {
+        LIMIT
+    };
     if value.get("__offloadedImage").is_some() {
         return json!({"ok":true,"imageId":value["imageId"]});
     }
@@ -13,7 +30,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         && value["answer"]
             .as_str()
             .is_some_and(|s| s.chars().count() > 600)
-        && value.to_string().chars().count() <= LIMIT
+        && value.to_string().chars().count() <= limit
     {
         let mut view = value.clone();
         view["answer"] = json!(
@@ -32,7 +49,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         );
         return view;
     }
-    if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= LIMIT {
+    if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= limit {
         return value.clone();
     }
     let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0); 当前任务内；跨任务时补充 turnId","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
@@ -50,6 +67,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         "warnings",
         "changed",
         "savedValues",
+        "savedClips",
         "operations",
         "nextOffset",
         "nextTextOffset",
@@ -122,6 +140,32 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
 mod tests {
     use super::*;
     use rig_core::message::ToolFunction;
+    #[test]
+    fn bounded_clip_page_is_delivered_without_a_second_model_read() {
+        let call = ToolCall::from_wire(
+            "clips",
+            ToolFunction {
+                name: "mstudio_inspect".into(),
+                arguments: json!({"section":"clips"}),
+            },
+        );
+        let value = json!({"items":[{"visual":"x".repeat(8000)}],"nextOffset":null});
+        assert_eq!(project(&call, &value, Some("t")), value);
+        let huge = json!({"items":"x".repeat(16000),"nextOffset":1});
+        assert_eq!(project(&call, &huge, Some("t"))["detailOffloaded"], true);
+        let delegate = ToolCall::from_wire(
+            "child",
+            ToolFunction {
+                name: "mstudio_delegate".into(),
+                arguments: json!({}),
+            },
+        );
+        let receipt = json!({"items":[{"id":"clip","values":"x".repeat(7000)}],"complete":true});
+        let delegated = json!({"answer":"a".repeat(900),"changes":[{"result":{"applied":true,"savedClips":receipt}}]});
+        let view = project(&delegate, &delegated, Some("t"));
+        assert_eq!(view["changes"][0]["result"]["savedClips"], receipt);
+        assert_eq!(view["answerTruncated"], true);
+    }
     #[test]
     fn large_success_and_errors_keep_identity_and_can_be_read_back() {
         let root = std::env::temp_dir().join(format!("mstudio-result-{}", mstudio::media::id()));

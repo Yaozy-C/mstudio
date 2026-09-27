@@ -40,6 +40,10 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
             content: vec![AssistantContent::ToolCall(tool)],
         },
         result,
+        Message::Assistant {
+            id: None,
+            content: vec![AssistantContent::text("images reviewed")],
+        },
         Message::user("new request"),
         Message::user("current attachment"),
     ];
@@ -233,7 +237,9 @@ fn parent_history_ignores_child_session_starts() {
         &[Message::user("child context")],
     )
     .unwrap();
-    let latest = session::latest(&store, "p", &binding).unwrap().unwrap();
+    let latest = super::super::session_selection::latest(&store, "p", &binding)
+        .unwrap()
+        .unwrap();
     assert!(
         serde_json::to_string(&latest)
             .unwrap()

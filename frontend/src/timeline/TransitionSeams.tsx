@@ -10,6 +10,8 @@ import {
   type Transition,
 } from "./transitions";
 import type { PlaybackClock } from "./clock";
+import { defaultDesign, type TransitionDesign } from "./transitionDesign";
+import { TransitionDesignFields } from "./TransitionDesignFields";
 import "../styles/transitions.css";
 export function TransitionSeams({
   project,
@@ -58,9 +60,19 @@ function Seam({
   function apply(
     kind: Transition["kind"] | null,
     seconds = value?.duration ?? Math.min(0.5, max),
+    design?: TransitionDesign,
   ) {
     try {
-      const next = setTransition(project, left.id, right.id, kind, seconds);
+      const next = setTransition(
+        project,
+        left.id,
+        right.id,
+        kind,
+        seconds,
+        kind === "custom"
+          ? (design ?? value?.design ?? defaultDesign())
+          : undefined,
+      );
       clock.pause();
       change(() => next);
       setError("");
@@ -126,6 +138,12 @@ function Seam({
             onChange={(e) => apply(value!.kind, +e.target.value)}
           />
         </label>
+        {value?.kind === "custom" && (
+          <TransitionDesignFields
+            design={value.design!}
+            change={(design) => apply("custom", value.duration, design)}
+          />
+        )}
         <p>
           {t(
             "保持剪辑、声音和字幕时间。优先使用切点外的素材余量，不足时延展边缘帧。",

@@ -112,7 +112,7 @@ pub fn graph(spec: &RenderSpec, assets: &[Asset]) -> Result<String> {
             out += &prop("video_index", -1);
         }
         if t.kind == "video" {
-            for (name, params) in crate::visual::filters(c.visual.as_ref(), w, h) {
+            for (name, params) in crate::visual::filters(c.visual.as_ref(), w, h)? {
                 out += &format!(
                     "<filter in=\"{trim}\" out=\"{end}\">{}",
                     prop("mlt_service", format!("avfilter.{name}"))

@@ -7,6 +7,24 @@ use rig_core::message::Message;
 use rusqlite::params;
 use serde_json::{Value, json};
 
+/// New user messages use the last completed question/answer, not the tool journal.
+/// Explicit recovery preserves exact provider messages and committed operation receipts.
+pub fn for_message(
+    store: &Store,
+    project: &str,
+    binding: &Value,
+    resume: Option<&str>,
+    compact: bool,
+) -> Result<Option<Vec<Message>>, String> {
+    if let Some(turn) = resume {
+        super::session::restore(store, project, turn, binding)
+    } else if compact {
+        latest(store, project, binding)
+    } else {
+        Ok(None)
+    }
+}
+
 pub fn bind_task(
     store: &Store,
     project: &str,

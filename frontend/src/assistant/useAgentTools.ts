@@ -1,4 +1,4 @@
-import { savedValues } from "./savedValues";
+import { savedValues, clipReceipt } from "./savedValues";
 import { scriptReceipt } from "./scriptReceipt";
 import { productionTurn, type ProductionTurn } from "../production/turnContext";
 import { runsOf } from "../production/requestTask";
@@ -49,6 +49,7 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
             if (payload.args.action === "inspect")
               result = inspectProject(m.get(), payload.args);
             else if (payload.args.action === "edit") {
+              const before = m.get();
               const generationTurnId =
                 payload.generation?.turnId ?? payload.turnId;
               const turn =
@@ -85,6 +86,7 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
               result = {
                 applied: true,
                 savedValues: savedValues(m.get(), payload.args.operations),
+                savedClips: clipReceipt(before, m.get()),
                 scripts: scriptReceipt(m.get(), payload.args.operations),
                 updatedTasks: ops
                   .filter((o) => o.op === "update_generation")

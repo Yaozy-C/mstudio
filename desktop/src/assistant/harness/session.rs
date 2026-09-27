@@ -5,6 +5,7 @@ use rig_core::message::{AssistantContent, Message, ToolCall, ToolResultContent, 
 use serde_json::{Value, json};
 
 pub struct Session {
+    pub delegation_outcomes: super::outcomes::Outcomes,
     pub edit_progress: super::progress::EditProgress,
     pub messages: Vec<Message>,
     pub text: String,
@@ -13,6 +14,7 @@ pub struct Session {
 impl Session {
     pub fn new(messages: Vec<Message>) -> Self {
         Self {
+            delegation_outcomes: super::outcomes::Outcomes::from_messages(&messages),
             edit_progress: Default::default(),
             messages,
             text: String::new(),
@@ -96,9 +98,18 @@ pub fn project_snapshot_text(message: &Message) -> Option<&str> {
         _ => None,
     })
 }
+/// Only a later assistant response proves that a batch reached the model.
+/// Keep the entire newest batch, including reopened images and injected context.
+pub(super) fn consumed_prefix(messages: &[Message]) -> usize {
+    messages
+        .iter()
+        .rposition(|m| matches!(m, Message::Assistant { .. }))
+        .unwrap_or(0)
+        .min(messages.len().saturating_sub(2))
+}
 pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usize, String> {
     let mut total = 0;
-    for index in 0..session.messages.len().saturating_sub(2) {
+    for index in 0..consumed_prefix(&session.messages) {
         let mut replacement = session.messages[index].clone();
         let mut changed = vec![];
         let mut offloads = vec![];
@@ -285,5 +296,3 @@ pub fn validate_resume(
     }
     Ok(())
 }
-
-pub use super::session_selection::latest;

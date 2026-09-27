@@ -15,7 +15,7 @@ pub struct ProjectHost {
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
         "inspect",
-        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。按返回偏移补读。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
+        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。列表每页最多12项并受大小限制；8镜等小组可一次读取，优先指定必要 fields，按 nextOffset 补读。互不依赖的读取同批调用。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
         &[
             "section",
             "ids",
@@ -53,12 +53,20 @@ impl ProjectHost {
         }
         let store = t.app.state::<crate::database::Store>();
         let _files = store.files.read().await;
-        super::image_read::read(
-            &store,
-            &t.project,
-            &self.media_profile,
-            &call.function.arguments,
-        )
+        let app = t.app.clone();
+        let project = t.project.clone();
+        let profile = self.media_profile.clone();
+        let args = call.function.arguments.clone();
+        tokio::task::spawn_blocking(move || {
+            super::image_read::read(
+                &app.state::<crate::database::Store>(),
+                &project,
+                &profile,
+                &args,
+            )
+        })
+        .await
+        .unwrap_or_else(|e| json!({"error":format!("读取媒体失败：{e}")}))
     }
 
     fn action<'a>(&self, name: &'a str) -> Option<&'a str> {
@@ -117,8 +125,8 @@ impl Host for ProjectHost {
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(ToolDefinition {
                 name: "mstudio_read_image".into(),
-                description: "读取当前项目真实图片像素（含刚生成的图片）。assetId 使用 inspect 的 assets、frames 或 generation 返回的真实素材 ID，不是任务 ID 或文件名。当前模型必须支持图片输入。".into(),
-                parameters: json!({"type":"object","properties":{"assetId":{"type":"string"}},"required":["assetId"],"additionalProperties":false}),
+                description: "读取真实图片或按 time 抽取视频帧，图片直接返回模型。assetId 使用 inspect 的真实素材 ID。视频 time 默认是源视频秒数；提供 clipId 则是片段内秒数，自动换算裁切/变速并应用当前调色，但不含转场、叠加轨和字幕。transition:true 配合后片段 clipId 时，time 改为转场开始后的秒数，返回实际转场合成（不含叠加轨、字幕或声音）。检查开头、中间、结尾及接缝两侧，不能把抽样称为看完整片。当前模型须支持图片输入。".into(),
+                parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
             });
             definitions.push(ToolDefinition {
                 name: "mstudio_reopen_image".into(),
@@ -192,7 +200,7 @@ impl Host for ProjectHost {
 }
 
 fn edit_description() -> String {
-    "按当前角色权限批量修改工程；revision 使用 inspect 返回值，操作原子保存且可撤销。只修改本轮目标，已有对象沿用 ID；add_node 必填 id/kind/title，shot 关联 planId；省略字段保留原值。update_node 更新卡片：plan.script 为脚本，镜头 text 为动作与摄影设计，shot.prompt 为视频草稿，shot.framePrompt/frames 为画格草稿与图片。修改已有生成任务用 update_generation(taskKey,text)，不顺带覆盖镜头草稿；已提交任务仅保存 nextPrompt，保留原请求和结果。仅改提示词不生成；明确要求重生成才用 regenerate_generation(taskKey)，沿用模型、输入与参数。request_generation 创建媒体任务，text 必须是完整模型提示词，程序不会追加脚本；references 明确素材 ID、用途与 role，省略时仅沿用本轮输入框引用，不自动补入工程素材。模型按用户选择，任务状态不等于生成完成或视觉通过。choose_take 选择素材，assemble_plan 编排镜头；时间线 start 为成片起点，trimIn/trimOut 为源区间，speed 为绝对倍速。失败按返回原因修正；状态不确定时先查目标，避免重复提交。创作方法与角色交接按适用 skill 执行。".into()
+    "按当前角色权限批量修改工程；revision 使用 inspect 返回值，操作原子保存且可撤销。只修改本轮目标，已有对象沿用 ID；add_node 必填 id/kind/title，shot 关联 planId；省略字段保留原值。update_node 更新卡片：plan.script 为脚本，镜头 text 为动作与摄影设计，shot.prompt 为视频草稿，shot.framePrompt/frames 为画格草稿与图片。修改已有生成任务用 update_generation(taskKey,text)，不顺带覆盖镜头草稿；已提交任务仅保存 nextPrompt，保留原请求和结果。仅改提示词不生成；明确要求重生成才用 regenerate_generation(taskKey)，沿用模型、输入与参数。request_generation 创建媒体任务，text 必须是完整模型提示词，程序不会追加脚本；references 明确素材 ID、用途与 role，省略时仅沿用本轮输入框引用，不自动补入工程素材。模型按用户选择，任务状态不等于生成完成或视觉通过。choose_take 选择素材，assemble_plan 编排镜头；时间线 start 为成片起点，trimIn/trimOut 为源区间，speed 为绝对倍速。savedClips 返回实际保存的时间线变化，complete=true 时可用于参数核对，不必立即再读同一批片段；complete=false 时按需 inspect。参数回执不能代替抽帧或播放验收。失败按返回原因修正；状态不确定时先查目标，避免重复提交。创作方法与角色交接按适用 skill 执行。".into()
 }
 
 pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Value {

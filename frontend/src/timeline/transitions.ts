@@ -1,4 +1,5 @@
 import { duration, type Clip, type Project } from "../model";
+import { readDesign, type TransitionDesign } from "./transitionDesign";
 export const transitionKinds = {
   fade: "叠化",
   fadeblack: "淡入黑场",
@@ -12,8 +13,10 @@ export const transitionKinds = {
   circleopen: "圆形展开",
   circleclose: "圆形收拢",
   dissolve: "颗粒溶解",
+  custom: "自定义组合",
 };
 export type Transition = {
+  design?: TransitionDesign;
   fromClipId: string;
   kind: keyof typeof transitionKinds;
   duration: number;
@@ -39,6 +42,7 @@ export function setTransition(
   to: string,
   kind: unknown,
   seconds: unknown,
+  design?: unknown,
 ): Project {
   const right = p.clips.find((c) => c.id === to);
   if (!right) throw new Error("转场目标片段不存在");
@@ -57,6 +61,9 @@ export function setTransition(
     throw new Error("请选择底层画面轨上两个相邻片段的接缝");
   if (typeof kind !== "string" || !Object.hasOwn(transitionKinds, kind))
     throw new Error("不支持的转场类型");
+  const recipe = kind === "custom" ? readDesign(design) : undefined;
+  if (kind !== "custom" && design !== undefined)
+    throw new Error("只有自定义转场接受 design");
   if (
     typeof seconds !== "number" ||
     !Number.isFinite(seconds) ||
@@ -92,6 +99,7 @@ export function setTransition(
               fromClipId: from,
               kind: kind as Transition["kind"],
               duration: seconds,
+              ...(recipe ? { design: recipe } : {}),
             },
           }
         : c,

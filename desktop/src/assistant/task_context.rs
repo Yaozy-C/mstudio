@@ -112,10 +112,10 @@ pub fn history(
     project: &str,
     scope: &Scope,
 ) -> Result<Vec<history::Message>, String> {
-    // Read only six completed turns from this task, paired by turn ID rather than row parity.
+    // Keep one completed question/answer for follow-ups; older turns stay queryable.
     let rows = {
         let db = store.db.lock().unwrap();
-        let mut stmt = db.prepare("SELECT u.id,u.content,u.model,u.payload,u.attribution,a.id,a.content,a.model,a.payload,a.attribution FROM agent_messages u JOIN agent_messages a ON a.project_id=u.project_id AND a.role='assistant' AND json_extract(a.attribution,'$.turnId')=json_extract(u.attribution,'$.turnId') WHERE u.project_id=?1 AND u.role='user' AND json_extract(u.attribution,'$.taskScope.taskId')=?2 AND json_extract(u.attribution,'$.agentId')=?3 AND json_extract(a.attribution,'$.status')='completed' ORDER BY u.id DESC LIMIT 6").map_err(|e|e.to_string())?;
+        let mut stmt = db.prepare("SELECT u.id,u.content,u.model,u.payload,u.attribution,a.id,a.content,a.model,a.payload,a.attribution FROM agent_messages u JOIN agent_messages a ON a.project_id=u.project_id AND a.role='assistant' AND json_extract(a.attribution,'$.turnId')=json_extract(u.attribution,'$.turnId') WHERE u.project_id=?1 AND u.role='user' AND json_extract(u.attribution,'$.taskScope.taskId')=?2 AND json_extract(u.attribution,'$.agentId')=?3 AND json_extract(a.attribution,'$.status')='completed' ORDER BY u.id DESC LIMIT 1").map_err(|e|e.to_string())?;
         stmt.query_map(params![project, scope.task_id, scope.agent_id], |r| {
             let make = |offset, role: &str| -> rusqlite::Result<history::Message> {
                 let payload: String = r.get(offset + 3)?;
@@ -156,8 +156,8 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
         snapshot["relevantNodes"] = json!(ids.iter().filter_map(|id|doc["nodes"].as_array()?.iter().find(|n|n["id"]==*id)).map(|n|json!({"id":n["id"],"kind":n["kind"],"title":n["title"],"details":"按 nodeIds/fields inspect 读取"})).collect::<Vec<_>>());
         snapshot["tracks"] = json!([]);
     }
-    snapshot["task"] = json!(scope);
-    snapshot["contextPolicy"] = json!({"history":"仅当前角色和任务；其他历史可通过 history 按需读取","details":"省略不代表不存在；inspect 支持 ids、nodeIds、fields 与分页。修改前读取目标最新状态。","sharedConstraints":"requirements/creation 是有长度限制的项目约束预览；truncated 为 true 时先 inspect section=creation 补读完整约束。"});
+    snapshot["task"] = json!({"taskId":scope.task_id,"agentId":scope.agent_id,"targets":scope.targets,"view":scope.view});
+    snapshot["contextPolicy"] = json!({"history":"默认仅最近一轮已完成问答，不带旧工具过程；更早历史通过 history 按需读取，当前要求优先","details":"省略不代表不存在；inspect 支持 ids、nodeIds、fields 与分页。修改前读取目标最新状态。","sharedConstraints":"requirements/creation 是有长度限制的项目约束预览；truncated 为 true 时先 inspect section=creation 补读完整约束。"});
     snapshot["constraintsTruncated"] = json!(
         doc["brief"].as_str().unwrap_or("").chars().count() > 2000
             || ["intent", "essential", "preserve"]

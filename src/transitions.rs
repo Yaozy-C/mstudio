@@ -9,6 +9,8 @@ use std::{
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Transition {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub design: Option<crate::transition_design::Design>,
     pub from_clip_id: String,
     pub kind: String,
     pub duration: f64,
@@ -26,9 +28,17 @@ pub const KINDS: &[&str] = &[
     "circleopen",
     "circleclose",
     "dissolve",
+    "custom",
 ];
 impl Transition {
     pub fn validate(&self) -> Result<()> {
+        ensure!(
+            (self.kind == "custom") == self.design.is_some(),
+            "自定义转场须提供 design；其他转场不接受 design"
+        );
+        if let Some(design) = &self.design {
+            design.validate()?;
+        }
         ensure!(KINDS.contains(&self.kind.as_str()), "不支持的转场类型");
         ensure!(
             self.duration.is_finite() && (0.05..=3.).contains(&self.duration),
@@ -113,7 +123,7 @@ pub fn prepare(
         let w = ((spec.width as f64 * ratio / 2.).round() as u32 * 2).max(2);
         let h = ((spec.height as f64 * ratio / 2.).round() as u32 * 2).max(2);
         let mut hash = std::collections::hash_map::DefaultHasher::new();
-        ("transition-v1", w, h, spec.fps).hash(&mut hash);
+        ("transition-v3", w, h, spec.fps).hash(&mut hash);
         for (c, a) in [(left, &a), (right, &b)] {
             serde_json::to_string(c)?.hash(&mut hash);
             a.path.hash(&mut hash);

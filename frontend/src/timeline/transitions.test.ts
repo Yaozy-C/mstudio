@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { defaultDesign } from "./transitionDesign";
 import { newProject, makeClip, type Asset } from "../model";
 import { attachmentInput, sameInput } from "../production/attachmentInput";
 import { taskAttachments } from "../production/chat";
@@ -40,12 +41,14 @@ test("Agent adds/removes all transition types without moving edits or sound", ()
         id: "right",
         kind,
         duration: 0.5,
+        ...(kind === "custom" ? { design: defaultDesign() } : {}),
       },
     ]);
     expect(next.clips[1].transition).toEqual({
       fromClipId: "left",
       kind,
       duration: 0.5,
+      ...(kind === "custom" ? { design: defaultDesign() } : {}),
     });
     expect(next.clips.map(({ transition: _, ...clip }) => clip)).toEqual(
       p.clips,

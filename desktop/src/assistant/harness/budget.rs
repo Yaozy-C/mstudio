@@ -167,7 +167,12 @@ fn compact_end(messages: &[Message], max_source: usize, retain: usize) -> Option
     let mut cost = 0;
     let mut pending = 0isize;
     let mut end = None;
-    for (index, message) in messages.iter().enumerate().skip(1).take(messages.len() - 3) {
+    for (index, message) in messages
+        .iter()
+        .enumerate()
+        .skip(1)
+        .take(super::session::consumed_prefix(messages).saturating_sub(1))
+    {
         cost += tokens(message);
         if cost > max_source {
             break;
@@ -288,7 +293,7 @@ async fn compact_with_retain(
 
 pub fn prune_tool_results(session: &mut Session, host: &impl Host) -> Result<bool, String> {
     let mut changed = false;
-    for index in 0..session.messages.len().saturating_sub(2) {
+    for index in 0..super::session::consumed_prefix(&session.messages) {
         let mut message = session.messages[index].clone();
         let Message::User { content } = &mut message else {
             continue;
@@ -328,60 +333,5 @@ pub fn prune_tool_results(session: &mut Session, host: &impl Host) -> Result<boo
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use rig_core::message::{ToolCall, ToolFunction};
-    use serde_json::json;
-    #[test]
-    fn compaction_never_cuts_a_tool_call_from_its_result() {
-        let tool = ToolCall::from_wire(
-            "call-1",
-            ToolFunction {
-                name: "read".into(),
-                arguments: json!({}),
-            },
-        );
-        let messages = vec![
-            Message::System {
-                content: "rules".into(),
-            },
-            Message::user("first"),
-            Message::Assistant {
-                id: None,
-                content: vec![AssistantContent::text("done")],
-            },
-            Message::Assistant {
-                id: None,
-                content: vec![AssistantContent::ToolCall(tool.clone())],
-            },
-            super::super::session::result_message(&tool, &json!({"ok":true})),
-            Message::user("current"),
-            Message::Assistant {
-                id: None,
-                content: vec![AssistantContent::text("reply")],
-            },
-        ];
-        assert_eq!(compact_end(&messages, 100_000, 0), Some(5));
-        assert_eq!(
-            compact_end(&messages, tokens(&messages[1]) + tokens(&messages[2]), 0),
-            Some(3)
-        );
-    }
-    #[test]
-    fn transport_bytes_are_not_text_tokens() {
-        let image = Message::User {
-            content: vec![
-                UserContent::text("look"),
-                UserContent::image_url(
-                    format!("data:image/jpeg;base64,{}", "a".repeat(500_000)),
-                    None,
-                    None,
-                ),
-            ],
-        };
-        assert!(tokens(&image) < 5000);
-        assert!(tokens(&Message::user("x".repeat(200_000))) > 40_000);
-        assert_eq!(text_tokens("中文中文"), 1);
-        assert_eq!(text_tokens("😀😀"), 1);
-    }
-}
+#[path = "tests/budget.rs"]
+mod tests;

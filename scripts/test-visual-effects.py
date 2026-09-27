@@ -25,9 +25,13 @@ with tempfile.TemporaryDirectory(prefix='mstudio-effects-') as directory:
          '-c:v','libx264','-pix_fmt','yuv420p',source])
     assets=[dict(id='v',name='test',kind='video',path=str(source),preview='',duration=1,width=320,height=240,hasAudio=False)]
     baseline = None
-    for effect in ['none','grayscale','sepia','blur','vignette','grade']:
-        visual = dict(effect=effect if effect!='grade' else 'none',brightness=0,contrast=1,saturation=1,temperature=0)
+    for effect in ['none','grayscale','sepia','blur','vignette','grade','custom-grade']:
+        visual = dict(effect=effect if effect not in ['grade','custom-grade'] else 'none',brightness=0,contrast=1,saturation=1,temperature=0)
         if effect=='grade': visual.update(brightness=.12,contrast=1.1,saturation=.6,temperature=.4)
+        if effect=='custom-grade': visual['grade']=dict(exposure=.4,shadows=25,highlights=-30,vibrance=20,tint=8,
+            curves=[[.18,.5,.8],[.25,.5,.75],[.25,.5,.75],[.25,.5,.75]],
+            hsl=[[0,-15,0],[0,0,0],[0,0,0],[10,-25,10],[0,0,0],[-15,20,-10],[0,0,0],[0,0,0]],
+            wheels=[[220,12,0],[0,0,0],[45,10,0]])
         clip=dict(id='v',assetId='v',start=0,trimIn=0,trimOut=1,speed=1,volume=0,trackId='v1',visual=visual)
         spec=dict(width=320,height=240,fps=30,tracks=[dict(id='v1',kind='video')],clips=[clip],captions=[])
         fixture=folder/'fixture.json';fixture.write_text(json.dumps(dict(spec=spec,assets=assets)))

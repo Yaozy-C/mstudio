@@ -12,7 +12,10 @@ pub mod preview_mlt;
 
 pub mod preview_audio;
 
+mod grade_lut;
+pub mod grading;
 pub mod visual;
 
+pub mod transition_design;
 mod transition_render;
 pub mod transitions;

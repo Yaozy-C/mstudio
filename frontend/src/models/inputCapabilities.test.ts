@@ -29,7 +29,13 @@ test("protocol gates declared capabilities and reports unsupported references", 
   const refs = [
     { kind: "asset" as const, id: "v", title: "video", mediaKind: "video" },
   ];
-  expect(unsupportedAttachments(refs, model)).toHaveLength(1);
+  expect(unsupportedAttachments(refs, model)).toHaveLength(0);
+  expect(
+    unsupportedAttachments(refs, {
+      ...model,
+      inputs: { ...model.inputs, image: false },
+    }),
+  ).toHaveLength(1);
 });
 test("reference documents never enter timeline", () => {
   const project = newProject("test");

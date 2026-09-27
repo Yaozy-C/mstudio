@@ -31,6 +31,14 @@ description: 在 Mstudio 中将已定方案转为媒体任务、有效素材选�
 
 剪辑角色使用真实素材和已有时间线操作。trimIn/trimOut 为源区间，start 为成片时间，时长为 (trimOut-trimIn)/speed。先删无作用的等待和重复，保留理解因果的动作；素材缺失不能用快切隐藏。
 
+编辑前用 `mstudio_read_image(assetId,clipId,time)` 查看动作开始、关键事件和结束，time 为片段内秒数，自动换算裁切和速度；省略 clipId 则按源时间取帧。每次编辑先 inspect 最新 revision，使用以下操作而非猜测源时间：
+- `move_clip(id,start,trackId?)`：移动到成片秒数，对齐项目帧率；保持源区间与速度。
+- `retime_clip(id,speed,ripple?)`：0.25–4 倍绝对速度，保持源区间和起点。ripple:true 仅顺移同轨原尾点及之后的片段，其他音轨/字幕保持原位；跨轨同步需显式安排，不能称为已自动同步。
+- `slip_clip(id,sourceOffset)`：按源秒数同时偏移入/出点，保持成片位置与时长，适合换用动作阶段。
+移动/变速默认拒绝同轨重叠，仅明确需要叠加时指定 allowOverlap:true；超出源余量直接失败，不截断、不补造画面。失败后重新读取状态和余量，不盲目重试。执行顺序先剪辑与变速，再处理接缝与调色复查。
+
+这些语义参考 [Shotcut 编辑操作](https://www.shotcut.org/howtos/keyboard-shortcuts/) 中移动、顺移与滑移的区分，以及 [DaVinci Resolve 编辑培训](https://www.blackmagicdesign.com/products/davinciresolve/training) 的素材区间与时间线组织方法；它们不表示本应用具备教程的所有工具。
+
 按 [节奏与速度反馈](../creative-ad-director/references/rhythm.md) 区分固定长度、上限、局部提速和明确整片倍速。绝对设速与在当前基础再提速不同。整片变速同步相关轨道的起点、速度、字幕及淡入淡出时间，源裁切区间不随成片时间同比缩放；核对工具范围，不能静默截断。
 
 修改后 inspect 核实时间线，未提供的导出/播放/音频工具不能假称已执行。通过片段及无关配音、字幕尽量保留。切换到另一版本后不自动沿用旧版验收。

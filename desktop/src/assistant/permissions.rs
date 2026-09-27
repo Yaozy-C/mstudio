@@ -29,9 +29,11 @@ pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
         "set_references" => {
             has("project-shots") || has("project-production") || has("project-frames")
         }
-        "set_transition" | "choose_take" | "assemble_plan" | "append_clip" | "update_clip"
-        | "remove_clip" | "add_track" | "update_track" | "add_caption" | "update_caption"
-        | "remove_caption" => has("project-timeline"),
+        "move_clip" | "retime_clip" | "slip_clip" | "set_transition" | "choose_take"
+        | "assemble_plan" | "append_clip" | "update_clip" | "remove_clip" | "add_track"
+        | "update_track" | "add_caption" | "update_caption" | "remove_caption" => {
+            has("project-timeline")
+        }
         _ => false,
     }
 }

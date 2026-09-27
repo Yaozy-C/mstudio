@@ -2,12 +2,19 @@ import { t, useLanguage } from "../i18n";
 import type { ModelConnection } from "../models/types";
 import { supportsInput } from "../models/inputCapabilities";
 import type { Attachment } from "./attachments";
+const frameReadable = (model: ModelConnection, kind?: string) =>
+  kind === "video" && supportsInput(model, "image");
 export function unsupportedAttachments(
   items: Attachment[],
   model?: ModelConnection,
 ) {
   return model
-    ? items.filter((a) => a.mediaKind && !supportsInput(model, a.mediaKind))
+    ? items.filter(
+        (a) =>
+          a.mediaKind &&
+          !supportsInput(model, a.mediaKind) &&
+          !frameReadable(model, a.mediaKind),
+      )
     : [];
 }
 export function AttachmentSupport({
@@ -34,6 +41,11 @@ export function AttachmentSupport({
             {t("配置模型输入能力")}
           </button>
         </>
+      ) : items.some(
+          (a) =>
+            frameReadable(model, a.mediaKind) && !supportsInput(model, "video"),
+        ) ? (
+        t("视频将按需抽帧分析，不包含声音；其他资料按模型支持的方式读取。")
       ) : (
         t("本轮将发送所选资料的原始内容；发送成功不代表模型已完整理解。")
       )}

@@ -67,6 +67,31 @@ pub(super) fn multimodal() -> super::config::Profile {
         ..Default::default()
     }
 }
+
+#[test]
+fn image_models_receive_video_references_for_on_demand_frames_not_fake_thumbnails() {
+    let (root, store, doc) = fixture();
+    let mut profile = super::config::Profile::default();
+    profile.inputs.image = true;
+    let result = attachments::payload(
+        &store,
+        &doc,
+        "检查调色",
+        &[Reference {
+            kind: "asset".into(),
+            id: "video".into(),
+        }],
+        &profile,
+    )
+    .unwrap();
+    let text = result.to_string();
+    assert!(text.contains("mstudio_read_image"));
+    assert!(text.contains("metadata only"));
+    assert!(!text.contains("data:image"));
+    assert!(!text.contains("test-source-content"));
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
 fn reference(kind: &str, id: &str) -> Reference {
     Reference {
         kind: kind.into(),

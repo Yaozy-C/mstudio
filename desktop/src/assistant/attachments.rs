@@ -90,11 +90,18 @@ pub fn payload(
             .or_else(|| asset.map(|a| a.name.chars().take(160).collect()))
             .unwrap_or_default();
         metadata.push(json!({"kind":reference.kind,"id":reference.id,"title":title,"assetId":asset_id,"mediaKind":asset.map(|a|a.kind.as_str())}));
-        contexts.push(json!({"attachment":metadata.last(),"creative":node.map(|n|super::creative_context::node_context(doc,n)),"clip":clip.map(|c|json!({"id":c["id"],"shotId":c["shotId"],"assetId":c["assetId"],"start":c["start"],"trimIn":c["trimIn"],"trimOut":c["trimOut"],"speed":c["speed"],"trackId":c["trackId"],"visual":c["visual"]})),"nodeText":node.map(|n|text(&n["text"],2400)),"nodeTextTruncated":node.is_some_and(|n|n["text"].as_str().unwrap_or("").chars().count()>2400),"references":node.and_then(|n|n["references"].as_array()).map(|r|r.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":text(&r["purpose"],200),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>()),"media":asset.map(|a|json!({"id":a.id,"kind":a.kind,"duration":a.duration,"width":a.width,"height":a.height,"provided":"original content in this request"}))}));
+        contexts.push(json!({"attachment":metadata.last(),"creative":node.map(|n|super::creative_context::node_context(doc,n)),"clip":clip.map(|c|json!({"id":c["id"],"shotId":c["shotId"],"assetId":c["assetId"],"start":c["start"],"trimIn":c["trimIn"],"trimOut":c["trimOut"],"speed":c["speed"],"trackId":c["trackId"],"visual":c["visual"]})),"nodeText":node.map(|n|text(&n["text"],2400)),"nodeTextTruncated":node.is_some_and(|n|n["text"].as_str().unwrap_or("").chars().count()>2400),"references":node.and_then(|n|n["references"].as_array()).map(|r|r.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":text(&r["purpose"],200),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>()),"media":asset.map(|a|json!({"id":a.id,"kind":a.kind,"duration":a.duration,"width":a.width,"height":a.height,"provided":if a.kind == "video" && profile.inputs.image && !(profile.inputs.video && profile.adapter == "gemini-native") { "metadata only; request frames with mstudio_read_image" } else { "original content in this request" }}))}));
         if let Some(asset) = asset
             && image_ids.insert(&asset.id)
         {
-            images.extend(super::media_input::parts(store, asset, profile)?);
+            if asset.kind == "video"
+                && profile.inputs.image
+                && !(profile.inputs.video && profile.adapter == "gemini-native")
+            {
+                images.push(json!({"type":"text","text":format!("视频素材 {}（assetId={}）尚未提供像素。请调用 mstudio_read_image(assetId,time) 按需抽帧；若分析引用片段，补充 clipId 且 time 使用片段内秒数。抽帧不能读取声音，不能声称已经观看整段。", asset.name, asset.id)}));
+            } else {
+                images.extend(super::media_input::parts(store, asset, profile)?);
+            }
         }
     }
     let content = if refs.is_empty() {

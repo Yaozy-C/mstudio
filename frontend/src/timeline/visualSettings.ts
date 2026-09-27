@@ -1,4 +1,5 @@
 import type { Visual } from "../model";
+import { patchGrade } from "./grading";
 export const defaultVisual: Visual = {
   brightness: 0,
   contrast: 1,
@@ -22,7 +23,9 @@ export function patchVisual(
     temperature: [-1, 1],
   } as const;
   for (const [key, value] of Object.entries(fields)) {
-    if (key === "effect") {
+    if (key === "grade") {
+      next.grade = patchGrade(current?.grade, value);
+    } else if (key === "effect") {
       if (
         typeof value !== "string" ||
         !["none", "grayscale", "sepia", "blur", "vignette"].includes(value)

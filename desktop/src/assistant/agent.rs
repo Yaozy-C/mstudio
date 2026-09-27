@@ -43,11 +43,13 @@ pub(crate) async fn complete_with_resume(
         let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()});
         harness::session_selection::bind_task(&store, &t.project, &t.turn, resume, &mut binding)?;
         fork_history = harness::handoff::completed(&store, &t.project, &t.turn, &binding)?;
-        let restored = if let Some(turn) = resume {
-            harness::session::restore(&store, &t.project, turn, &binding)?
-        } else {
-            harness::session::latest(&store, &t.project, &binding)?
-        };
+        let restored = harness::session_selection::for_message(
+            &store,
+            &t.project,
+            &binding,
+            resume,
+            t.prompt.trim() == "/compact",
+        )?;
         harness::session_selection::record_selection(
             &store,
             &t.project,

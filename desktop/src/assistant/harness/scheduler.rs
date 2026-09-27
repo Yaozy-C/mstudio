@@ -80,6 +80,9 @@ async fn group(
             if let Err(error) = result {
                 failure.get_or_insert(error);
             } else {
+                if call.function.name == "mstudio_delegate" {
+                    session.delegation_outcomes.observe(&canonical);
+                }
                 session
                     .edit_progress
                     .observe(&call.function.name, &canonical);

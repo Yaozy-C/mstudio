@@ -97,15 +97,27 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       };
     });
   }
-  if (page)
+  if (page) {
+    // Small editing groups fit one read; large records still have a byte budget.
+    const limit = args.section === "generation" ? 5 : 12;
+    const items: unknown[] = [];
+    let size = 0;
+    for (const item of page.slice(offset, offset + limit)) {
+      const bytes = new TextEncoder().encode(JSON.stringify(item)).length;
+      if (items.length && size + bytes > 12000) break;
+      items.push(item);
+      size += bytes;
+    }
     return {
       revision,
       section: args.section,
       missingIds,
       total: page.length,
-      items: page.slice(offset, offset + 5),
-      nextOffset: offset + 5 < page.length ? offset + 5 : null,
+      items,
+      nextOffset:
+        offset + items.length < page.length ? offset + items.length : null,
     };
+  }
   return {
     revision,
     readDetails: ids.length

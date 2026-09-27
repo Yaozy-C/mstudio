@@ -54,6 +54,10 @@ pub async fn run_until(
         )?;
         let finished = result?;
         if finished {
+            let notice = session.delegation_outcomes.notice();
+            if !notice.is_empty() {
+                session.publish(host, &notice)?;
+            }
             return Ok(session.text);
         }
     }

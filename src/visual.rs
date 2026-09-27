@@ -16,6 +16,8 @@ fn one() -> f64 {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Visual {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grade: Option<crate::grading::Grade>,
     #[serde(default)]
     pub brightness: f64,
     #[serde(default = "one")]
@@ -29,6 +31,9 @@ pub struct Visual {
 }
 impl Visual {
     pub fn validate(&self) -> anyhow::Result<()> {
+        if let Some(grade) = &self.grade {
+            grade.validate()?;
+        }
         for (v, low, high) in [
             (self.brightness, -0.5, 0.5),
             (self.contrast, 0.5, 1.5),
@@ -43,10 +48,10 @@ impl Visual {
         Ok(())
     }
 }
-pub type Filter = (&'static str, Vec<(&'static str, f64)>);
-pub fn filters(visual: Option<&Visual>, width: i64, height: i64) -> Vec<Filter> {
+pub type Filter = (&'static str, Vec<(&'static str, String)>);
+pub fn filters(visual: Option<&Visual>, width: i64, height: i64) -> anyhow::Result<Vec<Filter>> {
     let Some(v) = visual else {
-        return vec![];
+        return Ok(vec![]);
     };
     let mut result = Vec::new();
     if v.brightness != 0. || v.contrast != 1. || v.saturation != 1. {
@@ -102,23 +107,49 @@ pub fn filters(visual: Option<&Visual>, width: i64, height: i64) -> Vec<Filter> 
         )),
         Effect::Vignette => result.push(("vignette", vec![("angle", std::f64::consts::PI / 5.)])),
     }
-    result
+    let mut result: Vec<Filter> = result
+        .into_iter()
+        .map(|(n, p)| (n, p.into_iter().map(|(k, v)| (k, v.to_string())).collect()))
+        .collect();
+    if let Some(grade) = &v.grade {
+        result.insert(
+            0,
+            (
+                "lut3d",
+                vec![
+                    (
+                        "file",
+                        crate::grade_lut::bake(grade)?
+                            .to_string_lossy()
+                            .into_owned(),
+                    ),
+                    ("interp", "tetrahedral".into()),
+                ],
+            ),
+        );
+    }
+    Ok(result)
 }
-pub fn ffmpeg(visual: Option<&Visual>, width: i64, height: i64) -> String {
-    filters(visual, width, height)
+pub fn ffmpeg(visual: Option<&Visual>, width: i64, height: i64) -> anyhow::Result<String> {
+    Ok(filters(visual, width, height)?
         .iter()
         .map(|(name, params)| {
             format!(
                 "{name}={}",
                 params
                     .iter()
-                    .map(|(k, v)| format!("{k}={v}"))
+                    .map(|(k, v)| format!(
+                        "{k}='{}'",
+                        v.replace('\\', "\\\\")
+                            .replace('\'', "'\\''")
+                            .replace(':', "\\:")
+                    ))
                     .collect::<Vec<_>>()
                     .join(":")
             )
         })
         .collect::<Vec<_>>()
-        .join(",")
+        .join(","))
 }
 #[cfg(test)]
 mod tests {
@@ -126,11 +157,11 @@ mod tests {
     #[test]
     fn defaults_and_validation() {
         let mut v: Visual = serde_json::from_str("{}").unwrap();
-        assert!(ffmpeg(Some(&v), 640, 360).is_empty());
+        assert!(ffmpeg(Some(&v), 640, 360).unwrap().is_empty());
         v.brightness = f64::NAN;
         assert!(v.validate().is_err());
         v.brightness = 0.2;
         v.effect = Effect::Grayscale;
-        assert!(ffmpeg(Some(&v), 640, 360).contains("hue=s=0"));
+        assert!(ffmpeg(Some(&v), 640, 360).unwrap().contains("hue=s='0'"));
     }
 }

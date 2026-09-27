@@ -10,6 +10,7 @@ mod image_read;
 mod mailbox;
 mod metering;
 mod model;
+mod outcomes;
 mod registry;
 mod scheduler;
 mod schema;

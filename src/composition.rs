@@ -111,7 +111,7 @@ pub fn render(
             let scale = c.scale.unwrap_or(1.);
             let w = ((spec.width as f64 * scale / 2.).round() as u32 * 2).max(2);
             let h = ((spec.height as f64 * scale / 2.).round() as u32 * 2).max(2);
-            let filters = crate::visual::ffmpeg(c.visual.as_ref(), w as i64, h as i64);
+            let filters = crate::visual::ffmpeg(c.visual.as_ref(), w as i64, h as i64)?;
             let filters = if filters.is_empty() {
                 filters
             } else {

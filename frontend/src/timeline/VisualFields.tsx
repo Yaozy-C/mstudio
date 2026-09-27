@@ -10,6 +10,7 @@ import {
 import type { Clip, Visual } from "../model";
 import { defaultVisual } from "./visualSettings";
 import { InspectorControl } from "./InspectorControl";
+import { GradeFields } from "./GradeFields";
 export { defaultVisual } from "./visualSettings";
 export function VisualFields({
   clip,
@@ -24,6 +25,7 @@ export function VisualFields({
     update({ ...clip, visual: { ...value, ...fields } });
   return (
     <>
+      <GradeFields grade={value.grade} change={(grade) => patch({ grade })} />
       <section className="inspector-section">
         <div className="inspector-section-heading">
           <h3>{t("色彩")}</h3>

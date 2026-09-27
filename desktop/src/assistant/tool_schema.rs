@@ -9,6 +9,9 @@ pub fn schema() -> Value {
         "trimIn":{"type":"number"},"trimOut":{"type":"number"},"speed":{"type":"number"},"volume":{"type":"number"}
       },"required":["op"]});
     for name in [
+        "move_clip",
+        "retime_clip",
+        "slip_clip",
         "set_transition",
         "choose_take",
         "assemble_plan",
@@ -30,6 +33,10 @@ pub fn schema() -> Value {
             .push(json!(name));
     }
     let properties = operation["properties"].as_object_mut().unwrap();
+    properties.insert("sourceOffset".into(), json!({"type":"number","description":"slip_clip：源素材偏移秒数，可正可负，同时移动 trimIn/trimOut，保持时间线位置和时长；源余量不足报错"}));
+    properties.insert("ripple".into(), json!({"type":"boolean","description":"retime_clip：保持源区间与起点，按 speed 改变时长；true 顺移同轨原尾点及之后的片段，其他轨道和字幕不动。默认 false"}));
+    properties.insert("allowOverlap".into(), json!({"type":"boolean","description":"move_clip/retime_clip 默认拒绝同轨重叠；仅用户明确需要叠加时设 true"}));
+    properties.insert("speed".into(), json!({"type":"number","minimum":0.25,"maximum":4,"description":"播放倍率；retime_clip 推荐用于变速，可配合 ripple。move_clip 使用 start（时间线秒数，自动对齐帧）及可选 trackId，不改变源区间"}));
     properties.insert("visual".into(), json!({"type":["object","null"],"description":"update_clip 的非破坏式调色；只覆盖指定参数，保留其余效果；null 清除。由本地 FFmpeg 滤镜执行并同步到 MLT 预览与成片导出，不是生成新视频。参数是绝对值。","additionalProperties":false,"properties":{
         "brightness":{"type":"number","minimum":-0.5,"maximum":0.5,"description":"亮度，默认0，FFmpeg eq"},
         "contrast":{"type":"number","minimum":0.5,"maximum":1.5,"description":"对比度，默认1，FFmpeg eq"},
@@ -37,9 +44,11 @@ pub fn schema() -> Value {
         "temperature":{"type":"number","minimum":-1,"maximum":1,"description":"冷暖，默认0，负冷正暖，FFmpeg colorbalance"},
         "effect":{"type":"string","enum":["none","grayscale","sepia","blur","vignette"],"description":"单个特效；调色时保留现有效果，除非用户要求改变"}
     }}));
+    properties["visual"]["properties"]["grade"] = grade_schema();
     properties.insert("fromClipId".into(), json!({"type":"string","description":"set_transition 的前一片段ID，id 为后一片段ID；必须底层画面轨相邻全幅片段"}));
     properties.insert("duration".into(), json!({"type":"number","minimum":0.05,"maximum":3,"description":"转场总时长，不超过任一相邻片段时长，不移动剪辑、音频或字幕"}));
-    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","plan","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
+    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","plan","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve","custom",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
+    properties.insert("design".into(), transition_schema());
     for name in ["start", "end", "scale", "opacity", "fadeIn", "fadeOut"] {
         properties.insert(name.into(), json!({"type":"number"}));
     }
@@ -98,6 +107,71 @@ pub fn schema() -> Value {
       "offset":{"type":"integer","description":"inspect/history 分页偏移，默认 0"},
       "operations":{"type":"array","maxItems":30,"items":operation}
     },"required":["action"]})
+}
+
+fn grade_schema() -> Value {
+    let mut properties = serde_json::Map::new();
+    for key in [
+        "temperature",
+        "tint",
+        "contrast",
+        "saturation",
+        "vibrance",
+        "shadows",
+        "highlights",
+        "whites",
+        "blacks",
+        "balance",
+    ] {
+        properties.insert(
+            key.into(),
+            json!({"type":"number","minimum":-100,"maximum":100}),
+        );
+    }
+    properties.insert(
+        "exposure".into(),
+        json!({"type":"number","minimum":-3,"maximum":3,"description":"曝光 EV"}),
+    );
+    for (key, count, min, max, description) in [
+        (
+            "hsl",
+            8,
+            -100,
+            100,
+            "红橙黄绿青蓝紫洋红，每行[色相偏移,饱和度,明度]；整组覆盖",
+        ),
+        (
+            "curves",
+            4,
+            0,
+            1,
+            "总/R/G/B曲线，每行是x=.25,.5,.75的三个输出值，单调递增；默认[.25,.5,.75]",
+        ),
+        (
+            "wheels",
+            3,
+            -100,
+            360,
+            "阴影/中间调/高光，每行[色相0–360,饱和度0–100,明度-100–100]；默认全零",
+        ),
+    ] {
+        properties.insert(key.into(), json!({"type":"array","minItems":count,"maxItems":count,"description":description,"items":{"type":"array","minItems":3,"maxItems":3,"items":{"type":"number","minimum":min,"maximum":max}}}));
+    }
+    json!({"type":["object","null"],"additionalProperties":false,"properties":properties,"description":"可编辑 SDR 调色方案，借鉴 mlight 的明暗/HSL/曲线/分区色轮；只覆盖指定字段，null 清除方案。烘焙为自定义 LUT，原生预览、抽帧、转场和导出共用；不是相机Log/HDR转换。先看帧再调参，修改后同一时间复查。"})
+}
+
+fn transition_schema() -> Value {
+    let pair = |min: f64, max: f64| json!({"type":"array","minItems":2,"maxItems":2,"items":{"type":"number","minimum":min,"maximum":max}});
+    json!({"type":"object","additionalProperties":false,"description":"kind=custom 的可组合设计，其他 kind 不接受。位置与偏移以画幅比例计；首尾自动回到未变换原片，避免接缝跳变。只接受结构化数值，不接受滤镜代码。","properties":{
+        "mask":{"type":"string","enum":["uniform","linear","radial"],"description":"整体混合/方向蒙版/径向蒙版，可与运动组合"},
+        "angle":{"type":"number","minimum":-180,"maximum":180,"description":"方向蒙版角度，0 从左向右"},
+        "center":pair(0.,1.),
+        "feather":{"type":"number","minimum":0.001,"maximum":1,"description":"蒙版边缘柔化，默认0.1"},
+        "curve":{"type":"array","minItems":2,"maxItems":8,"items":pair(0.,1.),"description":"[时间比例,完成比例]控制点，时间严格递增、完成比例不下降，必须始于[0,0]终于[1,1]；可设计先慢后快等节奏"},
+        "outgoingZoom":{"type":"number","minimum":1,"maximum":4,"description":"前镜从1倍推进到此倍率"},
+        "incomingZoom":{"type":"number","minimum":1,"maximum":4,"description":"后镜从此倍率回到1倍"},
+        "outgoingOffset":pair(-1.,1.),"incomingOffset":pair(-1.,1.)
+    }})
 }
 
 /// Advertise only installed capabilities; dispatch still checks authorization.
