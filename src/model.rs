@@ -21,6 +21,8 @@ pub struct Asset {
 #[serde(rename_all = "camelCase")]
 pub struct Clip {
     #[serde(default)]
+    pub transition: Option<crate::transitions::Transition>,
+    #[serde(default)]
     pub visual: Option<crate::visual::Visual>,
     pub id: String,
     pub asset_id: String,

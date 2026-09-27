@@ -29,10 +29,9 @@ pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
         "set_references" => {
             has("project-shots") || has("project-production") || has("project-frames")
         }
-        "choose_take" | "assemble_plan" | "append_clip" | "update_clip" | "remove_clip"
-        | "add_track" | "update_track" | "add_caption" | "update_caption" | "remove_caption" => {
-            has("project-timeline")
-        }
+        "set_transition" | "choose_take" | "assemble_plan" | "append_clip" | "update_clip"
+        | "remove_clip" | "add_track" | "update_track" | "add_caption" | "update_caption"
+        | "remove_caption" => has("project-timeline"),
         _ => false,
     }
 }
@@ -235,6 +234,18 @@ mod tests {
         assert!(!check(
             "production",
             json!({"op":"append_clip","assetId":"a"})
+        ));
+        assert!(check(
+            "transition-designer",
+            json!({"op":"set_transition","fromClipId":"a","id":"b","kind":"fade","duration":0.5})
+        ));
+        assert!(check(
+            "colorist",
+            json!({"op":"update_clip","id":"b","visual":{"temperature":-0.2}})
+        ));
+        assert!(!check(
+            "reviewer",
+            json!({"op":"set_transition","fromClipId":"a","id":"b","kind":"fade","duration":0.5})
         ));
         assert!(check(
             "editor",

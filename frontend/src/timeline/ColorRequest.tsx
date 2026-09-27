@@ -33,7 +33,7 @@ export function ColorRequest({ clip }: { clip: Clip }) {
         disabled={!text.trim()}
         onClick={() =>
           requestCreativeTask({
-            agentId: "editor",
+            agentId: "colorist",
             refs: [{ kind: "clip", id: clip.id }],
             text: `请为本轮引用的片段调色：${text.trim()}\n保留其他片段、剪辑、声音和字幕。`,
           })

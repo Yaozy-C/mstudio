@@ -104,9 +104,13 @@ pub async fn native_preview_open(
         static AUDIO_LOCK: Mutex<()> = Mutex::new(());
         let _lock = AUDIO_LOCK.lock().map_err(|e| e.to_string())?;
         let mut spec = spec;
+        let mut transition_files =
+            mstudio::transitions::prepare(&mut spec, &mut assets, &audio_root, true)
+                .map_err(|e| e.to_string())?;
         let files = mstudio::preview_audio::prepare(&mut spec, &mut assets, &audio_root)
             .map_err(|e| e.to_string())?;
-        for path in files {
+        transition_files.extend(files);
+        for path in transition_files {
             crate::project_storage::track_file(&copy.state::<Store>(), &project_id, &path)
                 .map_err(|e| e.to_string())?;
         }

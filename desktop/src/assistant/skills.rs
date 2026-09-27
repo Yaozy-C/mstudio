@@ -3,7 +3,9 @@ use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
 use tauri::Manager;
 
-const SKILLS: [(&str, &str, &str); 6] = [
+const SKILLS: [(&str, &str, &str); 8] = [
+    ("color-grading", "专业调色", "色彩校正、镜头匹配和工具边界"),
+    ("transition-design", "转场设计", "动作匹配、节奏和接缝转场"),
     (
         "ad-script",
         "创意与声画脚本",

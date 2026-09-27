@@ -9,6 +9,7 @@ pub fn schema() -> Value {
         "trimIn":{"type":"number"},"trimOut":{"type":"number"},"speed":{"type":"number"},"volume":{"type":"number"}
       },"required":["op"]});
     for name in [
+        "set_transition",
         "choose_take",
         "assemble_plan",
         "request_generation",
@@ -36,6 +37,9 @@ pub fn schema() -> Value {
         "temperature":{"type":"number","minimum":-1,"maximum":1,"description":"冷暖，默认0，负冷正暖，FFmpeg colorbalance"},
         "effect":{"type":"string","enum":["none","grayscale","sepia","blur","vignette"],"description":"单个特效；调色时保留现有效果，除非用户要求改变"}
     }}));
+    properties.insert("fromClipId".into(), json!({"type":"string","description":"set_transition 的前一片段ID，id 为后一片段ID；必须底层画面轨相邻全幅片段"}));
+    properties.insert("duration".into(), json!({"type":"number","minimum":0.05,"maximum":3,"description":"转场总时长，不超过任一相邻片段时长，不移动剪辑、音频或字幕"}));
+    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","plan","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
     for name in ["start", "end", "scale", "opacity", "fadeIn", "fadeOut"] {
         properties.insert(name.into(), json!({"type":"number"}));
     }

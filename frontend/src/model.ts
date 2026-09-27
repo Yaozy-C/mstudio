@@ -21,6 +21,7 @@ export type Visual = {
   effect: "none" | "grayscale" | "sepia" | "blur" | "vignette";
 };
 export type Clip = {
+  transition?: import("./timeline/transitions").Transition;
   visual?: Visual;
   id: string;
   assetId: string;

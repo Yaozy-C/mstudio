@@ -1,3 +1,4 @@
+import { setTransition } from "../timeline/transitions";
 import { patchVisual } from "../timeline/visualSettings";
 import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
 import { saveTask } from "../production/document";
@@ -200,6 +201,16 @@ export function applyOperations(
           ...next,
           clips: next.clips.map((c) => (c.id === clip.id ? clip : c)),
         };
+        break;
+      }
+      case "set_transition": {
+        next = setTransition(
+          next,
+          string(op.fromClipId, 80),
+          string(op.id, 80),
+          op.kind,
+          op.duration,
+        );
         break;
       }
       case "update_clip": {

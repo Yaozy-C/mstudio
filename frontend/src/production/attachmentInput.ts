@@ -37,10 +37,10 @@ export function attachmentInput(
   const clip =
     ref.kind === "clip" ? p.clips.find((c) => c.id === ref.id) : undefined;
   return {
-    key: `asset:${asset.id}`,
+    key: clip ? `clip:${clip.id}` : `asset:${asset.id}`,
     sourceRef: ref,
     assetId: asset.id,
-    purpose: asset.name,
+    purpose: clip ? a.title : asset.name,
     role:
       asset.kind === "video"
         ? "video-reference"
@@ -54,4 +54,13 @@ export function attachmentInput(
         }
       : {}),
   };
+}
+
+export function sameInput(a: ProductionInput, b: ProductionInput): boolean {
+  if (a.sourceRef?.kind === "clip" || b.sourceRef?.kind === "clip")
+    return (
+      a.sourceRef?.kind === b.sourceRef?.kind &&
+      a.sourceRef?.id === b.sourceRef?.id
+    );
+  return a.key === b.key || (!!a.assetId && a.assetId === b.assetId);
 }

@@ -81,7 +81,7 @@ export function NativePreview({
       if (!alive || !opened || !stage.current) return;
       const r = stage.current.getBoundingClientRect();
       const covered = !!document.querySelector(
-        '.modal-backdrop, [role="dialog"], [role="menu"]',
+        '.modal-backdrop, [role="dialog"], [role="menu"], [data-radix-popper-content-wrapper]',
       );
       const bounds = {
         token,

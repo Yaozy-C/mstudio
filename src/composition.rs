@@ -17,6 +17,12 @@ pub fn render(
     output: &Path,
     mut progress: impl FnMut(usize, usize),
 ) -> Result<()> {
+    if spec.clips.iter().any(|c| c.transition.is_some()) {
+        let mut prepared = spec.clone();
+        let mut assets = assets.to_vec();
+        crate::transitions::prepare(&mut prepared, &mut assets, &work.join("transitions"), false)?;
+        return render(&prepared, &assets, work, output, progress);
+    }
     ensure!(!spec.clips.is_empty(), "时间线没有片段");
     ensure!([24, 25, 30, 60].contains(&spec.fps), "不支持的帧率");
     ensure!(

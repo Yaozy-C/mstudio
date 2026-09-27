@@ -208,6 +208,11 @@ const BrowserPreview = memo(function BrowserPreview({
         </select>
         <button onClick={() => setDiagnostics((v) => !v)}>诊断</button>
       </div>
+      {project.clips.some((c) => c.transition) && (
+        <small className="preview-status">
+          转场效果请在桌面应用中预览；浏览器当前显示直接切换。
+        </small>
+      )}
       {sources.pending && (
         <small className="preview-status">正在准备代理，当前播放原片</small>
       )}

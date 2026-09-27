@@ -89,7 +89,7 @@ test("mention search supports Chinese and spaces without treating email as a men
   ).toEqual(["reviewer"]);
 });
 
-test("seven specialists resolve independently through the project model", () => {
+test("specialists resolve independently through the project model", () => {
   expect(defaultAgents.map((a) => a.id)).toEqual([
     "coordinator",
     "concept",
@@ -98,6 +98,8 @@ test("seven specialists resolve independently through the project model", () => 
     "production",
     "editor",
     "reviewer",
+    "colorist",
+    "transition-designer",
   ]);
   for (const a of defaultAgents.filter((a) => a.enabled))
     expect(resolveMention(defaultAgents, catalog, a.id).agent).toBe(a);

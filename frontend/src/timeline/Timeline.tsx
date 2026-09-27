@@ -1,3 +1,4 @@
+import { TransitionSeams } from "./TransitionSeams";
 import { CaptionTrack } from "./CaptionTrack";
 import { trackRows } from "./trackRows";
 import { TrackHeading } from "./TrackHeading";
@@ -216,6 +217,13 @@ export const Timeline = memo(function Timeline({
                       onChange={onChange}
                     />
                   ))}
+                <TransitionSeams
+                  project={project}
+                  trackId={t.id}
+                  zoom={zoom}
+                  clock={clock}
+                  change={onChange}
+                />
                 {!project.clips.some((c) => c.trackId === t.id) && (
                   <div className="track-empty">
                     将片段拖到此处 · 可自由错开、重叠

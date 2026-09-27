@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { native, bridge } from "../bridge";
 import { runsOf } from "./requestTask";
 import type { AttachmentRef } from "../assistant/attachments";
-import { attachmentInput } from "./attachmentInput";
+import { attachmentInput, sameInput } from "./attachmentInput";
 import { referencedItems } from "./referencedItems";
 import { type Asset, type Project } from "../model";
 import { useGenerationAgent } from "../creation/useGenerationAgent";
@@ -108,15 +108,7 @@ export function useProduction(
     const inputs = [...current.inputs];
     for (const ref of attachments.items) {
       const input = attachmentInput(get(), ref);
-      if (
-        input &&
-        !inputs.some(
-          (r) =>
-            r.key === input.key ||
-            (input.assetId && r.assetId === input.assetId),
-        )
-      )
-        inputs.push(input);
+      if (input && !inputs.some((r) => sameInput(r, input))) inputs.push(input);
     }
     update({ inputs });
     attachments.consume(attachments.items);
@@ -129,14 +121,7 @@ export function useProduction(
       update(setFrameInput(task, get(), role, input));
       return;
     }
-    if (
-      !input ||
-      task.inputs.some(
-        (r) =>
-          r.key === input.key || (input.assetId && r.assetId === input.assetId),
-      )
-    )
-      return;
+    if (!input || task.inputs.some((r) => sameInput(r, input))) return;
     if (task.inputs.length >= 12) {
       update({ error: "本次最多引用 12 个素材" });
       return;

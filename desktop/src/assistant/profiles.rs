@@ -17,7 +17,9 @@ pub const TOOL_IDS: [&str; 12] = [
     "memory-read",
     "memory-write",
 ];
-pub const SKILL_IDS: [&str; 6] = [
+pub const SKILL_IDS: [&str; 8] = [
+    "color-grading",
+    "transition-design",
     "ad-team",
     "ad-script",
     "storyboard-art",
@@ -55,7 +57,9 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
                     if existing.revision == 1 && builtin.revision > 1 {
                         *existing = builtin;
                     }
-                } else if builtin.id == "storyboard-artist" {
+                } else if ["storyboard-artist", "colorist", "transition-designer"]
+                    .contains(&builtin.id.as_str())
+                {
                     saved.push(builtin);
                 }
             }
@@ -237,7 +241,7 @@ mod tests {
         other.id = "other".into();
         other.skill_ids.clear();
         save(&db, other).unwrap();
-        assert_eq!(read(&db).unwrap().len(), 8);
+        assert_eq!(read(&db).unwrap().len(), 10);
         assert_eq!(resolve(&db, None).unwrap().revision, first.revision + 1);
         assert!(resolve(&db, Some("other")).is_ok());
         first.enabled = false;

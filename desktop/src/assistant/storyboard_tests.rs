@@ -50,7 +50,9 @@ fn existing_catalog_gains_artist_without_overwriting_custom_roles() {
     )
     .unwrap();
     let mut old = profiles::builtins();
-    old.retain(|p| p.id != "storyboard-artist");
+    old.retain(|p| {
+        !["storyboard-artist", "colorist", "transition-designer"].contains(&p.id.as_str())
+    });
     let storyboard = old.iter_mut().find(|p| p.id == "storyboard").unwrap();
     storyboard.revision = 1;
     storyboard.name = "Old default".into();
@@ -75,6 +77,9 @@ fn existing_catalog_gains_artist_without_overwriting_custom_roles() {
         loaded.iter().find(|p| p.id == "storyboard").unwrap().name,
         "分镜导演"
     );
+    for id in ["colorist", "transition-designer"] {
+        assert!(loaded.iter().any(|p| p.id == id && p.enabled));
+    }
     let custom = loaded.iter().find(|p| p.id == "production").unwrap();
     assert_eq!(custom.instructions, "My custom rules");
     assert!(!custom.enabled);
@@ -86,5 +91,5 @@ fn existing_catalog_gains_artist_without_overwriting_custom_roles() {
     artist.enabled = false;
     profiles::save(&db, artist).unwrap();
     assert!(profiles::resolve(&db, Some("storyboard-artist")).is_err());
-    assert_eq!(profiles::read(&db).unwrap().len(), 7);
+    assert_eq!(profiles::read(&db).unwrap().len(), 9);
 }

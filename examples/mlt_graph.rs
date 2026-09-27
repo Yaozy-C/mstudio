@@ -8,6 +8,7 @@ fn main() -> anyhow::Result<()> {
     let mut spec: RenderSpec = serde_json::from_value(value["spec"].clone())?;
     let mut assets: Vec<Asset> = serde_json::from_value(value["assets"].clone())?;
     if let Some(cache) = std::env::args().nth(2) {
+        mstudio::transitions::prepare(&mut spec, &mut assets, std::path::Path::new(&cache), true)?;
         mstudio::preview_audio::prepare(&mut spec, &mut assets, std::path::Path::new(&cache))?;
     }
     print!("{}", preview_mlt::graph(&spec, &assets)?);

@@ -14,6 +14,18 @@ export type AgentProfile = {
 };
 export const skills = [
   {
+    id: "color-grading",
+    name: "专业调色",
+    description: "色彩校正、镜头匹配与工具边界",
+    kind: "内置规则",
+  },
+  {
+    id: "transition-design",
+    name: "转场设计",
+    description: "动作匹配、节奏与接缝转场",
+    kind: "内置规则",
+  },
+  {
     id: "ad-script",
     name: "创意与声画脚本",
     description: "广告事件、画面文字与声画脚本",
