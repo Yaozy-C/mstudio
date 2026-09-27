@@ -81,7 +81,7 @@ fn memory_protocol_rejects_project_version_and_invented_ids_without_writes() {
     args.as_object_mut().unwrap().remove("id");
     let saved = tool::operate(&db, "one", "t", "制作30秒短片", true, &args).unwrap();
     assert_eq!(saved["memoryRevision"], 1);
-    assert!(saved["entries"][0]["id"].as_str().is_some());
+    assert!(saved["id"].as_str().is_some());
 }
 
 #[test]
@@ -90,4 +90,49 @@ fn delegated_paraphrase_is_not_user_evidence() {
     let args = json!({"action":"remember","memoryRevision":0,"title":"方案选择","content":"选择第二个方案","evidence":"用户已明确选定方案 B"});
     assert!(tool::operate(&db, "one", "child", "第二个", true, &args).is_err());
     assert!(SqliteMemory(&db).recall("one").unwrap().entries.is_empty());
+}
+
+#[test]
+fn repeated_memory_keeps_version_provenance_and_returns_only_affected_id() {
+    let db = db();
+    let backend = SqliteMemory(&db);
+    let mut args = json!({"action":"remember","memoryRevision":0,"title":"品牌语气","content":"文案保持克制，不夸大功效","evidence":"不要夸大功效"});
+    let saved = tool::operate(&db, "one", "original", "以后不要夸大功效", true, &args).unwrap();
+    assert_eq!(saved["changed"], true);
+    assert!(saved.get("entries").is_none());
+    let before = backend.recall("one").unwrap();
+    args["memoryRevision"] = saved["memoryRevision"].clone();
+    // Recreating the same topic without its ID is also a no-op.
+    let duplicate = tool::operate(&db, "one", "repeat", "仍然不要夸大功效", true, &args).unwrap();
+    assert_eq!(duplicate["changed"], false);
+    assert_eq!(duplicate["id"], saved["id"]);
+    // A recalled entry has enough information to update without listing first.
+    let recalled = context(&before, "品牌语气");
+    args["id"] = recalled["entries"][0]["id"].clone();
+    args["memoryRevision"] = recalled["memoryRevision"].clone();
+    let duplicate = tool::operate(&db, "one", "repeat", "仍然不要夸大功效", true, &args).unwrap();
+    assert_eq!(duplicate["changed"], false);
+    assert_eq!(backend.recall("one").unwrap(), before);
+    assert_eq!(backend.replace("one", before.clone()).unwrap(), before);
+    args["content"] = json!("所有功效表述须有可核查来源");
+    args["evidence"] = json!("须有可核查来源");
+    let changed = tool::operate(
+        &db,
+        "one",
+        "correction",
+        "所有功效表述须有可核查来源",
+        true,
+        &args,
+    )
+    .unwrap();
+    assert_eq!(changed["changed"], true);
+    assert_eq!(changed["memoryRevision"], 2);
+    assert_eq!(changed["id"], saved["id"]);
+    let after = backend.recall("one").unwrap();
+    assert_eq!(after.entries.len(), 1);
+    assert_eq!(after.entries[0].turn_id.as_deref(), Some("correction"));
+    let removed = tool::operate(&db, "one", "remove", "撤销品牌语气要求", true, &json!({"action":"forget","id":saved["id"],"memoryRevision":2,"evidence":"撤销品牌语气要求"})).unwrap();
+    assert_eq!(removed["changed"], true);
+    assert_eq!(removed["memoryRevision"], 3);
+    assert!(backend.recall("one").unwrap().entries.is_empty());
 }

@@ -8,7 +8,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 pub use tool::MemoryTool;
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Entry {
     pub id: String,
@@ -18,7 +18,7 @@ pub struct Entry {
     pub turn_id: Option<String>,
     pub updated: i64,
 }
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Memory {
     pub revision: u64,
@@ -74,6 +74,9 @@ impl MemoryBackend for SqliteMemory<'_> {
             "项目记忆已更新，请刷新后重试"
         );
         validate(&memory)?;
+        if memory == old {
+            return Ok(old);
+        }
         memory.revision += 1;
         tx.execute("INSERT INTO project_memory VALUES(?1,?2) ON CONFLICT(project_id) DO UPDATE SET document=excluded.document", params![project, serde_json::to_string(&memory)?])?;
         tx.commit()?;

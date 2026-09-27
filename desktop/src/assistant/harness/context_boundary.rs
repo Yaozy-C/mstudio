@@ -1,6 +1,7 @@
 //! Refresh host-owned state only at turn boundaries; session/start journals the result.
 use super::session::project_snapshot_text;
-use rig_core::message::Message;
+use rig_core::message::{AssistantContent, Message, ToolResultContent, UserContent};
+use std::collections::HashSet;
 
 pub fn refresh_snapshot(history: &mut Vec<Message>, additions: &mut Vec<Message>) {
     let Some(index) = additions
@@ -29,6 +30,61 @@ pub fn refresh_snapshot(history: &mut Vec<Message>, additions: &mut Vec<Message>
     }
 }
 
+/// Memory is persisted separately and recalled in the new snapshot. Retire only
+/// completed pairs when starting a new turn, never during retries or resume.
+pub fn retire_memory_calls(history: &mut Vec<Message>) {
+    let completed: HashSet<_> = history
+        .iter()
+        .filter_map(|m| match m {
+            Message::User { content } => Some(content.iter().filter_map(|part| match part {
+                UserContent::ToolResult(result)
+                    if result.content.iter().any(|part| {
+                        let ToolResultContent::Text(text) = part else {
+                            return false;
+                        };
+                        serde_json::from_str::<serde_json::Value>(&text.text)
+                            .is_ok_and(|value| value.is_object() && value.get("error").is_none())
+                    }) =>
+                {
+                    Some(result.call.clone())
+                }
+                _ => None,
+            })),
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    let retired: HashSet<_> = history
+        .iter()
+        .filter_map(|m| match m {
+            Message::Assistant { content, .. } => {
+                Some(content.iter().filter_map(|part| match part {
+                    AssistantContent::ToolCall(call)
+                        if call.function.name == "mstudio_memory"
+                            && completed.contains(&call.id) =>
+                    {
+                        Some(call.id.clone())
+                    }
+                    _ => None,
+                }))
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    history.retain_mut(|message| match message {
+        Message::Assistant { content, .. } => {
+            content.retain(|part| !matches!(part, AssistantContent::ToolCall(call) if retired.contains(&call.id)));
+            !content.is_empty()
+        }
+        Message::User { content } => {
+            content.retain(|part| !matches!(part, UserContent::ToolResult(result) if retired.contains(&result.call)));
+            !content.is_empty()
+        }
+        Message::System { .. } => true,
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -38,6 +94,97 @@ mod tests {
         Message::user(format!(
             "当前工程快照（参考数据；更多内容请按需 inspect）：\n{{\"revision\":{rev}}}"
         ))
+    }
+    #[test]
+    fn completed_memory_pairs_are_retired_without_touching_other_calls_or_pending_work() {
+        use rig_core::message::{ToolCall, ToolFunction};
+        let call = |id: &str, name: &str| {
+            ToolCall::from_wire(
+                id,
+                ToolFunction {
+                    name: name.into(),
+                    arguments: json!({}),
+                },
+            )
+        };
+        let memory = call("memory", "mstudio_memory");
+        let inspect = call("inspect", "mstudio_inspect");
+        let pending = call("pending", "mstudio_memory");
+        let memory_result = session::result_message(&memory, &json!({"memoryRevision":1}));
+        let inspect_result = session::result_message(&inspect, &json!({"revision":2}));
+        let Message::User {
+            content: memory_content,
+        } = memory_result
+        else {
+            unreachable!()
+        };
+        let Message::User {
+            content: inspect_content,
+        } = inspect_result.clone()
+        else {
+            unreachable!()
+        };
+        let mixed_result = Message::User {
+            content: [memory_content, inspect_content].concat(),
+        };
+        let pending_message = Message::Assistant {
+            id: None,
+            content: vec![AssistantContent::ToolCall(pending)],
+        };
+        let original = vec![
+            snapshot(2),
+            Message::user("以后文案保持克制"),
+            Message::Assistant {
+                id: None,
+                content: vec![
+                    AssistantContent::ToolCall(memory),
+                    AssistantContent::ToolCall(inspect.clone()),
+                ],
+            },
+            mixed_result,
+            Message::assistant("已记住"),
+            pending_message.clone(),
+        ];
+        let mut projected = original.clone();
+        retire_memory_calls(&mut projected);
+        assert_eq!(
+            projected,
+            vec![
+                snapshot(2),
+                Message::user("以后文案保持克制"),
+                Message::Assistant {
+                    id: None,
+                    content: vec![AssistantContent::ToolCall(inspect)],
+                },
+                inspect_result,
+                Message::assistant("已记住"),
+                pending_message
+            ]
+        );
+        let mut repaired = vec![projected.last().unwrap().clone()];
+        session::repair_pending(&mut repaired);
+        let unknown = repaired.clone();
+        retire_memory_calls(&mut repaired);
+        assert_eq!(repaired, unknown);
+        let once = projected.clone();
+        retire_memory_calls(&mut projected);
+        assert_eq!(projected, once);
+        assert_eq!(
+            serde_json::to_string(&original)
+                .unwrap()
+                .matches("mstudio_memory")
+                .count(),
+            3
+        );
+        let mut pair = vec![original[2].clone(), original[3].clone()];
+        if let Message::Assistant { content, .. } = &mut pair[0] {
+            content.truncate(1);
+        }
+        if let Message::User { content } = &mut pair[1] {
+            content.truncate(1);
+        }
+        retire_memory_calls(&mut pair);
+        assert!(pair.is_empty());
     }
     #[test]
     fn boundary_replaces_only_snapshots_and_roundtrips_through_journal() {

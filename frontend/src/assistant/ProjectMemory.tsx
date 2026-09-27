@@ -130,8 +130,8 @@ export function ProjectMemory({
               <span>
                 <strong>自动整理</strong>
                 <small>
-                  允许有项目编辑能力的 Agent
-                  从你的明确要求中提取记忆，并保留原话来源。
+                  允许有记忆写入权限的 Agent 保存新增或变化的长期偏好与约束，
+                  保留原话来源；不重复记录脚本、镜头或时间线。
                 </small>
               </span>
               <input
