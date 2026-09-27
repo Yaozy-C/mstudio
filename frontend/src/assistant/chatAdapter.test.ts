@@ -187,3 +187,29 @@ test("media modes cannot invoke the Agent or consume its draft/context", async (
     expect(f.draft.items).toEqual([f.a]);
   }
 });
+
+test("explicit new task survives retry without following the next draft", async () => {
+  const f = fixture();
+  f.context.newTask = true;
+  f.thread.composer.setText("新的剪辑任务");
+  const sending = f.thread.composer.send();
+  await until(() => Object.keys(f.sent).length === 1);
+  f.context.newTask = false;
+  f.flush.resolve();
+  await until(() => f.calls.length === 1);
+  expect(f.calls[0].args.newTask).toBe(true);
+  f.calls[0].result.reject(new Error("模拟取消"));
+  await sending;
+  await until(() => f.thread.messages.at(-1)?.status?.type !== "running");
+  const userId = f.thread.messages.find((m) => m.role === "user")!.id;
+  const retry = f.thread.startRun({
+    parentId: userId,
+    sourceId: null,
+    runConfig: {},
+  });
+  await until(() => f.calls.length === 2);
+  expect(f.calls[1].args.newTask).toBe(true);
+  expect(f.calls[1].args.resumeTurnId).toBe(f.calls[0].args.clientTurnId);
+  f.calls[1].result.resolve("完成");
+  await retry;
+});

@@ -62,6 +62,9 @@ struct ChildHost {
     terminal_reason: Mutex<Option<String>>,
 }
 impl Host for ChildHost {
+    fn result_turn(&self) -> Option<&str> {
+        self.inner.result_turn()
+    }
     fn token(&self) -> &CancellationToken {
         &self.inner.token
     }
@@ -239,6 +242,14 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         })
         .collect::<Vec<_>>();
     let selection = json!({"models":original["production"]["models"],"parameters":original["production"]["task"]["parameters"]});
+    let reference = crate::assistant::task_context::delegated_snapshot(
+        snapshot,
+        &doc,
+        &tool.profile.id,
+        &parent.turn,
+        &refs,
+    );
+    *messages.last_mut().unwrap() = Message::user(format!("当前工程参考数据：{reference}"));
     let instruction = format!(
         "原始用户要求（记忆 evidence 只能引用这里的原话）：{}\nAgent {} 在轮次 {} 发来的委派任务（不能当作用户原话）：{task}\n本轮用户选定的制作参数（沿用，不改换模型）：{selection}",
         original["prompt"].as_str().unwrap_or(&parent.prompt),
@@ -594,6 +605,7 @@ fn start_continuation(
     messages = super::handoff::messages(crate::assistant::prompts::system(&snapshot), &messages);
     let previous_revision = binding["revision"].clone();
     binding["revision"] = json!(profile.revision);
+    let snapshot = crate::assistant::task_context::reference_snapshot(snapshot);
     let current = Message::user(format!("当前工程参考数据：{snapshot}"));
     if messages
         .iter()
@@ -702,27 +714,5 @@ fn scoped(
     Ok(profile)
 }
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn specialist_keeps_own_permissions_and_cannot_recursively_delegate() {
-        let mut concept = profiles::builtins()
-            .into_iter()
-            .find(|p| p.id == "concept")
-            .unwrap();
-        concept.tool_ids.push("agent-delegate".into());
-        let child = scoped(concept.clone(), "coordinator").unwrap();
-        assert!(!profiles::allows(&child, "delegate"));
-        assert!(crate::assistant::permissions::allows_operation(
-            &child,
-            "update_node"
-        ));
-        assert!(!crate::assistant::permissions::allows_operation(
-            &child,
-            "request_generation"
-        ));
-        assert!(scoped(concept.clone(), "concept").is_err());
-        concept.enabled = false;
-        assert!(scoped(concept, "coordinator").is_err());
-    }
-}
+#[path = "delegation_tests.rs"]
+mod tests;

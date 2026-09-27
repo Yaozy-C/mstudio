@@ -68,6 +68,7 @@ async fn step(
     key: &str,
     deadline: tokio::time::Instant,
 ) -> Result<bool, String> {
+    super::metering::record(host, session, profile)?;
     let request = CompletionRequest {
         model: None,
         preamble: None,

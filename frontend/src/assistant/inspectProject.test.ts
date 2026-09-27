@@ -97,3 +97,35 @@ test("targeted reads keep local context without unrelated pagination and can fin
   expect(overview.nextOffset).toBe(10);
   expect(overview.brief).toBe("Unrelated project brief");
 });
+
+test("exact clip reads exclude other targets and expose omitted fields", () => {
+  const p = newProject("Scoped reading");
+  p.clips = ["a", "b"].map((id) => ({
+    id,
+    assetId: `asset-${id}`,
+    trimIn: 1,
+    trimOut: 4,
+    speed: 1,
+    volume: 0.8,
+    start: 0,
+    trackId: "v",
+    x: 25,
+  }));
+  const result = inspectProject(p, {
+    section: "clips",
+    ids: ["b", "missing"],
+    fields: ["trimIn", "trimOut", "speed"],
+  });
+  expect(result.items).toEqual([
+    {
+      id: "b",
+      trimIn: 1,
+      trimOut: 4,
+      speed: 1,
+      omittedFields: ["assetId", "volume", "start", "trackId", "x"],
+    },
+  ]);
+  expect(result.missingIds).toEqual(["missing"]);
+  const full = inspectProject(p, { section: "clips", ids: ["b"] });
+  expect(full.items).toEqual([p.clips[1]]);
+});

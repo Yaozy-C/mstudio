@@ -69,6 +69,7 @@ pub fn agent_events(
 }
 
 /// A bounded factual handoff for the last run, not a replay of unverified effects.
+#[cfg(test)]
 pub fn recovery(store: &Store, project: &str) -> Result<Value> {
     use rusqlite::OptionalExtension;
     let turn: Option<String> = store.db.lock().unwrap().query_row(

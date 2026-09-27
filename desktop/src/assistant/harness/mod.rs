@@ -7,13 +7,16 @@ mod driver;
 pub(crate) mod handoff;
 mod image_read;
 mod mailbox;
+mod metering;
 mod model;
 mod registry;
 mod scheduler;
 mod schema;
 pub mod session;
+pub(crate) mod session_selection;
 #[cfg(test)]
 mod tests;
+mod tool_output;
 
 use rig_core::{
     completion::ToolDefinition,
@@ -25,6 +28,9 @@ use tokio_util::sync::CancellationToken;
 
 pub trait Host: Sync {
     fn token(&self) -> &CancellationToken;
+    fn result_turn(&self) -> Option<&str> {
+        None
+    }
     fn record(&self, kind: &str, value: Value) -> Result<(), String>;
     fn definitions(&self) -> Vec<ToolDefinition>;
     fn parallel_safe(&self, call: &ToolCall) -> bool;

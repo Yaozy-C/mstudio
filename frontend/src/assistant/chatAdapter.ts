@@ -18,6 +18,7 @@ import { resolveMention } from "./mentions";
 import type { AttachmentDraft } from "./useAttachments";
 
 export type ChatContext = {
+  newTask?: boolean;
   project: Project;
   work?: WorkContext;
   canvas?: ProductionController;
@@ -33,6 +34,7 @@ export type MessageTarget = {
   targetNodeId: string | null;
 };
 export type SentTurn = {
+  newTask?: boolean;
   work?: WorkContext;
   refs: Attachment[];
   agentId: string;
@@ -83,6 +85,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
           turn = structuredClone(
             saved ?? {
               work,
+              ...(p.newTask ? { newTask: true } : {}),
               refs:
                 (meta?.attachments as Attachment[] | undefined) ??
                 taskAttachments(p.project, p.canvas?.task, p.draft.items),
@@ -161,6 +164,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
           options.invoke,
           {
             resumeTurnId,
+            newTask: turn.newTask ?? false,
             messageContext: turn,
             agentName: agent.name,
             modelName: selected.name,

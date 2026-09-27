@@ -111,7 +111,13 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
                   })),
                 revision: m.get().revision,
                 message: "修改已应用并保存，可撤销",
-                state: inspectProject(m.get(), {}),
+                changed: ops.map((o) => ({
+                  op: o.op,
+                  id: "id" in o ? o.id : undefined,
+                  fields: Object.keys(o).filter(
+                    (key) => key !== "op" && key !== "id",
+                  ),
+                })),
               };
             } else throw new Error("未知工具操作");
           } catch (e) {

@@ -12,6 +12,7 @@ pub mod profiles;
 mod progress;
 mod prompts;
 mod provider;
+mod task_context;
 mod task_target;
 mod work_context;
 #[cfg(test)]

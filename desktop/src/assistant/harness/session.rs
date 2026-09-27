@@ -295,19 +295,4 @@ pub fn validate_resume(
     Ok(())
 }
 
-pub fn latest(
-    store: &Store,
-    project: &str,
-    binding: &Value,
-) -> Result<Option<Vec<Message>>, String> {
-    use rusqlite::OptionalExtension;
-    let turn:Option<String>=store.db.lock().unwrap().query_row("SELECT e.turn_id FROM agent_events e WHERE e.project_id=?1 AND e.kind='session/start' AND e.seq > COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0) AND EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND m.role='assistant' AND json_extract(m.attribution,'$.turnId')=e.turn_id) ORDER BY e.seq DESC LIMIT 1",[project],|r|r.get(0)).optional().map_err(|e|e.to_string())?;
-    let Some(turn) = turn else { return Ok(None) };
-    // A different agent/model route starts a new request series with bounded context.
-    let stored:String=store.db.lock().unwrap().query_row("SELECT payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='session/start' ORDER BY seq LIMIT 1",rusqlite::params![project,turn],|r|r.get(0)).map_err(|e|e.to_string())?;
-    let stored: Value = serde_json::from_str(&stored).map_err(|e| e.to_string())?;
-    if !super::binding::compatible(&stored["binding"], binding) {
-        return Ok(None);
-    }
-    restore(store, project, &turn, binding)
-}
+pub use super::session_selection::latest;

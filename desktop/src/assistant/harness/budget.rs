@@ -6,9 +6,9 @@ use rig_core::{
 };
 use serde_json::json;
 
-/// DSH fixed-density estimate uses UTF-16 length, not UTF-8 bytes.
+/// Shared fixed-density estimate; provider anchors calibrate actual totals.
 fn text_tokens(text: &str) -> usize {
-    text.encode_utf16().count().div_ceil(4)
+    super::metering::text_tokens(text)
 }
 fn structural<T: serde::Serialize>(value: &T) -> usize {
     serde_json::to_string(value).map_or(0, |v| text_tokens(&v)) + 4
@@ -282,7 +282,7 @@ async fn compact_with_retain(
         summary.trim()
     ));
     session.replace_range(host, 1, end, replacement)?;
-    host.record("compaction/end", json!({"status":"completed","inputTokens":response.usage.input_tokens,"outputTokens":response.usage.output_tokens}))?;
+    host.record("compaction/end", json!({"status":"completed","inputTokens":response.usage.input_tokens,"outputTokens":response.usage.output_tokens,"totalTokens":response.usage.total_tokens,"cachedInputTokens":response.usage.cached_input_tokens}))?;
     Ok(true)
 }
 

@@ -26,3 +26,19 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 模型适配器负责请求转换、凭据和任务轮询。远程服务仅接收本次请求选择的上下文与媒体；配置的端点决定数据接收方。本地凭据数据库不应上传仓库或用于公开复现。
 
 预览控制保持音频设备运行，定位请求在前端合并并保留播放/暂停边界；原生层清除旧缓冲帧。轨道名称和画布关联不参与渲染规格比较，连续参数变动停止 120 毫秒后再重建。播放器回收先在主线程移交所有权，再由后台线程关闭音频设备，最后回主线程销毁显示表面；回收与新建串行执行，避免旧设备关闭影响新设备。隐藏助手面板时保留任务运行时，但卸载消息视图。
+
+## Agent 任务上下文
+
+所有内置和自定义角色共用 `assistant/task_context.rs`、`harness/session_selection.rs` 和工具执行管线。完整聊天与工具原文保存在 SQLite；模型读取任务范围内的投影。
+
+- 消息 attribution 保存任务 ID、角色、引用对象、工作区及原始要求。同角色同对象或无新对象的后续消息继续任务；对象或工作区变化开启新任务。“作为新任务发送”显式另起任务，不删除聊天或共享约束。程序不靠关键词猜话题变化。
+- 会话恢复按项目、角色、任务及模型路由匹配；重试沿用原任务和已提交操作。旧版会话只通过明确重试恢复，不自动装入新任务；重置会阻止恢复旧任务。
+- 没有可恢复会话时，仅读取同任务最近六个已完成轮次，按 turn ID 配对。首轮可选上下文预算为模型预算与 12,000 估算 tokens 的较小值；当前用户输入及必要规则不会为了达标而静默删除。恢复会话继续使用已有压缩机制。
+- 保留共享项目约束、格式、版本和对象数量；指定目标后省略无关节点目录。`inspect` 支持 `ids/nodeIds/fields`，返回缺失对象、已省略字段和分页信息。约束截断时通过 `section=creation` 补读；`history` 支持按 `taskId` 查询。
+- 子 Agent 默认 spawn 独立历史；显式 fork 保留父会话已完成历史。子 Agent 工程快照不再重复系统消息中的角色规则与技能目录。
+- 编辑回执返回状态、版本、修改对象/字段及任务信息，不重复整份工程概览。超过 6,000 Unicode 字符的结果保留原文，模型收到预览和 `turnId/resultRef`，通过 `mstudio_read_result` 分页回读。精简消息持久化，重启不恢复成庞大原文；图片沿用媒体工具。
+- `context/usage` 记录估算组成及供应商校准后的压力；`context/selection` 记录任务和恢复条数。普通请求及摘要分别记录供应商总量和缓存输入。估算不是账单，缺失用量不是零。
+
+测试覆盖角色/任务隔离、连续修改、新任务重试、重置、共享约束、字段读取、Unicode 回读和跨项目拒绝。此次优化不改变原始媒体附件策略，也不承诺固定比例的 token 节省。
+
+参考：[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)、[Deep Agents](https://www.langchain.com/blog/context-management-for-deepagents)。

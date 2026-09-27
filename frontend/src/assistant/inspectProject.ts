@@ -65,6 +65,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     return {
       revision,
       creation: {
+        brief: snippet(p.brief, 800),
         intent: snippet(creation?.intent ?? p.brief, 800),
         essential: snippet(creation?.essential ?? "", 800),
         preserve: snippet(creation?.preserve ?? "", 800),
@@ -72,10 +73,31 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       },
       section: "creation",
     };
+  const objectIds = Array.isArray(args.ids) ? args.ids.slice(0, 12) : [];
+  const missingIds = objectIds.filter(
+    (id) => !page?.some((item) => (item as { id?: string }).id === id),
+  );
+  if (page && objectIds.length)
+    page = page.filter((item) =>
+      objectIds.includes((item as { id?: string }).id),
+    );
+  if (page && Array.isArray(args.fields) && args.section !== "generation") {
+    page = page.map((item) => {
+      const source = item as Record<string, unknown>;
+      const keep = new Set(["id", ...(args.fields as string[])]);
+      return {
+        ...Object.fromEntries(
+          Object.entries(source).filter(([key]) => keep.has(key)),
+        ),
+        omittedFields: Object.keys(source).filter((key) => !keep.has(key)),
+      };
+    });
+  }
   if (page)
     return {
       revision,
       section: args.section,
+      missingIds,
       total: page.length,
       items: page.slice(offset, offset + 5),
       nextOffset: offset + 5 < page.length ? offset + 5 : null,

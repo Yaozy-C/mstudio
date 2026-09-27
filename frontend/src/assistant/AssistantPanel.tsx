@@ -51,8 +51,9 @@ function AgentPanel(props: Props) {
   return <Chat {...props} history={history} />;
 }
 function Chat(props: Props & { history: ThreadMessageLike[] }) {
-  const latest = useRef(props);
-  latest.current = props;
+  const [newTask, setNewTask] = useState(false);
+  const latest = useRef({ ...props, newTask });
+  latest.current = { ...props, newTask };
   const input = useRef<HTMLTextAreaElement>(null);
   const [sent, setSent] = useState<Record<string, Attachment[]>>({});
   const [error, setError] = useState("");
@@ -86,7 +87,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
       agent: () => agentRef.current,
       accepted: (id, refs) => {
         setSent((current) => ({ ...current, [id]: refs }));
-        setAgentId(null);
+        setNewTask(false);
       },
       target: (id, target) =>
         setTargets((current) => ({ ...current, [id]: target })),
@@ -189,6 +190,8 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
             />
           ) : (
             <AgentComposer
+              newTask={newTask}
+              toggleNewTask={() => setNewTask((value) => !value)}
               canvas={props.canvas}
               work={props.work}
               input={input}

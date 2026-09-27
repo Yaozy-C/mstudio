@@ -18,6 +18,7 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
         "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields。按返回偏移补读。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
         &[
             "section",
+            "ids",
             "taskKey",
             "nodeIds",
             "fields",
@@ -33,8 +34,8 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
     ("skills", "列出当前 Agent 已启用的技能与文件目录。", &[]),
     (
         "history",
-        "分页检索项目历史对话。",
-        &["offset", "messageId", "textOffset"],
+        "分页检索项目历史对话；taskId 可限定当前或已知任务，完整原文按 textOffset 继续读取。",
+        &["offset", "messageId", "textOffset", "taskId"],
     ),
     ("models", "分页查看已启用的媒体模型。", &["offset"]),
     ("edit", "", &["revision", "operations"]),
@@ -67,6 +68,9 @@ impl ProjectHost {
     }
 }
 impl Host for ProjectHost {
+    fn result_turn(&self) -> Option<&str> {
+        self.tool.as_ref().map(|t| t.turn.as_str())
+    }
     fn token(&self) -> &CancellationToken {
         &self.token
     }
@@ -80,6 +84,7 @@ impl Host for ProjectHost {
         let Some(t) = &self.tool else { return vec![] };
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
+        definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"分页读取已卸载的完整工具结果。callId 来自 resultRef；省略 turnId 为当前轮，读取历史结果时使用它的 turnId。offset 按返回 nextOffset 继续。".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
             if !profiles::allows(&t.profile, action) {
                 continue;
@@ -149,7 +154,10 @@ impl Host for ProjectHost {
             self.action(&call.function.name),
             Some("read_skill" | "skills" | "history" | "models")
         ) || (call.function.name == "mstudio_memory" && call.function.arguments["action"] == "list")
-            || call.function.name == "mstudio_reopen_image"
+            || matches!(
+                call.function.name.as_str(),
+                "mstudio_reopen_image" | "mstudio_read_result"
+            )
             || matches!(
                 call.function.name.as_str(),
                 "mstudio_send_message" | "mstudio_interrupt_agent" | "mstudio_list_agents"
@@ -212,6 +220,9 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
             }
             Err(error) => json!({"error":error.to_string(),"code":"IMAGE_READ_FAILED"}),
         };
+    }
+    if call.function.name == "mstudio_read_result" {
+        return super::tool_output::read(t, &args);
     }
     if call.function.name == "mstudio_memory" {
         return MemoryTool(t.clone())

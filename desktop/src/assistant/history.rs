@@ -14,6 +14,7 @@ pub struct Message {
 }
 pub fn init(db: &rusqlite::Connection) -> Result<()> {
     db.execute_batch("CREATE TABLE IF NOT EXISTS agent_messages(id INTEGER PRIMARY KEY AUTOINCREMENT,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,role TEXT NOT NULL,content TEXT NOT NULL,model TEXT NOT NULL,payload TEXT NOT NULL,attribution TEXT); CREATE INDEX IF NOT EXISTS agent_messages_project ON agent_messages(project_id,id);")?;
+    db.execute_batch("CREATE INDEX IF NOT EXISTS agent_messages_task ON agent_messages(project_id,json_extract(attribution,'$.agentId'),json_extract(attribution,'$.taskScope.taskId'),id);")?;
     Ok(())
 }
 pub fn read(store: &Store, project: &str) -> Result<Vec<Message>> {
@@ -98,10 +99,11 @@ pub fn page(
     offset: usize,
     message_id: Option<i64>,
     text_offset: usize,
+    task_id: Option<&str>,
 ) -> Result<Vec<Value>> {
     let db = store.db.lock().unwrap();
-    let mut stmt=db.prepare("SELECT id,role,substr(content,?3,1500),length(content) FROM agent_messages WHERE project_id=?1 AND (?4 IS NULL OR id=?4) ORDER BY id DESC LIMIT 3 OFFSET ?2")?;
-    Ok(stmt.query_map(rusqlite::params![project,offset as i64,text_offset as i64+1,message_id],|r|Ok(serde_json::json!({"id":r.get::<_,i64>(0)?,"role":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"nextTextOffset":if r.get::<_,usize>(3)?>text_offset+1500{Some(text_offset+1500)}else{None}})))?.collect::<rusqlite::Result<Vec<_>>>()?)
+    let mut stmt=db.prepare("SELECT id,role,substr(content,?3,1500),length(content) FROM agent_messages WHERE project_id=?1 AND (?4 IS NULL OR id=?4) AND (?5 IS NULL OR json_extract(attribution,'$.taskScope.taskId')=?5) ORDER BY id DESC LIMIT 3 OFFSET ?2")?;
+    Ok(stmt.query_map(rusqlite::params![project,offset as i64,text_offset as i64+1,message_id,task_id],|r|Ok(serde_json::json!({"id":r.get::<_,i64>(0)?,"role":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"nextTextOffset":if r.get::<_,usize>(3)?>text_offset+1500{Some(text_offset+1500)}else{None}})))?.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
 /// Persist both sides before any model or attachment I/O. A crash leaves an

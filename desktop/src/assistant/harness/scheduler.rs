@@ -66,23 +66,7 @@ async fn group(
         while let Some(value) = slots.get_mut(committed).and_then(Option::take) {
             let call = &calls[committed];
             let canonical = value;
-            let value = if canonical.get("__offloadedImage").is_some() {
-                json!({"ok":true,"imageId":canonical["imageId"]})
-            } else if canonical.to_string().len()
-                > if call.function.name == "mstudio_inspect" {
-                    64_000
-                } else {
-                    16_000
-                }
-            {
-                if canonical["applied"] == true || canonical["ok"] == true {
-                    json!({"applied":canonical["applied"],"ok":canonical["ok"],"revision":canonical["revision"],"detailTruncated":true,"message":"操作已完成，详细结果过长；需要时读取当前状态"})
-                } else {
-                    json!({"error":"工具返回内容过长，请缩小读取范围", "code":"RESULT_TOO_LARGE"})
-                }
-            } else {
-                canonical.clone()
-            };
+            let value = super::tool_output::project(call, &canonical, host.result_turn());
             let message = result_message(
                 call,
                 if canonical.get("__offloadedImage").is_some() {

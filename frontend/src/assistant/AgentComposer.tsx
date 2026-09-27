@@ -1,3 +1,4 @@
+import { NewTaskButton } from "./NewTaskButton";
 import { TaskReference } from "../production/TaskReference";
 import { compositionGuard } from "./compositionGuard";
 import type { WorkContext } from "./workContext";
@@ -37,6 +38,8 @@ export function AgentComposer({
   ready,
   model,
   settings,
+  newTask,
+  toggleNewTask,
 }: {
   canvas?: ProductionController;
   input: RefObject<HTMLTextAreaElement | null>;
@@ -53,6 +56,8 @@ export function AgentComposer({
   ready: boolean;
   model?: ModelConnection;
   settings: () => void;
+  newTask: boolean;
+  toggleNewTask: () => void;
 }) {
   const [ime] = useState(compositionGuard);
   const [query, setQuery] = useState<ReturnType<typeof mentionQuery>>(null);
@@ -168,9 +173,11 @@ export function AgentComposer({
           minRows={2}
           maxRows={7}
           placeholder={
-            attachments.length
-              ? "想对这些内容做什么？"
-              : "描述任务，@ 引用素材…"
+            newTask
+              ? "描述新任务…"
+              : attachments.length
+                ? "想对这些内容做什么？"
+                : "描述任务，@ 引用素材…"
           }
           aria-label="发送给 Agent"
           aria-autocomplete="list"
@@ -262,6 +269,11 @@ export function AgentComposer({
             )}
           </div>
           <div className="composer-submit">
+            <NewTaskButton
+              active={newTask}
+              disabled={running}
+              onClick={toggleNewTask}
+            />
             {running ? (
               <ComposerPrimitive.Cancel aria-label="停止回答" title="停止回答">
                 <Square size={13} weight="fill" />

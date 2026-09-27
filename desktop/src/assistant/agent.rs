@@ -40,13 +40,21 @@ pub(crate) async fn complete_with_resume(
     let mut fork_history = Vec::new();
     if let Some(t) = &host.tool {
         let store = t.app.state::<crate::database::Store>();
-        let binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()});
+        let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()});
+        harness::session_selection::bind_task(&store, &t.project, &t.turn, resume, &mut binding)?;
         fork_history = harness::handoff::completed(&store, &t.project, &t.turn, &binding)?;
         let restored = if let Some(turn) = resume {
             harness::session::restore(&store, &t.project, turn, &binding)?
         } else {
             harness::session::latest(&store, &t.project, &binding)?
         };
+        harness::session_selection::record_selection(
+            &store,
+            &t.project,
+            &t.turn,
+            &binding,
+            restored.as_ref().map_or(0, Vec::len),
+        )?;
         if let Some(mut restored) = restored {
             let mut additions = messages.iter().rev().take(2).cloned().collect::<Vec<_>>();
             additions.reverse();

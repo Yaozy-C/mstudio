@@ -13,6 +13,8 @@ use tauri::{Emitter, Manager};
 pub struct Request {
     pub project_id: String,
     #[serde(default)]
+    pub new_task: bool,
+    #[serde(default)]
     pub resume_turn_id: Option<String>,
     pub prompt: String,
     pub attachments: Option<Vec<attachments::Reference>>,
@@ -53,8 +55,16 @@ pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, Stri
         .map_err(|e| e.to_string());
     // Persist even a profile rejection so a later retry keeps its original context.
     let current = agent_profile.as_ref().ok();
+    let scope = super::task_context::resolve(
+        &store,
+        &request,
+        current
+            .map(|p| p.id.as_str())
+            .or(request.agent_id.as_deref())
+            .unwrap_or("coordinator"),
+    )?;
     let meta = json!({"agentId":current.map(|p|p.id.as_str()).or(request.agent_id.as_deref()),"agentName":current.map(|p|p.name.as_str()).unwrap_or(&request.agent_name),
-        "modelName":request.model_name,"createdAt":std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64,"turnId":request.client_turn_id,"request":request.message_context});
+        "modelName":request.model_name,"createdAt":std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64,"turnId":request.client_turn_id,"request":request.message_context,"taskScope":scope});
     history::begin(
         &store,
         &request.project_id,
@@ -65,7 +75,7 @@ pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, Stri
     )
     .map_err(|e| e.to_string())?;
     let result = match agent_profile {
-        Ok(profile) => execute(&app, &request, &pending, profile).await,
+        Ok(profile) => execute(&app, &request, &pending, profile, &scope).await,
         Err(error) => Err(error),
     };
     let (status, error) = match &result {
@@ -110,6 +120,7 @@ async fn execute(
     request: &Request,
     pending: &pending::PendingTurn,
     agent_profile: profiles::AgentProfile,
+    scope: &super::task_context::Scope,
 ) -> Result<String, String> {
     let Request {
         project_id,
@@ -131,7 +142,7 @@ async fn execute(
     )
     .map_err(|e| e.to_string())?;
     let profile = model.profile;
-    let previous = history::read(&store, project_id).map_err(|e| e.to_string())?;
+    let previous = super::task_context::history(&store, project_id, scope)?;
     let skill_setting = profiles::skill_setting(&agent_profile);
     let document: String = store
         .db
@@ -160,8 +171,7 @@ async fn execute(
         snapshot["memory"] = memory::context(&memory, prompt);
     }
     if profiles::allows(&agent_profile, "inspect") {
-        snapshot["previousRun"] =
-            journal::recovery(&store, project_id).map_err(|e| e.to_string())?;
+        snapshot["previousRun"] = super::task_context::recovery(&store, project_id, scope)?;
     }
     snapshot["skills"] = skills::catalog(
         &skills::root(app).map_err(|e| e.to_string())?,
@@ -203,11 +213,12 @@ async fn execute(
         task_node_id.as_deref(),
     )?;
     snapshot["agent"] = json!({"name":agent_profile.name,"instructions":agent_profile.instructions,"skills":agent_profile.skill_ids,"tools":agent_profile.tool_ids,"canEdit":profiles::allows(&agent_profile,"edit")});
+    snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     let input = context::assemble_with_budget(
         &previous,
         payload.clone(),
         snapshot.clone(),
-        profile.input_budget(),
+        profile.input_budget().min(12_000),
     )?;
     let turn = client_turn_id;
     let record = |kind: &str, value: Value| {
@@ -220,7 +231,7 @@ async fn execute(
     record("user/message", json!({"text":prompt}))?;
     record(
         "request/context",
-        json!({"project":snapshot,"attachments":payload[0]["attachments"],"messages":input.as_array().unwrap().iter().map(|m|json!({"role":m["role"],"content":context::text_only(&m["content"])})).collect::<Vec<_>>(),"budgetEstimatedTokens":profile.input_budget()}),
+        json!({"project":snapshot,"attachments":payload[0]["attachments"],"messages":input.as_array().unwrap().iter().map(|m|json!({"role":m["role"],"content":context::text_only(&m["content"])})).collect::<Vec<_>>(),"budgetEstimatedTokens":profile.input_budget().min(12_000),"taskId":scope.task_id}),
     )?;
     history::update_payload(&store, project_id, turn, &context::text_only(&payload))
         .map_err(|e| e.to_string())?;

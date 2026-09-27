@@ -107,6 +107,7 @@ impl ProjectTool {
                 args["offset"].as_u64().unwrap_or(0).min(100_000) as usize,
                 args["messageId"].as_i64(),
                 args["textOffset"].as_u64().unwrap_or(0).min(100_000) as usize,
+                args["taskId"].as_str(),
             ) {
                 Ok(v) => json!(v),
                 Err(e) => json!({"error":e.to_string()}),
