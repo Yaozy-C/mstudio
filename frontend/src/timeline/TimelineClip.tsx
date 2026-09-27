@@ -1,3 +1,4 @@
+import { requestClipEdit } from "./clipEdits";
 import { Waveform } from "./Waveform";
 import { stretchClip } from "./stretchClip";
 import { detachAudio } from "./detachAudio";
@@ -69,6 +70,9 @@ export function TimelineClip({
     <ObjectMenu
       actions={[
         { label: "编辑片段", run: onOpen },
+        { label: "复制片段 ⌘C", run: () => requestClipEdit("copy", clip.id) },
+        { label: "剪切片段 ⌘X", run: () => requestClipEdit("cut", clip.id) },
+        { label: "粘贴片段 ⌘V", run: () => requestClipEdit("paste", clip.id) },
         ...(asset?.kind === "video" && asset.hasAudio && !audio
           ? [
               {
@@ -90,7 +94,7 @@ export function TimelineClip({
             ]
           : []),
         {
-          label: "移除片段",
+          label: "移除片段 Delete / Backspace",
           danger: true,
           run: onRemove,
         },

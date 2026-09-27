@@ -11,6 +11,7 @@ import type { PlaybackClock } from "./clock";
 import { TimelineTransport } from "./TimelineTransport";
 import { ClockReadout } from "./ClockReadout";
 import { frameTime } from "./geometry";
+import { ShortcutHelp } from "./ShortcutHelp";
 import { addTrack } from "./document";
 export function TimelineToolbar({
   onPlay,
@@ -75,6 +76,7 @@ export function TimelineToolbar({
         <i> / {frameTime(total, project.fps)}</i>
       </span>
       <div className="zoom">
+        <ShortcutHelp />
         <button aria-label="适合整条时间线" onClick={onFit}>
           <ArrowsOutSimple />
         </button>

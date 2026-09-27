@@ -14,6 +14,7 @@ import { removeNodes } from "../canvas/removeNodes";
 import { uncollectAsset } from "./assetLibrary";
 import { useMissingAssets } from "./useMissingAssets";
 import { useAgentTools } from "../assistant/useAgentTools";
+import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
 import { useEffect, useCallback, useState } from "react";
 import { StudioError } from "./StudioError";
@@ -129,6 +130,7 @@ export function Studio({ initial, onBack }: StudioProps) {
     selectNode(node.id);
     if (!text) setEditing(node.id);
   }
+  useClipEditing(m, clipId, clock, activeView === "film", setClipId);
   const split = () => playback.split(clipId);
   useShortcuts(m, setError, {
     clock,
@@ -218,9 +220,7 @@ export function Studio({ initial, onBack }: StudioProps) {
             onImport={() => void importMedia()}
             onAdd={add}
             onPlace={place}
-            onRemove={(a) => {
-              change((p) => uncollectAsset(p, a.id));
-            }}
+            onRemove={(a) => change((p) => uncollectAsset(p, a.id))}
             onReference={(a) => {
               if (canvas.task && activeView === "storyboard")
                 canvas.attach({ kind: "asset", id: a.id });
