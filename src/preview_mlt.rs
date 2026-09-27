@@ -192,9 +192,8 @@ pub fn graph(spec: &RenderSpec, assets: &[Asset]) -> Result<String> {
         }
         // PNG has one decoded frame. Repeat that frame instead of seeking the
         // decoder past EOF, which can yield an opaque white fallback image.
-        out += &format!(
-            "<entry producer=\"p{id}\" in=\"0\" out=\"0\" repeat=\"{len}\"/></playlist>"
-        );
+        out +=
+            &format!("<entry producer=\"p{id}\" in=\"0\" out=\"0\" repeat=\"{len}\"/></playlist>");
         track_xml += &format!("<track producer=\"list{id}\" hide=\"audio\"/>");
         transitions += &affine(id, &format!("0 0 {w} {h} 1"));
     }
