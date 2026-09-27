@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { actionText, editShotText } from "../creative/shotText";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
@@ -21,6 +22,7 @@ export function CanvasPreview({
   close: () => void;
   onAdd: (asset: Asset) => void;
 }) {
+  useLanguage();
   const asset = project.assets.find((a) => a.id === item.assetId);
   const node = project.nodes.find((n) => n.id === item.nodeId);
   const [text, setText] = useState(node ? actionText(node) : item.text);
@@ -53,7 +55,7 @@ export function CanvasPreview({
         <header>
           <Dialog.Title>{item.title}</Dialog.Title>
           <Dialog.Close>
-            <button aria-label="关闭预览">
+            <button aria-label={t("关闭预览")}>
               <X />
             </button>
           </Dialog.Close>
@@ -73,7 +75,7 @@ export function CanvasPreview({
         ) : (
           <>
             <label>
-              镜头画面与动作
+              {t("镜头画面与动作")}
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -82,7 +84,7 @@ export function CanvasPreview({
             </label>
             {node?.shot && (
               <label>
-                台词 / 旁白
+                {t("台词 / 旁白")}
                 <textarea
                   value={dialogue}
                   onChange={(e) => setDialogue(e.target.value)}
@@ -97,7 +99,7 @@ export function CanvasPreview({
                 close();
               }}
             >
-              保存镜头内容
+              {t("保存镜头内容")}
             </button>
           </>
         )}
@@ -113,14 +115,16 @@ export function CanvasPreview({
                   close();
                 }}
               >
-                加入时间线
+                {t("加入时间线")}
               </button>
             )}
             <button
               disabled={isLibraryAsset(asset)}
               onClick={() => change((p) => collectAsset(p, asset))}
             >
-              {isLibraryAsset(asset) ? "已在项目素材中" : "保存为项目素材"}
+              {isLibraryAsset(asset)
+                ? t("已在项目素材中")
+                : t("保存为项目素材")}
             </button>
           </footer>
         )}

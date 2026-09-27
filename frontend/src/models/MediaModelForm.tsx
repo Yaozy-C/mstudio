@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { ServicePicker } from "./ServicePicker";
 import {
@@ -18,6 +19,7 @@ export function MediaModelForm({
   save: (model: MediaModel, key?: string, clearKey?: boolean) => Promise<void>;
   cancel: () => void;
 }) {
+  useLanguage();
   const [model, setModel] = useState(initial);
   const [params, setParams] = useState(JSON.stringify(initial.params, null, 2));
   const [mapping, setMapping] = useState(
@@ -66,29 +68,31 @@ export function MediaModelForm({
     >
       <div className="model-section-heading">
         <h3>
-          {initial.name ? "配置模型" : `添加${mediaLabels[model.kind]}模型`}
+          {initial.name
+            ? t("配置模型")
+            : t("添加{v0}模型", { v0: t(mediaLabels[model.kind]) })}
         </h3>
       </div>
       <p className="model-hint">
-        保存模型连接。生成描述和参考素材在项目中填写。
+        {t("保存模型连接。生成描述和参考素材在项目中填写。")}
       </p>
       <fieldset disabled={busy}>
         <div className="model-form-grid">
           <label>
-            模型名称
+            {t("模型名称")}
             <input
               autoFocus
               required
               maxLength={80}
               value={model.name}
               onChange={(e) => setModel({ ...model, name: e.target.value })}
-              placeholder="给这个模型起个易识别的名字"
+              placeholder={t("给这个模型起个易识别的名字")}
             />
           </label>
           <label>
-            输出类型
+            {t("输出类型")}
             <StudioSelect
-              label="输出类型"
+              label={t("输出类型")}
               disabled={busy}
               value={model.kind}
               onValueChange={(kind) =>
@@ -101,7 +105,7 @@ export function MediaModelForm({
               }
               options={Object.entries(mediaLabels).map(([value, label]) => ({
                 value,
-                label,
+                label: t(label),
               }))}
             />
           </label>
@@ -149,7 +153,7 @@ export function MediaModelForm({
           {model.plugin === "gemini-native" && (
             <>
               <label className="model-field-wide">
-                模型 ID
+                {t("模型 ID")}
                 <input
                   required
                   value={nativeModel}
@@ -163,13 +167,13 @@ export function MediaModelForm({
             className="model-field-wide"
             open={!initial.endpoint || undefined}
           >
-            <summary>高级连接设置</summary>
+            <summary>{t("高级连接设置")}</summary>
             <label className="model-field-wide">
               {model.plugin === "fal"
-                ? "模型端点 ID"
+                ? t("模型端点 ID")
                 : model.plugin === "gemini-native"
-                  ? "Google 服务地址"
-                  : "提交接口 URL"}
+                  ? t("Google 服务地址")
+                  : t("提交接口 URL")}
               <input
                 required
                 readOnly={model.plugin === "gemini-native"}
@@ -179,23 +183,25 @@ export function MediaModelForm({
                 }
                 placeholder={
                   model.plugin === "fal"
-                    ? "例如 fal-ai/flux/schnell"
+                    ? t("例如 fal-ai/flux/schnell")
                     : "https://api.example.com/v1/images/generations"
                 }
               />
               <small>
                 {model.plugin === "fal"
-                  ? "填写 fal 的完整端点 ID，共用服务连接中的密钥。"
+                  ? t("填写 fal 的完整端点 ID，共用服务连接中的密钥。")
                   : model.plugin === "gemini-native"
-                    ? "使用 Google 官方服务地址，模型 ID 在上方填写。"
-                    : "填写完整 POST 地址，支持 HTTPS 或本机 HTTP。"}
+                    ? t("使用 Google 官方服务地址，模型 ID 在上方填写。")
+                    : t("填写完整 POST 地址，支持 HTTPS 或本机 HTTP。")}
               </small>
             </label>
             {model.plugin === "http-json" && (
               <HttpModelFields mapping={mapping} setMapping={setMapping} />
             )}
             <label className="model-field-wide">
-              {model.plugin !== "http-json" ? "默认生成参数" : "请求 JSON 模板"}
+              {model.plugin !== "http-json"
+                ? t("默认生成参数")
+                : t("请求 JSON 模板")}
               <textarea
                 rows={6}
                 value={params}
@@ -204,10 +210,14 @@ export function MediaModelForm({
               />
               <small>
                 {model.plugin === "fal"
-                  ? "按模型文档填写 JSON，提交时自动填入 prompt。"
+                  ? t("按模型文档填写 JSON，提交时自动填入 prompt。")
                   : model.plugin === "gemini-native"
-                    ? "generationConfig 可设置画幅等选项（model 以上方模型 ID 为准），文字和图片由适配器自动处理。"
-                    : "按接口文档填写完整请求，可包含模型 ID 和嵌套输入。{{prompt}} 会替换为当前生成描述；参考 URL 可直接填写。密钥不要写在这里。"}
+                    ? t(
+                        "generationConfig 可设置画幅等选项（model 以上方模型 ID 为准），文字和图片由适配器自动处理。",
+                      )
+                    : t(
+                        "按接口文档填写完整请求，可包含模型 ID 和嵌套输入。{{prompt}} 会替换为当前生成描述；参考 URL 可直接填写。密钥不要写在这里。",
+                      )}
               </small>
             </label>
           </details>
@@ -215,10 +225,10 @@ export function MediaModelForm({
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
         <footer>
           <button type="button" onClick={cancel}>
-            取消
+            {t("取消")}
           </button>
           <button className="primary" disabled={busy || !model.connectionId}>
-            {busy ? "保存中…" : "保存模型"}
+            {busy ? t("保存中…") : t("保存模型")}
           </button>
         </footer>
       </fieldset>

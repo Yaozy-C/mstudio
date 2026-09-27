@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, SkipBack } from "@phosphor-icons/react";
 import { bridge } from "../bridge";
@@ -24,6 +25,7 @@ export function NativePreview({
   project: Project;
   clock: PlaybackClock;
 }) {
+  useLanguage();
   const stage = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -188,7 +190,7 @@ export function NativePreview({
   return (
     <div className="preview">
       <header>
-        <span>成片预览</span>
+        <span>{t("成片预览")}</span>
         <small>
           {project.width} × {project.height}
         </small>
@@ -199,8 +201,8 @@ export function NativePreview({
             <Play size={26} />
             <span>
               {project.clips.length
-                ? "正在准备预览…"
-                : "将素材或镜头加入时间线"}
+                ? t("正在准备预览…")
+                : t("将素材或镜头加入时间线")}
             </span>
           </div>
         )}
@@ -208,7 +210,7 @@ export function NativePreview({
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       <div className="preview-transport">
         <button
-          title="回到起点 Home"
+          title={t("回到起点 Home")}
           onClick={() => {
             clock.pause();
             clock.seek(0);
@@ -219,7 +221,7 @@ export function NativePreview({
         <button
           className="play-button"
           disabled={!ready || !!error}
-          title={playing ? "暂停 Space" : "播放 Space"}
+          title={playing ? t("暂停 Space") : t("播放 Space")}
           onClick={clock.toggle}
         >
           {playing ? <Pause weight="fill" /> : <Play weight="fill" />}

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { bridge, native } from "../bridge";
@@ -5,6 +6,7 @@ import { skills, useAgents } from "./catalog";
 import { SkillRules } from "./SkillRules";
 import type { CreativeSkill } from "../plugins/skills";
 export function SkillLibrary({ openAgents }: { openAgents: () => void }) {
+  useLanguage();
   const hub = useAgents();
   const [installed, setInstalled] = useState<CreativeSkill[]>([]);
   const [error, setError] = useState("");
@@ -16,33 +18,24 @@ export function SkillLibrary({ openAgents }: { openAgents: () => void }) {
   }, []);
   return (
     <section>
-      <div className="hub-intro">
-        <div className="eyebrow">SKILLS · 能力层</div>
-        <h2>把专业方法与规则装配给 Agent。</h2>
-        <p>
-          Skill 库包含随 Mstudio 发布的创作规则和方法。在 Agent 中选择需要的
-          Skills，每个 Agent 独立生效。
-        </p>
-      </div>
-      <div className="hub-section-head">
-        <h3>能力库</h3>
-        <button onClick={openAgents}>去 Agent 装配</button>
+      <div className="settings-actions">
+        <button onClick={openAgents}>{t("去 Agent 装配")}</button>
       </div>
       {skills.map((s) => (
         <article className="hub-feature" key={s.id}>
           <div className="hub-section-head">
             <div>
-              <h3>{s.name}</h3>
-              <p>{s.description}</p>
+              <h3>{t(s.name)}</h3>
+              <p>{t(s.description)}</p>
             </div>
-            <span className="model-badge">{s.kind}</span>
+            <span className="model-badge">{t(s.kind)}</span>
           </div>
           <p className="model-hint">
-            {hub.agents.filter((a) => a.skillIds.includes(s.id)).length} 个
-            Agent 已装配 ·{" "}
+            {hub.agents.filter((a) => a.skillIds.includes(s.id)).length}{" "}
+            {t("个 Agent 已装配 ·")}{" "}
             {installed.find((v) => v.id === s.id)?.available
-              ? "内置规则可用"
-              : "内置规则待检查"}
+              ? t("内置规则可用")
+              : t("内置规则待检查")}
           </p>
           <SkillRules
             id={s.id}

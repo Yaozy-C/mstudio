@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { Plus, PencilSimple, Trash, X } from "@phosphor-icons/react";
@@ -13,6 +14,7 @@ import {
 } from "./connectionStore";
 const kinds = Object.keys(serviceLabels) as ServiceKind[];
 export function ServiceConnections() {
+  useLanguage();
   const hub = useServiceConnections();
   const [edit, setEdit] = useState<ServiceConnection | null>(null);
   const [remove, setRemove] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function ServiceConnections() {
         cancel={() => setEdit(null)}
         saved={() => {
           setEdit(null);
-          setNotice("服务连接已保存");
+          setNotice(t("服务连接已保存"));
         }}
       />
     );
@@ -44,7 +46,7 @@ export function ServiceConnections() {
       await bridge("remove_service_connection", { id });
       serviceChanged();
       setRemove(null);
-      setNotice("服务连接已移除");
+      setNotice(t("服务连接已移除"));
     } catch (e) {
       setError(String(e));
     } finally {
@@ -55,8 +57,8 @@ export function ServiceConnections() {
     <section>
       <div className="hub-section-head">
         <div>
-          <h3>服务连接</h3>
-          <p>连接一次，供多个对话、图像或视频模型使用。</p>
+          <h3>{t("服务连接")}</h3>
+          <p>{t("连接一次，供多个对话、图像或视频模型使用。")}</p>
         </div>
         <button
           className="primary"
@@ -73,7 +75,7 @@ export function ServiceConnections() {
           }
         >
           <Plus />
-          添加连接
+          {t("添加连接")}
         </button>
       </div>
       {(error || hub.error) && (
@@ -84,7 +86,7 @@ export function ServiceConnections() {
           <span>{notice}</span>
           <button
             type="button"
-            aria-label="关闭提示"
+            aria-label={t("关闭提示")}
             onClick={() => setNotice("")}
           >
             <X />
@@ -101,21 +103,22 @@ export function ServiceConnections() {
               <strong>{service.name}</strong>
               <p>{service.endpoint}</p>
               <small>
-                {serviceLabels[service.kind]} · {service.modelCount} 个模型 ·{" "}
-                {service.hasKey ? "密钥已配置" : "未配置密钥"}
+                {t(serviceLabels[service.kind])} · {service.modelCount}{" "}
+                {t("个模型 ·")}{" "}
+                {service.hasKey ? t("密钥已配置") : t("未配置密钥")}
               </small>
             </div>
             <div className="model-row-actions">
               <button
                 disabled={busy}
-                aria-label={`编辑 ${service.name}`}
+                aria-label={t("编辑 {v0}", { v0: service.name })}
                 onClick={() => setEdit(service)}
               >
                 <PencilSimple />
               </button>
               <button
                 disabled={busy}
-                aria-label={`移除 ${service.name}`}
+                aria-label={t("移除 {v0}", { v0: service.name })}
                 onClick={() => setRemove(service.id)}
               >
                 <Trash />
@@ -125,18 +128,21 @@ export function ServiceConnections() {
               <div className="model-remove">
                 <span>
                   {service.modelCount
-                    ? `还有 ${service.modelCount} 个模型使用此连接，请先更换连接或移除模型。`
-                    : `移除「${service.name}」及本机密钥？`}
+                    ? t(
+                        "还有 {v0} 个模型使用此连接，请先更换连接或移除模型。",
+                        { v0: service.modelCount },
+                      )
+                    : t("移除「{v0}」及本机密钥？", { v0: service.name })}
                 </span>
                 <button type="button" onClick={() => setRemove(null)}>
-                  取消
+                  {t("取消")}
                 </button>
                 {!service.modelCount && (
                   <button
                     disabled={busy}
                     onClick={() => void destroy(service.id)}
                   >
-                    确认移除
+                    {t("确认移除")}
                   </button>
                 )}
               </div>
@@ -145,7 +151,9 @@ export function ServiceConnections() {
         ))}
       </div>
       {!hub.loading && !hub.connections.length && (
-        <p className="model-hint">先添加一个服务连接，再从模型库选择型号。</p>
+        <p className="model-hint">
+          {t("先添加一个服务连接，再从模型库选择型号。")}
+        </p>
       )}
     </section>
   );

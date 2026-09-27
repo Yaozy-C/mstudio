@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import type { ModelConnection } from "./types";
 export const inputLabels = {
   image: "图片",
@@ -32,5 +33,7 @@ export function inputSummary(model: ModelConnection) {
     ...Object.entries(inputLabels)
       .filter(([kind]) => supportsInput(model, kind))
       .map(([, label]) => label),
-  ].join(" · ");
+  ]
+    .map((label) => t(label))
+    .join(" · ");
 }

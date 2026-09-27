@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog, Popover } from "@radix-ui/themes";
 import {
@@ -22,6 +23,7 @@ export function MediaReferenceStrip(props: {
   extrasOnly?: boolean;
   hiddenRoles?: string[];
 }) {
+  useLanguage();
   const { canvas, project } = props;
   const [preview, setPreview] = useState<ProductionInput>();
   const task = canvas.task;
@@ -65,11 +67,11 @@ export function MediaReferenceStrip(props: {
   }
   return (
     <>
-      <div className="composer-media-strip" aria-label="本次引用">
+      <div className="composer-media-strip" aria-label={t("本次引用")}>
         {inputs.map((ref) => {
           const a = project.assets.find((a) => a.id === ref.assetId);
           const node = project.nodes.find((n) => n.id === ref.nodeId);
-          const title = a?.name ?? node?.title ?? "素材已移除";
+          const title = a?.name ?? node?.title ?? t("素材已移除");
           const src = a && (a.preview || (a.kind === "image" ? a.path : ""));
           const invalid =
             (!a && !node) ||
@@ -106,7 +108,7 @@ export function MediaReferenceStrip(props: {
               <button
                 className="reference-preview"
                 type="button"
-                aria-label={`预览引用 ${title}`}
+                aria-label={t("预览引用 {v0}", { v0: title })}
                 onClick={() => setPreview(ref)}
               >
                 {src ? (
@@ -124,14 +126,16 @@ export function MediaReferenceStrip(props: {
               </button>
               {ref.role !== "reference" && (
                 <span className="reference-role">
-                  {ref.role === "edit" ? "修改这张" : roleLabels[ref.role]}
+                  {ref.role === "edit"
+                    ? t("修改这张")
+                    : t(roleLabels[ref.role])}
                 </span>
               )}
               <button
                 type="button"
                 className="composer-media-remove"
-                aria-label={`移除引用 ${title}`}
-                title="移除"
+                aria-label={t("移除引用 {v0}", { v0: title })}
+                title={t("移除")}
                 onClick={() =>
                   canvas.update({
                     inputs: task!.inputs.filter((r) => r.key !== ref.key),
@@ -145,8 +149,8 @@ export function MediaReferenceStrip(props: {
                   <button
                     type="button"
                     className="reference-options"
-                    aria-label={`引用用途 ${title}`}
-                    title="用途与顺序"
+                    aria-label={t("引用用途 {v0}", { v0: title })}
+                    title={t("用途与顺序")}
                   >
                     <DotsThree size={16} />
                   </button>
@@ -163,7 +167,7 @@ export function MediaReferenceStrip(props: {
                         aria-pressed={ref.role === role}
                         onClick={() => purpose(ref, role)}
                       >
-                        {role === "edit" ? "修改这张" : roleLabels[role]}
+                        {role === "edit" ? t("修改这张") : t(roleLabels[role])}
                       </button>
                     ))}
                   <button
@@ -178,7 +182,7 @@ export function MediaReferenceStrip(props: {
                       )
                     }
                   >
-                    向前移
+                    {t("向前移")}
                   </button>
                 </Popover.Content>
               </Popover.Root>
@@ -203,10 +207,10 @@ export function MediaReferenceStrip(props: {
             <Dialog.Title>
               {asset?.name ??
                 project.nodes.find((n) => n.id === preview?.nodeId)?.title ??
-                "引用预览"}
+                t("引用预览")}
             </Dialog.Title>
             <Dialog.Close>
-              <button aria-label="关闭引用预览">
+              <button aria-label={t("关闭引用预览")}>
                 <X />
               </button>
             </Dialog.Close>

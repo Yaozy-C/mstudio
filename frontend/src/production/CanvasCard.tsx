@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
 import { useLayoutEffect, useRef } from "react";
 import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
@@ -31,14 +32,15 @@ export function CanvasCard({
   collect: () => void;
   onAdd: (asset: Asset) => void;
 }) {
+  useLanguage();
   const asset = project.assets.find((a) => a.id === item.assetId);
   const mediaTitle =
     asset &&
     (/^画面\s*\d+$/.test(item.title) ||
       /^生成结果-|^[a-f0-9]{20,}/i.test(item.title))
       ? asset.kind === "video"
-        ? "视频"
-        : "图片"
+        ? t("视频")
+        : t("图片")
       : item.title;
   const Icon =
     asset?.kind === "video"
@@ -62,15 +64,15 @@ export function CanvasCard({
   return (
     <ObjectMenu
       actions={[
-        { label: "引用到输入框", run: () => canvas.reference([item.key]) },
-        { label: "预览 / 编辑", run: () => preview(item) },
+        { label: t("引用到输入框"), run: () => canvas.reference([item.key]) },
+        { label: t("预览 / 编辑"), run: () => preview(item) },
         ...(asset &&
         (asset.kind === "image" ||
           asset.kind === "video" ||
           asset.kind === "audio")
           ? [
               {
-                label: "加入时间线",
+                label: t("加入时间线"),
                 run: () => onAdd(asset),
                 disabled: !!asset.missing,
               },
@@ -80,20 +82,20 @@ export function CanvasCard({
           ? [
               {
                 label: isLibraryAsset(asset)
-                  ? "已在项目素材中"
-                  : "保存为项目素材",
+                  ? t("已在项目素材中")
+                  : t("保存为项目素材"),
                 run: collect,
                 disabled: isLibraryAsset(asset),
               },
             ]
           : []),
         {
-          label: "用 AI 修改图片",
+          label: t("用 AI 修改图片"),
           run: () => canvas.act("image", [item.key]),
           disabled: !asset || asset.kind !== "image",
         },
-        { label: "制作视频", run: () => canvas.act("video", [item.key]) },
-        { label: "从画布移除", run: () => canvas.remove(item) },
+        { label: t("制作视频"), run: () => canvas.act("video", [item.key]) },
+        { label: t("从画布移除"), run: () => canvas.remove(item) },
       ]}
     >
       <article
@@ -120,7 +122,7 @@ export function CanvasCard({
         tabIndex={0}
         aria-label={`${labels[item.kind]}：${mediaTitle}`}
         aria-description={
-          [selected && "已选中", referenced && "已引用到聊天"]
+          [selected && t("已选中"), referenced && t("已引用到聊天")]
             .filter(Boolean)
             .join("，") || undefined
         }
@@ -187,20 +189,21 @@ export function CanvasCard({
         </strong>
         {!!item.usages?.length && (
           <small className="card-usage">
-            用于：{item.usages.map((u) => u.title).join(" · ")}
+            {t("用于：")}
+            {item.usages.map((u) => u.title).join(" · ")}
           </small>
         )}
         {item.kind === "script" ? (
           <ShotCardText item={item} project={project} />
         ) : !asset ? (
-          <p className="card-copy">{item.text || "双击补充镜头内容"}</p>
+          <p className="card-copy">{item.text || t("双击补充镜头内容")}</p>
         ) : asset.missing ? (
           <MissingAsset asset={asset} />
         ) : asset.kind === "video" ? (
           <div className="card-video">
             <img src={mediaUrl(asset.preview)} alt="" draggable={false} />
             <button
-              aria-label={`播放 ${item.title}`}
+              aria-label={t("播放 {v0}", { v0: item.title })}
               onClick={(e) => {
                 e.stopPropagation();
                 preview(item);

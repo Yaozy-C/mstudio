@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { duration, type Clip } from "../model";
 export function ClipFields({
   clip,
@@ -12,6 +13,7 @@ export function ClipFields({
   onUpdate: (clip: Clip) => void;
   section?: "time" | "audio";
 }) {
+  useLanguage();
   function numeric(
     key: "trimIn" | "trimOut" | "speed" | "volume",
     value: number,
@@ -36,7 +38,7 @@ export function ClipFields({
         <>
           <div className="field-grid">
             <label>
-              入点 / 秒
+              {t("入点 / 秒")}
               <input
                 type="number"
                 min={0}
@@ -46,7 +48,7 @@ export function ClipFields({
               />
             </label>
             <label>
-              出点 / 秒
+              {t("出点 / 秒")}
               <input
                 type="number"
                 min={0.1}
@@ -58,7 +60,7 @@ export function ClipFields({
             </label>
           </div>
           <label>
-            播放速度
+            {t("播放速度")}
             <select
               value={clip.speed}
               onChange={(e) => numeric("speed", +e.target.value)}
@@ -80,7 +82,7 @@ export function ClipFields({
                 .sort((a, b) => a - b)
                 .map((v) => (
                   <option key={v} value={v}>
-                    {Number(v.toFixed(2))}× {v === 1 ? "原速" : ""}
+                    {Number(v.toFixed(2))}× {v === 1 ? t("原速") : ""}
                   </option>
                 ))}
             </select>
@@ -89,7 +91,7 @@ export function ClipFields({
       )}
       {section !== "time" && (
         <label>
-          音量 <span>{Math.round(clip.volume * 100)}%</span>
+          {t("音量")} <span>{Math.round(clip.volume * 100)}%</span>
           <input
             type="range"
             min={0}
@@ -102,7 +104,7 @@ export function ClipFields({
       )}
       {section !== "audio" && (
         <p className="subtle">
-          片段时长 {duration(clip).toFixed(2)} 秒 · 原素材不受影响
+          {t("片段时长")} {duration(clip).toFixed(2)} {t("秒 · 原素材不受影响")}
         </p>
       )}
     </>

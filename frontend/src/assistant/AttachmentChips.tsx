@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import {
   FileText,
   Image,
@@ -19,12 +20,13 @@ export function AttachmentChips({
   project: Project;
   remove?: (item: Attachment) => void;
 }) {
+  useLanguage();
   const [previewId, setPreviewId] = useState<string | null>(null);
   if (!items.length) return null;
   return (
     <div
       className="attachment-chips"
-      aria-label={remove ? "本轮附件" : "消息附件"}
+      aria-label={remove ? t("本轮附件") : t("消息附件")}
     >
       {items.map((a) => {
         const asset = project.assets.find((v) => v.id === a.assetId);
@@ -38,25 +40,25 @@ export function AttachmentChips({
                 : FileText;
         const kind =
           a.kind === "clip"
-            ? "时间线片段 · 修改范围"
+            ? t("时间线片段 · 修改范围")
             : a.mediaKind === "video"
-              ? "视频"
+              ? t("视频")
               : a.mediaKind === "image"
-                ? "图片"
+                ? t("图片")
                 : a.mediaKind === "audio"
-                  ? "音频"
+                  ? t("音频")
                   : a.mediaKind === "text"
-                    ? "文本"
+                    ? t("文本")
                     : a.mediaKind === "document"
                       ? "PDF"
-                      : "文字 / 镜头";
+                      : t("文字 / 镜头");
         return (
           <div className="attachment-chip" key={attachmentKey(a)}>
             <button
               className="attachment-preview"
               type="button"
               disabled={!asset}
-              aria-label={`预览附件 ${a.title}`}
+              aria-label={t("预览附件 {v0}", { v0: a.title })}
               onClick={() => asset && setPreviewId(asset.id)}
             >
               {asset?.preview ? (
@@ -72,7 +74,7 @@ export function AttachmentChips({
             {remove && (
               <button
                 type="button"
-                aria-label={`移除附件 ${a.title}`}
+                aria-label={t("移除附件 {v0}", { v0: a.title })}
                 onClick={() => remove(a)}
               >
                 <X size={14} />

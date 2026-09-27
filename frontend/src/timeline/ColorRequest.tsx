@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { CircleHalf, Sparkle, ArrowRight } from "@phosphor-icons/react";
 import type { Clip } from "../model";
@@ -10,6 +11,7 @@ export function ColorRequest({
   clip: Clip;
   children?: ReactNode;
 }) {
+  useLanguage();
   const [text, setText] = useState("");
   const [compare, setCompare] = useState(false);
   const comparing = compare && !!clip.visual;
@@ -38,14 +40,14 @@ export function ColorRequest({
           onClick={() => setCompare((v) => !v)}
         >
           <CircleHalf size={22} />
-          {comparing ? "返回调色效果" : "原片对比"}
+          {comparing ? t("返回调色效果") : t("原片对比")}
         </button>
       </div>
       {children}
       <section className="inspector-section inspector-agent">
         <h3>
           <Sparkle size={20} />
-          Agent 调色
+          {t("Agent 调色")}
         </h3>
         <form
           onSubmit={(e) => {
@@ -54,16 +56,19 @@ export function ColorRequest({
             requestCreativeTask({
               agentId: "colorist",
               refs: [{ kind: "clip", id: clip.id }],
-              text: `请为本轮引用的片段调色：${text.trim()}\n保留其他片段、剪辑、声音和字幕。`,
+              text: t(
+                "请为本轮引用的片段调色：{v0}\n保留其他片段、剪辑、声音和字幕。",
+                { v0: text.trim() },
+              ),
             });
           }}
         >
           <textarea
-            aria-label="调色要求"
+            aria-label={t("调色要求")}
             rows={2}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="整体偏冷，保留产品原色"
+            placeholder={t("整体偏冷，保留产品原色")}
           />
           <button
             className="inspector-action inspector-send"
@@ -71,7 +76,7 @@ export function ColorRequest({
             type="submit"
           >
             <ArrowRight size={20} />
-            发起调色
+            {t("发起调色")}
           </button>
         </form>
       </section>

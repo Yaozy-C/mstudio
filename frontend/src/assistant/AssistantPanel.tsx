@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { NewTaskButton } from "./NewTaskButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { MediaComposer } from "./MediaComposer";
@@ -43,15 +44,18 @@ type Props = {
   onSettings: () => void;
 };
 export function AssistantPanel(props: Props) {
+  useLanguage();
   return <AgentPanel {...props} />;
 }
 function AgentPanel(props: Props) {
+  useLanguage();
   const { history, error } = useAgentHistory(props.project.id);
   if (!history)
-    return <div className="agent-empty">{error || "加载对话…"}</div>;
+    return <div className="agent-empty">{error || t("加载对话…")}</div>;
   return <Chat {...props} history={history} />;
 }
 function Chat(props: Props & { history: ThreadMessageLike[] }) {
+  useLanguage();
   const [newTask, setNewTask] = useState(false);
   const latest = useRef({ ...props, newTask });
   latest.current = { ...props, newTask };
@@ -145,7 +149,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
         <ThreadPrimitive.Root className="agent-thread">
           {(!props.canvas || props.canvas.composerMode === "agent") && (
             <div className="agent-task-toolbar">
-              <span>{newTask ? "下一条将开启新任务" : "当前对话"}</span>
+              <span>{newTask ? t("下一条将开启新任务") : t("当前对话")}</span>
               <NewTaskButton
                 active={newTask}
                 disabled={models.running}

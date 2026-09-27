@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { DropdownMenu } from "@radix-ui/themes";
 import {
   ArrowLeft,
@@ -52,6 +53,7 @@ export function StudioChrome({
   addNote: (kind: "text" | "shot") => void;
   onCreation: (tab: string) => void;
 }) {
+  useLanguage();
   const { project } = m;
   const saveFailed = m.saved.startsWith("保存失败");
   const SaveIcon = saveFailed
@@ -60,10 +62,10 @@ export function StudioChrome({
       ? CheckCircle
       : CircleDashed;
   return (
-    <header className="studio-top" aria-label="工作栏">
+    <header className="studio-top" aria-label={t("工作栏")}>
       <button
         className="icon-button"
-        title="返回项目库"
+        title={t("返回项目库")}
         onClick={() =>
           void m
             .flush()
@@ -81,27 +83,27 @@ export function StudioChrome({
         <span
           className={`project-save-status${saveFailed ? " is-error" : ""}`}
           role="status"
-          aria-label={m.saved}
-          title={`${m.saved} · ${SAVE_DESCRIPTION}`}
+          aria-label={t(m.saved)}
+          title={`${t(m.saved)} · ${t(SAVE_DESCRIPTION)}`}
         >
           <SaveIcon size={16} aria-hidden="true" />
-          {saveFailed && <small>保存失败</small>}
+          {saveFailed && <small>{t("保存失败")}</small>}
         </span>
         {saveFailed && (
           <button
             type="button"
             onClick={() => void m.flush().catch((e) => setError(String(e)))}
           >
-            重试保存
+            {t("重试保存")}
           </button>
         )}
       </div>
-      <nav className="studio-modes" aria-label="工作区模式">
+      <nav className="studio-modes" aria-label={t("工作区模式")}>
         {(
           [
-            ["script", "脚本"],
-            ["storyboard", "制作画布"],
-            ["film", "成片"],
+            ["script", t("脚本")],
+            ["storyboard", t("制作画布")],
+            ["film", t("成片")],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -116,7 +118,7 @@ export function StudioChrome({
       <span className="top-divider" />
       <button
         className="icon-button"
-        title="撤销 ⌘Z"
+        title={t("撤销 ⌘Z")}
         disabled={!m.canUndo}
         onClick={m.undo}
       >
@@ -124,7 +126,7 @@ export function StudioChrome({
       </button>
       <button
         className="icon-button"
-        title="重做 ⇧⌘Z"
+        title={t("重做 ⇧⌘Z")}
         disabled={!m.canRedo}
         onClick={m.redo}
       >
@@ -134,39 +136,39 @@ export function StudioChrome({
       <button
         className="chrome-action"
         aria-pressed={panels.media}
-        title="素材库 · 导入与管理素材"
+        title={t("素材库 · 导入与管理素材")}
         onClick={() => togglePanel("media")}
       >
         <Images />
-        素材
+        {t("素材")}
       </button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <button className="chrome-action">
             <Plus />
-            创作
+            {t("创作")}
             <CaretDown className="chrome-caret" />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content className="studio-menu" sideOffset={12}>
           <DropdownMenu.Item onSelect={() => addNote("text")}>
             <NotePencil />
-            文字笔记
+            {t("文字笔记")}
           </DropdownMenu.Item>
           {
             <DropdownMenu.Item onSelect={() => addNote("shot")}>
               <FilmSlate />
-              独立镜头
+              {t("独立镜头")}
             </DropdownMenu.Item>
           }
           <DropdownMenu.Separator />
           <DropdownMenu.Item onSelect={onModels}>
             <Cube />
-            模型中心
+            {t("模型中心")}
           </DropdownMenu.Item>
           <DropdownMenu.Item onSelect={() => onCreation("captions")}>
             <Subtitles />
-            字幕 / 配音
+            {t("字幕 / 配音")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -183,8 +185,8 @@ export function StudioChrome({
         <DropdownMenu.Trigger>
           <button
             className="icon-button"
-            title="更多工具"
-            aria-label="更多工具"
+            title={t("更多工具")}
+            aria-label={t("更多工具")}
           >
             <DotsThree weight="bold" />
           </button>
@@ -197,13 +199,13 @@ export function StudioChrome({
           {view === "film" && (
             <DropdownMenu.Item onSelect={() => togglePanel("inspector")}>
               <SlidersHorizontal />
-              编辑属性
+              {t("编辑属性")}
             </DropdownMenu.Item>
           )}
           <DropdownMenu.Separator />
           <DropdownMenu.Item onSelect={onSettings}>
             <GearSix />
-            设置
+            {t("设置")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -214,7 +216,7 @@ export function StudioChrome({
         onClick={onExport}
       >
         <Export />
-        导出成片
+        {t("导出成片")}
       </button>
     </header>
   );

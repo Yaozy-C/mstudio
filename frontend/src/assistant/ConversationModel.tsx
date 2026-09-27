@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { inputSummary } from "../models/inputCapabilities";
 import { useState } from "react";
@@ -17,6 +18,7 @@ export function ConversationModel({
   disabled: boolean;
   settings: () => void;
 }) {
+  useLanguage();
   const { catalog } = useModels(projectId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,8 +43,10 @@ export function ConversationModel({
           <button
             type="button"
             className="conversation-model-trigger"
-            aria-label={`对话模型：${current?.name || "选择模型"}`}
-            title={current?.name || "选择对话模型"}
+            aria-label={t("对话模型：{v0}", {
+              v0: current?.name || t("选择模型"),
+            })}
+            title={current?.name || t("选择对话模型")}
             disabled={disabled || busy}
           >
             {current && (
@@ -51,7 +55,7 @@ export function ConversationModel({
                 size={16}
               />
             )}
-            <span>{current?.name.split(" · ").at(-1) || "选择模型"}</span>
+            <span>{current?.name.split(" · ").at(-1) || t("选择模型")}</span>
             <CaretDown size={12} aria-hidden="true" />
           </button>
         </DropdownMenu.Trigger>
@@ -61,7 +65,7 @@ export function ConversationModel({
           align="start"
           sideOffset={10}
         >
-          <DropdownMenu.Label>对话模型</DropdownMenu.Label>
+          <DropdownMenu.Label>{t("对话模型")}</DropdownMenu.Label>
           <DropdownMenu.RadioGroup
             value={catalog.selectedId || ""}
             onValueChange={(id) => void choose(id)}
@@ -72,7 +76,7 @@ export function ConversationModel({
                 disabled={!readyModel(defaultModel)}
               >
                 <span className="model-menu-copy">
-                  <span>使用默认模型</span>
+                  <span>{t("使用默认模型")}</span>
                   <small>{defaultModel.name}</small>
                 </span>
               </DropdownMenu.RadioItem>
@@ -86,19 +90,22 @@ export function ConversationModel({
                 <ModelMark identity={`${m.endpoint} ${m.model}`} size={18} />
                 <span className="model-menu-copy">
                   <span>{m.name}</span>
-                  <small>可读取：{inputSummary(m)}</small>
-                  {!readyModel(m) && <small>待配置密钥</small>}
+                  <small>
+                    {t("可读取：")}
+                    {inputSummary(m)}
+                  </small>
+                  {!readyModel(m) && <small>{t("待配置密钥")}</small>}
                 </span>
               </DropdownMenu.RadioItem>
             ))}
           </DropdownMenu.RadioGroup>
           {!catalog.profiles.length && (
-            <p className="model-menu-empty">尚未添加对话模型</p>
+            <p className="model-menu-empty">{t("尚未添加对话模型")}</p>
           )}
           <DropdownMenu.Separator />
           <DropdownMenu.Item onSelect={settings}>
             <GearSix size={18} aria-hidden="true" />
-            管理模型
+            {t("管理模型")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

@@ -1,5 +1,6 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
-import { StudioSidebar } from "./StudioSidebar";
+import { StudioSidebar, type SettingsTab } from "./StudioSidebar";
 import { useEffect, useState } from "react";
 import { Plus, ArrowUpRight, FilmSlate } from "@phosphor-icons/react";
 import { bridge, native, mediaUrl } from "../bridge";
@@ -9,11 +10,10 @@ import { Studio } from "./Studio";
 import { Settings } from "./Settings";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 export function App() {
+  const language = useLanguage();
   const [entries, setEntries] = useState<ProjectEntry[]>([]);
   const [project, setProject] = useState<Project | null>(null);
-  const [settings, setSettings] = useState<
-    "models" | "tools" | "agents" | "skills" | null
-  >(null);
+  const [settings, setSettings] = useState<SettingsTab | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [storageNotice, setStorageNotice] = useState(
@@ -66,29 +66,29 @@ export function App() {
   return (
     <div className="library-shell">
       <StudioSidebar
-        settings={false}
         count={entries.length}
         onProjects={() => {}}
-        onSettings={() => setSettings("agents")}
+        onSettings={setSettings}
       />
       <main className="library-main">
         <div className="eyebrow">YOUR CREATIVE SPACE</div>
         <header className="library-heading">
           <div>
-            <h1>让想法，成为画面。</h1>
-            <p>从第一张参考图，到最后一帧。都在一个空间里。</p>
+            <h1>{t("让想法，成为画面。")}</h1>
+            <p>{t("从第一张参考图，到最后一帧。都在一个空间里。")}</p>
           </div>
           <button className="primary" onClick={() => setCreating(true)}>
             <Plus />
-            新建项目
+            {t("新建项目")}
           </button>
         </header>
         <div className="library-tools">
           <h3>
-            全部项目 <span>{entries.length.toString().padStart(2, "0")}</span>
+            {t("全部项目")}{" "}
+            <span>{entries.length.toString().padStart(2, "0")}</span>
           </h3>
           <input
-            placeholder="搜索项目…"
+            placeholder={t("搜索项目…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -103,7 +103,7 @@ export function App() {
                 sessionStorage.removeItem("mstudio-storage-notice");
               }}
             >
-              知道了
+              {t("知道了")}
             </button>
           </p>
         )}
@@ -138,8 +138,8 @@ export function App() {
                   <button onClick={() => setProject(p.document)}>
                     <h3>{p.name}</h3>
                     <p>
-                      {p.document.clips.length} 个片段 ·{" "}
-                      {new Date(p.updated * 1000).toLocaleDateString("zh-CN")}
+                      {p.document.clips.length} {t("个片段 ·")}{" "}
+                      {new Date(p.updated * 1000).toLocaleDateString(language)}
                     </p>
                   </button>
                   <DeleteProjectButton
@@ -160,19 +160,19 @@ export function App() {
             onClick={() => setCreating(true)}
           >
             <Plus size={28} />
-            <strong>开启一个新故事</strong>
-            <span>参考、创作、剪辑、成片</span>
+            <strong>{t("开启一个新故事")}</strong>
+            <span>{t("参考、创作、剪辑、成片")}</span>
           </button>
         </section>
         <div className="workflow-intro">
-          <span>01 / 收集素材</span>
-          <span>02 / 画布构思</span>
-          <span>03 / 时间线剪辑</span>
-          <span>04 / 导出成片</span>
+          <span>{t("01 / 收集素材")}</span>
+          <span>{t("02 / 画布构思")}</span>
+          <span>{t("03 / 时间线剪辑")}</span>
+          <span>{t("04 / 导出成片")}</span>
         </div>
         {!native && (
           <p className="subtle">
-            浏览器界面预览 · 素材导入、生成与导出请使用桌面应用
+            {t("浏览器界面预览 · 素材导入、生成与导出请使用桌面应用")}
           </p>
         )}
       </main>
@@ -187,20 +187,22 @@ export function App() {
             }}
           >
             <div className="eyebrow">NEW PROJECT</div>
-            <h2>给这个故事起个名字</h2>
+            <h2>{t("给这个故事起个名字")}</h2>
             <input
               autoFocus
-              placeholder="例如：夏日出行 · 商品短片"
+              placeholder={t("例如：夏日出行 · 商品短片")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <p className="subtle">默认竖屏 1080 × 1920，可在项目内调整。</p>
+            <p className="subtle">
+              {t("默认竖屏 1080 × 1920，可在项目内调整。")}
+            </p>
             <footer>
               <button type="button" onClick={() => setCreating(false)}>
-                取消
+                {t("取消")}
               </button>
               <button className="primary" disabled={!name.trim()}>
-                创建项目 <ArrowUpRight />
+                {t("创建项目")} <ArrowUpRight />
               </button>
             </footer>
           </form>

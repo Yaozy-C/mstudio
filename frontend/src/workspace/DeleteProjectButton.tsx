@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useRef, useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
@@ -11,6 +12,7 @@ export function DeleteProjectButton({
   project: Pick<ProjectEntry, "id" | "name">;
   onDelete: (id: string) => Promise<void>;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -24,7 +26,7 @@ export function DeleteProjectButton({
       await onDelete(project.id);
       setOpen(false);
     } catch (e) {
-      setError(`删除失败：${String(e)}`);
+      setError(t("删除失败：{v0}", { v0: String(e) }));
     } finally {
       pending.current = false;
       setBusy(false);
@@ -43,23 +45,26 @@ export function DeleteProjectButton({
         <button
           type="button"
           className="icon-button"
-          title="删除项目"
-          aria-label={`删除项目 ${project.name}`}
+          title={t("删除项目")}
+          aria-label={t("删除项目 {v0}", { v0: project.name })}
         >
           <Trash />
         </button>
       </AlertDialog.Trigger>
       <AlertDialog.Content className="modal small" aria-busy={busy}>
-        <AlertDialog.Title>删除项目</AlertDialog.Title>
+        <AlertDialog.Title>{t("删除项目")}</AlertDialog.Title>
         <AlertDialog.Description>
-          删除「{project.name}
-          」及其素材、生成结果和对话记录？此操作无法撤销。其他项目共用的素材和导入前的原文件会保留。
+          {t("删除「")}
+          {project.name}
+          {t(
+            "」及其素材、生成结果和对话记录？此操作无法撤销。其他项目共用的素材和导入前的原文件会保留。",
+          )}
         </AlertDialog.Description>
         {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
         <footer>
           <AlertDialog.Cancel>
             <button type="button" disabled={busy}>
-              取消
+              {t("取消")}
             </button>
           </AlertDialog.Cancel>
           <button
@@ -68,7 +73,7 @@ export function DeleteProjectButton({
             disabled={busy}
             onClick={() => void remove()}
           >
-            {busy ? "正在删除…" : "删除项目"}
+            {busy ? t("正在删除…") : t("删除项目")}
           </button>
         </footer>
       </AlertDialog.Content>

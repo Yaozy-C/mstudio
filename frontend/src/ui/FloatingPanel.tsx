@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { DotsSix, Minus, X, Graph, SquaresFour } from "@phosphor-icons/react";
 import type { Bounds, ResizeAxis } from "./panelGeometry";
@@ -23,6 +24,7 @@ export function FloatingPanel({
   reveal?: number;
   bottomInset?: number;
 }) {
+  useLanguage();
   const [collapsedAt, setCollapsedAt] = useState<number | null>(null);
   const collapsed = collapsedAt === reveal;
   const [front, setFront] = useState(false);
@@ -50,7 +52,7 @@ export function FloatingPanel({
         {collapsed ? (
           <button
             className="panel-restore"
-            title={`展开${title}`}
+            title={t("展开{v0}", { v0: title })}
             aria-expanded={false}
             onClick={() => setCollapsedAt(null)}
           >
@@ -64,7 +66,7 @@ export function FloatingPanel({
               {title}
             </strong>
             <button
-              title={`折叠${title}`}
+              title={t("折叠{v0}", { v0: title })}
               className="icon-button"
               aria-expanded={true}
               onClick={() => setCollapsedAt(reveal)}
@@ -72,7 +74,7 @@ export function FloatingPanel({
               <Minus />
             </button>
             <button
-              title={`关闭${title}`}
+              title={t("关闭{v0}", { v0: title })}
               className="icon-button"
               onClick={onClose}
             >
@@ -91,7 +93,15 @@ export function FloatingPanel({
             className={`panel-resizer panel-resizer-${axis}`}
             role="separator"
             tabIndex={0}
-            aria-label={`调整${title}${axis === "height" ? "高度" : axis === "width" ? "宽度" : "尺寸"}`}
+            aria-label={t("调整{v0}{v1}", {
+              v0: title,
+              v1:
+                axis === "height"
+                  ? t("高度")
+                  : axis === "width"
+                    ? t("宽度")
+                    : t("尺寸"),
+            })}
             aria-orientation={axis === "width" ? "vertical" : "horizontal"}
             aria-valuenow={Math.round(
               axis === "width"
@@ -106,10 +116,10 @@ export function FloatingPanel({
             )}
             title={
               axis === "height"
-                ? "拖动底边调整高度 · ↑↓ 微调"
+                ? t("拖动底边调整高度 · ↑↓ 微调")
                 : axis === "width"
-                  ? "拖动右边调整宽度 · ←→ 微调"
-                  : "拖动调整面板尺寸"
+                  ? t("拖动右边调整宽度 · ←→ 微调")
+                  : t("拖动调整面板尺寸")
             }
             {...geometry.handlers(axis)}
             onKeyDown={(e) => {

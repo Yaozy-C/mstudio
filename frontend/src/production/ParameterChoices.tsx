@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 export function ParameterChoices({
   label,
   values,
@@ -11,6 +12,7 @@ export function ParameterChoices({
   change: (value: string | undefined) => void;
   ratios?: boolean;
 }) {
+  useLanguage();
   return (
     <div
       className={`generation-setting-field parameter-choices ${ratios ? "ratio-choices" : ""}`}
@@ -27,7 +29,7 @@ export function ParameterChoices({
             {ratios && v && (
               <i style={{ aspectRatio: v.replace(":", " / ") }} />
             )}
-            <span>{v || "默认"}</span>
+            <span>{v || t("默认")}</span>
           </button>
         ))}
       </div>

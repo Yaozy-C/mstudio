@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import {
   ChatText,
@@ -20,15 +21,16 @@ const tabs = [
   { id: "providers", name: "服务连接", icon: PlugsConnected },
 ] as const;
 export function ModelCenter() {
+  useLanguage();
   const [tab, setTab] = useState<"text" | MediaKind | "providers">("text");
   const media = useMediaModels();
   return (
     <div className="model-hub">
-      <nav className="hub-categories" aria-label="模型能力分类">
+      <nav className="hub-categories" aria-label={t("模型能力分类")}>
         {tabs.map(({ id, name, icon: Icon }) => (
           <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}>
             <Icon />
-            {name}
+            {t(name)}
           </button>
         ))}
       </nav>
@@ -43,7 +45,7 @@ export function ModelCenter() {
                 setTab("audio");
               }}
             >
-              管理音频连接
+              {t("管理音频连接")}
             </button>
           )}
         </section>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { visualCss } from "./visualCss";
 import { mediaUrl } from "../bridge";
@@ -31,6 +32,7 @@ export const MediaLayer = memo(function MediaLayer({
   onError: (s: string) => void;
   onElement: (e: HTMLVideoElement | null) => void;
 }) {
+  useLanguage();
   const ref = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const src = mediaUrl(path || asset.path);
   const bound = useMemo(
@@ -87,7 +89,7 @@ export const MediaLayer = memo(function MediaLayer({
   };
   const error = () => {
     if (active) {
-      onError(`无法播放 ${asset.name}`);
+      onError(t("无法播放 {v0}", { v0: asset.name }));
       clock.pause();
     }
   };

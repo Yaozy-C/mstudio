@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { inputSummary } from "./inputCapabilities";
 import { StudioSelect } from "../ui/StudioSelect";
@@ -16,6 +17,7 @@ import { ModelLibrary } from "./ModelLibrary";
 import { ModelForm } from "./ModelForm";
 import "../styles/model-center.css";
 export function TextModels() {
+  useLanguage();
   const [adding, setAdding] = useState(false);
   const hub = useModels();
   const [edit, setEdit] = useState<ModelConnection | null>(null);
@@ -39,7 +41,10 @@ export function TextModels() {
       const result = await bridge<string>(command, { id });
       if (command === "test_model") {
         const model = hub.catalog.profiles.find((p) => p.id === id);
-        setToast({ text: `${model?.name ?? "模型"}：${result}`, error: false });
+        setToast({
+          text: `${model?.name ?? t("模型")}：${result}`,
+          error: false,
+        });
       } else {
         modelsChanged();
         setRemove(null);
@@ -64,7 +69,7 @@ export function TextModels() {
           setEdit(null);
           setAdding(false);
           modelsChanged();
-          setToast({ text: "模型连接已保存", error: false });
+          setToast({ text: t("模型连接已保存"), error: false });
         }}
       />
     );
@@ -93,28 +98,29 @@ export function TextModels() {
     <section className="model-center">
       <div className="model-default">
         <div>
-          <strong>默认对话模型</strong>
+          <strong>{t("默认对话模型")}</strong>
           <p>
-            对话使用项目选择的对话模型，未选择时使用此默认模型。切换 Agent
-            不改变模型。
+            {t(
+              "对话使用项目选择的对话模型，未选择时使用此默认模型。切换 Agent 不改变模型。",
+            )}
           </p>
         </div>
         <StudioSelect
-          label="默认对话模型"
+          label={t("默认对话模型")}
           disabled={busy || hub.loading}
           value={hub.catalog.defaultId || ""}
-          placeholder="选择默认模型"
+          placeholder={t("选择默认模型")}
           onValueChange={(id) => void act("default_agent_model", id)}
           options={hub.catalog.profiles.map((p) => ({
             value: p.id,
-            label: p.name + (readyModel(p) ? "" : " · 待配置密钥"),
+            label: p.name + (readyModel(p) ? "" : t(" · 待配置密钥")),
             disabled: !readyModel(p),
           }))}
         />
       </div>
       <div className="model-section-heading">
         <h3>
-          对话模型 <span>{hub.catalog.profiles.length}</span>
+          {t("对话模型")} <span>{hub.catalog.profiles.length}</span>
         </h3>
         <button
           className="primary"
@@ -126,14 +132,14 @@ export function TextModels() {
           }}
         >
           <Plus />
-          添加模型
+          {t("添加模型")}
         </button>
       </div>
       {hub.catalog.profiles.length > 3 && (
         <input
           className="model-search"
-          aria-label="搜索模型"
-          placeholder="搜索名称、模型或地址…"
+          aria-label={t("搜索模型")}
+          placeholder={t("搜索名称、模型或地址…")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -151,7 +157,7 @@ export function TextModels() {
           ) : (
             <span>{toast.text}</span>
           )}
-          <button aria-label="关闭提示" onClick={() => setToast(null)}>
+          <button aria-label={t("关闭提示")} onClick={() => setToast(null)}>
             <X size={16} />
           </button>
         </div>
@@ -166,7 +172,7 @@ export function TextModels() {
               <strong>
                 {p.name}
                 {hub.catalog.defaultId === p.id && (
-                  <span className="model-badge">默认</span>
+                  <span className="model-badge">{t("默认")}</span>
                 )}
               </strong>
               <p title={p.endpoint}>
@@ -176,10 +182,10 @@ export function TextModels() {
               <small>
                 {inputSummary(p)} ·{" "}
                 {p.hasKey
-                  ? "密钥已配置"
+                  ? t("密钥已配置")
                   : localEndpoint(p.endpoint)
-                    ? "本机连接"
-                    : "待配置密钥"}
+                    ? t("本机连接")
+                    : t("待配置密钥")}
               </small>
             </div>
             <div className="model-row-actions">
@@ -187,19 +193,19 @@ export function TextModels() {
                 disabled={busy || !readyModel(p)}
                 onClick={() => void act("test_model", p.id)}
               >
-                测试连接
+                {t("测试连接")}
               </button>
               <button
-                aria-label={`编辑模型 ${p.name}`}
-                title="编辑模型"
+                aria-label={t("编辑模型 {v0}", { v0: p.name })}
+                title={t("编辑模型")}
                 disabled={busy}
                 onClick={() => setEdit(p)}
               >
                 <PencilSimple />
               </button>
               <button
-                aria-label={`移除模型 ${p.name}`}
-                title="移除模型"
+                aria-label={t("移除模型 {v0}", { v0: p.name })}
+                title={t("移除模型")}
                 disabled={busy}
                 onClick={() => setRemove(p.id)}
               >
@@ -208,15 +214,19 @@ export function TextModels() {
             </div>
             {remove === p.id && (
               <div className="model-remove">
-                <span>移除「{p.name}」？聊天记录和服务连接会保留。</span>
+                <span>
+                  {t("移除「")}
+                  {p.name}
+                  {t("」？聊天记录和服务连接会保留。")}
+                </span>
                 <button disabled={busy} onClick={() => setRemove(null)}>
-                  取消
+                  {t("取消")}
                 </button>
                 <button
                   disabled={busy}
                   onClick={() => void act("remove_model", p.id)}
                 >
-                  确认移除
+                  {t("确认移除")}
                 </button>
               </div>
             )}
@@ -227,21 +237,25 @@ export function TextModels() {
             <Cube size={32} />
             <strong>
               {hub.loading
-                ? "读取模型连接…"
+                ? t("读取模型连接…")
                 : query
-                  ? "没有匹配的模型"
-                  : "连接你的第一个对话模型"}
+                  ? t("没有匹配的模型")
+                  : t("连接你的第一个对话模型")}
             </strong>
             <p>
               {native
-                ? "支持 OpenAI 兼容服务、Responses、Gemini、Claude 原生接口及本机模型。"
-                : "请在桌面应用中配置模型，浏览器仅提供界面预览。"}
+                ? t(
+                    "支持 OpenAI 兼容服务、Responses、Gemini、Claude 原生接口及本机模型。",
+                  )
+                : t("请在桌面应用中配置模型，浏览器仅提供界面预览。")}
             </p>
           </div>
         )}
       </div>
       <p className="model-hint">
-        密钥仅保存在本机，不进入项目或聊天。测试连接只读取模型列表，不生成内容。
+        {t(
+          "密钥仅保存在本机，不进入项目或聊天。测试连接只读取模型列表，不生成内容。",
+        )}
       </p>
     </section>
   );

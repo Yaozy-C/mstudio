@@ -1,0 +1,49 @@
+.settings-page .hub-scroll > .general-settings {
+  max-width: 760px;
+  margin-inline: 0;
+}
+.general-settings h2 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.general-language {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.general-settings .language-options {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.language-options {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--gray-6);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.language-option:has(input:checked) {
+  border-color: var(--accent-9);
+  background: var(--accent-2);
+}
+.language-option:focus-within {
+  outline: 2px solid var(--accent-9);
+  outline-offset: 3px;
+}
+.language-option input {
+  accent-color: var(--accent-9);
+  width: 18px;
+  height: 18px;
+}
+html[lang="en"] .studio-modes button {
+  white-space: nowrap;
+}

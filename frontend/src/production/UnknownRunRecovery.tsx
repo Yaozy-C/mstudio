@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { runtime } from "../plugins/runtime";
@@ -11,6 +12,7 @@ export function UnknownRunRecovery({
   task: ProductionTask;
   canvas: ProductionController;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,15 +29,18 @@ export function UnknownRunRecovery({
       }}
     >
       <Dialog.Trigger>
-        <button type="button">核查后重新设置</button>
+        <button type="button">{t("核查后重新设置")}</button>
       </Dialog.Trigger>
       <Dialog.Content maxWidth="440px">
-        <Dialog.Title>先核查原任务</Dialog.Title>
+        <Dialog.Title>{t("先核查原任务")}</Dialog.Title>
         <Dialog.Description>
-          请在服务商的任务记录中核查。若任务仍在运行，请继续等待；若已有结果，请先保留结果。重新生成可能产生新的费用。
+          {t(
+            "请在服务商的任务记录中核查。若任务仍在运行，请继续等待；若已有结果，请先保留结果。重新生成可能产生新的费用。",
+          )}
         </Dialog.Description>
         <p>
-          任务编号：<code>{task.requestId ?? task.jobId ?? "尚未取得"}</code>
+          {t("任务编号：")}
+          <code>{task.requestId ?? task.jobId ?? t("尚未取得")}</code>
         </p>
         <label>
           <input
@@ -43,13 +48,13 @@ export function UnknownRunRecovery({
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
           />
-          我已确认原任务未执行或已终止，需要重新生成
+          {t("我已确认原任务未执行或已终止，需要重新生成")}
         </label>
         <ErrorNotice error={error} fallback="JOB_SYNC_FAILED" />
         <div className="run-actions">
           <Dialog.Close>
             <button type="button" disabled={busy}>
-              返回
+              {t("返回")}
             </button>
           </Dialog.Close>
           <button
@@ -80,7 +85,7 @@ export function UnknownRunRecovery({
               })();
             }}
           >
-            {busy ? "正在处理…" : "重新设置"}
+            {busy ? t("正在处理…") : t("重新设置")}
           </button>
         </div>
       </Dialog.Content>

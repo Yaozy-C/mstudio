@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { TaskPanel } from "../production/TaskPanel";
 import type { ComponentProps } from "react";
 import { ScriptWorkspace } from "../creative/ScriptWorkspace";
@@ -23,15 +24,16 @@ export function StudioStage({
   clock: PlaybackClock;
   navigate: (view: StudioView) => void;
 }) {
+  useLanguage();
   return (
     <main
       className={`studio-stage view-${view}`}
       aria-label={
         view === "script"
-          ? "脚本工作区"
+          ? t("脚本工作区")
           : view === "storyboard"
-            ? "分镜工作区"
-            : "成片工作区"
+            ? t("分镜工作区")
+            : t("成片工作区")
       }
     >
       {view === "script" ? (

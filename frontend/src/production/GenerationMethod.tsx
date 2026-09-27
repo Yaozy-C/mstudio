@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { selectMediaModel } from "./frameInputs";
 import { modelAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
@@ -19,12 +20,13 @@ export function GenerationMethod({
   models: MediaModel[];
   change: (value: Partial<ProductionTask>) => void;
 }) {
+  useLanguage();
   if (draft.kind !== "video") return null;
   const available = models.filter((m) => m.kind === "video" && m.enabled);
   const current = available.find((m) => m.id === draft.modelId);
   return (
     <div className="generation-setting-field">
-      <span>生成方式</span>
+      <span>{t("生成方式")}</span>
       <div className="composer-model-tabs">
         {(["references", "frames", "text"] as const).map((value) => {
           const target = available.find((m) => method(m) === value);
@@ -40,10 +42,10 @@ export function GenerationMethod({
               }}
             >
               {value === "references"
-                ? "参考图/视频"
+                ? t("参考图/视频")
                 : value === "frames"
-                  ? "首尾帧"
-                  : "文生视频"}
+                  ? t("首尾帧")
+                  : t("文生视频")}
             </button>
           );
         })}

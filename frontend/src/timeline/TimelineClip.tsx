@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { Check } from "@phosphor-icons/react";
 import { requestClipEdit } from "./clipEdits";
 import { Waveform } from "./Waveform";
@@ -41,11 +42,12 @@ export function TimelineClip({
   onSelect: () => void;
   onChange: (f: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   const { clip, start } = entry;
   const status = [
-    !asset || asset.missing ? "素材丢失" : "",
-    hidden ? "画面已隐藏" : "",
-    muted ? "轨道已静音" : clip.volume === 0 ? "片段已静音" : "",
+    !asset || asset.missing ? t("素材丢失") : "",
+    hidden ? t("画面已隐藏") : "",
+    muted ? t("轨道已静音") : clip.volume === 0 ? t("片段已静音") : "",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -81,32 +83,38 @@ export function TimelineClip({
   return (
     <ObjectMenu
       actions={[
-        { label: "编辑片段", run: onOpen },
-        { label: "复制片段 ⌘C", run: () => requestClipEdit("copy", clip.id) },
-        { label: "剪切片段 ⌘X", run: () => requestClipEdit("cut", clip.id) },
-        { label: "粘贴片段 ⌘V", run: () => requestClipEdit("paste", clip.id) },
+        { label: t("编辑片段"), run: onOpen },
+        {
+          label: t("复制片段 ⌘C"),
+          run: () => requestClipEdit("copy", clip.id),
+        },
+        { label: t("剪切片段 ⌘X"), run: () => requestClipEdit("cut", clip.id) },
+        {
+          label: t("粘贴片段 ⌘V"),
+          run: () => requestClipEdit("paste", clip.id),
+        },
         ...(asset?.kind === "video" && asset.hasAudio && !audio
           ? [
               {
-                label: "分离音频",
+                label: t("分离音频"),
                 run: () => onChange((p) => detachAudio(p, clip.id)),
               },
             ]
           : []),
-        { label: "引用到对话", run: onReference },
+        { label: t("引用到对话"), run: onReference },
         ...(asset
           ? [
               {
                 label: isLibraryAsset(asset)
-                  ? "已在项目素材中"
-                  : "保存为项目素材",
+                  ? t("已在项目素材中")
+                  : t("保存为项目素材"),
                 disabled: isLibraryAsset(asset),
                 run: () => onChange((p) => collectAsset(p, asset)),
               },
             ]
           : []),
         {
-          label: "移除片段 Delete / Backspace",
+          label: t("移除片段 Delete / Backspace"),
           danger: true,
           run: onRemove,
         },
@@ -117,7 +125,11 @@ export function TimelineClip({
         role="button"
         tabIndex={0}
         draggable
-        aria-label={`${asset?.name ?? "片段"} ${start.toFixed(2)}秒${status ? ` · ${status}` : ""}`}
+        aria-label={t("{v0} {v1}秒{v2}", {
+          v0: asset?.name ?? t("片段"),
+          v1: start.toFixed(2),
+          v2: status ? ` · ${status}` : "",
+        })}
         aria-pressed={selected}
         data-muted={muted || clip.volume === 0}
         data-hidden={hidden}
@@ -129,7 +141,10 @@ export function TimelineClip({
           left: start * zoom,
           width: Math.max(4, duration(clip) * zoom - 2),
         }}
-        title={`${asset?.name ?? "素材丢失"}${status ? ` · ${status}` : ""} · 双击编辑片段 · 右键更多操作`}
+        title={t("{v0}{v1} · 双击编辑片段 · 右键更多操作", {
+          v0: asset?.name ?? t("素材丢失"),
+          v1: status ? ` · ${status}` : "",
+        })}
         onContextMenu={onSelect}
         onDoubleClick={onOpen}
         onClick={onSelect}
@@ -178,7 +193,7 @@ export function TimelineClip({
               aria-hidden="true"
             />
           )}
-          {asset?.name || "素材丢失"}
+          {asset?.name || t("素材丢失")}
         </span>
         <small>
           {status && `${status} · `}
@@ -194,10 +209,10 @@ export function TimelineClip({
             className={`trim-handle ${side}`}
             title={
               asset?.kind === "video" && !audio
-                ? "拖动调整速度 · 保留片段内容（0.25–4×）"
+                ? t("拖动调整速度 · 保留片段内容（0.25–4×）")
                 : side === "left"
-                  ? "拖动入点"
-                  : "拖动出点"
+                  ? t("拖动入点")
+                  : t("拖动出点")
             }
             onDoubleClick={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}

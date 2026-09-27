@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { TaskReference } from "../production/TaskReference";
 import { compositionGuard } from "./compositionGuard";
 import type { WorkContext } from "./workContext";
@@ -56,6 +57,7 @@ export function AgentComposer({
   settings: () => void;
   newTask: boolean;
 }) {
+  useLanguage();
   const [ime] = useState(compositionGuard);
   const [query, setQuery] = useState<ReturnType<typeof mentionQuery>>(null);
   const [index, setIndex] = useState(0);
@@ -74,9 +76,9 @@ export function AgentComposer({
       description:
         o.description +
         (attached
-          ? " · 已添加"
+          ? t(" · 已添加")
           : o.ref && attachments.length >= MAX_ATTACHMENTS
-            ? " · 附件已满（12个）"
+            ? t(" · 附件已满（12个）")
             : ""),
     };
   });
@@ -128,7 +130,9 @@ export function AgentComposer({
         className={`agent-composer${dragging ? " is-file-dragging" : ""}`}
         {...fileEvents}
       >
-        {dragging && <div className="composer-drop-hint">松开以添加附件</div>}
+        {dragging && (
+          <div className="composer-drop-hint">{t("松开以添加附件")}</div>
+        )}
         <AgentMention
           options={options}
           symbol={query?.symbol ?? "@"}
@@ -159,8 +163,10 @@ export function AgentComposer({
         {canvas?.task && blocked && (
           <p className="agent-attachment-hint">
             {attachments.length > MAX_ATTACHMENTS
-              ? "本次最多引用 12 项，请移除部分引用。"
-              : "当前对话模型无法读取所选资料，请切换支持这些素材的对话模型。"}
+              ? t("本次最多引用 12 项，请移除部分引用。")
+              : t(
+                  "当前对话模型无法读取所选资料，请切换支持这些素材的对话模型。",
+                )}
           </p>
         )}
         <ComposerPrimitive.Input
@@ -171,12 +177,12 @@ export function AgentComposer({
           maxRows={7}
           placeholder={
             newTask
-              ? "描述新任务…"
+              ? t("描述新任务…")
               : attachments.length
-                ? "想对这些内容做什么？"
-                : "描述任务，@ 引用素材…"
+                ? t("想对这些内容做什么？")
+                : t("描述任务，@ 引用素材…")
           }
-          aria-label="发送给 Agent"
+          aria-label={t("发送给 Agent")}
           aria-autocomplete="list"
           aria-controls={query ? "agent-mention-options" : undefined}
           aria-activedescendant={
@@ -226,8 +232,8 @@ export function AgentComposer({
               <button
                 type="button"
                 className="composer-icon-button"
-                aria-label="从电脑添加附件"
-                title="从电脑添加附件"
+                aria-label={t("从电脑添加附件")}
+                title={t("从电脑添加附件")}
                 disabled={draft.busy || attachments.length >= MAX_ATTACHMENTS}
                 onClick={() =>
                   void draft.importFiles(
@@ -242,8 +248,8 @@ export function AgentComposer({
               <button
                 type="button"
                 className="composer-mention-trigger composer-icon-button"
-                aria-label="引用元素"
-                title="引用项目元素（@）"
+                aria-label={t("引用元素")}
+                title={t("引用项目元素（@）")}
                 disabled={running}
                 onClick={() => open("@")}
               >
@@ -267,13 +273,16 @@ export function AgentComposer({
           </div>
           <div className="composer-submit">
             {running ? (
-              <ComposerPrimitive.Cancel aria-label="停止回答" title="停止回答">
+              <ComposerPrimitive.Cancel
+                aria-label={t("停止回答")}
+                title={t("停止回答")}
+              >
                 <Square size={13} weight="fill" />
               </ComposerPrimitive.Cancel>
             ) : (
               <ComposerPrimitive.Send
-                aria-label="发送消息"
-                title={ready ? "发送消息" : "请先连接并配置模型"}
+                aria-label={t("发送消息")}
+                title={ready ? t("发送消息") : t("请先连接并配置模型")}
                 disabled={draft.busy || !ready || blocked}
               >
                 <ArrowUp size={18} weight="bold" />

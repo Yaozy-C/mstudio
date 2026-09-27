@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { Timeline } from "../timeline/Timeline";
 import type { PlaybackClock } from "../timeline/clock";
 import type { Project } from "../model";
@@ -27,6 +28,7 @@ export function StudioTimeline({
   select: (id: string | null, inspect: boolean) => void;
   reference: (id: string) => void;
 }) {
+  useLanguage();
   return visible ? (
     <Timeline
       project={project}
@@ -43,7 +45,7 @@ export function StudioTimeline({
     />
   ) : (
     <button className="timeline-collapsed" onClick={toggle}>
-      展开时间线 · T
+      {t("展开时间线 · T")}
     </button>
   );
 }

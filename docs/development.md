@@ -80,3 +80,25 @@ sh scripts/bundle.sh
 选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持引用素材的输入类型。Agent 通过 `update_clip.visual` 合并结构化调色参数，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期 revision。它复用 FFmpeg/MLT 渲染，不执行模型提供的任意命令。
 
 「对比原片」仅临时移除当前片段的预览调色；退出调色页后恢复，不写入项目，也不改变导出。Agent 对话中保留选中片段与返回属性入口。
+
+## 界面多语言
+
+应用支持 `zh-CN`（简体中文）和 `en`（English）。通用设置 → 语言可即时切换；选择保存在本机 `mstudio-language` 偏好中。首次打开跟随系统语言：中文使用简体中文，其余语言使用英文。无法保存偏好时，本次会话仍可切换。
+
+The interface supports Simplified Chinese and English. General → Language applies changes immediately and remembers the choice locally. On first launch, Chinese system locales select Simplified Chinese; other locales select English. Switching still works for the current session when local storage is unavailable.
+
+## Adding interface copy
+
+- Use `useLanguage()` in components that display localized copy. It subscribes to language changes without remounting components or resetting drafts.
+- Use `t("中文原文")` for application copy and add its English translation to `frontend/src/i18n/en.json`. Chinese source text is also the fallback.
+- Use complete messages with named placeholders for dynamic values: `t("{kind}模型", { kind: t(mediaLabels[kind]) })`. Avoid composing sentences from separately translated fragments.
+- Translate static catalog labels when displaying them, not when loading the catalog or saving data. Keep model IDs, task status codes, API payload keys and comparisons independent of language.
+- Do not translate project names, scripts, prompts, media names, chat messages or model responses. The `agentLabel` helper translates built-in Agent names and descriptions only if their values still match the shipped defaults. Edited labels remain verbatim.
+- Keep original diagnostic details available. Error summaries and recovery actions use localized application copy; unknown provider messages remain in the details.
+- Use the selected language when formatting dates. Update `document.documentElement.lang` through the shared language store.
+
+## Verification
+
+Run `cd frontend && bun run build && bun test`. Localization tests cover persisted choice, unavailable storage, both rendering languages, preservation of user content, translation coverage and placeholder parity.
+
+Manually check General → Language in both directions, reload to confirm persistence, and inspect long English labels in the project library, settings, creation canvas and timeline. Browser preview cannot verify native file dialogs, native playback or actual generation services.

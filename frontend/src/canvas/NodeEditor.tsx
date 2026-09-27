@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ObjectActions } from "../ui/ObjectActions";
 import { useEffect, useRef, useState } from "react";
 import { X, Trash, ArrowDown } from "@phosphor-icons/react";
@@ -23,6 +24,7 @@ export function NodeEditor({
   onRemove: () => void;
   onAdd: () => void;
 }) {
+  useLanguage();
   const [title, setTitle] = useState(node.title),
     [text, setText] = useState(node.text);
   const latest = useRef({ title, text });
@@ -45,7 +47,7 @@ export function NodeEditor({
   return (
     <section
       className="canvas-node-editor"
-      aria-label={media ? "查看素材" : "编辑画布内容"}
+      aria-label={media ? t("查看素材") : t("编辑画布内容")}
       style={{
         left: Math.max(
           16,
@@ -68,12 +70,16 @@ export function NodeEditor({
     >
       <header>
         <small>
-          {media ? "素材" : node.kind === "shot" ? "镜头内容" : "文字 / 脚本"}
+          {media
+            ? t("素材")
+            : node.kind === "shot"
+              ? t("镜头内容")
+              : t("文字 / 脚本")}
         </small>
         <ObjectActions
           actions={[
             {
-              label: "引用到对话",
+              label: t("引用到对话"),
               run: () => {
                 save();
                 onClose();
@@ -82,12 +88,12 @@ export function NodeEditor({
             },
           ]}
         />
-        <button aria-label="关闭内容编辑" onClick={onClose}>
+        <button aria-label={t("关闭内容编辑")} onClick={onClose}>
           <X />
         </button>
       </header>
       <input
-        aria-label="内容标题"
+        aria-label={t("内容标题")}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
@@ -110,25 +116,25 @@ export function NodeEditor({
       {!media && (
         <textarea
           autoFocus
-          aria-label="内容正文"
+          aria-label={t("内容正文")}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="写下脚本、镜头内容或想法…"
+          placeholder={t("写下脚本、镜头内容或想法…")}
         />
       )}
       <footer>
         <button
           className="node-remove"
-          aria-label="移除画布对象"
-          title="移除画布对象，可撤销"
+          aria-label={t("移除画布对象")}
+          title={t("移除画布对象，可撤销")}
           onClick={onRemove}
         >
           <Trash />
         </button>
         {asset && (
           <button
-            aria-label="将素材加入时间线"
-            title="加入时间线"
+            aria-label={t("将素材加入时间线")}
+            title={t("加入时间线")}
             onClick={onAdd}
           >
             <ArrowDown />
@@ -141,7 +147,7 @@ export function NodeEditor({
             onClose();
           }}
         >
-          完成
+          {t("完成")}
         </button>
       </footer>
     </section>

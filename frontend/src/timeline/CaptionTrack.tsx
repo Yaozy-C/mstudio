@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { Check, Subtitles } from "@phosphor-icons/react";
 import { useRef } from "react";
 import { uid, type Caption, type Project } from "../model";
@@ -39,6 +40,7 @@ export function CaptionTrack({
   onChange: (f: (p: Project) => Project) => void;
   onCaption?: () => void;
 }) {
+  useLanguage();
   const location = useRef(0);
   const add = () => {
     const start = Math.max(
@@ -51,16 +53,16 @@ export function CaptionTrack({
       ...p,
       captions: [
         ...(p.captions ?? []),
-        { id: uid(), start, end: start + 3, text: "新字幕" },
+        { id: uid(), start, end: start + 3, text: t("新字幕") },
       ],
     }));
     onCaption?.();
   };
   return (
-    <ObjectMenu actions={[{ label: "在此添加字幕", run: add }]}>
+    <ObjectMenu actions={[{ label: t("在此添加字幕"), run: add }]}>
       <div
         className="caption-track"
-        aria-label="字幕轨道：双击空白添加字幕"
+        aria-label={t("字幕轨道：双击空白添加字幕")}
         onPointerDown={(e) => {
           location.current =
             (e.clientX - e.currentTarget.getBoundingClientRect().left) / zoom;
@@ -75,7 +77,7 @@ export function CaptionTrack({
       >
         {!project.captions?.length && (
           <span className="track-empty" style={{ pointerEvents: "none" }}>
-            双击添加字幕 · 右键更多操作
+            {t("双击添加字幕 · 右键更多操作")}
           </span>
         )}
         {(project.captions ?? [])
@@ -123,6 +125,7 @@ function CaptionChip({
   open?: () => void;
   change: (f: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   const drag = useRef<{ x: number; side: string; moved: boolean } | null>(null);
   const patch = (next: Caption) =>
     change((p) => ({
@@ -133,7 +136,7 @@ function CaptionChip({
     <ObjectMenu
       actions={[
         {
-          label: "编辑字幕",
+          label: t("编辑字幕"),
           run: () => {
             select();
             clock.pause();
@@ -142,7 +145,7 @@ function CaptionChip({
           },
         },
         {
-          label: "删除字幕",
+          label: t("删除字幕"),
           danger: true,
           run: () =>
             change((p) => ({
@@ -155,7 +158,7 @@ function CaptionChip({
       <button
         className={`caption-chip ${selected ? "selected" : ""}`}
         aria-pressed={selected}
-        aria-label={`${c.text} ${c.start.toFixed(2)}秒`}
+        aria-label={t("{v0} {v1}秒", { v0: c.text, v1: c.start.toFixed(2) })}
         onContextMenu={select}
         onClick={(e) => {
           if (e.detail === 0) {
@@ -169,7 +172,7 @@ function CaptionChip({
           width: Math.max(8, (c.end - c.start) * zoom),
           touchAction: "none",
         }}
-        title="拖动移动字幕 · 两端调整时长 · 双击编辑"
+        title={t("拖动移动字幕 · 两端调整时长 · 双击编辑")}
         onDoubleClick={(e) => {
           e.stopPropagation();
           open?.();
@@ -258,7 +261,9 @@ function CaptionChip({
         <Subtitles className="caption-type-icon" aria-hidden="true" />
         <span className="caption-chip-content">
           <span>{c.text}</span>
-          <small>{(c.end - c.start).toFixed(2)} 秒</small>
+          <small>
+            {(c.end - c.start).toFixed(2)} {t("秒")}
+          </small>
         </span>
         <span className="caption-edge caption-edge-left" aria-hidden="true" />
         <span className="caption-edge caption-edge-right" aria-hidden="true" />

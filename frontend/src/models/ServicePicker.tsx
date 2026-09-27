@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
 import { StudioSelect } from "../ui/StudioSelect";
@@ -18,6 +19,7 @@ export function ServicePicker({
   suggested?: { kind: ServiceKind; endpoint: string };
   onChange: (service: ServiceConnection) => void;
 }) {
+  useLanguage();
   const { connections, error, loading } = useServiceConnections();
   const [adding, setAdding] = useState(false);
   const available = connections.filter((s) => kinds.includes(s.kind));
@@ -27,15 +29,15 @@ export function ServicePicker({
   return (
     <div className="model-field-wide service-picker">
       <label>
-        服务连接
+        {t("服务连接")}
         <StudioSelect
-          label="模型服务连接"
+          label={t("模型服务连接")}
           value={id || ""}
-          placeholder={loading ? "加载中…" : "选择已有连接"}
+          placeholder={loading ? t("加载中…") : t("选择已有连接")}
           disabled={loading}
           options={available.map((s) => ({
             value: s.id,
-            label: s.name + (s.hasKey ? "" : " · 未配置密钥"),
+            label: s.name + (s.hasKey ? "" : t(" · 未配置密钥")),
           }))}
           onValueChange={(id) => {
             const service = available.find((s) => s.id === id);
@@ -45,13 +47,13 @@ export function ServicePicker({
       </label>
       {selected && (
         <p className="model-hint">
-          {selected.endpoint} · 地址和密钥在“服务连接”中统一管理
+          {selected.endpoint} {t("· 地址和密钥在“服务连接”中统一管理")}
         </p>
       )}
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       {!adding && (
         <button type="button" onClick={() => setAdding(true)}>
-          添加服务连接
+          {t("添加服务连接")}
         </button>
       )}
       {adding && (

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Select } from "@radix-ui/themes";
 import "../styles/studio-select.css";
@@ -7,7 +8,7 @@ export function StudioSelect({
   onValueChange,
   options,
   label,
-  placeholder = "请选择",
+  placeholder = t("请选择"),
   disabled = false,
 }: {
   value: string;
@@ -17,6 +18,7 @@ export function StudioSelect({
   placeholder?: string;
   disabled?: boolean;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const selected = options.some((option) => option.value === value);
   return (
@@ -58,7 +60,7 @@ export function StudioSelect({
         ))}
         {!options.length && (
           <Select.Item value="empty" disabled>
-            暂无可选项
+            {t("暂无可选项")}
           </Select.Item>
         )}
       </Select.Content>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
@@ -10,6 +11,7 @@ export function TaskPromptEditor({
   task: ProductionTask;
   canvas: ProductionController;
 }) {
+  useLanguage();
   const original = canEditOriginal(task);
   const saved = task.nextPrompt ?? task.prompt;
   const [draft, setDraft] = useState<string | null>(null);
@@ -17,18 +19,19 @@ export function TaskPromptEditor({
   return (
     <details className="run-description task-prompt-editor">
       <summary>
-        生成描述{task.nextPrompt !== undefined ? " · 已有修改" : ""}
+        {t("生成描述")}
+        {task.nextPrompt !== undefined ? t(" · 已有修改") : ""}
       </summary>
       {!original && (
         <details>
-          <summary>查看本次原始描述</summary>
+          <summary>{t("查看本次原始描述")}</summary>
           <p>{task.prompt}</p>
         </details>
       )}
       <label>
-        {original ? "生成描述" : "下次生成描述"}
+        {original ? t("生成描述") : t("下次生成描述")}
         <textarea
-          aria-label={original ? "生成描述" : "下次生成描述"}
+          aria-label={original ? t("生成描述") : t("下次生成描述")}
           rows={5}
           maxLength={12000}
           value={draft ?? saved}
@@ -51,7 +54,7 @@ export function TaskPromptEditor({
             }
           }}
         >
-          保存描述
+          {t("保存描述")}
         </button>
         {draft !== null && (
           <button
@@ -61,7 +64,7 @@ export function TaskPromptEditor({
               setError("");
             }}
           >
-            放弃修改
+            {t("放弃修改")}
           </button>
         )}
         <button
@@ -79,12 +82,12 @@ export function TaskPromptEditor({
             }
           }}
         >
-          让 Agent 修改描述
+          {t("让 Agent 修改描述")}
         </button>
       </div>
       {error && <p role="alert">{error}</p>}
       {!original && (
-        <small>保存后不会改变当前请求；重新生成会创建新任务。</small>
+        <small>{t("保存后不会改变当前请求；重新生成会创建新任务。")}</small>
       )}
     </details>
   );

@@ -1,7 +1,8 @@
+import { CanvasControls } from "./CanvasControls";
+import { t, useLanguage } from "../i18n";
 import { collectAsset } from "../workspace/assetLibrary";
 import { productionShots } from "./items";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Minus, Plus, CornersOut } from "@phosphor-icons/react";
 import { fitView } from "../canvas/fit";
 import { useViewport } from "../canvas/useViewport";
 import { CanvasCard } from "./CanvasCard";
@@ -21,6 +22,7 @@ export function ProductionCanvas({
   canvas: ProductionController;
   onAdd: (asset: Asset) => void;
 }) {
+  useLanguage();
   const { items, selected, choose: setSelection, focus } = canvas;
   const shots = productionShots(project);
   const root = useRef<HTMLDivElement>(null);
@@ -144,7 +146,7 @@ export function ProductionCanvas({
       <div
         ref={root}
         className="creation-canvas"
-        aria-label="镜头制作画布"
+        aria-label={t("镜头制作画布")}
         style={{
           backgroundPosition: `${view.x}px ${view.y}px`,
           backgroundSize: `${24 * view.scale}px ${24 * view.scale}px`,
@@ -264,37 +266,14 @@ export function ProductionCanvas({
             }}
           />
         )}
-        <div className="canvas-controls">
-          <button onClick={() => zoom(0.8)} aria-label="缩小画布">
-            <Minus />
-          </button>
-          <span>{Math.round(view.scale * 100)}%</span>
-          <button onClick={() => zoom(1.25)} aria-label="放大画布">
-            <Plus />
-          </button>
-          <button onClick={() => fit(true)} title="适应全部内容">
-            <CornersOut />
-            全部适应
-          </button>
-        </div>
-        <div className="canvas-help">
-          拖空白移动 · 滚轮平移 · ⌘/Ctrl + 滚轮缩放 · Shift 多选 / 框选 ·
-          双击预览
-        </div>
-        {!!selected.length && (
-          <div className="selection-actions">
-            <span>已选 {selected.length} 项</span>
-            <button onClick={() => canvas.reference(selected)}>
-              引用到输入框
-            </button>
-          </div>
-        )}
-        {!items.length && (
-          <div className="canvas-empty">
-            <h2>从脚本开始，把画面做出来。</h2>
-            <p>让 Agent 拆出镜头，或从素材的右键菜单放入画布。</p>
-          </div>
-        )}
+        <CanvasControls
+          scale={view.scale}
+          zoom={zoom}
+          fit={() => fit(true)}
+          count={selected.length}
+          reference={() => canvas.reference(selected)}
+          empty={!items.length}
+        />
       </div>
       {preview && (
         <CanvasPreview

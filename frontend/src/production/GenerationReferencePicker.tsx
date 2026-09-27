@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
 import { Popover } from "@radix-ui/themes";
@@ -20,6 +21,7 @@ export function GenerationReferencePicker({
   model?: MediaModel;
   patch: (value: Partial<ProductionTask>) => void;
 }) {
+  useLanguage();
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const selected = new Set(
@@ -35,17 +37,17 @@ export function GenerationReferencePicker({
       <Popover.Trigger>
         <button type="button" className="generation-add-reference">
           <Plus size={14} />
-          添加参考素材
+          {t("添加参考素材")}
         </button>
       </Popover.Trigger>
       <Popover.Content className="reference-picker" side="top" align="start">
         <header>
-          <strong>添加项目参考素材</strong>
+          <strong>{t("添加项目参考素材")}</strong>
         </header>
         <input
           type="search"
-          aria-label="搜索任务参考素材"
-          placeholder="搜索图片或视频"
+          aria-label={t("搜索任务参考素材")}
+          placeholder={t("搜索图片或视频")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -55,7 +57,7 @@ export function GenerationReferencePicker({
               type="button"
               key={a.id}
               title={a.name}
-              aria-label={`${selected.has(a.id) ? "已添加" : "添加"} ${a.name}`}
+              aria-label={`${selected.has(a.id) ? t("已添加") : t("添加")} ${a.name}`}
               disabled={selected.has(a.id) || selected.size >= 12}
               onClick={() => {
                 try {
@@ -85,15 +87,17 @@ export function GenerationReferencePicker({
         {!assets.length && (
           <p className="reference-picker-empty">
             {query
-              ? "没有匹配的素材"
-              : "没有当前模型可用的参考素材；首尾帧请在对应槽位选择。"}
+              ? t("没有匹配的素材")
+              : t("没有当前模型可用的参考素材；首尾帧请在对应槽位选择。")}
           </p>
         )}
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
         <footer>
-          <span>已引用 {selected.size} 项</span>
+          <span>
+            {t("已引用")} {selected.size} {t("项")}
+          </span>
           <Popover.Close>
-            <button type="button">完成</button>
+            <button type="button">{t("完成")}</button>
           </Popover.Close>
         </footer>
       </Popover.Content>

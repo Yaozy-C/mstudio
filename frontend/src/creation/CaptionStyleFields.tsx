@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useRef, useState } from "react";
 import type { Caption } from "../model";
 import { captionFonts } from "./captionStyle";
@@ -13,6 +14,7 @@ export function CaptionStyleFields({
   height: number;
   patch: (v: Partial<Caption>) => void;
 }) {
+  useLanguage();
   const area = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<{ x: number; y: number } | null>(null);
   const position = draft ?? { x: caption.x ?? 0.5, y: caption.y ?? 0.85 };
@@ -27,7 +29,7 @@ export function CaptionStyleFields({
     <div className="caption-style-fields">
       <div className="field-grid">
         <label>
-          字体
+          {t("字体")}
           <select
             value={caption.font ?? "sans"}
             onChange={(e) => patch({ font: e.target.value as Caption["font"] })}
@@ -40,7 +42,7 @@ export function CaptionStyleFields({
           </select>
         </label>
         <label>
-          文字颜色
+          {t("文字颜色")}
           <input
             type="color"
             value={caption.color ?? "#ffffff"}
@@ -49,10 +51,10 @@ export function CaptionStyleFields({
         </label>
       </div>
       <label>
-        字号 ·{" "}
+        {t("字号 ·")}{" "}
         {Math.round(Math.min(width, height) * (caption.fontSize ?? 0.048))} px
         <input
-          aria-label="字幕字号"
+          aria-label={t("字幕字号")}
           type="range"
           min={0.02}
           max={0.12}
@@ -67,7 +69,7 @@ export function CaptionStyleFields({
           checked={caption.background ?? true}
           onChange={(e) => patch({ background: e.target.checked })}
         />
-        显示字幕底色
+        {t("显示字幕底色")}
       </label>
       <div
         className="caption-position"
@@ -77,12 +79,12 @@ export function CaptionStyleFields({
           width: `min(100%, ${Math.min(280, (300 * width) / height)}px)`,
         }}
         role="group"
-        aria-label="字幕画面位置"
+        aria-label={t("字幕画面位置")}
       >
         <span className="caption-safe-area" />
         <button
           className="caption-position-text"
-          aria-label="拖动字幕位置，方向键微调"
+          aria-label={t("拖动字幕位置，方向键微调")}
           style={{
             left: `${position.x * 100}%`,
             top: `${position.y * 100}%`,
@@ -123,14 +125,14 @@ export function CaptionStyleFields({
             }
           }}
         >
-          {caption.text || "字幕"}
+          {caption.text || t("字幕")}
         </button>
       </div>
-      <small>拖动文字调整画面位置，也可用方向键微调。</small>
+      <small>{t("拖动文字调整画面位置，也可用方向键微调。")}</small>
       <div className="field-grid">
         {(["x", "y"] as const).map((key) => (
           <label key={key}>
-            {key === "x" ? "水平位置" : "垂直位置"} / %
+            {key === "x" ? t("水平位置") : t("垂直位置")} / %
             <input
               type="number"
               min={5}
@@ -161,7 +163,7 @@ export function CaptionStyleFields({
           })
         }
       >
-        重置字幕样式
+        {t("重置字幕样式")}
       </button>
     </div>
   );

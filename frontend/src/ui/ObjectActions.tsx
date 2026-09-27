@@ -1,8 +1,10 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { DotsThree } from "@phosphor-icons/react";
 import type { ObjectAction } from "./ObjectMenu";
 // Render in place so the menu also works inside native <dialog> top layers.
 export function ObjectActions({ actions }: { actions: ObjectAction[] }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -51,8 +53,8 @@ export function ObjectActions({ actions }: { actions: ObjectAction[] }) {
     >
       <button
         type="button"
-        aria-label="对象操作"
-        title="对象操作"
+        aria-label={t("对象操作")}
+        title={t("对象操作")}
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen(!open)}
@@ -60,7 +62,11 @@ export function ObjectActions({ actions }: { actions: ObjectAction[] }) {
         <DotsThree />
       </button>
       {open && (
-        <div className="object-actions-menu" role="menu" aria-label="对象操作">
+        <div
+          className="object-actions-menu"
+          role="menu"
+          aria-label={t("对象操作")}
+        >
           {actions.map((a) => (
             <button
               key={a.label}

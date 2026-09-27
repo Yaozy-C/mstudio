@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import type { ReactNode } from "react";
 import { Graph, X } from "@phosphor-icons/react";
 
@@ -14,6 +15,7 @@ export function DockPanel({
   onClose: () => void;
   visible?: boolean;
 }) {
+  useLanguage();
   return (
     <section
       className={`dock-panel dock-${id}`}
@@ -26,7 +28,7 @@ export function DockPanel({
         <button
           className="icon-button"
           onClick={onClose}
-          aria-label={`关闭${title}`}
+          aria-label={t("关闭{v0}", { v0: title })}
         >
           <X />
         </button>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useState } from "react";
 import type { TransportStats } from "./mediaTransport";
 export function PlaybackDiagnostics({
@@ -7,7 +8,8 @@ export function PlaybackDiagnostics({
   element: HTMLVideoElement | null;
   stats: TransportStats;
 }) {
-  const [text, setText] = useState("等待视频播放");
+  useLanguage();
+  const [text, setText] = useState(t("等待视频播放"));
   useEffect(() => {
     const update = () => {
       const videos = Array.from(
@@ -24,7 +26,17 @@ export function PlaybackDiagnostics({
         0,
       );
       setText(
-        `${active.length} 层视频 · 解码 ${decoded} 帧 · 丢帧 ${dropped} · 定位 ${stats.seeks} 次 · 缓冲 ${stats.waiting} 次 · play ${stats.playCalls} 次`,
+        t(
+          "{v0} 层视频 · 解码 {v1} 帧 · 丢帧 {v2} · 定位 {v3} 次 · 缓冲 {v4} 次 · play {v5} 次",
+          {
+            v0: active.length,
+            v1: decoded,
+            v2: dropped,
+            v3: stats.seeks,
+            v4: stats.waiting,
+            v5: stats.playCalls,
+          },
+        ),
       );
     };
     update();

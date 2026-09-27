@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import type { WorkContext } from "../assistant/workContext";
 import { ScriptTiming } from "./ScriptTiming";
 import { ScriptNextStep } from "./ScriptNextStep";
@@ -31,6 +32,7 @@ export function ScriptWorkspace({
   saved: string;
   navigate: (view: "script" | "storyboard") => void;
 }) {
+  useLanguage();
   const plans = project.nodes.filter((n) => n.kind === "plan");
   const selectedNode = project.nodes.find((n) => n.id === selected);
   const linkedPlan =
@@ -67,18 +69,18 @@ export function ScriptWorkspace({
       <header className="script-heading">
         <div>
           <small>01 / SCRIPT</small>
-          <h1>从想法开始，让 AI 起草。</h1>
-          <p>先写清声画内容，再设计整片镜头与关键画格。</p>
+          <h1>{t("从想法开始，让 AI 起草。")}</h1>
+          <p>{t("先写清声画内容，再设计整片镜头与关键画格。")}</p>
         </div>
       </header>
       {plan ? (
         <>
-          <nav className="script-tools" aria-label="脚本工具">
+          <nav className="script-tools" aria-label={t("脚本工具")}>
             <button type="button" onClick={() => onReference(plan.id)}>
-              引用到对话
+              {t("引用到对话")}
             </button>
-            <span role="status" title={SAVE_DESCRIPTION}>
-              {saved}
+            <span role="status" title={t(SAVE_DESCRIPTION)}>
+              {t(saved)}
             </span>
           </nav>
           <div
@@ -110,7 +112,7 @@ export function ScriptWorkspace({
                 />
                 <input
                   className="script-title"
-                  aria-label="脚本标题"
+                  aria-label={t("脚本标题")}
                   value={plan.title}
                   onChange={(e) =>
                     onChange((p) => ({
@@ -122,11 +124,11 @@ export function ScriptWorkspace({
                   }
                 />
                 <InlineText
-                  context="脚本"
-                  label="创意概述"
+                  context={t("脚本")}
+                  label={t("创意概述")}
                   value={plan.text}
                   limit={6000}
-                  placeholder="想表达什么，为什么值得看？"
+                  placeholder={t("想表达什么，为什么值得看？")}
                   commit={(text) =>
                     onChange((p) => ({
                       ...p,
@@ -137,7 +139,10 @@ export function ScriptWorkspace({
                   }
                 />
                 {plan.plan?.story && (
-                  <p className="script-origin">故事结构：{plan.plan.story}</p>
+                  <p className="script-origin">
+                    {t("故事结构：")}
+                    {plan.plan.story}
+                  </p>
                 )}
                 {!!script?.length && (
                   <ScriptTiming
@@ -184,7 +189,7 @@ export function ScriptWorkspace({
                       }))
                     }
                   >
-                    ＋ 添加段落
+                    {t("＋ 添加段落")}
                   </button>
                 </>
               </>

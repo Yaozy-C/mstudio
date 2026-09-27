@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import type { WorkContext } from "../assistant/workContext";
 import type { ProductionController } from "../production/useProduction";
 import { lazy, Suspense } from "react";
@@ -37,21 +38,29 @@ export function StudioAgent({
   onClose: () => void;
   onInspect: () => void;
 }) {
+  useLanguage();
   const clip = project.clips.find((c) => c.id === clipId);
   const asset = project.assets.find((a) => a.id === clip?.assetId);
   return (
-    <DockPanel id="agent" title="项目助手" visible={visible} onClose={onClose}>
+    <DockPanel
+      id="agent"
+      title={t("项目助手")}
+      visible={visible}
+      onClose={onClose}
+    >
       {visible && clip && (
         <div className="agent-clip-context">
           <span title={asset?.name}>
-            已选片段 · {(clip.start ?? 0).toFixed(2)} 秒起
+            {t("已选片段 ·")} {(clip.start ?? 0).toFixed(2)} {t("秒起")}
           </span>
-          <button onClick={onInspect} title="调整画面、调色、声音和时间">
-            编辑片段
+          <button onClick={onInspect} title={t("调整画面、调色、声音和时间")}>
+            {t("编辑片段")}
           </button>
         </div>
       )}
-      <Suspense fallback={<div className="agent-empty">加载 Agent…</div>}>
+      <Suspense
+        fallback={<div className="agent-empty">{t("加载 Agent…")}</div>}
+      >
         <AssistantPanel
           visible={visible}
           canvas={canvas}

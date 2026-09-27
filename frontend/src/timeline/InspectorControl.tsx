@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useId, type ComponentType } from "react";
 import type { IconProps } from "@phosphor-icons/react";
 export function InspectorControl({
@@ -23,6 +24,7 @@ export function InspectorControl({
   endpoints?: [string, string];
   change: (value: number) => void;
 }) {
+  useLanguage();
   const id = useId();
   const update = (number: number) => {
     if (Number.isFinite(number) && number >= min && number <= max)
@@ -51,7 +53,7 @@ export function InspectorControl({
       {slider && (
         <input
           className="inspector-range"
-          aria-label={`${label}滑杆`}
+          aria-label={t("{v0}滑杆", { v0: label })}
           type="range"
           min={min}
           max={max}

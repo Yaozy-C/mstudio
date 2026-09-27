@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { ColorRequest } from "../timeline/ColorRequest";
 import { VisualFields } from "../timeline/VisualFields";
@@ -20,6 +21,7 @@ type Props = {
   onChange: (fn: (p: Project) => Project) => void;
 };
 export function Inspector({ project, clipId, onChange }: Props) {
+  useLanguage();
   const [tab, setTab] = useState("visual");
   const clip = project.clips.find((c) => c.id === clipId);
   const asset = project.assets.find((a) => a.id === clip?.assetId);
@@ -43,19 +45,19 @@ export function Inspector({ project, clipId, onChange }: Props) {
       {clip ? (
         <>
           <h4 className="inspector-asset" title={asset?.name}>
-            {asset?.name ?? "素材丢失"}
+            {asset?.name ?? t("素材丢失")}
           </h4>
           <div
             className="inspector-tabs"
             role="group"
-            aria-label="片段编辑分类"
+            aria-label={t("片段编辑分类")}
           >
             {(
               [
-                ["visual", "画面", ImageSquare],
-                ["color", "调色", Sun],
-                ["audio", "声音", SpeakerHigh],
-                ["time", "时间", Clock],
+                ["visual", t("画面"), ImageSquare],
+                ["color", t("调色"), Sun],
+                ["audio", t("声音"), SpeakerHigh],
+                ["time", t("时间"), Clock],
               ] as const
             )
               .filter(
@@ -97,7 +99,7 @@ export function Inspector({ project, clipId, onChange }: Props) {
                   onClick={() => onChange((p) => detachAudio(p, clip.id))}
                 >
                   <Waveform size={20} />
-                  分离音频
+                  {t("分离音频")}
                 </button>
               )}
           </div>
@@ -112,7 +114,7 @@ export function Inspector({ project, clipId, onChange }: Props) {
       ) : (
         <>
           <label>
-            项目名称
+            {t("项目名称")}
             <input
               value={project.name}
               onChange={(e) =>
@@ -121,7 +123,7 @@ export function Inspector({ project, clipId, onChange }: Props) {
             />
           </label>
           <label>
-            画面比例
+            {t("画面比例")}
             <select
               value={`${project.width}x${project.height}`}
               onChange={(e) => {
@@ -129,14 +131,14 @@ export function Inspector({ project, clipId, onChange }: Props) {
                 onChange((p) => ({ ...p, width, height }));
               }}
             >
-              <option value="1080x1920">9:16 · 竖屏</option>
-              <option value="1920x1080">16:9 · 横屏</option>
-              <option value="1080x1080">1:1 · 方形</option>
+              <option value="1080x1920">{t("9:16 · 竖屏")}</option>
+              <option value="1920x1080">{t("16:9 · 横屏")}</option>
+              <option value="1080x1080">{t("1:1 · 方形")}</option>
               <option value="720x1280">9:16 · 720p</option>
             </select>
           </label>
           <label>
-            帧率
+            {t("帧率")}
             <select
               value={project.fps}
               onChange={(e) =>
@@ -149,10 +151,10 @@ export function Inspector({ project, clipId, onChange }: Props) {
             </select>
           </label>
           <label>
-            创作要求与已确认事实
+            {t("创作要求与已确认事实")}
             <textarea
               rows={5}
-              placeholder="视频目标、受众、风格、锁定要求…"
+              placeholder={t("视频目标、受众、风格、锁定要求…")}
               value={project.brief}
               onChange={(e) =>
                 onChange((p) => ({ ...p, brief: e.target.value }))
@@ -160,7 +162,7 @@ export function Inspector({ project, clipId, onChange }: Props) {
             />
           </label>
           <p className="subtle">
-            精确剪辑请选中时间线片段。画布内容可以直接引用给 Agent。
+            {t("精确剪辑请选中时间线片段。画布内容可以直接引用给 Agent。")}
           </p>
         </>
       )}

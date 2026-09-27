@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { type Clip, type Project } from "../model";
 import { tracksOf, validateClip } from "./document";
 export function PlacementFields({
@@ -11,6 +12,7 @@ export function PlacementFields({
   update: (c: Clip) => void;
   section?: "time" | "visual" | "audio";
 }) {
+  useLanguage();
   const asset = project.assets.find((a) => a.id === clip.assetId);
   if (!asset) return null;
   const track = tracksOf(project).find((t) => t.id === clip.trackId);
@@ -23,7 +25,7 @@ export function PlacementFields({
       {(!section || section === "time") && (
         <div className="field-grid">
           <label>
-            时间线起点 / 秒
+            {t("时间线起点 / 秒")}
             <input
               type="number"
               min={0}
@@ -33,7 +35,7 @@ export function PlacementFields({
             />
           </label>
           <label>
-            轨道
+            {t("轨道")}
             <select
               value={clip.trackId}
               onChange={(e) => update({ ...clip, trackId: e.target.value })}
@@ -55,7 +57,7 @@ export function PlacementFields({
         <>
           <div className="field-grid">
             <label>
-              中心 X / %
+              {t("中心 X / %")}
               <input
                 type="number"
                 min={-100}
@@ -65,7 +67,7 @@ export function PlacementFields({
               />
             </label>
             <label>
-              中心 Y / %
+              {t("中心 Y / %")}
               <input
                 type="number"
                 min={-100}
@@ -76,7 +78,7 @@ export function PlacementFields({
             </label>
           </div>
           <label>
-            画面大小 · {Math.round((clip.scale ?? 1) * 100)}%
+            {t("画面大小 ·")} {Math.round((clip.scale ?? 1) * 100)}%
             <input
               type="range"
               min={0.05}
@@ -87,7 +89,7 @@ export function PlacementFields({
             />
           </label>
           <label>
-            不透明度 · {Math.round((clip.opacity ?? 1) * 100)}%
+            {t("不透明度 ·")} {Math.round((clip.opacity ?? 1) * 100)}%
             <input
               type="range"
               min={0}
@@ -102,7 +104,7 @@ export function PlacementFields({
       {(!section || section === "audio") && asset.hasAudio && (
         <div className="field-grid">
           <label>
-            声音淡入 / 秒
+            {t("声音淡入 / 秒")}
             <input
               type="number"
               min={0}
@@ -112,7 +114,7 @@ export function PlacementFields({
             />
           </label>
           <label>
-            声音淡出 / 秒
+            {t("声音淡出 / 秒")}
             <input
               type="number"
               min={0}

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { X, At, Crosshair } from "@phosphor-icons/react";
@@ -17,6 +18,7 @@ export function GenerationResult({
   reference?: (id: string) => void;
   locate?: () => void;
 }) {
+  useLanguage();
   const [preview, setPreview] = useState(false);
   const asset = project.assets.find((a) => a.id === task.resultAssetId);
   if (!asset) return null;
@@ -41,8 +43,8 @@ export function GenerationResult({
       {locate && (
         <button
           className="result-reference result-locate"
-          aria-label="在画布查看此结果"
-          title="在画布查看"
+          aria-label={t("在画布查看此结果")}
+          title={t("在画布查看")}
           onClick={locate}
         >
           <Crosshair size={16} />
@@ -51,8 +53,8 @@ export function GenerationResult({
       {reference && (
         <button
           className="result-reference"
-          aria-label="引用此结果"
-          title="引用到输入框"
+          aria-label={t("引用此结果")}
+          title={t("引用到输入框")}
           onClick={() => reference(asset.id)}
         >
           <At size={16} />
@@ -62,7 +64,7 @@ export function GenerationResult({
         <button
           type="button"
           className="generation-result-image"
-          aria-label={`预览生成图片 ${asset.name}`}
+          aria-label={t("预览生成图片 {v0}", { v0: asset.name })}
           onClick={() => setPreview(true)}
         >
           <img src={mediaUrl(asset.preview || asset.path)} alt={asset.name} />
@@ -84,7 +86,7 @@ export function GenerationResult({
           <header>
             <Dialog.Title>{asset.name}</Dialog.Title>
             <Dialog.Close>
-              <button aria-label="关闭结果预览">
+              <button aria-label={t("关闭结果预览")}>
                 <X />
               </button>
             </Dialog.Close>

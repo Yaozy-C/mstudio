@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import type { ReactElement } from "react";
 import { ContextMenu } from "@radix-ui/themes";
 export type ObjectAction = {
@@ -13,6 +14,7 @@ export function ObjectMenu({
   children: ReactElement;
   actions: ObjectAction[];
 }) {
+  useLanguage();
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger
@@ -29,7 +31,7 @@ export function ObjectMenu({
       </ContextMenu.Trigger>
       <ContextMenu.Content
         className="studio-menu object-menu"
-        aria-label="对象操作"
+        aria-label={t("对象操作")}
       >
         {actions.map((action) => (
           <ContextMenu.Item

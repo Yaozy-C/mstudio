@@ -1,3 +1,4 @@
+import { t as translate, useLanguage } from "../i18n";
 import { TransitionSeams } from "./TransitionSeams";
 import { CaptionTrack } from "./CaptionTrack";
 import { trackRows } from "./trackRows";
@@ -39,6 +40,7 @@ export const Timeline = memo(function Timeline({
   onReference,
   onCaption,
 }: Props) {
+  useLanguage();
   const { ref, labels, zoom, viewport, changeZoom, onScroll } =
     useTimelineViewport(clock);
   const [captionId, setCaptionId] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export const Timeline = memo(function Timeline({
   return (
     <section
       className="timeline floating-timeline"
-      aria-label="多轨时间线"
+      aria-label={translate("多轨时间线")}
       onKeyDown={(e) => {
         if (
           !selectedCaption ||
@@ -139,7 +141,7 @@ export const Timeline = memo(function Timeline({
       <div className="timeline-body">
         <div className="track-label-viewport" ref={labels}>
           <div className="track-labels">
-            <div>轨道 · 上层覆盖下层</div>
+            <div>{translate("轨道 · 上层覆盖下层")}</div>
             {rows.map((t) => (
               <TrackHeading
                 key={t.id}
@@ -157,7 +159,7 @@ export const Timeline = memo(function Timeline({
                 }}
               />
             ))}
-            <div className="caption-heading">字幕</div>
+            <div className="caption-heading">{translate("字幕")}</div>
           </div>
         </div>
         <div
@@ -270,7 +272,7 @@ export const Timeline = memo(function Timeline({
                 />
                 {!project.clips.some((c) => c.trackId === t.id) && (
                   <div className="track-empty">
-                    将片段拖到此处 · 可自由错开、重叠
+                    {translate("将片段拖到此处 · 可自由错开、重叠")}
                   </div>
                 )}
               </div>

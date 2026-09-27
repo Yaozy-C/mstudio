@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import {
   FileText,
@@ -35,6 +36,7 @@ export function MediaPanel({
   onRemove: (a: Asset) => void;
   busy: boolean;
 }) {
+  useLanguage();
   const [selected, setSelected] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
@@ -49,47 +51,47 @@ export function MediaPanel({
   const groups = [
     {
       id: "reference",
-      label: "图片",
+      label: t("图片"),
       icon: ImageSquare,
       assets: assets.filter((a) => a.kind === "image"),
     },
     {
       id: "shots",
-      label: "视频",
+      label: t("视频"),
       icon: FilmStrip,
       assets: assets.filter((a) => a.kind === "video"),
     },
     {
       id: "audio",
-      label: "音频",
+      label: t("音频"),
       icon: MusicNotes,
       assets: assets.filter((a) => a.kind === "audio"),
     },
     {
       id: "documents",
-      label: "文档",
+      label: t("文档"),
       icon: FileText,
       assets: assets.filter((a) => a.kind === "text" || a.kind === "document"),
     },
-    { id: "all", label: "全部素材", icon: Images, assets },
+    { id: "all", label: t("全部素材"), icon: Images, assets },
   ];
   const active = groups.find((g) => g.id === filter)!;
   return (
     <aside className="media-panel">
       <header>
         <h3>
-          素材库 <span>{assets.length}</span>
+          {t("素材库")} <span>{assets.length}</span>
         </h3>
         <button
           className="icon-button"
           onClick={upload}
-          title="导入素材"
+          title={t("导入素材")}
           disabled={disabled}
         >
           <Plus />
         </button>
       </header>
-      <nav className="media-scopes" aria-label="素材范围">
+      <nav className="media-scopes" aria-label={t("素材范围")}>
         {(["project", "global"] as const).map((value) => (
           <button
             key={value}
@@ -101,7 +103,7 @@ export function MediaPanel({
               setPreview(null);
             }}
           >
-            {value === "project" ? "项目素材" : "全局素材"}
+            {value === "project" ? t("项目素材") : t("全局素材")}
           </button>
         ))}
       </nav>
@@ -109,12 +111,12 @@ export function MediaPanel({
         <Plus size={18} />
         <strong>
           {disabled
-            ? "处理中…"
+            ? t("处理中…")
             : scope === "project"
-              ? "上传项目素材"
-              : "上传全局素材"}
+              ? t("上传项目素材")
+              : t("上传全局素材")}
         </strong>
-        <small>图片、文本、视频、音频、PDF</small>
+        <small>{t("图片、文本、视频、音频、PDF")}</small>
       </button>
       {library.error && !removing && (
         <ErrorNotice error={library.error} fallback="ASSET_OPERATION_FAILED">
@@ -136,27 +138,27 @@ export function MediaPanel({
           <ObjectMenu
             key={a.id}
             actions={[
-              { label: "预览素材", run: () => setPreview(a.id) },
+              { label: t("预览素材"), run: () => setPreview(a.id) },
               ...(scope === "project"
                 ? [
                     {
-                      label: "放到画布",
+                      label: t("放到画布"),
                       run: () => onPlace(a),
                       disabled: a.missing,
                     },
                     {
-                      label: "加入时间线",
+                      label: t("加入时间线"),
                       run: () => onAdd(a),
                       disabled:
                         a.missing || a.kind === "text" || a.kind === "document",
                     },
                     {
-                      label: "引用到对话",
+                      label: t("引用到对话"),
                       run: () => onReference(a),
                       disabled: a.missing,
                     },
                     {
-                      label: "添加到全局素材库",
+                      label: t("添加到全局素材库"),
                       run: () => void library.promote(a),
                       disabled:
                         disabled || library.assets.some((g) => g.id === a.id),
@@ -164,7 +166,7 @@ export function MediaPanel({
                   ]
                 : [
                     {
-                      label: "加入项目素材",
+                      label: t("加入项目素材"),
                       run: () => void library.use(a),
                       disabled:
                         disabled || projectAssets.some((p) => p.id === a.id),
@@ -172,7 +174,9 @@ export function MediaPanel({
                   ]),
               {
                 label:
-                  scope === "project" ? "从项目素材移除" : "从全局素材移除",
+                  scope === "project"
+                    ? t("从项目素材移除")
+                    : t("从全局素材移除"),
                 danger: true,
                 disabled,
                 run: () => setRemoving(a),
@@ -206,7 +210,7 @@ export function MediaPanel({
                   }
                 }}
                 aria-pressed={selected === a.id}
-                title="双击预览 · 右键更多操作"
+                title={t("双击预览 · 右键更多操作")}
               >
                 {a.missing ? (
                   <MissingAsset asset={a} compact />
@@ -220,9 +224,9 @@ export function MediaPanel({
                 {!a.missing && (
                   <span>
                     {a.kind === "image"
-                      ? "图片"
+                      ? t("图片")
                       : a.kind === "text"
-                        ? "文本"
+                        ? t("文本")
                         : a.kind === "document"
                           ? "PDF"
                           : formatTime(a.duration)}
@@ -247,12 +251,12 @@ export function MediaPanel({
         {!active.assets.length && (
           <p className="media-empty">
             {scope === "global" && library.loading
-              ? "正在读取全局素材…"
-              : `暂无${active.label}，可上传素材或切换分类。`}
+              ? t("正在读取全局素材…")
+              : t("暂无{v0}，可上传素材或切换分类。", { v0: active.label })}
           </p>
         )}
       </div>
-      <nav className="media-categories" aria-label="素材分类">
+      <nav className="media-categories" aria-label={t("素材分类")}>
         {groups.map((g) => (
           <button
             key={g.id}
@@ -280,14 +284,19 @@ export function MediaPanel({
       >
         <AlertDialog.Content className="modal small" aria-busy={disabled}>
           <AlertDialog.Title>
-            移除{scope === "project" ? "项目" : "全局"}素材
+            {t("移除")}
+            {scope === "project" ? t("项目") : t("全局")}
+            {t("素材")}
           </AlertDialog.Title>
           <AlertDialog.Description>
-            将「{removing?.name}」移出{scope === "project" ? "项目" : "全局"}
-            素材库？已用于分镜、时间线和对话的内容会保留
+            {t("将「")}
+            {removing?.name}
+            {t("」移出")}
+            {scope === "project" ? t("项目") : t("全局")}
+            {t("素材库？已用于分镜、时间线和对话的内容会保留")}
             {scope === "project"
-              ? "，全局素材不受影响"
-              : "，其他项目中已选用的素材不受影响"}
+              ? t("，全局素材不受影响")
+              : t("，其他项目中已选用的素材不受影响")}
             。
           </AlertDialog.Description>
           {library.error && (
@@ -295,7 +304,7 @@ export function MediaPanel({
           )}
           <footer>
             <AlertDialog.Cancel>
-              <button disabled={disabled}>取消</button>
+              <button disabled={disabled}>{t("取消")}</button>
             </AlertDialog.Cancel>
             <button
               className="primary"
@@ -310,7 +319,7 @@ export function MediaPanel({
                 setRemoving(null);
               }}
             >
-              {disabled ? "正在移除…" : "确认移除"}
+              {disabled ? t("正在移除…") : t("确认移除")}
             </button>
           </footer>
         </AlertDialog.Content>

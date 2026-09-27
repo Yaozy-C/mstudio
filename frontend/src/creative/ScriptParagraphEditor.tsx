@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { Trash } from "@phosphor-icons/react";
 import { flushPendingEdits } from "../workspace/pendingEdits";
 import { writeScript } from "./scriptWrite";
@@ -27,9 +28,10 @@ export function ScriptParagraphEditor({
   change: (f: (p: Project) => Project) => void;
   openShots: (id?: string) => void;
 }) {
+  useLanguage();
   const [count, setCount] = useState(1);
   const [splitting, setSplitting] = useState(false);
-  const context = `段落 ${index + 1}`;
+  const context = t("段落 {v0}", { v0: index + 1 });
   return (
     <article
       className="script-paragraph"
@@ -40,9 +42,9 @@ export function ScriptParagraphEditor({
       <header>
         <span>{String(index + 1).padStart(2, "0")}</span>
         <input
-          aria-label={`${context} · 标题`}
+          aria-label={t("{v0} · 标题", { v0: context })}
           value={s.title}
-          placeholder="段落标题"
+          placeholder={t("段落标题")}
           onChange={(e) =>
             change((p) =>
               updateParagraph(p, planId, s.id, { title: e.target.value }),
@@ -50,12 +52,14 @@ export function ScriptParagraphEditor({
           }
         />
         <small>
-          {shots.length ? `${shots.length} 个关联镜头` : "尚未拆分"}
+          {shots.length
+            ? t("{v0} 个关联镜头", { v0: shots.length })
+            : t("尚未拆分")}
         </small>
       </header>
       <div className="script-paragraph-time">
         <DurationInput
-          label={`${context} · 时长`}
+          label={t("{v0} · 时长", { v0: context })}
           value={paragraphDuration(s)}
           commit={(duration) =>
             change((p) => updateParagraph(p, planId, s.id, { duration }))
@@ -64,10 +68,14 @@ export function ScriptParagraphEditor({
       </div>
       {(
         [
-          ["action", "画面与动作", "观众看见什么事件与变化？"],
-          ["onScreenText", "画面文字", "画面上出现的准确文字；没有则留空"],
-          ["dialogue", "台词 / 旁白", "人物说什么，或旁白如何讲述？"],
-          ["sound", "声音与节奏", "环境声、音乐或停顿…"],
+          ["action", t("画面与动作"), t("观众看见什么事件与变化？")],
+          [
+            "onScreenText",
+            t("画面文字"),
+            t("画面上出现的准确文字；没有则留空"),
+          ],
+          ["dialogue", t("台词 / 旁白"), t("人物说什么，或旁白如何讲述？")],
+          ["sound", t("声音与节奏"), t("环境声、音乐或停顿…")],
         ] as const
       ).map(([key, label, placeholder]) => (
         <InlineText
@@ -84,8 +92,8 @@ export function ScriptParagraphEditor({
       ))}
       <footer>
         <button
-          aria-label={`${context} · 删除段落`}
-          title="删除段落，保留关联镜头；可撤销"
+          aria-label={t("{v0} · 删除段落", { v0: context })}
+          title={t("删除段落，保留关联镜头；可撤销")}
           onClick={() => {
             flushPendingEdits();
             change((p) => ({
@@ -106,11 +114,11 @@ export function ScriptParagraphEditor({
             }));
           }}
         >
-          <Trash aria-hidden="true" /> 删除段落
+          <Trash aria-hidden="true" /> {t("删除段落")}
         </button>
         {shots.length > 0 && (
           <button onClick={() => openShots(shots[0].id)}>
-            查看这段的 {shots.length} 个镜头
+            {t("查看这段的")} {shots.length} {t("个镜头")}
           </button>
         )}
         <button
@@ -120,22 +128,25 @@ export function ScriptParagraphEditor({
               creativeTask(
                 "split",
                 planId,
-                `第 ${index + 1} 段「${s.title || "未命名"}」`,
+                t("第 {v0} 段「{v1}」", {
+                  v0: index + 1,
+                  v1: s.title || t("未命名"),
+                }),
               ),
             )
           }
         >
-          {shots.length ? "用 AI 调整这段镜头" : "用 AI 设计这段镜头"}
+          {shots.length ? t("用 AI 调整这段镜头") : t("用 AI 设计这段镜头")}
         </button>
       </footer>
       <details onToggle={(e) => setSplitting(e.currentTarget.open)}>
-        <summary>手动创建镜头草稿</summary>
+        <summary>{t("手动创建镜头草稿")}</summary>
         {splitting && (
           <div className="script-split">
             <label>
-              镜头数量{" "}
+              {t("镜头数量")}{" "}
               <select
-                aria-label={`${context} · 镜头数量`}
+                aria-label={t("{v0} · 镜头数量", { v0: context })}
                 value={count}
                 onChange={(e) => setCount(Number(e.target.value))}
               >
@@ -145,7 +156,9 @@ export function ScriptParagraphEditor({
               </select>
             </label>
             <p>
-              创建文字镜头草稿，保留段落关联。多个镜头需逐个细化动作、分配台词，再制作画面。
+              {t(
+                "创建文字镜头草稿，保留段落关联。多个镜头需逐个细化动作、分配台词，再制作画面。",
+              )}
             </p>
             <button
               className="primary"
@@ -154,7 +167,7 @@ export function ScriptParagraphEditor({
                 setSplitting(false);
               }}
             >
-              创建 {count} 个镜头草稿
+              {t("创建")} {count} {t("个镜头草稿")}
             </button>
           </div>
         )}

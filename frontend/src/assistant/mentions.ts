@@ -1,3 +1,4 @@
+import { agentLabel } from "../agents/display";
 import type { AgentProfile } from "../agents/catalog";
 import { selectedModel, type ModelCatalog } from "../models/types";
 export function mentionQuery(text: string, caret: number) {
@@ -17,7 +18,9 @@ export function matchingAgents(agents: AgentProfile[], query: string) {
   return agents.filter(
     (a) =>
       a.enabled &&
-      `${a.name} ${a.description}`.toLocaleLowerCase().includes(key),
+      `${a.name} ${a.description} ${agentLabel(a)} ${agentLabel(a, "description")}`
+        .toLocaleLowerCase()
+        .includes(key),
   );
 }
 export function resolveMention(

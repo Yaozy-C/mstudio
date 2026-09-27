@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
@@ -15,6 +16,7 @@ export function ExportDialog({
   project: Project;
   onClose: () => void;
 }) {
+  useLanguage();
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -69,7 +71,7 @@ export function ExportDialog({
         <header>
           <div>
             <div className="eyebrow">FINAL CUT</div>
-            <h2>{path ? "成片已就绪" : "导出你的作品"}</h2>
+            <h2>{path ? t("成片已就绪") : t("导出你的作品")}</h2>
           </div>
           <button className="icon-button" disabled={busy} onClick={onClose}>
             <X />
@@ -85,7 +87,7 @@ export function ExportDialog({
               {project.width} × {project.height} · {project.fps} fps ·{" "}
               {formatTime(endTime(project))}
             </p>
-            <p>H.264 / MP4 · AAC 立体声</p>
+            <p>{t("H.264 / MP4 · AAC 立体声")}</p>
           </div>
         )}
         {busy && (
@@ -94,7 +96,8 @@ export function ExportDialog({
               <span style={{ width: `${progress * 100}%` }} />
             </div>
             <p className="subtle">
-              正在本机渲染 {Math.round(progress * 100)}% · 请保持应用打开
+              {t("正在本机渲染")} {Math.round(progress * 100)}
+              {t("% · 请保持应用打开")}
             </p>
           </>
         )}
@@ -107,7 +110,7 @@ export function ExportDialog({
         {saved && (
           <p className="notice">
             <CheckCircle />
-            已保存至 {saved}
+            {t("已保存至")} {saved}
           </p>
         )}
         <footer>
@@ -122,7 +125,7 @@ export function ExportDialog({
                   .catch((e) => setError(String(e)))
               }
             >
-              另存为 MP4
+              {t("另存为 MP4")}
             </button>
           ) : (
             <button
@@ -131,7 +134,7 @@ export function ExportDialog({
               onClick={() => void render()}
             >
               <ExportIcon />
-              {busy ? "正在渲染…" : error ? "重试导出" : "开始导出"}
+              {busy ? t("正在渲染…") : error ? t("重试导出") : t("开始导出")}
             </button>
           )}
         </footer>

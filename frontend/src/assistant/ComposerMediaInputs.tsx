@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { MediaReferenceStrip } from "./MediaReferenceStrip";
 import { X, ArrowsLeftRight } from "@phosphor-icons/react";
 import { frameRoles, setFrameInput } from "../production/frameInputs";
@@ -11,6 +12,7 @@ export function ComposerMediaInputs(props: {
   draft: AttachmentDraft;
   project: Project;
 }) {
+  useLanguage();
   const { canvas, project } = props;
   const task = canvas.task;
   const model = canvas.media.models.find(
@@ -25,7 +27,7 @@ export function ComposerMediaInputs(props: {
   if (!task || !roles.length) return <MediaReferenceStrip {...props} />;
   return (
     <>
-      <div className="composer-frame-inputs" aria-label="视频帧素材">
+      <div className="composer-frame-inputs" aria-label={t("视频帧素材")}>
         {roles.map((role) => {
           const selected = task.inputs.some((r) => r.role === role);
           return (
@@ -35,7 +37,9 @@ export function ComposerMediaInputs(props: {
                 <button
                   type="button"
                   className="composer-frame-remove"
-                  aria-label={role === "first-frame" ? "移除首帧" : "移除尾帧"}
+                  aria-label={
+                    role === "first-frame" ? t("移除首帧") : t("移除尾帧")
+                  }
                   onClick={() =>
                     canvas.update(setFrameInput(task, project, role))
                   }
@@ -51,15 +55,15 @@ export function ComposerMediaInputs(props: {
             <button
               type="button"
               className="composer-frame-swap"
-              title="交换首尾帧"
-              aria-label="交换首尾帧"
+              title={t("交换首尾帧")}
+              aria-label={t("交换首尾帧")}
               onClick={() =>
                 canvas.update({
                   inputs: task.inputs.map((r) =>
                     r.role === "first-frame"
-                      ? { ...r, role: "last-frame", purpose: "视频尾帧" }
+                      ? { ...r, role: "last-frame", purpose: t("视频尾帧") }
                       : r.role === "last-frame"
-                        ? { ...r, role: "first-frame", purpose: "视频首帧" }
+                        ? { ...r, role: "first-frame", purpose: t("视频首帧") }
                         : r,
                   ),
                 })

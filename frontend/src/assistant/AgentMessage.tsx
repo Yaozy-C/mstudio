@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { TaskTarget } from "./TaskTarget";
 import { createContext, useContext } from "react";
@@ -17,6 +18,7 @@ import type { ProductionTask } from "../production/types";
 import type { ProductionController } from "../production/useProduction";
 // Stable component identity preserves Markdown nodes while streaming text grows.
 function MessageText() {
+  useLanguage();
   return <MarkdownTextPrimitive remarkPlugins={[remarkGfm]} />;
 }
 const contentComponents = { Text: MessageText };
@@ -36,6 +38,7 @@ export const MessageContext = createContext<{
   ) => void;
 } | null>(null);
 export function AgentMessage() {
+  useLanguage();
   const message = useAuiState((s) => s.message);
   const context = useContext(MessageContext)!;
   const meta = message.metadata.custom;
@@ -50,7 +53,7 @@ export function AgentMessage() {
   return (
     <MessagePrimitive.Root className={`agent-message ${message.role}`}>
       <small>
-        {message.role === "assistant" ? agentName || "助手" : "你"}
+        {message.role === "assistant" ? agentName || t("助手") : t("你")}
         {message.role === "user" && agentName && (
           <span className="message-agent-tag">@{agentName}</span>
         )}
@@ -81,13 +84,13 @@ export function AgentMessage() {
           <ErrorNotice
             error={
               message.status.reason === "cancelled"
-                ? "已停止回答"
-                : message.status.error || "回答未完成"
+                ? t("已停止回答")
+                : message.status.error || t("回答未完成")
             }
             fallback="CHAT_FAILED"
           >
             <ActionBarPrimitive.Reload className="text-button">
-              重试回答
+              {t("重试回答")}
             </ActionBarPrimitive.Reload>
           </ErrorNotice>
         )}

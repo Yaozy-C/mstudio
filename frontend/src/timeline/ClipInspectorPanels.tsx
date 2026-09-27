@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import {
   ArrowsHorizontal,
   ArrowsVertical,
@@ -25,6 +26,7 @@ export function ClipInspectorPanels({
   project: Project;
   update: (clip: Clip) => void;
 }) {
+  useLanguage();
   const patch = (fields: Partial<Clip>) => {
     const next = { ...clip, ...fields };
     if (validateClip(next, asset)) update(next);
@@ -33,9 +35,9 @@ export function ClipInspectorPanels({
     return (
       <>
         <section className="inspector-section">
-          <h3>位置</h3>
+          <h3>{t("位置")}</h3>
           <InspectorControl
-            label="水平"
+            label={t("水平")}
             icon={ArrowsHorizontal}
             value={(clip.x ?? 0.5) * 100}
             unit="%"
@@ -44,7 +46,7 @@ export function ClipInspectorPanels({
             change={(x) => patch({ x: x / 100 })}
           />
           <InspectorControl
-            label="垂直"
+            label={t("垂直")}
             icon={ArrowsVertical}
             value={(clip.y ?? 0.5) * 100}
             unit="%"
@@ -57,13 +59,13 @@ export function ClipInspectorPanels({
             onClick={() => patch({ x: 0.5, y: 0.5 })}
           >
             <Crosshair size={20} />
-            居中
+            {t("居中")}
           </button>
         </section>
         <section className="inspector-section">
-          <h3>大小</h3>
+          <h3>{t("大小")}</h3>
           <InspectorControl
-            label="缩放"
+            label={t("缩放")}
             icon={ArrowsOutSimple}
             value={(clip.scale ?? 1) * 100}
             unit="%"
@@ -74,9 +76,9 @@ export function ClipInspectorPanels({
           />
         </section>
         <section className="inspector-section">
-          <h3>合成</h3>
+          <h3>{t("合成")}</h3>
           <InspectorControl
-            label="不透明度"
+            label={t("不透明度")}
             icon={Stack}
             value={(clip.opacity ?? 1) * 100}
             unit="%"
@@ -92,9 +94,9 @@ export function ClipInspectorPanels({
     return (
       <>
         <section className="inspector-section">
-          <h3>素材截取</h3>
+          <h3>{t("素材截取")}</h3>
           <InspectorControl
-            label="开始"
+            label={t("开始")}
             icon={BracketsSquare}
             value={clip.trimIn}
             unit="s"
@@ -104,7 +106,7 @@ export function ClipInspectorPanels({
             change={(trimIn) => patch({ trimIn })}
           />
           <InspectorControl
-            label="结束"
+            label={t("结束")}
             icon={BracketsSquare}
             value={clip.trimOut}
             unit="s"
@@ -121,10 +123,10 @@ export function ClipInspectorPanels({
         <section className="inspector-section">
           <h3>
             <Gauge size={20} />
-            速度
+            {t("速度")}
           </h3>
           <InspectorControl
-            label="播放速度"
+            label={t("播放速度")}
             value={clip.speed}
             unit="×"
             min={0.25}
@@ -133,7 +135,7 @@ export function ClipInspectorPanels({
             change={(speed) => patch({ speed })}
           />
           <div className="inspector-duration">
-            <span>片段时长</span>
+            <span>{t("片段时长")}</span>
             <output>
               {duration(clip).toFixed(2)}
               <small> s</small>
@@ -143,10 +145,10 @@ export function ClipInspectorPanels({
         <section className="inspector-section">
           <h3>
             <Clock size={20} />
-            时间线
+            {t("时间线")}
           </h3>
           <InspectorControl
-            label="放置位置"
+            label={t("放置位置")}
             value={clip.start ?? 0}
             unit="s"
             min={0}
@@ -159,10 +161,10 @@ export function ClipInspectorPanels({
           <label className="inspector-select-row">
             <span>
               <Stack size={20} />
-              所在轨道
+              {t("所在轨道")}
             </span>
             <select
-              aria-label="所在轨道"
+              aria-label={t("所在轨道")}
               value={clip.trackId}
               onChange={(e) => patch({ trackId: e.target.value })}
             >
@@ -182,9 +184,9 @@ export function ClipInspectorPanels({
     );
   return (
     <section className="inspector-section">
-      <h3>声音</h3>
+      <h3>{t("声音")}</h3>
       <InspectorControl
-        label="音量"
+        label={t("音量")}
         icon={SpeakerHigh}
         value={clip.volume * 100}
         unit="%"
@@ -194,7 +196,7 @@ export function ClipInspectorPanels({
         change={(volume) => patch({ volume: volume / 100 })}
       />
       <InspectorControl
-        label="淡入"
+        label={t("淡入")}
         value={clip.fadeIn ?? 0}
         unit="s"
         min={0}
@@ -203,7 +205,7 @@ export function ClipInspectorPanels({
         change={(fadeIn) => patch({ fadeIn })}
       />
       <InspectorControl
-        label="淡出"
+        label={t("淡出")}
         value={clip.fadeOut ?? 0}
         unit="s"
         min={0}

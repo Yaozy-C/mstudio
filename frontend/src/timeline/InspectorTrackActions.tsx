@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import {
   Eye,
   EyeSlash,
@@ -17,6 +18,7 @@ export function InspectorTrackActions({
   project: Project;
   change: (fn: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   const patch = (fields: Partial<Track>) =>
     change((p) => ({
       ...p,
@@ -27,10 +29,10 @@ export function InspectorTrackActions({
   const count = project.clips.filter((c) => c.trackId === track.id).length;
   return (
     <footer className="inspector-track-actions">
-      <span title={track.name}>轨道操作</span>
+      <span title={track.name}>{t("轨道操作")}</span>
       <button
-        aria-label={track.muted ? "取消轨道静音" : "静音轨道"}
-        title={track.muted ? "取消轨道静音" : "静音轨道"}
+        aria-label={track.muted ? t("取消轨道静音") : t("静音轨道")}
+        title={track.muted ? t("取消轨道静音") : t("静音轨道")}
         aria-pressed={!!track.muted}
         onClick={() => patch({ muted: !track.muted })}
       >
@@ -38,8 +40,8 @@ export function InspectorTrackActions({
       </button>
       {track.kind === "video" && (
         <button
-          aria-label={track.hidden ? "显示轨道画面" : "隐藏轨道画面"}
-          title={track.hidden ? "显示轨道画面" : "隐藏轨道画面"}
+          aria-label={track.hidden ? t("显示轨道画面") : t("隐藏轨道画面")}
+          title={track.hidden ? t("显示轨道画面") : t("隐藏轨道画面")}
           aria-pressed={!!track.hidden}
           onClick={() => patch({ hidden: !track.hidden })}
         >
@@ -48,7 +50,7 @@ export function InspectorTrackActions({
       )}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <button title="删除轨道" aria-label="删除轨道">
+          <button title={t("删除轨道")} aria-label={t("删除轨道")}>
             <Trash size={21} />
           </button>
         </DropdownMenu.Trigger>
@@ -57,7 +59,7 @@ export function InspectorTrackActions({
             color="red"
             onSelect={() => change((p) => removeTrack(p, track.id))}
           >
-            删除轨道及 {count} 个片段（可撤销）
+            {t("删除轨道及")} {count} {t("个片段（可撤销）")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

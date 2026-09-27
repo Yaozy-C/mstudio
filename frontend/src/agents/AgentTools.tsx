@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import type { AgentProfile } from "./catalog";
 import { tools } from "./tools";
 export function AgentTools({
@@ -7,6 +8,7 @@ export function AgentTools({
   profile: AgentProfile;
   onChange: (profile: AgentProfile) => void;
 }) {
+  useLanguage();
   function toggle(id: string) {
     const selected = new Set(profile.toolIds);
     if (selected.has(id)) {
@@ -25,9 +27,9 @@ export function AgentTools({
   }
   return (
     <div className="agent-config-block">
-      <h3>工具权限</h3>
+      <h3>{t("工具权限")}</h3>
       <p className="model-hint">
-        只向这个 Agent 开放勾选的操作。工具权限与 Skills 分开配置。
+        {t("只向这个 Agent 开放勾选的操作。工具权限与 Skills 分开配置。")}
       </p>
       {tools.map((tool) => (
         <label className="agent-skill-choice" key={tool.id}>
@@ -37,10 +39,10 @@ export function AgentTools({
             onChange={() => toggle(tool.id)}
           />
           <span>
-            <strong>{tool.name}</strong>
-            <small>{tool.description}</small>
+            <strong>{t(tool.name)}</strong>
+            <small>{t(tool.description)}</small>
           </span>
-          <em>{tool.kind}</em>
+          <em>{t(tool.kind)}</em>
         </label>
       ))}
     </div>

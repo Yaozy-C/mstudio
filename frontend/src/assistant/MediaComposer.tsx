@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { compositionGuard } from "./compositionGuard";
@@ -23,6 +24,7 @@ export function MediaComposer({
   draft: AttachmentDraft;
   settings: () => void;
 }) {
+  useLanguage();
   const [ime] = useState(compositionGuard);
   const [error, setError] = useState("");
   const submitting = useRef(false);
@@ -48,8 +50,12 @@ export function MediaComposer({
   if (task && model) {
     try {
       if (task.inputs.some((r) => r.role === "script"))
-        throw new Error("文字资料请在 Agent 模式使用，或移除后生成");
-      inputFor(project, { ...task, prompt: task.prompt || "验证素材" }, model);
+        throw new Error(t("文字资料请在 Agent 模式使用，或移除后生成"));
+      inputFor(
+        project,
+        { ...task, prompt: task.prompt || t("验证素材") },
+        model,
+      );
     } catch (e) {
       issue = normalizeError(e, "VALIDATION_FAILED").message;
     }
@@ -74,7 +80,7 @@ export function MediaComposer({
     <div className="agent-input-area">
       {preparing && (
         <p className="agent-attachment-hint" role="status">
-          正在理解素材并整理提示词…
+          {t("正在理解素材并整理提示词…")}
         </p>
       )}
       {issue && (
@@ -97,7 +103,9 @@ export function MediaComposer({
           inert={preparing}
           className="media-composer-fields"
         >
-          {dragging && <div className="composer-drop-hint">松开以添加素材</div>}
+          {dragging && (
+            <div className="composer-drop-hint">{t("松开以添加素材")}</div>
+          )}
           <ComposerMediaInputs
             canvas={canvas}
             project={project}
@@ -106,14 +114,14 @@ export function MediaComposer({
           <textarea
             {...ime}
             aria-label={
-              task?.kind === "video" ? "视频生成描述" : "图片生成描述"
+              task?.kind === "video" ? t("视频生成描述") : t("图片生成描述")
             }
             rows={3}
             value={task?.prompt ?? ""}
             placeholder={
               task?.kind === "video"
-                ? "描述动作、运镜和变化…"
-                : "描述想生成的画面…"
+                ? t("描述动作、运镜和变化…")
+                : t("描述想生成的画面…")
             }
             onChange={(e) => canvas.update({ prompt: e.target.value })}
             onKeyDown={(e) => {
@@ -139,9 +147,9 @@ export function MediaComposer({
             <div className="composer-submit">
               <button
                 type="submit"
-                aria-label="开始生成"
+                aria-label={t("开始生成")}
                 disabled={blocked}
-                title={!model ? "先选择生成模型" : "开始生成"}
+                title={!model ? t("先选择生成模型") : t("开始生成")}
               >
                 <ArrowUp size={18} weight="bold" />
               </button>

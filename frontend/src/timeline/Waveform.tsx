@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useMemo, useState } from "react";
 import { bridge, native } from "../bridge";
 import type { Asset, Clip } from "../model";
@@ -33,6 +34,7 @@ export function Waveform({
   clip: Clip;
   projectId: string;
 }) {
+  useLanguage();
   const [peaks, setPeaks] = useState<number[] | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -70,10 +72,10 @@ export function Waveform({
     return (
       <div className="waveform-status">
         {error
-          ? "波形读取失败"
+          ? t("波形读取失败")
           : native
-            ? "正在分析波形…"
-            : "桌面版显示音频波形"}
+            ? t("正在分析波形…")
+            : t("桌面版显示音频波形")}
       </div>
     );
   return (
@@ -82,7 +84,7 @@ export function Waveform({
       viewBox="0 0 512 32"
       preserveAspectRatio="none"
       role="img"
-      aria-label="音频波形"
+      aria-label={t("音频波形")}
     >
       <path d={path} />
     </svg>

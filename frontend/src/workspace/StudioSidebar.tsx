@@ -1,27 +1,45 @@
-import type { ReactNode } from "react";
+import { t, useLanguage } from "../i18n";
 import {
   FilmSlate,
   GearSix,
+  Graph,
+  Stack,
+  Cube,
+  Wrench,
+  Notebook,
   SquaresFour,
   ArrowLeft,
 } from "@phosphor-icons/react";
+export function sidebarPages(hasProject = false) {
+  return [
+    { id: "general", name: t("通用设置"), icon: GearSix },
+    { id: "agents", name: "Agents", icon: Graph },
+    { id: "skills", name: t("Skills 能力库"), icon: Stack },
+    { id: "models", name: t("模型"), icon: Cube },
+    { id: "tools", name: t("工具"), icon: Wrench },
+    ...(hasProject
+      ? [{ id: "memory" as const, name: t("项目记忆"), icon: Notebook }]
+      : []),
+  ] as const;
+}
+export type SettingsTab = ReturnType<typeof sidebarPages>[number]["id"];
+
 export function StudioSidebar({
-  settings,
+  activePage = "projects",
   onProjects,
   onSettings,
   count,
   project,
-  children,
 }: {
-  settings: boolean;
+  activePage?: "projects" | SettingsTab;
   onProjects: () => void;
-  onSettings: () => void;
+  onSettings: (page: SettingsTab) => void;
   count?: number;
   project?: { name: string };
-  children?: ReactNode;
 }) {
+  useLanguage();
   return (
-    <nav className="library-nav studio-sidebar" aria-label="Studio 导航">
+    <nav className="library-nav studio-sidebar" aria-label={t("Studio 导航")}>
       <div className="brand">
         <span className="brand-icon">
           <FilmSlate size={21} />
@@ -30,12 +48,12 @@ export function StudioSidebar({
       </div>
       <div className="nav-caption">WORKSPACE</div>
       <button
-        className={`nav-item ${!settings ? "active" : ""}`}
-        aria-current={!settings ? "page" : undefined}
+        className={`nav-item ${activePage === "projects" ? "active" : ""}`}
+        aria-current={activePage === "projects" ? "page" : undefined}
         onClick={onProjects}
       >
         {project ? <ArrowLeft /> : <SquaresFour />}
-        {project ? "返回项目" : "项目空间"}
+        {project ? t("返回项目") : t("项目空间")}
         {count !== undefined && <span>{count}</span>}
       </button>
       {project && (
@@ -43,18 +61,20 @@ export function StudioSidebar({
           {project.name}
         </div>
       )}
-      <button
-        className={`nav-item ${settings ? "active" : ""}`}
-        aria-current={settings ? "page" : undefined}
-        onClick={onSettings}
-      >
-        <GearSix />
-        设置
-      </button>
-      {children}
+      {sidebarPages(!!project).map(({ id, name, icon: Icon }) => (
+        <button
+          key={id}
+          className={`nav-item ${activePage === id ? "active" : ""}`}
+          aria-current={activePage === id ? "page" : undefined}
+          onClick={() => onSettings(id)}
+        >
+          <Icon size={21} />
+          {name}
+        </button>
+      ))}
       <div className="nav-bottom">
         <span className="online-dot" />
-        本地工作室 <small>v0.1</small>
+        {t("本地工作室")} <small>v0.1</small>
       </div>
     </nav>
   );

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { GenerationReferencePicker } from "./GenerationReferencePicker";
 import type { MediaModel } from "../models/mediaRegistry";
 import { mediaUrl } from "../bridge";
@@ -21,11 +22,12 @@ export function GenerationReferences({
   frame: (role: "first-frame" | "last-frame", id: string) => void;
   patch: (value: Partial<ProductionTask>) => void;
 }) {
+  useLanguage();
   return (
     <>
       <div className="generation-settings-references">
         <header>
-          <span>参考素材</span>
+          <span>{t("参考素材")}</span>
           <GenerationReferencePicker {...{ project, draft, model, patch }} />
         </header>
         {draft.inputs
@@ -55,9 +57,9 @@ export function GenerationReferences({
                     alt=""
                   />
                 )}
-                <span title={a?.name}>{a?.name ?? "素材已移除"}</span>
+                <span title={a?.name}>{a?.name ?? t("素材已移除")}</span>
                 <select
-                  aria-label={`${a?.name}的用途`}
+                  aria-label={t("{v0}的用途", { v0: a?.name })}
                   value={r.role}
                   onChange={(e) => {
                     const role = e.target.value as ProductionInput["role"];
@@ -74,24 +76,24 @@ export function GenerationReferences({
                   {!roles.includes(r.role) && (
                     <option value={r.role} disabled>
                       {r.role === "first-frame"
-                        ? "首帧"
+                        ? t("首帧")
                         : r.role === "last-frame"
-                          ? "尾帧"
-                          : "原用途"}
-                      （需选择支持的模型）
+                          ? t("尾帧")
+                          : t("原用途")}
+                      {t("（需选择支持的模型）")}
                     </option>
                   )}
                   {roles.map((role) => (
                     <option value={role} key={role}>
                       {
                         {
-                          edit: "要修改的图",
-                          reference: "内容参考",
-                          "video-reference": "动作参考",
-                          "first-frame": "首帧",
-                          "last-frame": "尾帧",
-                          script: "脚本",
-                          "video-edit": "原视频",
+                          edit: t("要修改的图"),
+                          reference: t("内容参考"),
+                          "video-reference": t("动作参考"),
+                          "first-frame": t("首帧"),
+                          "last-frame": t("尾帧"),
+                          script: t("脚本"),
+                          "video-edit": t("原视频"),
                         }[role]
                       }
                     </option>
@@ -99,7 +101,7 @@ export function GenerationReferences({
                 </select>
                 <button
                   type="button"
-                  aria-label={`移除参考 ${a?.name}`}
+                  aria-label={t("移除参考 {v0}", { v0: a?.name })}
                   onClick={() =>
                     patch({
                       inputs: draft.inputs.filter((v) => v.key !== r.key),

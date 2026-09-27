@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { CaptionStyleFields } from "./CaptionStyleFields";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useRef, useState } from "react";
@@ -14,6 +15,7 @@ export function SubtitlePanel({
   change: (f: (p: Project) => Project) => void;
   clock: PlaybackClock;
 }) {
+  useLanguage();
   const input = useRef<HTMLInputElement>(null),
     [error, setError] = useState("");
   const captions = project.captions ?? [];
@@ -35,14 +37,14 @@ export function SubtitlePanel({
               ...p,
               captions: [
                 ...(p.captions ?? []),
-                { id: uid(), start, end: start + 3, text: "新字幕" },
+                { id: uid(), start, end: start + 3, text: t("新字幕") },
               ],
             }));
           }}
         >
-          ＋当前时间字幕
+          {t("＋当前时间字幕")}
         </button>
-        <button onClick={() => input.current?.click()}>导入 SRT</button>
+        <button onClick={() => input.current?.click()}>{t("导入 SRT")}</button>
         <button
           disabled={!captions.length || captions.some((c) => !validCaption(c))}
           onClick={() =>
@@ -51,7 +53,7 @@ export function SubtitlePanel({
             )
           }
         >
-          导出 SRT
+          {t("导出 SRT")}
         </button>
       </div>
       <input
@@ -64,7 +66,7 @@ export function SubtitlePanel({
           if (!file) return;
           e.target.value = "";
           if (file.size > 5_000_000) {
-            setError("字幕文件过大");
+            setError(t("字幕文件过大"));
             return;
           }
           void file
@@ -83,7 +85,9 @@ export function SubtitlePanel({
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       {!captions.length && (
         <p className="subtle">
-          添加字幕、导入已有 SRT，或在配音时同步生成。手动时间以秒为单位。
+          {t(
+            "添加字幕、导入已有 SRT，或在配音时同步生成。手动时间以秒为单位。",
+          )}
         </p>
       )}
       {captions.map((c, i) => (
@@ -95,7 +99,7 @@ export function SubtitlePanel({
                 clock.seek(c.start);
               }}
             >
-              #{i + 1} 定位
+              #{i + 1} {t("定位")}
             </button>
             <button
               className="text-button danger"
@@ -106,12 +110,12 @@ export function SubtitlePanel({
                 }))
               }
             >
-              删除
+              {t("删除")}
             </button>
           </div>
           <div className="field-grid">
             <label>
-              开始 / 秒
+              {t("开始 / 秒")}
               <input
                 type="number"
                 min={0}
@@ -124,7 +128,7 @@ export function SubtitlePanel({
               />
             </label>
             <label>
-              结束 / 秒
+              {t("结束 / 秒")}
               <input
                 type="number"
                 min={0}
@@ -138,7 +142,7 @@ export function SubtitlePanel({
             </label>
           </div>
           <textarea
-            aria-label={`字幕 ${i + 1}`}
+            aria-label={t("字幕 {v0}", { v0: i + 1 })}
             maxLength={1000}
             rows={2}
             value={c.text}
@@ -152,7 +156,7 @@ export function SubtitlePanel({
           />
           {!validCaption(c) && (
             <small className="error">
-              请填写文字，结束时间须大于开始时间。
+              {t("请填写文字，结束时间须大于开始时间。")}
             </small>
           )}
         </article>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { failure } from "../errors/failure";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { selectMediaModel } from "./frameInputs";
@@ -32,6 +33,7 @@ export function GenerationSettings({
   close: () => void;
   save: (task: ProductionTask, start: boolean) => void;
 }) {
+  useLanguage();
   const [draft, setDraft] = useState(() => structuredClone(task));
   const [error, setError] = useState("");
   const model = models.find(
@@ -62,7 +64,7 @@ export function GenerationSettings({
         key: `asset:${assetId}`,
         assetId,
         role,
-        purpose: role === "first-frame" ? "视频首帧" : "视频尾帧",
+        purpose: role === "first-frame" ? t("视频首帧") : t("视频尾帧"),
       });
     patch({
       inputs,
@@ -71,12 +73,12 @@ export function GenerationSettings({
   }
   function commit(start: boolean) {
     try {
-      if (!model) throw failure("VALIDATION_FAILED", "请先选择生成模型");
+      if (!model) throw failure("VALIDATION_FAILED", t("请先选择生成模型"));
       if (inline) taskParameters(model, draft.parameters);
       else
         inputFor(
           project,
-          { ...draft, prompt: draft.prompt || (start ? "" : "参数校验") },
+          { ...draft, prompt: draft.prompt || (start ? "" : t("参数校验")) },
           model,
         );
       save({ ...draft, error: undefined }, start);
@@ -99,7 +101,7 @@ export function GenerationSettings({
               alt={selected.name}
             />
           ) : (
-            <span className="frame-empty">选择图片</span>
+            <span className="frame-empty">{t("选择图片")}</span>
           )}
         </div>
         <select
@@ -107,7 +109,10 @@ export function GenerationSettings({
           value={selected?.id ?? ""}
           onChange={(e) => frame(role, e.target.value)}
         >
-          <option value="">不使用{label}</option>
+          <option value="">
+            {t("不使用")}
+            {label}
+          </option>
           {assets.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}
@@ -120,19 +125,20 @@ export function GenerationSettings({
   const content = (
     <>
       <div className="generation-settings-heading">
-        <h3>{draft.kind === "image" ? "图片设置" : "视频设置"}</h3>
-        <button aria-label="关闭生成设置" onClick={close}>
+        <h3>{draft.kind === "image" ? t("图片设置") : t("视频设置")}</h3>
+        <button aria-label={t("关闭生成设置")} onClick={close}>
           <X size={18} />
         </button>
       </div>
       <p className="generation-setting-note">
-        {project.nodes.find((n) => n.id === draft.ownerId)?.title ?? "本次生成"}{" "}
-        · 发起前设置
+        {project.nodes.find((n) => n.id === draft.ownerId)?.title ??
+          t("本次生成")}{" "}
+        {t("· 发起前设置")}
       </p>
       <GenerationMethod draft={draft} models={models} change={patch} />
       {!inline && (
         <label className="generation-setting-field">
-          生成模型
+          {t("生成模型")}
           <select
             value={draft.modelId}
             onChange={(e) => {
@@ -140,7 +146,7 @@ export function GenerationSettings({
               if (next) patch(selectMediaModel(draft, next));
             }}
           >
-            <option value="">选择模型</option>
+            <option value="">{t("选择模型")}</option>
             {models
               .filter((m) => m.kind === draft.kind)
               .map((m) => (
@@ -154,7 +160,7 @@ export function GenerationSettings({
       <div className="generation-settings-grid">
         {!!fields.ratios.length && (
           <ParameterChoices
-            label="画面比例"
+            label={t("画面比例")}
             ratios
             values={fields.ratios}
             value={options.aspectRatio}
@@ -163,7 +169,7 @@ export function GenerationSettings({
         )}
         {!!fields.resolutions.length && (
           <ParameterChoices
-            label="分辨率"
+            label={t("分辨率")}
             values={fields.resolutions}
             value={options.resolution}
             change={(value) => param({ resolution: value })}
@@ -173,13 +179,13 @@ export function GenerationSettings({
           <>
             {(["width", "height"] as const).map((k) => (
               <label className="generation-setting-field" key={k}>
-                {k === "width" ? "宽度（px）" : "高度（px）"}
+                {k === "width" ? t("宽度（px）") : t("高度（px）")}
                 <input
                   type="number"
                   step={16}
                   min={16}
                   max={3840}
-                  placeholder="模型默认"
+                  placeholder={t("模型默认")}
                   value={options[k] ?? ""}
                   onChange={(e) =>
                     param({
@@ -193,7 +199,7 @@ export function GenerationSettings({
         )}
         {fields.duration && (
           <label className="generation-setting-field">
-            视频时长
+            {t("视频时长")}
             <select
               value={options.duration ?? ""}
               onChange={(e) =>
@@ -202,10 +208,10 @@ export function GenerationSettings({
                 })
               }
             >
-              <option value="">沿用模型设置</option>
+              <option value="">{t("沿用模型设置")}</option>
               {Array.from({ length: 11 }, (_, i) => i + 5).map((n) => (
                 <option key={n} value={n}>
-                  {n} 秒
+                  {n} {t("秒")}
                 </option>
               ))}
             </select>
@@ -213,17 +219,17 @@ export function GenerationSettings({
         )}
       </div>
       {fields.frameRatio && (
-        <p className="generation-setting-note">画面比例跟随首帧图片。</p>
+        <p className="generation-setting-note">{t("画面比例跟随首帧图片。")}</p>
       )}
       {model && !fields.supported && (
         <p className="generation-setting-note">
-          此模型使用模型中心的参数预设。
+          {t("此模型使用模型中心的参数预设。")}
         </p>
       )}
       {!inline && frames && (
         <div className="generation-settings-grid">
-          {framePicker("first-frame", "首帧")}
-          {tail && framePicker("last-frame", "尾帧")}
+          {framePicker("first-frame", t("首帧"))}
+          {tail && framePicker("last-frame", t("尾帧"))}
         </div>
       )}
       {!inline && (
@@ -233,9 +239,9 @@ export function GenerationSettings({
       )}
       {!inline && (
         <details className="generation-settings-prompt">
-          <summary>生成描述</summary>
+          <summary>{t("生成描述")}</summary>
           <textarea
-            aria-label="生成描述"
+            aria-label={t("生成描述")}
             value={draft.prompt}
             onChange={(e) => patch({ prompt: e.target.value })}
             rows={4}
@@ -244,17 +250,17 @@ export function GenerationSettings({
       )}
       {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
       <footer>
-        <button onClick={close}>取消</button>
-        <button onClick={() => commit(false)}>保存设置</button>
+        <button onClick={close}>{t("取消")}</button>
+        <button onClick={() => commit(false)}>{t("保存设置")}</button>
         {task.turnId && (
           <button className="primary" onClick={() => commit(true)}>
-            开始生成
+            {t("开始生成")}
           </button>
         )}
       </footer>
       {task.turnId && (
         <small className="generation-setting-note">
-          开始后使用所选服务生成，按服务计费。
+          {t("开始后使用所选服务生成，按服务计费。")}
         </small>
       )}
     </>
@@ -269,7 +275,7 @@ export function GenerationSettings({
       }}
     >
       <Dialog.Content
-        aria-label={draft.kind === "image" ? "图片设置" : "视频设置"}
+        aria-label={draft.kind === "image" ? t("图片设置") : t("视频设置")}
         aria-describedby={undefined}
         className="generation-settings"
         maxWidth="460px"

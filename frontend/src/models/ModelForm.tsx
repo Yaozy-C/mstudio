@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { connectionIssue } from "./connectionIssue";
@@ -18,6 +19,7 @@ export function ModelForm({
   saved: () => void;
   cancel: () => void;
 }) {
+  useLanguage();
   const [profile, setProfile] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,12 +43,14 @@ export function ModelForm({
       setAvailable(rows);
       setDiscoveryNotice(
         rows.length
-          ? `获取到 ${rows.length} 个型号。输入能力仍需按服务实际支持情况设置。`
-          : "服务未返回型号，可以手动填写模型 ID。",
+          ? t("获取到 {v0} 个型号。输入能力仍需按服务实际支持情况设置。", {
+              v0: rows.length,
+            })
+          : t("服务未返回型号，可以手动填写模型 ID。"),
       );
     } catch (e) {
       setDiscoveryNotice(
-        `${normalizeError(e).message}，也可以手动填写模型 ID。`,
+        t("{v0}，也可以手动填写模型 ID。", { v0: normalizeError(e).message }),
       );
     } finally {
       setDiscovering(false);
@@ -80,8 +84,8 @@ export function ModelForm({
       }}
     >
       <div className="model-section-heading">
-        <h3>{initial.name ? "编辑模型" : "添加模型"}</h3>
-        <span>用于 Agent 对话、脚本和分镜创作</span>
+        <h3>{initial.name ? t("编辑模型") : t("添加模型")}</h3>
+        <span>{t("用于 Agent 对话、脚本和分镜创作")}</span>
       </div>
       <fieldset disabled={busy || discovering}>
         <div className="model-form-grid">
@@ -101,22 +105,22 @@ export function ModelForm({
             }}
           />
           <label>
-            模型名称
+            {t("模型名称")}
             <input
               autoFocus
               required
               maxLength={80}
-              placeholder="例如：日常创作"
+              placeholder={t("例如：日常创作")}
               value={profile.name}
               onChange={(e) => update({ name: e.target.value })}
             />
           </label>
           <label>
-            模型 ID
+            {t("模型 ID")}
             <input
               required
               maxLength={255}
-              placeholder="填写服务提供的模型名称"
+              placeholder={t("填写服务提供的模型名称")}
               value={profile.model}
               onChange={(e) => update({ model: e.target.value })}
             />
@@ -127,13 +131,13 @@ export function ModelForm({
               disabled={!profile.connectionId || discovering}
               onClick={() => void discover()}
             >
-              {discovering ? "正在获取…" : "获取可用型号"}
+              {discovering ? t("正在获取…") : t("获取可用型号")}
             </button>
             {!!available.length && (
               <StudioSelect
-                label="从服务选择型号"
+                label={t("从服务选择型号")}
                 value={profile.model}
-                placeholder="选择一个型号"
+                placeholder={t("选择一个型号")}
                 options={available.map((m) => ({
                   value: m.id,
                   label: m.name === m.id ? m.id : `${m.name} · ${m.id}`,
@@ -148,7 +152,7 @@ export function ModelForm({
             )}
           </div>
           <label>
-            上下文窗口（token）
+            {t("上下文窗口（token）")}
             <input
               type="number"
               min={8192}
@@ -159,7 +163,7 @@ export function ModelForm({
                 update({ contextWindow: Number(e.target.value) })
               }
             />
-            <small>按模型提供方公布的窗口填写，用于提前压缩对话。</small>
+            <small>{t("按模型提供方公布的窗口填写，用于提前压缩对话。")}</small>
           </label>
           <ModelInputs profile={profile} update={update} />
         </div>
@@ -168,7 +172,7 @@ export function ModelForm({
         )}
         <footer>
           <button type="button" onClick={cancel}>
-            取消
+            {t("取消")}
           </button>
           <button
             className="primary"
@@ -180,7 +184,7 @@ export function ModelForm({
               !profile.model.trim()
             }
           >
-            {busy ? "保存中…" : "保存模型"}
+            {busy ? t("保存中…") : t("保存模型")}
           </button>
         </footer>
       </fieldset>

@@ -1,3 +1,5 @@
+import { agentLabel } from "../agents/display";
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useLayoutEffect, useRef, useState } from "react";
 import { AgentMark } from "../ui/Identity";
@@ -13,6 +15,7 @@ export function AgentCenter({
   onNavigate: () => void;
   backTarget: HTMLElement | null;
 }) {
+  useLanguage();
   const hub = useAgents();
   const [edit, setEdit] = useState<AgentProfile | null>(null);
   useLayoutEffect(onNavigate, [edit?.id, onNavigate]);
@@ -54,11 +57,7 @@ export function AgentCenter({
     );
   return (
     <section>
-      <div className="hub-section-head">
-        <div className="roster-heading">
-          <h2>我的 Agents</h2>
-          <p>在聊天中 @ 你的创作团队。</p>
-        </div>
+      <div className="settings-actions">
         <button
           className="primary"
           disabled={!native || hub.loading}
@@ -76,7 +75,7 @@ export function AgentCenter({
           }
         >
           <Plus />
-          创建 Agent
+          {t("创建 Agent")}
         </button>
       </div>
       <div className="agent-roster">
@@ -87,14 +86,14 @@ export function AgentCenter({
             </div>
             <div className="agent-roster-info">
               <h3>
-                {a.name}
-                {a.id === "coordinator" && <small>默认助手</small>}
+                {agentLabel(a)}
+                {a.id === "coordinator" && <small>{t("默认助手")}</small>}
               </h3>
-              <p>{a.description || "尚未填写职责"}</p>
+              <p>{agentLabel(a, "description") || t("尚未填写职责")}</p>
             </div>
             <span className="agent-roster-count">
-              {a.skillIds.length} 个 Skills <span> / </span> {a.toolIds.length}{" "}
-              个工具
+              {a.skillIds.length} {t("个 Skills")} <span> / </span>{" "}
+              {a.toolIds.length} {t("个工具")}
             </span>
             <label className="agent-roster-toggle">
               <Switch
@@ -102,17 +101,17 @@ export function AgentCenter({
                 checked={a.enabled}
                 disabled={!native || busy}
                 onCheckedChange={() => void toggle(a)}
-                aria-label={`${a.enabled ? "停用" : "启用"} ${a.name}`}
+                aria-label={`${a.enabled ? t("停用") : t("启用")} ${agentLabel(a)}`}
               />
-              <span>{a.enabled ? "已启用" : "已停用"}</span>
+              <span>{a.enabled ? t("已启用") : t("已停用")}</span>
             </label>
             <button
               disabled={!native || busy}
               onClick={() => setEdit(drafts.current.get(a.id) ?? a)}
-              aria-label={`配置 ${a.name}`}
+              aria-label={t("配置 {v0}", { v0: agentLabel(a) })}
             >
               <PencilSimple />
-              编辑
+              {t("编辑")}
             </button>
           </article>
         ))}

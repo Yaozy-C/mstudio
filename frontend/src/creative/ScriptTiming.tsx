@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useState } from "react";
 import type { Project } from "../model";
 import type { ScriptParagraph } from "./types";
@@ -14,6 +15,7 @@ export function DurationInput({
   commit: (seconds: number) => void;
   min?: number;
 }) {
+  useLanguage();
   const [draft, setDraft] = useState(String(value));
   useEffect(() => setDraft(String(value)), [value]);
   return (
@@ -41,7 +43,7 @@ export function DurationInput({
           }
         }}
       />
-      秒
+      {t("秒")}
     </label>
   );
 }
@@ -54,12 +56,13 @@ export function ScriptTiming({
   planId: string;
   change: (f: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   const total = scriptDuration(script);
   return (
-    <section className="script-timing" aria-label="脚本时间">
+    <section className="script-timing" aria-label={t("脚本时间")}>
       <div>
         <DurationInput
-          label="脚本总时长"
+          label={t("脚本总时长")}
           value={total}
           min={script.length / 100}
           commit={(seconds) =>
@@ -80,11 +83,13 @@ export function ScriptTiming({
           }
         />
         <span>
-          {timeLabel(total)} · {script.length} 段
+          {timeLabel(total)} · {script.length} {t("段")}
         </span>
       </div>
       <p>
-        修改总时长会按当前节奏分配到各段；修改单段会更新总时长。镜头和成片时间保持独立。
+        {t(
+          "修改总时长会按当前节奏分配到各段；修改单段会更新总时长。镜头和成片时间保持独立。",
+        )}
       </p>
     </section>
   );

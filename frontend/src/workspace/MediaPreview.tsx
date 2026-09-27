@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { DocumentPreview } from "./DocumentPreview";
 import { ObjectActions } from "../ui/ObjectActions";
 import { Dialog } from "@radix-ui/themes";
@@ -18,6 +19,7 @@ export function MediaPreview({
   add?: (a: Asset) => void;
   reference?: (a: Asset) => void;
 }) {
+  useLanguage();
   return (
     <Dialog.Root
       open={!!asset}
@@ -35,7 +37,7 @@ export function MediaPreview({
             <ObjectActions
               actions={[
                 {
-                  label: "引用到对话",
+                  label: t("引用到对话"),
                   run: () => {
                     reference(asset);
                     close();
@@ -45,7 +47,7 @@ export function MediaPreview({
             />
           )}
           <Dialog.Close>
-            <button aria-label="关闭素材预览">
+            <button aria-label={t("关闭素材预览")}>
               <X />
             </button>
           </Dialog.Close>
@@ -74,7 +76,7 @@ export function MediaPreview({
                       close();
                     }}
                   >
-                    放到画布
+                    {t("放到画布")}
                   </button>
                 )}
                 {add && (
@@ -87,7 +89,7 @@ export function MediaPreview({
                       close();
                     }}
                   >
-                    加入时间线
+                    {t("加入时间线")}
                   </button>
                 )}
               </footer>

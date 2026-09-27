@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
@@ -26,6 +27,7 @@ export function AgentActivity({
   turnId: string;
   running: boolean;
 }) {
+  useLanguage();
   const [events, setEvents] = useState<Event[]>([]);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
@@ -42,20 +44,20 @@ export function AgentActivity({
           e.kind === "turn/end"
             ? ""
             : e.kind === "step/start"
-              ? `第 ${e.payload?.step} 步 · 正在思考`
+              ? t("第 {v0} 步 · 正在思考", { v0: e.payload?.step })
               : e.kind === "tool/start"
-                ? actions[e.payload?.action || ""] || "执行操作"
+                ? actions[e.payload?.action || ""] || t("执行操作")
                 : e.kind === "memory/result"
-                  ? "整理项目记忆"
+                  ? t("整理项目记忆")
                   : e.kind === "request/retry"
-                    ? "模型请求暂时失败，正在重试当前请求…"
+                    ? t("模型请求暂时失败，正在重试当前请求…")
                     : e.kind === "request/start"
-                      ? "正在等待模型响应…"
+                      ? t("正在等待模型响应…")
                       : e.kind === "assistant/partial"
-                        ? "正在回答…"
+                        ? t("正在回答…")
                         : e.kind === "tool/call"
-                          ? "正在执行工具…"
-                          : "核查结果",
+                          ? t("正在执行工具…")
+                          : t("核查结果"),
         );
         if (e.kind !== "assistant/partial") setRevision((v) => v + 1);
       },
@@ -107,12 +109,14 @@ export function AgentActivity({
     <>
       {running && (
         <div className="agent-run-status" role="status">
-          {status || "正在处理任务…"}
+          {status || t("正在处理任务…")}
         </div>
       )}
       {[...scripts.values()].map((s) => (
         <div className="agent-script-receipt" key={s.id}>
-          <span>已更新脚本 · {s.title}</span>
+          <span>
+            {t("已更新脚本 ·")} {s.title}
+          </span>
           <button
             className="text-button"
             onClick={() =>
@@ -121,7 +125,7 @@ export function AgentActivity({
               )
             }
           >
-            查看脚本
+            {t("查看脚本")}
           </button>
         </div>
       ))}
@@ -131,10 +135,10 @@ export function AgentActivity({
       >
         <summary>
           {rows.length
-            ? `已记录 ${rows.length} 项操作`
+            ? t("已记录 {v0} 项操作", { v0: rows.length })
             : running
-              ? "正在执行"
-              : "执行记录"}
+              ? t("正在执行")
+              : t("执行记录")}
         </summary>
         {error && <ErrorNotice error={error} />}
         {events
@@ -143,7 +147,7 @@ export function AgentActivity({
             const rule = e.payload as { skill: string; path: string };
             return (
               <div className="agent-activity-row" key={`skill-${e.seq}`}>
-                <span>已加载规则</span>
+                <span>{t("已加载规则")}</span>
                 <small>
                   {rule.skill} · {rule.path}
                 </small>
@@ -152,11 +156,16 @@ export function AgentActivity({
           })}
         {rows.map((r) => (
           <div className="agent-activity-row" key={r.id}>
-            <span>{r.title}</span>
-            <small className={r.error ? "error" : ""}>{r.detail}</small>
+            <span>
+              {r.title
+                .split("、")
+                .map((part) => t(part))
+                .join(" · ")}
+            </span>
+            <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
           </div>
         ))}
-        {!events.length && !error && <p>尚无执行记录。</p>}
+        {!events.length && !error && <p>{t("尚无执行记录。")}</p>}
       </details>
     </>
   );

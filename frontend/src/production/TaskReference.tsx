@@ -1,5 +1,7 @@
+import { t, useLanguage } from "../i18n";
 import type { ProductionController } from "./useProduction";
 export function TaskReference({ canvas }: { canvas: ProductionController }) {
+  useLanguage();
   return (
     <>
       {canvas.referencedTask && (
@@ -8,15 +10,16 @@ export function TaskReference({ canvas }: { canvas: ProductionController }) {
             type="button"
             onClick={() => canvas.showTask(canvas.referencedTask!)}
           >
-            已引用{canvas.referencedTask.kind === "image" ? "图片" : "视频"}
-            任务 ·{" "}
+            {t("已引用")}
+            {canvas.referencedTask.kind === "image" ? t("图片") : t("视频")}
+            {t("任务 ·")}{" "}
             {(
               canvas.referencedTask.nextPrompt ?? canvas.referencedTask.prompt
             ).slice(0, 32)}
           </button>
           <button
             type="button"
-            aria-label="移除任务引用"
+            aria-label={t("移除任务引用")}
             onClick={() => canvas.clearTaskReference()}
           >
             ×

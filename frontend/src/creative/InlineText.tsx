@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { PencilSimple } from "@phosphor-icons/react";
 import { registerPendingEdit } from "../workspace/pendingEdits";
@@ -17,6 +18,7 @@ export function InlineText({
   limit: number;
   commit: (value: string) => void;
 }) {
+  useLanguage();
   const id = useId();
   const [text, setText] = useState(value);
   const [focused, setFocused] = useState(false);
@@ -95,7 +97,7 @@ export function InlineText({
         id={`${id}-hint`}
         className={`creative-inline-hint ${focused ? "visible" : ""}`}
       >
-        离开自动保存 · Esc 取消
+        {t("离开自动保存 · Esc 取消")}
       </span>
     </div>
   );

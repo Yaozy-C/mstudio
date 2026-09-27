@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
 import Markdown from "react-markdown";
@@ -12,6 +13,7 @@ export function SkillRules({
   id: string;
   available: boolean;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,7 +33,7 @@ export function SkillRules({
         document += page.text;
         if (page.nextOffset == null) break;
         if (page.nextOffset <= offset || page.nextOffset > 200000)
-          throw new Error("规则文档读取异常，请重试");
+          throw new Error(t("规则文档读取异常，请重试"));
         offset = page.nextOffset;
       }
       setText(document.replace(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/, ""));
@@ -52,7 +54,7 @@ export function SkillRules({
           if (!open && text === null && !busy) void read();
         }}
       >
-        {open ? "收起规则" : "查看规则"}
+        {open ? t("收起规则") : t("查看规则")}
       </button>
       {open && (
         <div className="skill-document" id={`rules-${id}`} aria-busy={busy}>
@@ -75,9 +77,11 @@ export function SkillRules({
               {text}
             </Markdown>
           )}
-          {busy && <p role="status">正在加载文档…</p>}
+          {busy && <p role="status">{t("正在加载文档…")}</p>}
           {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
-          {!busy && error && <button onClick={() => void read()}>重试</button>}
+          {!busy && error && (
+            <button onClick={() => void read()}>{t("重试")}</button>
+          )}
         </div>
       )}
     </>

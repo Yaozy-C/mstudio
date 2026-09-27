@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { Plus, Trash, ArrowClockwise } from "@phosphor-icons/react";
@@ -24,6 +25,7 @@ export function ProjectMemory({
   projectId: string;
   name: string;
 }) {
+  const language = useLanguage();
   const [memory, setMemory] = useState<Memory | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -83,7 +85,7 @@ export function ProjectMemory({
         await bridge<Memory>("save_project_memory", { projectId, memory }),
       );
       setDirty(false);
-      setNotice("项目记忆已保存");
+      setNotice(t("项目记忆已保存"));
     } catch (e) {
       setError(String(e));
     } finally {
@@ -93,16 +95,19 @@ export function ProjectMemory({
   return (
     <section className="project-memory">
       <div className="hub-intro">
-        <div className="eyebrow">{name} · 项目记忆</div>
-        <h2>让后续创作记得已确定的事。</h2>
+        <div className="eyebrow">
+          {name} {t("· 项目记忆")}
+        </div>
+        <h2>{t("让后续创作记得已确定的事。")}</h2>
         <p>
-          保存目标、约束与关键决定。同一项目的 Agent
-          共享，切换模型或清空聊天后保留。
+          {t(
+            "保存目标、约束与关键决定。同一项目的 Agent 共享，切换模型或清空聊天后保留。",
+          )}
         </p>
       </div>
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       {!memory ? (
-        <p>正在读取项目记忆…</p>
+        <p>{t("正在读取项目记忆…")}</p>
       ) : (
         <form
           onSubmit={(e) => {
@@ -113,9 +118,11 @@ export function ProjectMemory({
           <fieldset disabled={busy || !native}>
             <label className="memory-option">
               <span>
-                <strong>使用项目记忆</strong>
+                <strong>{t("使用项目记忆")}</strong>
                 <small>
-                  允许 Agent 读取已有记忆。关闭后保留内容，暂停读取和自动整理。
+                  {t(
+                    "允许 Agent 读取已有记忆。关闭后保留内容，暂停读取和自动整理。",
+                  )}
                 </small>
               </span>
               <input
@@ -128,10 +135,11 @@ export function ProjectMemory({
             </label>
             <label className="memory-option">
               <span>
-                <strong>自动整理</strong>
+                <strong>{t("自动整理")}</strong>
                 <small>
-                  允许有记忆写入权限的 Agent 保存新增或变化的长期偏好与约束，
-                  保留原话来源；不重复记录脚本、镜头或时间线。
+                  {t(
+                    "允许有记忆写入权限的 Agent 保存新增或变化的长期偏好与约束， 保留原话来源；不重复记录脚本、镜头或时间线。",
+                  )}
                 </small>
               </span>
               <input
@@ -145,7 +153,7 @@ export function ProjectMemory({
             </label>
             <div className="hub-section-head">
               <h3>
-                已记住的事 <small>{memory.entries.length} / 40</small>
+                {t("已记住的事")} <small>{memory.entries.length} / 40</small>
               </h3>
               <button
                 type="button"
@@ -159,7 +167,7 @@ export function ProjectMemory({
                         id: crypto.randomUUID(),
                         title: "",
                         content: "",
-                        source: "用户添加",
+                        source: t("用户添加"),
                         turnId: null,
                         updated: 0,
                       },
@@ -168,14 +176,16 @@ export function ProjectMemory({
                 }
               >
                 <Plus />
-                添加记忆
+                {t("添加记忆")}
               </button>
             </div>
             {!memory.entries.length && (
               <div className="memory-empty">
-                <strong>还没有项目记忆</strong>
+                <strong>{t("还没有项目记忆")}</strong>
                 <p>
-                  可以告诉 Agent「记住，这个项目……」，也可以在这里手动添加。
+                  {t(
+                    "可以告诉 Agent「记住，这个项目……」，也可以在这里手动添加。",
+                  )}
                 </p>
               </div>
             )}
@@ -183,8 +193,8 @@ export function ProjectMemory({
               <article className="memory-entry" key={entry.id}>
                 <div>
                   <input
-                    aria-label="记忆主题"
-                    placeholder="主题，例如：画面风格"
+                    aria-label={t("记忆主题")}
+                    placeholder={t("主题，例如：画面风格")}
                     required
                     maxLength={60}
                     value={entry.title}
@@ -192,7 +202,9 @@ export function ProjectMemory({
                   />
                   <button
                     type="button"
-                    aria-label={`删除记忆 ${entry.title || "新记忆"}`}
+                    aria-label={t("删除记忆 {v0}", {
+                      v0: entry.title || t("新记忆"),
+                    })}
                     onClick={() =>
                       change({
                         ...memory,
@@ -206,8 +218,8 @@ export function ProjectMemory({
                   </button>
                 </div>
                 <textarea
-                  aria-label="记忆内容"
-                  placeholder="只保留之后仍然有用的结论…"
+                  aria-label={t("记忆内容")}
+                  placeholder={t("只保留之后仍然有用的结论…")}
                   required
                   rows={3}
                   maxLength={1200}
@@ -216,26 +228,26 @@ export function ProjectMemory({
                 />
                 <small>
                   {entry.updated
-                    ? new Date(entry.updated * 1000).toLocaleString()
-                    : "尚未保存"}{" "}
-                  · {entry.turnId ? "Agent 整理" : "手动编辑"}
+                    ? new Date(entry.updated * 1000).toLocaleString(language)
+                    : t("尚未保存")}{" "}
+                  · {entry.turnId ? t("Agent 整理") : t("手动编辑")}
                 </small>
                 <details>
-                  <summary>查看来源</summary>
+                  <summary>{t("查看来源")}</summary>
                   <p>{entry.source}</p>
                 </details>
               </article>
             ))}
             <footer className="memory-footer">
               <span role="status">
-                {notice || (dirty ? "有未保存的修改" : "仅用于当前项目")}
+                {notice || (dirty ? t("有未保存的修改") : t("仅用于当前项目"))}
               </span>
               <button type="button" onClick={() => void load()}>
                 <ArrowClockwise />
-                {dirty ? "放弃修改并刷新" : "刷新"}
+                {dirty ? t("放弃修改并刷新") : t("刷新")}
               </button>
               <button className="primary" disabled={!dirty}>
-                保存记忆
+                {t("保存记忆")}
               </button>
             </footer>
           </fieldset>

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { bridge } from "../bridge";
@@ -13,6 +14,7 @@ export function SpeechPanel({
   change: (f: (p: Project) => Project) => void;
   clock: PlaybackClock;
 }) {
+  useLanguage();
   const [voices, setVoices] = useState<{ name: string; language: string }[]>(
     [],
   );
@@ -43,7 +45,7 @@ export function SpeechPanel({
       .map((s) => s.trim())
       .filter(Boolean);
     if (!lines.length || lines.length > 50 || text.length > 8000) {
-      setMessage("每次最多 50 段、8000 字");
+      setMessage(t("每次最多 50 段、8000 字"));
       return;
     }
     setBusy(true);
@@ -51,14 +53,16 @@ export function SpeechPanel({
     let start = clock.getSnapshot().time;
     try {
       for (let i = 0; i < lines.length; i++) {
-        setMessage(`正在生成第 ${i + 1}/${lines.length} 段…`);
+        setMessage(
+          t("正在生成第 {v0}/{v1} 段…", { v0: i + 1, v1: lines.length }),
+        );
         const asset = await bridge<Asset>("generate_voice", {
           projectId: project.id,
           text: lines[i],
           voice,
           rate,
         });
-        asset.name = `配音 · ${lines[i].slice(0, 18)}`;
+        asset.name = t("配音 · {v0}", { v0: lines[i].slice(0, 18) });
         const at = start,
           line = lines[i];
         change((p) => {
@@ -85,10 +89,10 @@ export function SpeechPanel({
         });
         start += asset.duration;
       }
-      setMessage("已加入时间线；字幕按每段实际配音时长对齐，可继续调整。");
+      setMessage(t("已加入时间线；字幕按每段实际配音时长对齐，可继续调整。"));
     } catch (e) {
       setError(e);
-      setMessage("已完成的配音片段保留在时间线。");
+      setMessage(t("已完成的配音片段保留在时间线。"));
     } finally {
       setBusy(false);
     }
@@ -96,20 +100,20 @@ export function SpeechPanel({
   return (
     <div className="creation-form">
       <p className="subtle">
-        本机配音 · 每行一段。分段生成后，字幕与每段实际声音长度对齐。
+        {t("本机配音 · 每行一段。分段生成后，字幕与每段实际声音长度对齐。")}
       </p>
       <label>
-        配音稿
+        {t("配音稿")}
         <textarea
           rows={5}
           value={text}
           maxLength={8000}
           onChange={(e) => setText(e.target.value)}
-          placeholder="输入台词，每行对应一段配音"
+          placeholder={t("输入台词，每行对应一段配音")}
         />
       </label>
       <label>
-        声音
+        {t("声音")}
         <select value={voice} onChange={(e) => setVoice(e.target.value)}>
           {voices.map((v) => (
             <option key={v.name} value={v.name}>
@@ -120,7 +124,7 @@ export function SpeechPanel({
       </label>
       <div className="field-grid">
         <label>
-          语速
+          {t("语速")}
           <input
             type="number"
             min={80}
@@ -130,7 +134,7 @@ export function SpeechPanel({
           />
         </label>
         <label>
-          目标音轨
+          {t("目标音轨")}
           <select value={track} onChange={(e) => setTrack(e.target.value)}>
             {tracksOf(project)
               .filter((t) => t.kind === "audio")
@@ -148,7 +152,7 @@ export function SpeechPanel({
           checked={captions}
           onChange={(e) => setCaptions(e.target.checked)}
         />
-        同时创建分段字幕
+        {t("同时创建分段字幕")}
       </label>
       <button
         className="primary wide"
@@ -162,7 +166,7 @@ export function SpeechPanel({
         }
         onClick={() => void generate()}
       >
-        {busy ? "正在配音…" : "从播放头开始加入配音"}
+        {busy ? t("正在配音…") : t("从播放头开始加入配音")}
       </button>
       <ErrorNotice error={error} />
       {message && (

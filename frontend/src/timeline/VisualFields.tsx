@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import {
   ArrowCounterClockwise,
   Sun,
@@ -17,6 +18,7 @@ export function VisualFields({
   clip: Clip;
   update: (c: Clip) => void;
 }) {
+  useLanguage();
   const value = { ...defaultVisual, ...clip.visual };
   const patch = (fields: Partial<Visual>) =>
     update({ ...clip, visual: { ...value, ...fields } });
@@ -24,23 +26,23 @@ export function VisualFields({
     <>
       <section className="inspector-section">
         <div className="inspector-section-heading">
-          <h3>色彩</h3>
+          <h3>{t("色彩")}</h3>
           <button
             className="inspector-action"
-            aria-label="重置画面效果"
+            aria-label={t("重置画面效果")}
             disabled={!clip.visual}
             onClick={() => update({ ...clip, visual: undefined })}
           >
             <ArrowCounterClockwise size={20} />
-            重置
+            {t("重置")}
           </button>
         </div>
         {(
           [
-            ["brightness", "亮度", Sun, -50, 50],
-            ["contrast", "对比度", CircleHalf, 50, 150],
-            ["saturation", "饱和度", Drop, 0, 200],
-            ["temperature", "色温", Thermometer, -100, 100],
+            ["brightness", t("亮度"), Sun, -50, 50],
+            ["contrast", t("对比度"), CircleHalf, 50, 150],
+            ["saturation", t("饱和度"), Drop, 0, 200],
+            ["temperature", t("色温"), Thermometer, -100, 100],
           ] as const
         ).map(([key, label, icon, min, max]) => (
           <InspectorControl
@@ -52,7 +54,7 @@ export function VisualFields({
             min={min}
             max={max}
             slider
-            endpoints={key === "temperature" ? ["冷", "暖"] : undefined}
+            endpoints={key === "temperature" ? [t("冷"), t("暖")] : undefined}
             change={(n) => patch({ [key]: n / 100 })}
           />
         ))}
@@ -61,21 +63,21 @@ export function VisualFields({
         <label className="inspector-select-row">
           <span>
             <Sparkle size={20} />
-            效果
+            {t("效果")}
           </span>
           <select
-            aria-label="画面效果"
+            aria-label={t("画面效果")}
             value={value.effect}
             onChange={(e) =>
               patch({ effect: e.target.value as Visual["effect"] })
             }
           >
             {[
-              ["none", "无特效"],
-              ["grayscale", "黑白"],
-              ["sepia", "复古"],
-              ["blur", "柔焦"],
-              ["vignette", "暗角"],
+              ["none", t("无特效")],
+              ["grayscale", t("黑白")],
+              ["sepia", t("复古")],
+              ["blur", t("柔焦")],
+              ["vignette", t("暗角")],
             ].map(([v, label]) => (
               <option key={v} value={v}>
                 {label}

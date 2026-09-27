@@ -1,8 +1,10 @@
+import { t, useLanguage } from "../i18n";
 import { useEffect, useState } from "react";
 import type { Asset } from "../model";
 import { mediaUrl } from "../bridge";
 import { MissingAsset } from "./MissingAsset";
 export function DocumentPreview({ asset }: { asset: Asset }) {
+  useLanguage();
   const [text, setText] = useState("");
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -12,7 +14,7 @@ export function DocumentPreview({ asset }: { asset: Asset }) {
     const controller = new AbortController();
     void fetch(mediaUrl(asset.path), { signal: controller.signal })
       .then((r) => {
-        if (!r.ok) throw new Error("读取失败");
+        if (!r.ok) throw new Error(t("读取失败"));
         return r.text();
       })
       .then(setText)
@@ -39,7 +41,7 @@ export function DocumentPreview({ asset }: { asset: Asset }) {
         textAlign: "left",
       }}
     >
-      {text || "读取中…"}
+      {text || t("读取中…")}
     </pre>
   );
 }

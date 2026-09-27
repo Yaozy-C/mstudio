@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { DockPanel } from "../ui/DockPanel";
 import { type Project } from "../model";
@@ -17,13 +18,14 @@ export function CreationPanel({
   onClose: () => void;
   initialTab?: string;
 }) {
+  useLanguage();
   const [tab, setTab] = useState(initialTab);
   return (
-    <DockPanel id="creation" title="字幕与配音" onClose={onClose}>
+    <DockPanel id="creation" title={t("字幕与配音")} onClose={onClose}>
       <div className="creation-tabs">
         {[
-          ["captions", "字幕"],
-          ["voice", "配音"],
+          ["captions", t("字幕")],
+          ["voice", t("配音")],
         ].map(([id, label]) => (
           <button
             key={id}

@@ -1,3 +1,5 @@
+import { agentLabel } from "../agents/display";
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { StudioSelect } from "../ui/StudioSelect";
 import { AgentTools } from "./AgentTools";
@@ -22,6 +24,7 @@ export function AgentForm({
   save: (p: AgentProfile) => Promise<void>;
   cancel: () => void;
 }) {
+  useLanguage();
   const [profile, updateProfile] = useState(initial);
   const setProfile = (next: AgentProfile) => {
     updateProfile(next);
@@ -55,8 +58,8 @@ export function AgentForm({
           <button
             type="button"
             className="settings-back-button"
-            aria-label="返回 Agents"
-            title="返回 Agents"
+            aria-label={t("返回 Agents")}
+            title={t("返回 Agents")}
             disabled={busy}
             onClick={cancel}
           >
@@ -66,37 +69,28 @@ export function AgentForm({
         )}
       <div className="agent-detail-navigation">
         <label>
-          当前 Agent
+          {t("当前 Agent")}
           <StudioSelect
-            label="切换 Agent"
+            label={t("切换 Agent")}
             disabled={busy}
             value={profile.id}
             onValueChange={switchAgent}
             options={[
               ...(!agents.some((a) => a.id === profile.id)
-                ? [{ value: profile.id, label: "新建 Agent" }]
+                ? [{ value: profile.id, label: t("新建 Agent") }]
                 : []),
-              ...agents.map((a) => ({ value: a.id, label: a.name })),
+              ...agents.map((a) => ({ value: a.id, label: agentLabel(a) })),
             ]}
           />
         </label>
         <button className="primary" disabled={busy}>
-          {busy ? "保存中…" : "保存 Agent"}
+          {busy ? t("保存中…") : t("保存 Agent")}
         </button>
-      </div>
-      <div className="hub-section-head">
-        <div>
-          <h3>{initial.name || "新建 Agent"}</h3>
-          <p>
-            配置职责、工具与 Skills。切换 Agent
-            时保留未保存草稿，点击保存后生效。
-          </p>
-        </div>
       </div>
       <fieldset disabled={busy}>
         <div className="model-form-grid">
           <label>
-            名称
+            {t("名称")}
             <input
               autoFocus
               required
@@ -106,7 +100,7 @@ export function AgentForm({
             />
           </label>
           <label>
-            职责简介
+            {t("职责简介")}
             <input
               maxLength={300}
               value={profile.description}
@@ -116,7 +110,7 @@ export function AgentForm({
             />
           </label>
           <label className="model-field-wide">
-            工作指令
+            {t("工作指令")}
             <textarea
               rows={4}
               maxLength={6000}
@@ -124,15 +118,15 @@ export function AgentForm({
               onChange={(e) =>
                 setProfile({ ...profile, instructions: e.target.value })
               }
-              placeholder="这个 Agent 的目标、工作方式与输出要求…"
+              placeholder={t("这个 Agent 的目标、工作方式与输出要求…")}
             />
           </label>
         </div>
         <AgentTools profile={profile} onChange={setProfile} />
         <div className="agent-config-block">
-          <h3>装配 Skills</h3>
+          <h3>{t("装配 Skills")}</h3>
           <p className="model-hint">
-            Skills 提供专业规则和方法；实际操作权限由工具配置决定。
+            {t("Skills 提供专业规则和方法；实际操作权限由工具配置决定。")}
           </p>
           {skills.map((s) => (
             <label className="agent-skill-choice" key={s.id}>
@@ -142,10 +136,10 @@ export function AgentForm({
                 onChange={() => toggle(s.id)}
               />
               <span>
-                <strong>{s.name}</strong>
-                <small>{s.description}</small>
+                <strong>{t(s.name)}</strong>
+                <small>{t(s.description)}</small>
               </span>
-              <em>{s.kind}</em>
+              <em>{t(s.kind)}</em>
             </label>
           ))}
         </div>

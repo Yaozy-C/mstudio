@@ -1,3 +1,5 @@
+import { presets } from "./mediaModelPresets";
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { catalogMediaModel } from "./catalogMediaModel";
 import { CodexImageForm } from "./CodexImageForm";
@@ -23,18 +25,7 @@ import {
   type useMediaModels,
 } from "./mediaRegistry";
 const icons = { image: Image, video: FilmStrip, audio: Waveform };
-const presets = {
-  image: {
-    name: "FLUX.1 Schnell",
-    endpoint: "fal-ai/flux/schnell",
-    params: { num_images: 1 },
-  },
-  video: {
-    name: "MiniMax H3",
-    endpoint: "minimax/h3/text-to-video",
-    params: { duration: 5 },
-  },
-};
+
 export function MediaModels({
   kind,
   hub,
@@ -42,6 +33,7 @@ export function MediaModels({
   kind: MediaKind;
   hub: ReturnType<typeof useMediaModels>;
 }) {
+  useLanguage();
   const [adding, setAdding] = useState(false);
   const [edit, setEdit] = useState<MediaModel | null>(null);
   const [query, setQuery] = useState("");
@@ -120,13 +112,13 @@ export function MediaModels({
     <section>
       <div className="hub-section-head">
         <div>
-          <h3>{mediaLabels[kind]}模型</h3>
+          <h3>{t("{kind}模型", { kind: t(mediaLabels[kind]) })}</h3>
           <p>
             {kind === "image"
-              ? "参考画面、分镜静帧与视觉探索。"
+              ? t("参考画面、分镜静帧与视觉探索。")
               : kind === "video"
-                ? "让分镜变成镜头，让创意开始运动。"
-                : "为画面添加声音、音乐与氛围。"}
+                ? t("让分镜变成镜头，让创意开始运动。")
+                : t("为画面添加声音、音乐与氛围。")}
           </p>
         </div>
         <button
@@ -135,15 +127,15 @@ export function MediaModels({
           onClick={() => (kind === "audio" ? create() : setAdding(true))}
         >
           <Plus />
-          添加模型
+          {t("添加模型")}
         </button>
       </div>
       <input
         className="model-search"
-        aria-label={`搜索${mediaLabels[kind]}模型`}
+        aria-label={t("搜索{v0}模型", { v0: t(mediaLabels[kind]) })}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="搜索模型名称或端点…"
+        placeholder={t("搜索模型名称或端点…")}
       />
       {((!remove && error) || hub.error) && (
         <ErrorNotice error={(!remove && error) || hub.error} />
@@ -159,14 +151,14 @@ export function MediaModels({
                 className={`hub-status ${m.enabled && (m.hasKey || m.plugin === "codex-image" || localEndpoint(m.endpoint)) ? "ready" : ""}`}
               >
                 {!m.enabled
-                  ? "已停用"
+                  ? t("已停用")
                   : m.plugin === "codex-image"
-                    ? "本机 Codex"
+                    ? t("本机 Codex")
                     : m.hasKey
-                      ? "密钥已配置"
+                      ? t("密钥已配置")
                       : localEndpoint(m.endpoint)
-                        ? "本机连接"
-                        : "待配置密钥"}
+                        ? t("本机连接")
+                        : t("待配置密钥")}
               </span>
             </div>
             <h3>{m.name}</h3>
@@ -174,15 +166,15 @@ export function MediaModels({
               {m.endpoint}
             </p>
             <div className="hub-tags">
-              <span>{mediaLabels[kind]}生成</span>
+              <span>{t("{kind}生成", { kind: t(mediaLabels[kind]) })}</span>
               <span>
                 {m.plugin === "codex-image"
-                  ? "Codex · 型号未验证"
+                  ? t("Codex · 型号未验证")
                   : m.plugin === "fal"
-                    ? "fal · 第三方"
+                    ? t("fal · 第三方")
                     : m.plugin === "gemini-native"
-                      ? "Google · 官方直连"
-                      : "自定义 HTTP"}
+                      ? t("Google · 官方直连")
+                      : t("自定义 HTTP")}
               </span>
             </div>
             <footer>
@@ -192,15 +184,15 @@ export function MediaModels({
                   void act(() => hub.save({ ...m, enabled: !m.enabled }))
                 }
               >
-                {m.enabled ? "停用" : "启用"}
+                {m.enabled ? t("停用") : t("启用")}
               </button>
               <button
                 disabled={busy}
                 onClick={() => setEdit(m)}
-                aria-label={`配置 ${m.name}`}
+                aria-label={t("配置 {v0}", { v0: m.name })}
               >
                 <PencilSimple />
-                配置
+                {t("配置")}
               </button>
               <AlertDialog.Root
                 open={remove === m.id}
@@ -211,14 +203,19 @@ export function MediaModels({
                 }}
               >
                 <AlertDialog.Trigger>
-                  <button disabled={busy} aria-label={`移除 ${m.name}`}>
+                  <button
+                    disabled={busy}
+                    aria-label={t("移除 {v0}", { v0: m.name })}
+                  >
                     <Trash />
                   </button>
                 </AlertDialog.Trigger>
                 <AlertDialog.Content className="modal small" aria-busy={busy}>
-                  <AlertDialog.Title>移除模型</AlertDialog.Title>
+                  <AlertDialog.Title>{t("移除模型")}</AlertDialog.Title>
                   <AlertDialog.Description>
-                    移除「{m.name}」的模型配置？已生成的素材和任务会保留。
+                    {t("移除「")}
+                    {m.name}
+                    {t("」的模型配置？已生成的素材和任务会保留。")}
                   </AlertDialog.Description>
                   {error && (
                     <ErrorNotice error={error} fallback="OPERATION_FAILED" />
@@ -226,7 +223,7 @@ export function MediaModels({
                   <footer>
                     <AlertDialog.Cancel>
                       <button type="button" disabled={busy}>
-                        取消
+                        {t("取消")}
                       </button>
                     </AlertDialog.Cancel>
                     <button
@@ -235,7 +232,7 @@ export function MediaModels({
                       disabled={busy}
                       onClick={() => void act(() => hub.remove(m.id))}
                     >
-                      {busy ? "正在移除…" : "确认移除"}
+                      {busy ? t("正在移除…") : t("确认移除")}
                     </button>
                   </footer>
                 </AlertDialog.Content>
@@ -249,22 +246,22 @@ export function MediaModels({
           <Icon size={34} />
           <h3>
             {hub.loading
-              ? "读取模型…"
+              ? t("读取模型…")
               : query
-                ? "没有找到匹配模型"
-                : `添加你的第一个${mediaLabels[kind]}模型`}
+                ? t("没有找到匹配模型")
+                : t("添加你的第一个{v0}模型", { v0: t(mediaLabels[kind]) })}
           </h3>
           <p>
             {query
-              ? "试试其他名称或清空搜索。"
-              : "选择一个模型起步，也可以接入自定义端点。"}
+              ? t("试试其他名称或清空搜索。")
+              : t("选择一个模型起步，也可以接入自定义端点。")}
           </p>
           {!query && kind !== "audio" && (
             <button
               disabled={!native || busy || hub.loading}
               onClick={() => create(true)}
             >
-              配置 {presets[kind].name}
+              {t("配置")} {presets[kind].name}
             </button>
           )}
         </div>
@@ -273,13 +270,17 @@ export function MediaModels({
         <div className="hub-local-note">
           <Waveform />
           <div>
-            <strong>也可以使用本机配音</strong>
-            <p>无需 API Key。在制作台的「配音」中选择已安装的系统声音。</p>
+            <strong>{t("也可以使用本机配音")}</strong>
+            <p>
+              {t("无需 API Key。在制作台的「配音」中选择已安装的系统声音。")}
+            </p>
           </div>
         </div>
       )}
       <p className="model-hint">
-        保存后可在生成面板选择此模型。启用仅代表允许选择；实际可用性取决于服务权限和模型参数。
+        {t(
+          "保存后可在生成面板选择此模型。启用仅代表允许选择；实际可用性取决于服务权限和模型参数。",
+        )}
       </p>
     </section>
   );

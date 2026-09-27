@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Popover } from "@radix-ui/themes";
 import { duration, type Clip, type Project } from "../model";
@@ -23,6 +24,7 @@ export function TransitionSeams({
   clock: PlaybackClock;
   change: (f: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   if (trackId !== project.tracks.find((t) => t.kind === "video")?.id)
     return null;
   return seams(project, trackId).map(({ left, right }) => (
@@ -47,6 +49,7 @@ function Seam({
   clock: PlaybackClock;
   change: (f: (p: Project) => Project) => void;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false),
     [error, setError] = useState("");
   const value =
@@ -72,21 +75,26 @@ function Seam({
           className={`transition-seam ${value ? "active" : ""}`}
           style={{ left: (right.start ?? 0) * zoom }}
           aria-label={
-            value ? `编辑转场 ${transitionKinds[value.kind]}` : "添加转场"
+            value
+              ? t("编辑转场 {v0}", { v0: t(transitionKinds[value.kind]) })
+              : t("添加转场")
           }
           title={
             value
-              ? `${transitionKinds[value.kind]} · ${value.duration} 秒`
-              : "在接缝添加转场"
+              ? t("{v0} · {v1} 秒", {
+                  v0: t(transitionKinds[value.kind]),
+                  v1: value.duration,
+                })
+              : t("在接缝添加转场")
           }
         >
           ◇
         </button>
       </Popover.Trigger>
       <Popover.Content className="transition-editor" width="300px">
-        <h3>片段转场</h3>
+        <h3>{t("片段转场")}</h3>
         <label>
-          效果
+          {t("效果")}
           <select
             value={value?.kind ?? "none"}
             onChange={(e) =>
@@ -97,18 +105,18 @@ function Seam({
               )
             }
           >
-            <option value="none">直接切换</option>
+            <option value="none">{t("直接切换")}</option>
             {Object.entries(transitionKinds).map(([key, title]) => (
               <option key={key} value={key}>
-                {title}
+                {t(title)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          时长 · {value?.duration ?? Math.min(0.5, max)} 秒
+          {t("时长 ·")} {value?.duration ?? Math.min(0.5, max)} {t("秒")}
           <input
-            aria-label="转场时长"
+            aria-label={t("转场时长")}
             type="range"
             min={0.05}
             max={max}
@@ -119,7 +127,9 @@ function Seam({
           />
         </label>
         <p>
-          保持剪辑、声音和字幕时间。优先使用切点外的素材余量，不足时延展边缘帧。
+          {t(
+            "保持剪辑、声音和字幕时间。优先使用切点外的素材余量，不足时延展边缘帧。",
+          )}
         </p>
         <button
           onClick={() => {
@@ -130,7 +140,7 @@ function Seam({
             setOpen(false);
           }}
         >
-          定位预览
+          {t("定位预览")}
         </button>
         <button
           onClick={() => {
@@ -141,14 +151,16 @@ function Seam({
                 { kind: "clip", id: left.id },
                 { kind: "clip", id: right.id },
               ],
-              text: "请为这两个相邻片段设计并添加合适的转场，优先保持动作、视线和节奏连续，说明选择理由。",
+              text: t(
+                "请为这两个相邻片段设计并添加合适的转场，优先保持动作、视线和节奏连续，说明选择理由。",
+              ),
             });
           }}
         >
-          让转场 Agent 设计
+          {t("让转场 Agent 设计")}
         </button>
-        {value && <button onClick={() => apply(null)}>移除转场</button>}
-        {error && <p role="alert">{error}</p>}
+        {value && <button onClick={() => apply(null)}>{t("移除转场")}</button>}
+        {error && <p role="alert">{t(error)}</p>}
       </Popover.Content>
     </Popover.Root>
   );

@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
@@ -8,6 +9,7 @@ import "../styles/storage-settings.css";
 
 type Storage = { directory: string; available: boolean };
 export function StorageSettings({ projectId }: { projectId?: string }) {
+  useLanguage();
   const [storage, setStorage] = useState<Storage | null>(null);
   const [target, setTarget] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -41,7 +43,8 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
       }>("migrate_storage", { directory: target });
       sessionStorage.setItem(
         "mstudio-storage-notice",
-        result.warning || `存储目录已更新，已迁移 ${result.files} 个文件。`,
+        result.warning ||
+          t("存储目录已更新，已迁移 {v0} 个文件。", { v0: result.files }),
       );
       if (projectId && !result.warning)
         sessionStorage.setItem("mstudio-reopen-project", projectId);
@@ -53,17 +56,14 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
   }
   return (
     <section className="storage-settings">
-      <h3>文件存储目录</h3>
-      <p>
-        上传素材、生成结果、预览和成片统一保存在此处。项目记录与设置仍由应用管理。
-      </p>
+      <h2>{t("存储")}</h2>
       <div className="storage-location">
         <FolderOpen size={24} />
-        <code>{storage?.directory || "正在读取…"}</code>
+        <code>{storage?.directory || t("正在读取…")}</code>
       </div>
       {storage && !storage.available && (
         <p className="error">
-          存储目录当前不可用，请连接原存储设备。项目中的文件位置已保留。
+          {t("存储目录当前不可用，请连接原存储设备。项目中的文件位置已保留。")}
         </p>
       )}
       <button
@@ -71,16 +71,8 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
         disabled={!native || busy || !storage}
         onClick={() => void choose()}
       >
-        选择新目录并迁移
+        {t("选择新目录并迁移")}
       </button>
-      <p className="subtle">
-        会在所选位置创建 Mstudio
-        文件夹，并迁移已有文件。文件量较大时可能需要一些时间；完成后会重新载入应用。
-      </p>
-      <h3>文件缺失时</h3>
-      <p>
-        如果从文件夹删除了文件，项目会保留“文件缺失”占位。镜头、时间线位置和引用关系不会被删除；把文件放回原位置后会自动恢复。
-      </p>
       {error && !target && (
         <ErrorNotice error={error} fallback="STORAGE_FAILED" />
       )}
@@ -94,25 +86,29 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
           className="modal storage-migration"
           aria-busy={busy}
         >
-          <AlertDialog.Title>迁移文件存储目录</AlertDialog.Title>
+          <AlertDialog.Title>{t("迁移文件存储目录")}</AlertDialog.Title>
           <AlertDialog.Description>
-            已有文件会复制并校验后迁移到下方位置，项目和全局素材的引用会一同更新。请保持存储设备连接。
+            {t(
+              "已有文件会复制并校验后迁移到下方位置，完成后重新载入应用。请保持存储设备连接。",
+            )}
           </AlertDialog.Description>
           <div className="storage-location">
             <code>{target}</code>
           </div>
-          {busy && <p role="status">正在迁移并校验文件，请勿关闭应用…</p>}
+          {busy && (
+            <p role="status">{t("正在迁移并校验文件，请勿关闭应用…")}</p>
+          )}
           {error && <ErrorNotice error={error} fallback="STORAGE_FAILED" />}
           <footer>
             <AlertDialog.Cancel>
-              <button disabled={busy}>取消</button>
+              <button disabled={busy}>{t("取消")}</button>
             </AlertDialog.Cancel>
             <button
               className="primary"
               disabled={busy}
               onClick={() => void migrate()}
             >
-              {busy ? "迁移中…" : "迁移并切换"}
+              {busy ? t("迁移中…") : t("迁移并切换")}
             </button>
           </footer>
         </AlertDialog.Content>

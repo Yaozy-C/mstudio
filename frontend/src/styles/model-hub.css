@@ -119,19 +119,32 @@
   outline: none;
 }
 
+.settings-page .hub-main > .settings-heading {
+  justify-content: flex-start;
+  min-height: 76px;
+  box-sizing: border-box;
+}
+.settings-back-slot {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
 .settings-back-slot:empty {
   display: none;
 }
-.settings-page .hub-main > .settings-heading {
-  position: relative;
-}
-.settings-back-slot {
-  position: absolute;
-  left: 18px;
-  top: 23px;
-}
 .settings-back-button {
-  padding: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   background: transparent;
   border-color: transparent;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
 }
