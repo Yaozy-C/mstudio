@@ -6,6 +6,7 @@ import type { PlaybackClock } from "./clock";
 import { prepareCaptions } from "../creation/prepareCaptions";
 import { ClockReadout } from "./ClockReadout";
 import { previewSpec } from "./previewSpec";
+import { fittedVideoRect, previewCovered } from "./previewOcclusion";
 import { PreviewCommands } from "./previewCommands";
 import { ErrorNotice } from "../errors/ErrorNotice";
 type Status = {
@@ -79,10 +80,12 @@ export function NativePreview({
     const rect = () => {
       pendingRect = 0;
       if (!alive || !opened || !stage.current) return;
-      const r = stage.current.getBoundingClientRect();
-      const covered = !!document.querySelector(
-        '.modal-backdrop, [role="dialog"], [role="menu"], [data-radix-popper-content-wrapper]',
+      const r = fittedVideoRect(
+        stage.current.getBoundingClientRect(),
+        doc.width,
+        doc.height,
       );
+      const covered = previewCovered(r);
       const bounds = {
         token,
         x: r.x,
@@ -134,7 +137,12 @@ export function NativePreview({
       observer = new ResizeObserver(scheduleRect);
       observer.observe(stage.current!);
       mutations = new MutationObserver(scheduleRect);
-      mutations.observe(document.body, { childList: true, subtree: true });
+      mutations.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class", "data-state", "hidden"],
+      });
       window.addEventListener("resize", scheduleRect);
       window.addEventListener("scroll", scheduleRect, true);
       document.addEventListener("visibilitychange", scheduleRect);

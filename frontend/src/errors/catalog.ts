@@ -47,6 +47,7 @@ export const errorCatalog = {
     "素材操作未完成",
     "检查文件和存储目录后重试此操作。",
   ],
+  CHAT_STOPPED: ["已停止回答", "已完成的修改已保留；需要继续时可以重试。"],
   CHAT_FAILED: ["回答未完成", "原消息和附件已保留，可以重试。"],
   STORAGE_FAILED: ["存储操作未完成", "检查存储设备、空间与目录权限后重试。"],
   OPERATION_FAILED: ["操作未完成", "请查看错误详情，处理后再重试。"],
@@ -104,6 +105,8 @@ export function normalizeError(
   fallback: ErrorCode = "OPERATION_FAILED",
 ): AppIssue {
   const raw = rawText(value);
+  if (/^已停止回答(?:；|$)/.test(raw))
+    return issue("CHAT_STOPPED", undefined, { outcome: "cancelled" });
   try {
     const data =
       typeof value === "object" && !(value instanceof Error)

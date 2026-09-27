@@ -76,3 +76,15 @@ test("provider field constraints become Chinese guidance without changing the er
   expect(problem.recovery).toContain("0.4～2.5");
   expect(problem.outcome).toBeUndefined();
 });
+
+test("cancelled chat is a stopped operation, not a failed model request", () => {
+  const stopped = normalizeError(
+    "已停止回答；已输出内容和已完成操作保留",
+    "CHAT_FAILED",
+  );
+  expect(stopped.code).toBe("CHAT_STOPPED");
+  expect(stopped.outcome).toBe("cancelled");
+  expect(normalizeError("模型输出被截断", "CHAT_FAILED").code).toBe(
+    "CHAT_FAILED",
+  );
+});

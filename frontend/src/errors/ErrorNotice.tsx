@@ -15,6 +15,14 @@ export function ErrorNotice({
   const [copyState, setCopyState] = useState("");
   if (!error) return null;
   const item = normalizeError(error, fallback);
+  if (item.code === "CHAT_STOPPED")
+    return (
+      <div className="operation-stopped" role="status">
+        <strong>{item.message}</strong>
+        <span>{item.recovery}</span>
+        {children}
+      </div>
+    );
   const details = [
     item.code,
     item.httpStatus && `HTTP ${item.httpStatus}`,

@@ -79,7 +79,11 @@ export function AgentMessage() {
       {message.role === "assistant" &&
         message.status?.type === "incomplete" && (
           <ErrorNotice
-            error={message.status.error || "回答未完成"}
+            error={
+              message.status.reason === "cancelled"
+                ? "已停止回答"
+                : message.status.error || "回答未完成"
+            }
             fallback="CHAT_FAILED"
           >
             <ActionBarPrimitive.Reload className="text-button">

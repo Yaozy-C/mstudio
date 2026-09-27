@@ -28,3 +28,19 @@
 .error-notice small {
   margin-left: 8px;
 }
+.operation-stopped {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.operation-stopped strong {
+  color: var(--desk-text);
+  font-weight: 500;
+}

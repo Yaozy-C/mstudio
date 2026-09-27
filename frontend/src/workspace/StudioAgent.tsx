@@ -37,18 +37,18 @@ export function StudioAgent({
   onClose: () => void;
   onInspect: () => void;
 }) {
+  const clip = project.clips.find((c) => c.id === clipId);
+  const asset = project.assets.find((a) => a.id === clip?.assetId);
   return (
     <DockPanel id="agent" title="项目助手" visible={visible} onClose={onClose}>
-      {visible && clipId && (
+      {visible && clip && (
         <div className="agent-clip-context">
-          <span>
-            当前片段 ·{" "}
-            {project.assets.find(
-              (a) =>
-                a.id === project.clips.find((c) => c.id === clipId)?.assetId,
-            )?.name ?? "视频"}
+          <span title={asset?.name}>
+            已选片段 · {(clip.start ?? 0).toFixed(2)} 秒起
           </span>
-          <button onClick={onInspect}>返回片段属性</button>
+          <button onClick={onInspect} title="调整画面、调色、声音和时间">
+            编辑片段
+          </button>
         </div>
       )}
       <Suspense fallback={<div className="agent-empty">加载 Agent…</div>}>
