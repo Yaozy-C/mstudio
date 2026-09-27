@@ -18,7 +18,7 @@ export function DockPanel({
   useLanguage();
   return (
     <section
-      className={`dock-panel dock-${id}`}
+      className={`dock-panel dock-${id} ${id === "creation" || id === "inspector" ? "precision-panel" : ""}`}
       aria-label={title}
       hidden={!visible}
     >

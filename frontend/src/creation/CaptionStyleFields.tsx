@@ -36,7 +36,7 @@ export function CaptionStyleFields({
           >
             {Object.entries(captionFonts).map(([key, font]) => (
               <option key={key} value={key}>
-                {font.name}
+                {t(font.name)}
               </option>
             ))}
           </select>
@@ -54,6 +54,7 @@ export function CaptionStyleFields({
         {t("字号 ·")}{" "}
         {Math.round(Math.min(width, height) * (caption.fontSize ?? 0.048))} px
         <input
+          className="inspector-range"
           aria-label={t("字幕字号")}
           type="range"
           min={0.02}

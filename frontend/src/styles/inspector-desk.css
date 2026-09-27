@@ -1,26 +1,26 @@
 /* Precision inspector: paper surface, bare actions, aligned numeric controls. */
-.radix-themes .dock-inspector .inspector {
+.radix-themes .precision-panel .inspector {
   padding: 0 24px;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
-.dock-inspector .dock-heading {
+.precision-panel .dock-heading {
   padding: 24px 24px 16px;
 }
-.dock-inspector .dock-heading h2 {
+.precision-panel .dock-heading h2 {
   font-size: 21px;
   font-weight: 600;
 }
-.radix-themes .dock-inspector .inspector-asset {
+.radix-themes .precision-panel .inspector-asset {
   font-size: 13px;
   line-height: 20px;
   margin: 0 0 24px;
   flex-shrink: 0;
 }
-.radix-themes .dock-inspector button,
-.radix-themes .dock-inspector button:hover:not(:disabled),
+.radix-themes .precision-panel button,
+.radix-themes .precision-panel button:hover:not(:disabled),
 .radix-themes .timeline button:not(.caption-chip),
 .radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
   background: transparent;
@@ -28,17 +28,17 @@
   box-shadow: none;
   border-radius: 0;
 }
-.radix-themes .dock-inspector button:hover:not(:disabled),
+.radix-themes .precision-panel button:hover:not(:disabled),
 .radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
   color: var(--desk-accent);
 }
-.radix-themes .dock-inspector button[aria-pressed="true"],
+.radix-themes .precision-panel button[aria-pressed="true"],
 .radix-themes .timeline .track-heading button[aria-pressed="true"] {
   color: var(--desk-accent);
   background: transparent;
   box-shadow: none;
 }
-.radix-themes .dock-inspector .inspector-tabs {
+.radix-themes .precision-panel .inspector-tabs {
   display: flex;
   gap: 4px;
   padding: 0 0 18px;
@@ -46,7 +46,7 @@
   background: var(--desk-bg);
   flex-shrink: 0;
 }
-.radix-themes .dock-inspector .inspector-tabs button {
+.radix-themes .precision-panel .inspector-tabs button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,23 +57,23 @@
   color: var(--desk-muted);
   font-weight: 400;
 }
-.radix-themes .dock-inspector .inspector-tabs button[aria-pressed="true"] {
+.radix-themes .precision-panel .inspector-tabs button[aria-pressed="true"] {
   color: var(--desk-accent);
   font-weight: 600;
 }
 .inspector-panel-content {
   flex: 1 0 auto;
 }
-.radix-themes .dock-inspector .inspector-section {
+.radix-themes .precision-panel .inspector-section {
   padding: 25px 0;
   gap: 20px;
   border-top: 0;
   border-bottom: 1px solid var(--desk-rule);
 }
-.radix-themes .dock-inspector .inspector-section:last-child {
+.radix-themes .precision-panel .inspector-section:last-child {
   border-bottom: 0;
 }
-.radix-themes .dock-inspector .inspector-section h3 {
+.radix-themes .precision-panel .inspector-section h3 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -86,7 +86,7 @@
   align-items: center;
   justify-content: space-between;
 }
-.radix-themes .dock-inspector .inspector-action {
+.radix-themes .precision-panel .inspector-action {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -106,7 +106,7 @@
   align-items: center;
   gap: 16px;
 }
-.radix-themes .dock-inspector .inspector-control-row > label {
+.radix-themes .precision-panel .inspector-control-row > label {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -127,7 +127,7 @@
   flex-shrink: 0;
   padding-right: 4px;
 }
-.radix-themes .dock-inspector .inspector-number input {
+.radix-themes .precision-panel .inspector-number input {
   background: transparent;
   border: 0;
   box-shadow: none;
@@ -139,7 +139,7 @@
   font-variant-numeric: tabular-nums;
   padding: 3px 5px;
 }
-.radix-themes .dock-inspector .inspector-range {
+.radix-themes .precision-panel .inspector-range {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
@@ -182,7 +182,7 @@
   font-size: 11px;
   color: var(--desk-muted);
 }
-.radix-themes .dock-inspector .inspector-select-row {
+.radix-themes .precision-panel .inspector-select-row {
   display: grid;
   grid-template-columns: minmax(100px, 0.9fr) minmax(0, 1.2fr);
   gap: 12px;
@@ -196,7 +196,7 @@
   gap: 10px;
   white-space: nowrap;
 }
-.radix-themes .dock-inspector .inspector-select-row select {
+.radix-themes .precision-panel .inspector-select-row select {
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--desk-rule);
@@ -233,7 +233,7 @@
   align-items: center;
   gap: 12px;
 }
-.radix-themes .dock-inspector .inspector-agent textarea {
+.radix-themes .precision-panel .inspector-agent textarea {
   flex: 1;
   min-width: 0;
   padding: 7px 8px;
@@ -244,7 +244,7 @@
   line-height: 1.5;
   resize: vertical;
 }
-.radix-themes .dock-inspector .inspector-send {
+.radix-themes .precision-panel .inspector-send {
   color: var(--desk-accent);
   flex-shrink: 0;
   font-size: 13px;
@@ -266,28 +266,31 @@
   padding: 5px;
 }
 /* Keep the icon library's intended sizes; global toolbar rules use smaller icons. */
-.dock-inspector .inspector-tabs button svg {
+.precision-panel .inspector-tabs button svg {
   width: 22px;
   height: 22px;
 }
-.dock-inspector .inspector-action svg,
-.dock-inspector .inspector-track-actions svg {
+.precision-panel .inspector-action svg,
+.precision-panel .inspector-track-actions svg {
   width: 20px;
   height: 20px;
 }
-.radix-themes .dock-inspector .inspector-tabs button {
+.radix-themes .precision-panel .inspector-tabs button {
   font-size: 15px;
 }
-.radix-themes .dock-inspector .inspector-control-row > label {
+.radix-themes .precision-panel .inspector-control-row > label {
   font-size: 15px;
 }
-.radix-themes .dock-inspector .inspector-section h3 {
+.radix-themes .precision-panel .inspector-section h3 {
   font-size: 17px;
 }
-.dock-inspector .dock-heading h2 {
+.precision-panel .dock-heading h2 {
   font-size: 23px;
 }
-.radix-themes .dock-inspector .inspector[data-tab="visual"] .inspector-section {
+.radix-themes
+  .precision-panel
+  .inspector[data-tab="visual"]
+  .inspector-section {
   padding: 32px 0;
   gap: 28px;
 }

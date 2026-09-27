@@ -1,7 +1,10 @@
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
-import { bridge } from "../bridge";
+import { InspectorControl } from "../timeline/InspectorControl";
+import { Gauge, SpeakerHigh, Stack, ArrowRight } from "@phosphor-icons/react";
+import { StudioSelect } from "../ui/StudioSelect";
+import { bridge, native } from "../bridge";
 import { uid, type Asset, type Project } from "../model";
 import { appendAsset, tracksOf } from "../timeline/document";
 import type { PlaybackClock } from "../timeline/clock";
@@ -14,10 +17,11 @@ export function SpeechPanel({
   change: (f: (p: Project) => Project) => void;
   clock: PlaybackClock;
 }) {
-  useLanguage();
+  const language = useLanguage();
   const [voices, setVoices] = useState<{ name: string; language: string }[]>(
     [],
   );
+  const [loading, setLoading] = useState(true);
   const [voice, setVoice] = useState("");
   const [text, setText] = useState("");
   const [rate, setRate] = useState(180);
@@ -33,12 +37,22 @@ export function SpeechPanel({
       .then((v) => {
         setVoices(v);
         setVoice(
-          v.find((x) => x.language.startsWith("zh"))?.name ?? v[0]?.name ?? "",
+          v.find((x) =>
+            x.language.startsWith(language === "zh-CN" ? "zh" : "en"),
+          )?.name ??
+            v[0]?.name ??
+            "",
         );
       })
-      .catch(setError);
+      .catch(setError)
+      .finally(() => setLoading(false));
   }, []);
+  const audioTracks = tracksOf(project).filter((item) => item.kind === "audio");
+  const selectedTrack = audioTracks.some((item) => item.id === track)
+    ? track
+    : (audioTracks[0]?.id ?? "");
   async function generate() {
+    if (busy || !voice || !native) return;
     setError(undefined);
     const lines = text
       .split(/\n+/)
@@ -70,7 +84,7 @@ export function SpeechPanel({
             { ...p, assets: [...p.assets, asset] },
             asset,
             at,
-            track,
+            selectedTrack,
           );
           return captions
             ? {
@@ -98,76 +112,101 @@ export function SpeechPanel({
     }
   }
   return (
-    <div className="creation-form">
-      <p className="subtle">
-        {t("本机配音 · 每行一段。分段生成后，字幕与每段实际声音长度对齐。")}
-      </p>
-      <label>
-        {t("配音稿")}
-        <textarea
-          rows={5}
-          value={text}
-          maxLength={8000}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={t("输入台词，每行对应一段配音")}
-        />
-      </label>
-      <label>
-        {t("声音")}
-        <select value={voice} onChange={(e) => setVoice(e.target.value)}>
-          {voices.map((v) => (
-            <option key={v.name} value={v.name}>
-              {v.name} · {v.language}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="field-grid">
+    <div className="creation-form speech-form" aria-busy={busy}>
+      <div className="speech-source">
+        <strong>{t("系统配音")}</strong>
+        <span>macOS</span>
+      </div>
+      <fieldset disabled={busy}>
         <label>
-          {t("语速")}
-          <input
-            type="number"
-            min={80}
-            max={450}
-            value={rate}
-            onChange={(e) => setRate(e.target.valueAsNumber)}
+          {t("配音稿")}
+          <textarea
+            rows={5}
+            value={text}
+            maxLength={8000}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={t("输入台词，每行对应一段配音")}
           />
         </label>
-        <label>
-          {t("目标音轨")}
-          <select value={track} onChange={(e) => setTrack(e.target.value)}>
-            {tracksOf(project)
-              .filter((t) => t.kind === "audio")
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-          </select>
+        <div className="speech-text-meta">
+          <span>{t("每行一段")}</span>
+          <span>{text.length} / 8000</span>
+        </div>
+        <label className="inspector-select-row">
+          <span>
+            <SpeakerHigh size={20} />
+            {t("声音")}
+          </span>
+          <StudioSelect
+            label={t("声音")}
+            value={voice}
+            onValueChange={setVoice}
+            disabled={loading || busy || !voices.length}
+            placeholder={loading ? t("正在加载声音…") : t("没有可用声音")}
+            options={voices.map((v) => ({ value: v.name, label: v.name }))}
+          />
         </label>
-      </div>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={captions}
-          onChange={(e) => setCaptions(e.target.checked)}
+        <InspectorControl
+          label={t("语速")}
+          icon={Gauge}
+          value={rate}
+          unit={t("字/分钟")}
+          min={80}
+          max={450}
+          step={10}
+          slider
+          change={setRate}
         />
-        {t("同时创建分段字幕")}
-      </label>
-      <button
-        className="primary wide"
-        disabled={
-          busy ||
-          !voice ||
-          !text.trim() ||
-          !Number.isFinite(rate) ||
-          rate < 80 ||
-          rate > 450
-        }
-        onClick={() => void generate()}
-      >
-        {busy ? t("正在配音…") : t("从播放头开始加入配音")}
-      </button>
+        <label className="inspector-select-row">
+          <span>
+            <Stack size={20} />
+            {t("目标音轨")}
+          </span>
+          <StudioSelect
+            label={t("目标音轨")}
+            value={selectedTrack}
+            onValueChange={setTrack}
+            disabled={busy}
+            options={
+              audioTracks.length
+                ? audioTracks.map((item) => ({
+                    value: item.id,
+                    label: item.name,
+                  }))
+                : [{ value: "", label: t("自动创建音轨") }]
+            }
+          />
+        </label>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={captions}
+            onChange={(e) => setCaptions(e.target.checked)}
+          />
+          {t("同时生成字幕")}
+        </label>
+      </fieldset>
+      <div className="speech-submit">
+        <button
+          className="inspector-action speech-generate"
+          disabled={
+            busy ||
+            !native ||
+            !voice ||
+            !text.trim() ||
+            !Number.isFinite(rate) ||
+            rate < 80 ||
+            rate > 450
+          }
+          onClick={() => void generate()}
+        >
+          <ArrowRight size={20} />
+          {busy ? t("正在配音…") : t("生成并加入时间线")}
+        </button>
+        <p className="subtle">
+          {!text.trim() ? t("填写配音稿后即可生成") : t("从当前播放位置插入")}
+        </p>
+      </div>
       <ErrorNotice error={error} />
       {message && (
         <p role="status" className="subtle">

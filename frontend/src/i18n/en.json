@@ -1269,5 +1269,22 @@
   "{kind}模型": "{kind} models",
   "{kind}生成": "{kind} generation",
   "通用设置": "General",
-  "已有文件会复制并校验后迁移到下方位置，完成后重新载入应用。请保持存储设备连接。": "Existing files will be copied and verified at the location below. The app will reload when finished. Keep your storage device connected."
+  "已有文件会复制并校验后迁移到下方位置，完成后重新载入应用。请保持存储设备连接。": "Existing files will be copied and verified at the location below. The app will reload when finished. Keep your storage device connected.",
+  "系统配音": "System voice",
+  "每行一段": "One segment per line",
+  "正在加载声音…": "Loading voices…",
+  "没有可用声音": "No voices available",
+  "{rate} 字/分钟": "{rate} words/min",
+  "自动创建音轨": "Create an audio track automatically",
+  "同时生成字幕": "Generate captions too",
+  "生成并加入时间线": "Generate and add to timeline",
+  "填写配音稿后即可生成": "Enter your script to generate voiceover",
+  "从当前播放位置插入": "Insert at the current playhead",
+  "添加字幕": "Add caption",
+  "字幕样式": "Caption style",
+  "黑体": "Sans serif",
+  "宋体": "Serif",
+  "等宽": "Monospace",
+  "字/分钟": "words/min",
+  "删除字幕 {number}": "Delete caption {number}"
 }

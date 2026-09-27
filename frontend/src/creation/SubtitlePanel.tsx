@@ -1,3 +1,11 @@
+import { InspectorControl } from "../timeline/InspectorControl";
+import {
+  Plus,
+  UploadSimple,
+  DownloadSimple,
+  Trash,
+  Crosshair,
+} from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { CaptionStyleFields } from "./CaptionStyleFields";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -29,7 +37,7 @@ export function SubtitlePanel({
   }
   return (
     <div className="creation-form">
-      <div className="inline">
+      <div className="subtitle-actions">
         <button
           onClick={() => {
             const start = clock.getSnapshot().time;
@@ -42,9 +50,13 @@ export function SubtitlePanel({
             }));
           }}
         >
-          {t("＋当前时间字幕")}
+          <Plus size={20} />
+          {t("添加字幕")}
         </button>
-        <button onClick={() => input.current?.click()}>{t("导入 SRT")}</button>
+        <button onClick={() => input.current?.click()}>
+          <UploadSimple size={20} />
+          {t("导入 SRT")}
+        </button>
         <button
           disabled={!captions.length || captions.some((c) => !validCaption(c))}
           onClick={() =>
@@ -53,6 +65,7 @@ export function SubtitlePanel({
             )
           }
         >
+          <DownloadSimple size={20} />
           {t("导出 SRT")}
         </button>
       </div>
@@ -99,10 +112,12 @@ export function SubtitlePanel({
                 clock.seek(c.start);
               }}
             >
-              #{i + 1} {t("定位")}
+              <Crosshair size={20} />
+              {String(i + 1).padStart(2, "0")}
             </button>
             <button
               className="text-button danger"
+              aria-label={t("删除字幕 {number}", { number: i + 1 })}
               onClick={() =>
                 change((p) => ({
                   ...p,
@@ -110,37 +125,27 @@ export function SubtitlePanel({
                 }))
               }
             >
-              {t("删除")}
+              <Trash size={20} />
             </button>
           </div>
-          <div className="field-grid">
-            <label>
-              {t("开始 / 秒")}
-              <input
-                type="number"
-                min={0}
-                step={1 / project.fps}
-                value={c.start}
-                onChange={(e) => {
-                  if (Number.isFinite(e.target.valueAsNumber))
-                    patch(c.id, { start: Math.max(0, e.target.valueAsNumber) });
-                }}
-              />
-            </label>
-            <label>
-              {t("结束 / 秒")}
-              <input
-                type="number"
-                min={0}
-                step={1 / project.fps}
-                value={c.end}
-                onChange={(e) => {
-                  if (Number.isFinite(e.target.valueAsNumber))
-                    patch(c.id, { end: e.target.valueAsNumber });
-                }}
-              />
-            </label>
-          </div>
+          <InspectorControl
+            label={t("开始")}
+            value={c.start}
+            unit="s"
+            min={0}
+            max={86400}
+            step={1 / project.fps}
+            change={(start) => patch(c.id, { start })}
+          />
+          <InspectorControl
+            label={t("结束")}
+            value={c.end}
+            unit="s"
+            min={0}
+            max={86400}
+            step={1 / project.fps}
+            change={(end) => patch(c.id, { end })}
+          />
           <textarea
             aria-label={t("字幕 {v0}", { v0: i + 1 })}
             maxLength={1000}
@@ -148,12 +153,15 @@ export function SubtitlePanel({
             value={c.text}
             onChange={(e) => patch(c.id, { text: e.target.value })}
           />
-          <CaptionStyleFields
-            caption={c}
-            width={project.width}
-            height={project.height}
-            patch={(fields) => patch(c.id, fields)}
-          />
+          <details className="caption-appearance">
+            <summary>{t("字幕样式")}</summary>
+            <CaptionStyleFields
+              caption={c}
+              width={project.width}
+              height={project.height}
+              patch={(fields) => patch(c.id, fields)}
+            />
+          </details>
           {!validCaption(c) && (
             <small className="error">
               {t("请填写文字，结束时间须大于开始时间。")}

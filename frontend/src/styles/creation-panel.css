@@ -1,0 +1,153 @@
+/* Creation uses the same precision controls as the film inspector. */
+.dock-creation .dock-content {
+  padding: 0 24px 24px;
+}
+.radix-themes .dock-creation .creation-form {
+  padding: 0;
+  gap: 0;
+}
+.dock-creation .creation-form label {
+  margin: 0;
+  font-size: 14px;
+  color: var(--desk-text);
+}
+.radix-themes .dock-creation .creation-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 88px;
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--desk-rule);
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.speech-source {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 0;
+}
+.speech-source strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.speech-source span {
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.speech-form fieldset {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+  border: 0;
+  padding: 0 0 24px;
+  margin: 0;
+}
+.speech-text-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -20px;
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-creation .studio-select-trigger,
+.radix-themes .dock-creation .studio-select-trigger:hover:not(:disabled) {
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 0;
+  height: 34px;
+  font-size: 13px;
+}
+.dock-creation .creation-form .check-row,
+.dock-creation .caption-style-fields label.inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.dock-creation input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.speech-submit {
+  border-top: 1px solid var(--desk-rule);
+  padding-top: 20px;
+}
+.radix-themes .dock-creation .speech-generate {
+  color: var(--desk-accent);
+}
+.speech-submit p,
+.dock-creation .creation-form > .subtle {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+}
+.subtitle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .dock-creation .subtitle-actions button {
+  padding: 6px 0;
+  gap: 6px;
+  font-size: 13px;
+  min-height: 32px;
+}
+.radix-themes .dock-creation .caption-editor {
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 24px 0;
+  gap: 20px;
+}
+.dock-creation .caption-editor > .inline {
+  justify-content: space-between;
+}
+.radix-themes .dock-creation .caption-editor > .inline button {
+  padding: 4px 0;
+  font-size: 15px;
+  gap: 8px;
+}
+.dock-creation .caption-editor > textarea {
+  margin-top: 0;
+}
+.caption-appearance summary {
+  font-size: 13px;
+  color: var(--desk-muted);
+}
+.dock-creation .caption-style-fields {
+  gap: 20px;
+}
+.dock-creation .caption-style-fields .field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.radix-themes
+  .dock-creation
+  .caption-style-fields
+  :is(select, input[type="number"]) {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  background: transparent;
+  font-size: 14px;
+}
+.dock-creation .subtitle-actions svg,
+.dock-creation .caption-editor > .inline svg {
+  width: 20px;
+  height: 20px;
+}
