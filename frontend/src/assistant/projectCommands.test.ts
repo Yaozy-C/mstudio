@@ -23,9 +23,10 @@ test("agent command batch validates atomically, rejects stale edits and cannot i
     { op: "add_node", id: "script", kind: "text", title: "剧本", text: "短片" },
   ]);
   expect(() => applyOperations(p, 0, [{ op: "connect" }])).toThrow();
-  expect(inspectProject(next, { nodeIds: ["script"] }).details?.[0].text).toBe(
-    "短片",
-  );
+  expect(
+    inspectProject(next, { nodeIds: ["script"], fields: ["text"] }).details?.[0]
+      .text,
+  ).toBe("短片");
 });
 test("Agent starts an empty project with ordinary cards and revises one without duplicating the rest", () => {
   const empty = newProject("旅行短片");

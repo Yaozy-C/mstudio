@@ -61,7 +61,10 @@ test("one plan owns paired shots; partial edits keep dialogue, identity and mark
   expect(q.nodes[1].shot?.dialogue).toBe("Let's pack");
   expect(q.nodes[1].shot?.visualChanged).toBe(true);
   expect(q.nodes[2]).toEqual(p.nodes[2]);
-  const info = inspectProject(q, { nodeIds: ["s1"] });
+  const info = inspectProject(q, {
+    nodeIds: ["s1"],
+    fields: ["shot", "dialogue"],
+  });
   expect(JSON.stringify(info)).toContain("Let's pack");
   expect(removeNodes(q, ["plan"]).nodes).toHaveLength(0);
 });

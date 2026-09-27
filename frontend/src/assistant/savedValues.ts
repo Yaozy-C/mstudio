@@ -1,0 +1,32 @@
+import type { Project } from "../model";
+// Read receipts from the saved document, never echo requested values as proof.
+export function savedValues(p: Project, operations: unknown) {
+  if (!Array.isArray(operations)) return [];
+  return operations
+    .filter((o) => o.op === "update_node" || o.op === "add_node")
+    .map((o) => {
+      const node = p.nodes.find((n) => n.id === o.id);
+      const paragraphs = Array.isArray(o.plan?.script) ? o.plan.script : [];
+      return {
+        id: o.id,
+        shot:
+          node?.shot && o.shot
+            ? Object.fromEntries(
+                ["order", "duration", "planId", "scriptId"]
+                  .filter((k) => k in o.shot)
+                  .map((k) => [k, node.shot![k as keyof typeof node.shot]]),
+              )
+            : undefined,
+        script: paragraphs.map((patch: { id: string; duration?: number }) => {
+          const saved = node?.plan?.script?.find((s) => s.id === patch.id);
+          return {
+            id: patch.id,
+            exists: !!saved,
+            duration:
+              patch.duration !== undefined ? saved?.duration : undefined,
+          };
+        }),
+      };
+    })
+    .filter((o) => o.shot || o.script.length);
+}

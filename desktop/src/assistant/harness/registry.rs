@@ -15,13 +15,15 @@ pub struct ProjectHost {
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
         "inspect",
-        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields。按返回偏移补读。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
+        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。按返回偏移补读。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
         &[
             "section",
             "ids",
             "taskKey",
             "nodeIds",
             "fields",
+            "paragraphIds",
+            "scriptFields",
             "offset",
             "textOffset",
         ],
@@ -260,6 +262,7 @@ mod tests {
             .map(|field| ((*field).to_owned(), schema["properties"][*field].clone()))
             .collect();
         let exposed = json!({"type":"object","properties":properties,"additionalProperties":false});
+        assert!(super::super::schema::validate(&exposed, &json!({"nodeIds":["plan"],"fields":["script"],"paragraphIds":["p4"],"scriptFields":["duration"]})).is_ok());
         assert!(
             super::super::schema::validate(
                 &exposed,

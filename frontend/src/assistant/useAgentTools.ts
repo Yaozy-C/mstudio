@@ -1,3 +1,4 @@
+import { savedValues } from "./savedValues";
 import { scriptReceipt } from "./scriptReceipt";
 import { productionTurn, type ProductionTurn } from "../production/turnContext";
 import { runsOf } from "../production/requestTask";
@@ -83,6 +84,7 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
                 window.dispatchEvent(new Event("studio-plan-assembled"));
               result = {
                 applied: true,
+                savedValues: savedValues(m.get(), payload.args.operations),
                 scripts: scriptReceipt(m.get(), payload.args.operations),
                 updatedTasks: ops
                   .filter((o) => o.op === "update_generation")

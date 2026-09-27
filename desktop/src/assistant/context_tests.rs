@@ -48,8 +48,7 @@ fn current_images_fit_by_compacting_optional_project_context() {
         "requirements":"保留商品原貌",
         "agent":{"name":"项目统筹","instructions":"按要求执行","canEdit":true},
         "skills":[{"name":"制作"}],
-        "previousRun":{"turnId":"previous","events":["上轮详细记录".repeat(12000)]},
-        "relevantNodes":[{"id":"shot","title":"当前镜头","kind":"shot","text":"镜头细节".repeat(800)}],
+        "relevantNodes":[{"id":"shot","title":"当前镜头","kind":"shot","text":"镜头细节".repeat(20000)}],
         "memory":{"enabled":true,"entries":[{"content":"项目记忆".repeat(500)}]},
         "nodes":[{"id":"shot","title":"当前镜头"}]
     });
@@ -58,8 +57,7 @@ fn current_images_fit_by_compacting_optional_project_context() {
     assert!(text.contains("data:first"));
     assert!(text.contains("data:third"));
     assert!(text.contains("保留商品原貌"));
-    assert!(text.contains("上轮执行记录已省略"));
-    assert!(!text.contains("上轮详细记录"));
+    assert!(!text.contains("镜头细节"));
 }
 #[test]
 fn journal_preserves_failed_attempts_and_submission_reservations_are_idempotent() {
@@ -174,7 +172,7 @@ fn interrupted_tools_are_recalled_only_for_same_project_role_and_task() {
         "p",
         "turn",
         "tool/result",
-        json!({"ok":true,"nodeId":"shot-created"}),
+        json!({"callId":"edit-1","name":"mstudio_edit","result":{"applied":true,"changed":[{"id":"shot-created"}]}}),
     )
     .unwrap();
     use super::task_context::{self, Scope};
@@ -186,23 +184,28 @@ fn interrupted_tools_are_recalled_only_for_same_project_role_and_task() {
         original_instruction: "create shot".into(),
     };
     history::append_attributed(&store,"p","create shot",&json!("create shot"),"stopped","m",Some(&json!({"agentId":"coordinator","turnId":"turn","status":"cancelled","taskScope":scope}))).unwrap();
-    let recovery = task_context::recovery(&store, "p", &scope).unwrap();
+    let recovery = task_context::recovery(&store, "p", &scope, "turn").unwrap();
     assert!(recovery.to_string().contains("shot-created"));
     assert!(
-        task_context::recovery(&store, "other", &scope)
+        task_context::recovery(&store, "p", &scope, "different-turn")
+            .unwrap()
+            .is_null()
+    );
+    assert!(
+        task_context::recovery(&store, "other", &scope, "turn")
             .unwrap()
             .is_null()
     );
     scope.agent_id = "color".into();
     assert!(
-        task_context::recovery(&store, "p", &scope)
+        task_context::recovery(&store, "p", &scope, "turn")
             .unwrap()
             .is_null()
     );
     scope.agent_id = "coordinator".into();
     scope.task_id = "new-task".into();
     assert!(
-        task_context::recovery(&store, "p", &scope)
+        task_context::recovery(&store, "p", &scope, "turn")
             .unwrap()
             .is_null()
     );
@@ -255,4 +258,15 @@ fn attribution_survives_reopen_and_activity_is_scoped_to_project_and_turn() {
     );
     drop(store);
     std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn role_catalog_has_one_source_and_snapshots_do_not_duplicate_role_rules() {
+    let snapshot = json!({"agent":{"name":"总 Agent","tools":["agent-delegate"]},"specialists":[{"id":"specialist-unique"}],"skills":[]});
+    let messages = context::assemble(&[], json!("修改时长"), snapshot.clone()).unwrap();
+    let all = messages.to_string();
+    assert_eq!(all.matches("specialist-unique").count(), 1);
+    let child = super::task_context::reference_snapshot(snapshot);
+    assert!(child.get("specialists").is_none());
+    assert!(child.get("agent").is_none());
 }

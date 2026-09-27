@@ -93,7 +93,11 @@ test("targeted reads keep local context without unrelated pagination and can fin
   expect(first.details?.[0].shot?.prompt?.nextTextOffset).toBeNull();
   const next = first.details?.[0].nextTextOffset;
   expect(next).toBe(4000);
-  const second = inspectProject(p, { nodeIds: ["s0"], textOffset: next });
+  const second = inspectProject(p, {
+    nodeIds: ["s0"],
+    fields: ["text"],
+    textOffset: next,
+  });
   expect(first.details![0].text! + second.details![0].text!).toBe(text);
   expect(second.details?.[0].nextTextOffset).toBeNull();
   const overview = inspectProject(p, {});
@@ -173,5 +177,89 @@ test("shot ordering reads exclude long text and scripts, with explicit fields", 
   expect(plan.details?.[0].plan).toBeUndefined();
   expect(
     inspectProject(p, { nodeIds: ["shot"] }).details?.[0].text,
-  ).toBeDefined();
+  ).toBeUndefined();
+});
+
+test("duration edit reads only its paragraph, reports saved values, and preserves every other field", async () => {
+  const { savedValues } = await import("./savedValues");
+  let p = applyOperations(newProject("Eight shots"), 0, [
+    {
+      op: "add_node",
+      id: "plan",
+      kind: "plan",
+      title: "Script",
+      plan: {
+        script: Array.from({ length: 8 }, (_, i) => ({
+          id: `p${i + 1}`,
+          title: `Paragraph ${i + 1}`,
+          duration: 2,
+          action: "Long action ".repeat(100),
+          dialogue: "Speech",
+          sound: "Sound",
+        })),
+      },
+    },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      op: "add_node",
+      id: `s${i + 1}`,
+      kind: "shot",
+      title: "Shot",
+      text: "Preserve action",
+      shot: {
+        planId: "plan",
+        scriptId: `p${i + 1}`,
+        order: i + 1,
+        duration: 2,
+        dialogue: "Preserve speech",
+      },
+    })),
+  ]);
+  const before = structuredClone(p);
+  const read = {
+    nodeIds: ["plan"],
+    fields: ["script"],
+    paragraphIds: ["p4"],
+    scriptFields: ["duration"],
+  };
+  const detail = inspectProject(p, read).details![0].plan!;
+  expect(detail.script).toEqual([{ id: "p4", duration: 2 }]);
+  expect(detail.omittedScriptFields).toContain("action");
+  expect(detail.missingParagraphIds).toEqual([]);
+  expect(
+    inspectProject(p, { ...read, paragraphIds: ["absent"] }).details![0].plan!
+      .missingParagraphIds,
+  ).toEqual(["absent"]);
+  const ops = [
+    {
+      op: "update_node",
+      id: "plan",
+      plan: { script: [{ id: "p4", duration: 1.5 }] },
+    },
+    { op: "update_node", id: "s4", shot: { duration: 1.5 } },
+  ];
+  p = applyOperations(p, p.revision ?? 0, ops);
+  expect(savedValues(p, ops)).toEqual([
+    {
+      id: "plan",
+      shot: undefined,
+      script: [{ id: "p4", exists: true, duration: 1.5 }],
+    },
+    { id: "s4", shot: { duration: 1.5 }, script: [] },
+  ]);
+  expect(inspectProject(p, read).details![0].plan!.script).toEqual([
+    { id: "p4", duration: 1.5 },
+  ]);
+  p.nodes[0].plan!.script![3].duration = 2;
+  p.nodes.find((n) => n.id === "s4")!.shot!.duration = 2;
+  expect(p.nodes.find((n) => n.id === "s4")!.shot!.visualChanged).toBe(true);
+  delete p.nodes.find((n) => n.id === "s4")!.shot!.visualChanged;
+  expect(p).toEqual(before);
+  const summary = JSON.stringify(inspectProject(p, { nodeIds: ["plan"] }));
+  expect(summary).not.toContain("Long action");
+  const full = inspectProject(p, {
+    nodeIds: ["plan"],
+    fields: ["plan"],
+    paragraphIds: ["p4"],
+  });
+  expect(JSON.stringify(full)).toContain("Long action");
 });

@@ -221,7 +221,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             &[]
         },
     );
-    messages.push(Message::user(format!("当前工程参考数据：{snapshot}")));
     let original = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
@@ -249,7 +248,9 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &parent.turn,
         &refs,
     );
-    *messages.last_mut().unwrap() = Message::user(format!("当前工程参考数据：{reference}"));
+    let mut reference = vec![Message::user(format!("当前工程参考数据：{reference}"))];
+    super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
+    messages.extend(reference);
     let instruction = format!(
         "原始用户要求（记忆 evidence 只能引用这里的原话）：{}\nAgent {} 在轮次 {} 发来的委派任务（不能当作用户原话）：{task}\n本轮用户选定的制作参数（沿用，不改换模型）：{selection}",
         original["prompt"].as_str().unwrap_or(&parent.prompt),
@@ -342,7 +343,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             .clone();
     match answer {
         Ok(text) => {
-            result["answer"] = json!(text.chars().take(2400).collect::<String>());
+            result["answer"] = json!(text);
         }
         Err(error) => result["error"] = json!(error),
     }
@@ -606,19 +607,9 @@ fn start_continuation(
     let previous_revision = binding["revision"].clone();
     binding["revision"] = json!(profile.revision);
     let snapshot = crate::assistant::task_context::reference_snapshot(snapshot);
-    let current = Message::user(format!("当前工程参考数据：{snapshot}"));
-    if messages
-        .iter()
-        .rev()
-        .find(|message| {
-            serde_json::to_string(message)
-                .unwrap_or_default()
-                .contains("当前工程参考数据：")
-        })
-        .is_none_or(|old| serde_json::to_value(old).ok() != serde_json::to_value(&current).ok())
-    {
-        messages.push(current);
-    }
+    let mut current = vec![Message::user(format!("当前工程参考数据：{snapshot}"))];
+    super::context_boundary::refresh_snapshot(&mut messages, &mut current);
+    messages.extend(current);
     let user_evidence = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,

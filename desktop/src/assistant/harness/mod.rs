@@ -2,6 +2,7 @@
 //! See docs/architecture.md for the Rust integration boundary.
 mod binding;
 mod budget;
+pub(crate) mod context_boundary;
 pub mod delegation;
 mod driver;
 pub(crate) mod handoff;

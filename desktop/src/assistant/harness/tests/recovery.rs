@@ -16,18 +16,6 @@ fn store() -> Store {
     store
 }
 #[test]
-fn snapshot_dedup_ignores_previous_run_but_detects_project_changes() {
-    let prefix = "当前工程快照（参考数据；更多内容请按需 inspect）：\n";
-    assert!(session::same_project_snapshot(
-        &format!("{prefix}{{\"revision\":2,\"previousRun\":{{\"turnId\":\"a\"}}}}"),
-        &format!("{prefix}{{\"revision\":2,\"previousRun\":{{\"turnId\":\"b\"}}}}"),
-    ));
-    assert!(!session::same_project_snapshot(
-        &format!("{prefix}{{\"revision\":2}}"),
-        &format!("{prefix}{{\"revision\":3}}"),
-    ));
-}
-#[test]
 fn context_pressure_offloads_old_images_and_restores_replacement() {
     let image = match UserContent::image_base64("aGVsbG8=", Some(ImageMediaType::PNG), None) {
         UserContent::Image(image) => image,

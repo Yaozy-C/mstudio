@@ -170,9 +170,6 @@ async fn execute(
             .map_err(|e| e.to_string())?;
         snapshot["memory"] = memory::context(&memory, prompt);
     }
-    if profiles::allows(&agent_profile, "inspect") {
-        snapshot["previousRun"] = super::task_context::recovery(&store, project_id, scope)?;
-    }
     snapshot["skills"] = skills::catalog(
         &skills::root(app).map_err(|e| e.to_string())?,
         &skill_setting,

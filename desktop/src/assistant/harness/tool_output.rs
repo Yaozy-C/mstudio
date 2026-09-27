@@ -9,6 +9,29 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     if value.get("__offloadedImage").is_some() {
         return json!({"ok":true,"imageId":value["imageId"]});
     }
+    if call.function.name == "mstudio_delegate"
+        && value["answer"]
+            .as_str()
+            .is_some_and(|s| s.chars().count() > 600)
+        && value.to_string().chars().count() <= LIMIT
+    {
+        let mut view = value.clone();
+        view["answer"] = json!(
+            value["answer"]
+                .as_str()
+                .unwrap()
+                .chars()
+                .take(600)
+                .collect::<String>()
+        );
+        view["answerTruncated"] = json!(true);
+        view["resultRef"] = json!(call.id);
+        view["turnId"] = json!(turn);
+        view["readWith"] = json!(
+            "mstudio_read_result(callId=resultRef, turnId=turnId, offset=0) 读取完整说明；未显示内容可能包含设计理由或待办。"
+        );
+        return view;
+    }
     if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= LIMIT {
         return value.clone();
     }
@@ -26,6 +49,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         "error",
         "warnings",
         "changed",
+        "savedValues",
         "operations",
         "nextOffset",
         "nextTextOffset",
@@ -157,4 +181,24 @@ mod tests {
         drop(store);
         std::fs::remove_dir_all(root).unwrap();
     }
+}
+
+#[cfg(test)]
+#[test]
+fn delegation_view_keeps_receipts_and_points_to_complete_design() {
+    use rig_core::message::ToolFunction;
+    let call = ToolCall::from_wire(
+        "delegate-1",
+        ToolFunction {
+            name: "mstudio_delegate".into(),
+            arguments: json!({}),
+        },
+    );
+    let value = json!({"ok":true,"answer":"设计理由".repeat(300),"changes":[{"result":{"applied":true,"revision":7,"savedValues":[{"id":"s4","shot":{"duration":1.5}}]}}]});
+    let view = project(&call, &value, Some("turn-1"));
+    assert_eq!(view["changes"], value["changes"]);
+    assert_eq!(view["answerTruncated"], true);
+    assert_eq!(view["resultRef"], "delegate-1");
+    assert_eq!(view["turnId"], "turn-1");
+    assert_eq!(value["answer"].as_str().unwrap().chars().count(), 1200);
 }

@@ -50,6 +50,7 @@ pub fn assemble_with_budget(
     if let Some(fields) = snapshot.as_object_mut() {
         fields.remove("agent");
         fields.remove("skills");
+        fields.remove("specialists");
     }
     let cost = |snapshot: &Value| {
         let context = format!("当前工程快照（参考数据；更多内容请按需 inspect）：\n{snapshot}");
@@ -59,10 +60,6 @@ pub fn assemble_with_budget(
             + estimate(&payload)
     };
     let mut used = cost(&snapshot);
-    if used > budget && !snapshot["previousRun"].is_null() {
-        snapshot["previousRun"] = json!({"turnId":snapshot["previousRun"]["turnId"],"note":"上轮执行记录已省略；继续前请按需 inspect 核实当前工程。"});
-        used = cost(&snapshot);
-    }
     if used > budget && !snapshot["relevantNodes"].is_null() {
         snapshot["relevantNodes"] = json!(
             snapshot["relevantNodes"]

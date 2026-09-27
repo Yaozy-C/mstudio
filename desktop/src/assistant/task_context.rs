@@ -170,24 +170,33 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
     snapshot
 }
 
-pub fn recovery(store: &Store, project: &str, scope: &Scope) -> Result<Value, String> {
-    let turn:Option<String>=store.db.lock().unwrap().query_row("SELECT json_extract(attribution,'$.turnId') FROM agent_messages WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.taskScope.taskId')=?2 AND json_extract(attribution,'$.agentId')=?3 AND json_extract(attribution,'$.status')!='running' ORDER BY id DESC LIMIT 1",params![project,scope.task_id,scope.agent_id],|r|r.get(0)).optional().map_err(|e|e.to_string())?;
+pub fn recovery(
+    store: &Store,
+    project: &str,
+    scope: &Scope,
+    resume: &str,
+) -> Result<Value, String> {
+    let turn:Option<String>=store.db.lock().unwrap().query_row("SELECT json_extract(attribution,'$.turnId') FROM agent_messages WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.taskScope.taskId')=?2 AND json_extract(attribution,'$.agentId')=?3 AND json_extract(attribution,'$.status') IN ('failed','cancelled','interrupted') AND json_extract(attribution,'$.turnId')=?4 ORDER BY id DESC LIMIT 1",params![project,scope.task_id,scope.agent_id,resume],|r|r.get(0)).optional().map_err(|e|e.to_string())?;
     let Some(turn) = turn else {
         return Ok(Value::Null);
     };
     let events = journal::turn_page(store, project, &turn, None).map_err(|e| e.to_string())?;
-    let mut size = 0;
-    let mut selected: Vec<_> = events
-        .into_iter()
-        .filter(|e| ["tool/result", "turn/end"].contains(&e["kind"].as_str().unwrap_or("")))
-        .filter(|e| {
-            size += e.to_string().len();
-            size <= 4000
-        })
-        .collect();
-    selected.reverse();
+    let mut selected = Vec::new();
+    for event in events.iter().rev().filter(|e| e["kind"] == "tool/result") {
+        let payload = &event["payload"];
+        let result = &payload["result"];
+        let mut receipt = json!({"callId":payload["callId"],"name":payload["name"],"applied":result["applied"],"revision":result["revision"],"code":result["code"],"resultRef":{"turnId":turn,"callId":payload["callId"]}});
+        for key in ["changed", "savedValues", "error"] {
+            if !result[key].is_null() && result[key].to_string().chars().count() <= 600 {
+                receipt[key] = result[key].clone();
+            }
+        }
+        if selected.len() < 12 {
+            selected.push(receipt);
+        }
+    }
     Ok(
-        json!({"turnId":turn,"events":selected,"note":"部分执行记录；不自动重放，修改前 inspect 核实"}),
+        json!({"turnId":turn,"receipts":selected,"partial":true,"note":"仅部分写入回执；完整结果通过 mstudio_read_result 的 turnId/callId 读取。没有回执不代表未执行，未知状态先 inspect 核实，不自动重放。"}),
     )
 }
 
@@ -219,6 +228,7 @@ pub fn reference_snapshot(mut snapshot: Value) -> Value {
     if let Some(fields) = snapshot.as_object_mut() {
         fields.remove("agent");
         fields.remove("skills");
+        fields.remove("specialists");
     }
     snapshot
 }

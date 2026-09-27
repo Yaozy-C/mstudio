@@ -88,24 +88,13 @@ pub fn project_snapshot_text(message: &Message) -> Option<&str> {
         UserContent::Text(text)
             if text
                 .text
-                .starts_with("当前工程快照（参考数据；更多内容请按需 inspect）：") =>
+                .starts_with("当前工程快照（参考数据；更多内容请按需 inspect）：")
+                || text.text.starts_with("当前工程参考数据：") =>
         {
             Some(text.text.as_str())
         }
         _ => None,
     })
-}
-pub fn same_project_snapshot(left: &str, right: &str) -> bool {
-    fn stable(text: &str) -> Option<Value> {
-        let (_, body) = text.split_once('\n')?;
-        let mut value: Value = serde_json::from_str(body).ok()?;
-        value.as_object_mut()?.remove("previousRun");
-        Some(value)
-    }
-    left == right
-        || stable(left)
-            .zip(stable(right))
-            .is_some_and(|(left, right)| left == right)
 }
 pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usize, String> {
     let mut total = 0;

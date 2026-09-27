@@ -1,3 +1,4 @@
+import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
 import type { Project } from "../model";
 import { promptStale } from "../creative/prompt";
@@ -13,16 +14,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   const explicit = Array.isArray(args.fields);
   const fields = explicit
     ? (args.fields as string[])
-    : [
-        "plan",
-        "text",
-        "title",
-        "shot",
-        "shots",
-        "dialogue",
-        "assetId",
-        "resultAssetId",
-      ];
+    : ["title", "shot", "script", "assetId", "resultAssetId"];
   const wants = (field: string) => fields.includes(field);
   const revision = p.revision ?? 0;
   const detailLimit = ids.length === 1 || args.taskKey ? 4000 : 1000;
@@ -116,6 +108,9 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     };
   return {
     revision,
+    readDetails: ids.length
+      ? "用 fields 读取正文；script + paragraphIds/scriptFields 精确读取脚本段落，plan 返回完整方案（分页）。"
+      : undefined,
     missingNodeIds: ids.filter((id) => !p.nodes.some((n) => n.id === id)),
     name: p.name.slice(0, 200),
     brief: ids.length ? undefined : p.brief.slice(0, 500),
@@ -141,29 +136,15 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
         ...(wants("text") ? snippet(n.text, detailLimit) : {}),
         assetId: wants("assetId") ? n.assetId : undefined,
         resultAssetId: wants("resultAssetId") ? n.resultAssetId : undefined,
-        omittedFields: explicit
-          ? ["title", "text", "shot", "plan", "references"].filter(
-              (f) => !wants(f),
-            )
-          : undefined,
+        omittedFields: ["title", "text", "shot", "plan", "references"].filter(
+          (f) => !wants(f),
+        ),
         plan:
-          wants("plan") && n.plan
+          n.plan && (wants("plan") || wants("script"))
             ? {
-                script: n.plan.script?.slice(offset, offset + 10).map((s) => ({
-                  id: s.id,
-                  duration: s.duration ?? 5,
-                  title: s.title,
-                  action: snippet(s.action),
-                  onScreenText: snippet(s.onScreenText ?? ""),
-                  dialogue: snippet(s.dialogue),
-                  sound: snippet(s.sound),
-                })),
-                nextScriptOffset:
-                  (n.plan.script?.length ?? 0) > offset + 10
-                    ? offset + 10
-                    : null,
-                story: snippet(n.plan.story),
-                sound: snippet(n.plan.sound),
+                ...inspectScript(n.plan.script ?? [], args, wants("plan")),
+                story: wants("plan") ? snippet(n.plan.story) : undefined,
+                sound: wants("plan") ? snippet(n.plan.sound) : undefined,
               }
             : undefined,
         shot: n.shot && {

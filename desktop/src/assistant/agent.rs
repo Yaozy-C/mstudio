@@ -55,22 +55,10 @@ pub(crate) async fn complete_with_resume(
             &binding,
             restored.as_ref().map_or(0, Vec::len),
         )?;
+        let restored_count = restored.as_ref().map_or(0, Vec::len);
         if let Some(mut restored) = restored {
             let mut additions = messages.iter().rev().take(2).cloned().collect::<Vec<_>>();
             additions.reverse();
-            if resume.is_none()
-                && additions.first().is_some_and(|fresh| {
-                    harness::session::project_snapshot_text(fresh).is_some_and(|text| {
-                        restored
-                            .iter()
-                            .rev()
-                            .find_map(harness::session::project_snapshot_text)
-                            .is_some_and(|old| harness::session::same_project_snapshot(old, text))
-                    })
-                })
-            {
-                additions.remove(0);
-            }
             if resume.is_some() {
                 additions.pop();
             } // Original user input is already committed.
@@ -80,8 +68,21 @@ pub(crate) async fn complete_with_resume(
             {
                 *old = content.clone();
             }
+            harness::context_boundary::refresh_snapshot(&mut restored, &mut additions);
             restored.extend(additions);
             messages = restored;
+        }
+        if restored_count == 0
+            && let Some(turn) = resume
+        {
+            let scope = super::task_context::saved(&store, &t.project, turn)?
+                .ok_or("缺少续接任务上下文")?;
+            let recovery = super::task_context::recovery(&store, &t.project, &scope, turn)?;
+            if !recovery.is_null() {
+                messages.push(Message::user(format!(
+                    "中断任务恢复资料（结果未知的操作先核实，不自动重放）：{recovery}"
+                )));
+            }
         }
         harness::session::start(&store, &t.project, &t.turn, binding, &messages)?;
     }

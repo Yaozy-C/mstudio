@@ -101,7 +101,9 @@ test("screen text roundtrips separately, invalidates linked shots and preserves 
     "Everything in place",
   );
   expect(
-    JSON.stringify(inspectProject(restored, { nodeIds: ["plan"] })),
+    JSON.stringify(
+      inspectProject(restored, { nodeIds: ["plan"], fields: ["plan"] }),
+    ),
   ).toContain("Everything in place");
   expect(() =>
     writeScript([a], { script: [{ id: "a", onScreenText: 42 }] }),
