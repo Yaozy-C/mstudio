@@ -12,7 +12,6 @@ pub struct Scope {
     pub agent_id: String,
     pub targets: Vec<String>,
     pub view: String,
-    #[serde(default)]
     pub original_instruction: String,
 }
 
@@ -27,10 +26,8 @@ pub fn resolve(store: &Store, request: &Request, agent: &str) -> Result<Scope, S
         .map(|s| serde_json::from_str::<Scope>(&s))
         .transpose()
         .map_err(|e| e.to_string())?;
-    if request.resume_turn_id.is_some()
-        && let Some(scope) = prior.as_ref()
-    {
-        return Ok(scope.clone());
+    if request.resume_turn_id.is_some() {
+        return prior.ok_or_else(|| "缺少任务上下文，请作为新任务发送".into());
     }
     let mut targets: Vec<String> = request
         .attachments

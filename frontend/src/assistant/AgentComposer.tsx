@@ -1,4 +1,3 @@
-import { NewTaskButton } from "./NewTaskButton";
 import { TaskReference } from "../production/TaskReference";
 import { compositionGuard } from "./compositionGuard";
 import type { WorkContext } from "./workContext";
@@ -39,7 +38,6 @@ export function AgentComposer({
   model,
   settings,
   newTask,
-  toggleNewTask,
 }: {
   canvas?: ProductionController;
   input: RefObject<HTMLTextAreaElement | null>;
@@ -57,7 +55,6 @@ export function AgentComposer({
   model?: ModelConnection;
   settings: () => void;
   newTask: boolean;
-  toggleNewTask: () => void;
 }) {
   const [ime] = useState(compositionGuard);
   const [query, setQuery] = useState<ReturnType<typeof mentionQuery>>(null);
@@ -269,11 +266,6 @@ export function AgentComposer({
             )}
           </div>
           <div className="composer-submit">
-            <NewTaskButton
-              active={newTask}
-              disabled={running}
-              onClick={toggleNewTask}
-            />
             {running ? (
               <ComposerPrimitive.Cancel aria-label="停止回答" title="停止回答">
                 <Square size={13} weight="fill" />

@@ -173,6 +173,12 @@ fn persisted_scope_survives_retry_and_reset_starts_fresh() {
             .unwrap()
             .is_some()
     );
+    request.resume_turn_id = Some("missing-scope".into());
+    assert!(resolve(&store, &request, "transition").is_err());
+    assert!(
+        session_selection::bind_task(&store, "p", "next", Some("missing-scope"), &mut binding)
+            .is_err()
+    );
     request.resume_turn_id = None;
     request.new_task = false;
     journal::append(&store, "p", "reset", "session/reset", json!({})).unwrap();

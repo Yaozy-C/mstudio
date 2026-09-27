@@ -1,4 +1,4 @@
-import { ChatCircle } from "@phosphor-icons/react";
+import { Plus } from "@phosphor-icons/react";
 export function NewTaskButton({
   active,
   disabled,
@@ -11,7 +11,7 @@ export function NewTaskButton({
   return (
     <button
       type="button"
-      className="composer-icon-button"
+      className="agent-new-task"
       disabled={disabled}
       aria-label="作为新任务发送"
       aria-pressed={active}
@@ -22,7 +22,8 @@ export function NewTaskButton({
       }
       onClick={onClick}
     >
-      <ChatCircle size={18} weight={active ? "fill" : "regular"} />
+      <Plus size={14} />
+      {active ? "取消新任务" : "新任务"}
     </button>
   );
 }

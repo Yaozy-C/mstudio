@@ -69,7 +69,7 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
 }
 
 pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: usize) -> Value {
-    let raw:Result<String,_>=store.db.lock().unwrap().query_row("SELECT COALESCE(json_extract(payload,'$.value'),json_extract(payload,'$.result')) FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1",rusqlite::params![project,turn,call],|r|r.get(0));
+    let raw:Result<String,_>=store.db.lock().unwrap().query_row("SELECT json_extract(payload,'$.value') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1",rusqlite::params![project,turn,call],|r|r.get(0));
     match raw {
         Ok(raw) => {
             // Image bytes are read through the media tools, never as base64 text.

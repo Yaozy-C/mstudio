@@ -152,7 +152,7 @@ fn read_only_agents_do_not_receive_edit_tools_or_creative_persona() {
     );
 }
 #[test]
-fn interrupted_tools_are_recalled_without_cross_project_or_reset_leakage() {
+fn interrupted_tools_are_recalled_only_for_same_project_role_and_task() {
     let dir = std::env::temp_dir().join(format!("mstudio-recovery-{}", mstudio::media::id()));
     let store = Store::open(dir.clone()).unwrap();
     store
@@ -177,20 +177,34 @@ fn interrupted_tools_are_recalled_without_cross_project_or_reset_leakage() {
         json!({"ok":true,"nodeId":"shot-created"}),
     )
     .unwrap();
-    let recovery = journal::recovery(&store, "p").unwrap();
+    use super::task_context::{self, Scope};
+    let mut scope = Scope {
+        task_id: "task".into(),
+        agent_id: "coordinator".into(),
+        targets: vec![],
+        view: "project".into(),
+        original_instruction: "create shot".into(),
+    };
+    history::append_attributed(&store,"p","create shot",&json!("create shot"),"stopped","m",Some(&json!({"agentId":"coordinator","turnId":"turn","status":"cancelled","taskScope":scope}))).unwrap();
+    let recovery = task_context::recovery(&store, "p", &scope).unwrap();
     assert!(recovery.to_string().contains("shot-created"));
     assert!(
-        journal::recovery(&store, "other").unwrap()["events"]
-            .as_array()
+        task_context::recovery(&store, "other", &scope)
             .unwrap()
-            .is_empty()
+            .is_null()
     );
-    journal::append(&store, "p", "reset", "session/reset", json!({})).unwrap();
+    scope.agent_id = "color".into();
     assert!(
-        journal::recovery(&store, "p").unwrap()["events"]
-            .as_array()
+        task_context::recovery(&store, "p", &scope)
             .unwrap()
-            .is_empty()
+            .is_null()
+    );
+    scope.agent_id = "coordinator".into();
+    scope.task_id = "new-task".into();
+    assert!(
+        task_context::recovery(&store, "p", &scope)
+            .unwrap()
+            .is_null()
     );
     drop(store);
     std::fs::remove_dir_all(dir).unwrap();

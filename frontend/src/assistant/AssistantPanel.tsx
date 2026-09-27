@@ -1,3 +1,4 @@
+import { NewTaskButton } from "./NewTaskButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { MediaComposer } from "./MediaComposer";
 import { ConversationTimeline } from "./ConversationTimeline";
@@ -142,6 +143,19 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     >
       <AssistantRuntimeProvider runtime={runtime}>
         <ThreadPrimitive.Root className="agent-thread">
+          {(!props.canvas || props.canvas.composerMode === "agent") && (
+            <div className="agent-task-toolbar">
+              <span>{newTask ? "下一条将开启新任务" : "当前对话"}</span>
+              <NewTaskButton
+                active={newTask}
+                disabled={models.running}
+                onClick={() => {
+                  setNewTask((value) => !value);
+                  input.current?.focus();
+                }}
+              />
+            </div>
+          )}
           <ThreadPrimitive.Viewport className="agent-messages">
             {!props.canvas?.runs.length && (
               <ThreadPrimitive.Empty>
@@ -191,7 +205,6 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
           ) : (
             <AgentComposer
               newTask={newTask}
-              toggleNewTask={() => setNewTask((value) => !value)}
               canvas={props.canvas}
               work={props.work}
               input={input}

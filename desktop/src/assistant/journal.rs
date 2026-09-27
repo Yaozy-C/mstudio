@@ -68,48 +68,6 @@ pub fn agent_events(
     page(&store, &project_id, before).map_err(|e| e.to_string())
 }
 
-/// A bounded factual handoff for the last run, not a replay of unverified effects.
-#[cfg(test)]
-pub fn recovery(store: &Store, project: &str) -> Result<Value> {
-    use rusqlite::OptionalExtension;
-    let turn: Option<String> = store.db.lock().unwrap().query_row(
-        "SELECT turn_id FROM agent_events e WHERE e.project_id=?1 AND e.seq > COALESCE((SELECT max(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0) AND e.kind IN ('user/message','tool/call','tool/result','turn/end') AND e.turn_id NOT LIKE 'subagent-%' AND NOT EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND m.role='assistant' AND json_extract(m.attribution,'$.turnId')=e.turn_id AND json_extract(m.attribution,'$.status')='running') ORDER BY e.seq DESC LIMIT 1",
-        [project], |r| r.get(0),
-    ).optional()?;
-    let Some(current_turn) = turn else {
-        return Ok(json!({"turnId":null,"events":[],"note":"暂无上轮执行记录"}));
-    };
-    let events = turn_page(store, project, &current_turn, None)?;
-    let mut selected = Vec::new();
-    let mut turn = None;
-    let mut remaining = 5000;
-    for event in events {
-        if event["kind"] == "session/reset" {
-            break;
-        }
-        let id = current_turn.clone();
-        if turn.as_ref().is_some_and(|t| t != &id) {
-            break;
-        }
-        turn = Some(id);
-        if !["user/message", "tool/call", "tool/result", "turn/end"]
-            .contains(&event["kind"].as_str().unwrap_or(""))
-        {
-            continue;
-        }
-        let cost = event.to_string().len();
-        if cost > remaining {
-            continue;
-        }
-        remaining -= cost;
-        selected.push(event);
-    }
-    selected.reverse();
-    Ok(
-        serde_json::json!({"turnId":turn,"events":selected,"note":"仅为最近一轮的部分执行记录；缺少完成记录可能已中断，修改前 inspect 核实，不自动重放"}),
-    )
-}
-
 pub fn turn_page(
     store: &Store,
     project: &str,

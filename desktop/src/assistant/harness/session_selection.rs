@@ -4,7 +4,7 @@ use crate::{
     database::Store,
 };
 use rig_core::message::Message;
-use rusqlite::{OptionalExtension, params};
+use rusqlite::params;
 use serde_json::{Value, json};
 
 pub fn bind_task(
@@ -14,17 +14,9 @@ pub fn bind_task(
     resume: Option<&str>,
     binding: &mut Value,
 ) -> Result<(), String> {
-    if let Some(original) = resume {
-        let saved:Option<String>=store.db.lock().unwrap().query_row("SELECT json_extract(payload,'$.binding.taskId') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='session/start' ORDER BY seq LIMIT 1",params![project,original],|r|r.get(0)).optional().map_err(|e|e.to_string())?.flatten();
-        if let Some(id) = saved {
-            binding["taskId"] = json!(id)
-        }
-        // Explicit legacy retry preserves its old binding; new tasks never inherit legacy sessions.
-        return Ok(());
-    }
-    if let Some(scope) = task_context::saved(store, project, turn)? {
-        binding["taskId"] = json!(scope.task_id);
-    }
+    let scope = task_context::saved(store, project, resume.unwrap_or(turn))?
+        .ok_or("缺少任务上下文，请作为新任务发送")?;
+    binding["taskId"] = json!(scope.task_id);
     Ok(())
 }
 
