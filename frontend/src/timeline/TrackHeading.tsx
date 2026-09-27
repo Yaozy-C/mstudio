@@ -37,11 +37,21 @@ export function TrackHeading({
   return (
     <ObjectMenu actions={[{ label: title, run: remove, danger: true }]}>
       <div className="track-heading">
-        <input
-          aria-label={`${track.name} 轨道名称`}
-          value={track.name}
-          onChange={(e) => patch({ name: e.target.value })}
-        />
+        <div className="track-identity">
+          <input
+            aria-label={`${track.name} 轨道名称`}
+            title={track.name}
+            value={track.name}
+            onChange={(e) => patch({ name: e.target.value })}
+          />
+          {(track.muted || track.hidden) && (
+            <small className="track-state">
+              {[track.muted && "已静音", track.hidden && "画面已隐藏"]
+                .filter(Boolean)
+                .join(" · ")}
+            </small>
+          )}
+        </div>
         <button
           title={track.muted ? "取消静音" : "静音此轨道"}
           aria-label={`${track.name}：${track.muted ? "取消静音" : "静音"}`}

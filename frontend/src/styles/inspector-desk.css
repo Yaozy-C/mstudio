@@ -1,0 +1,293 @@
+/* Precision inspector: paper surface, bare actions, aligned numeric controls. */
+.radix-themes .dock-inspector .inspector {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.dock-inspector .dock-heading {
+  padding: 24px 24px 16px;
+}
+.dock-inspector .dock-heading h2 {
+  font-size: 21px;
+  font-weight: 600;
+}
+.radix-themes .dock-inspector .inspector-asset {
+  font-size: 13px;
+  line-height: 20px;
+  margin: 0 0 24px;
+  flex-shrink: 0;
+}
+.radix-themes .dock-inspector button,
+.radix-themes .dock-inspector button:hover:not(:disabled),
+.radix-themes .timeline button:not(.caption-chip),
+.radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.radix-themes .dock-inspector button:hover:not(:disabled),
+.radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
+  color: var(--desk-accent);
+}
+.radix-themes .dock-inspector button[aria-pressed="true"],
+.radix-themes .timeline .track-heading button[aria-pressed="true"] {
+  color: var(--desk-accent);
+  background: transparent;
+  box-shadow: none;
+}
+.radix-themes .dock-inspector .inspector-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--desk-rule);
+  background: var(--desk-bg);
+  flex-shrink: 0;
+}
+.radix-themes .dock-inspector .inspector-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 4px;
+  min-height: 40px;
+  font-size: 14px;
+  color: var(--desk-muted);
+  font-weight: 400;
+}
+.radix-themes .dock-inspector .inspector-tabs button[aria-pressed="true"] {
+  color: var(--desk-accent);
+  font-weight: 600;
+}
+.inspector-panel-content {
+  flex: 1 0 auto;
+}
+.radix-themes .dock-inspector .inspector-section {
+  padding: 25px 0;
+  gap: 20px;
+  border-top: 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .dock-inspector .inspector-section:last-child {
+  border-bottom: 0;
+}
+.radix-themes .dock-inspector .inspector-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.inspector-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.radix-themes .dock-inspector .inspector-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  justify-self: start;
+  padding: 5px 0;
+  min-height: 32px;
+  font-size: 14px;
+}
+.inspector-control {
+  display: grid;
+  gap: 10px;
+}
+.inspector-control-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) minmax(90px, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+.radix-themes .dock-inspector .inspector-control-row > label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  color: var(--desk-text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.inspector-number {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.inspector-number > span {
+  color: var(--desk-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+  padding-right: 4px;
+}
+.radix-themes .dock-inspector .inspector-number input {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  min-width: 0;
+  width: 100%;
+  height: 32px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 5px;
+}
+.radix-themes .dock-inspector .inspector-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+}
+.inspector-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--desk-rule);
+}
+.inspector-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--desk-accent);
+  border: 0;
+  margin-top: -5px;
+}
+.inspector-range::-moz-range-track {
+  height: 2px;
+  background: var(--desk-rule);
+}
+.inspector-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--desk-accent);
+  border: 0;
+}
+.inspector-endpoints {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -6px;
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector .inspector-select-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.9fr) minmax(0, 1.2fr);
+  gap: 12px;
+  align-items: center;
+  color: var(--desk-text);
+  font-size: 14px;
+}
+.inspector-select-row > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.radix-themes .dock-inspector .inspector-select-row select {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  box-shadow: none;
+  height: 34px;
+  padding: 4px 0;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.inspector-duration {
+  display: grid;
+  gap: 7px;
+  padding-top: 10px;
+}
+.inspector-duration > span {
+  font-size: 13px;
+  color: var(--desk-muted);
+}
+.inspector-duration output {
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.inspector-duration small {
+  font-size: 20px;
+}
+.inspector-comparison {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.inspector-agent form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.radix-themes .dock-inspector .inspector-agent textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--desk-rule);
+  background: transparent;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.radix-themes .dock-inspector .inspector-send {
+  color: var(--desk-accent);
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.inspector-track-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--desk-rule);
+  flex-shrink: 0;
+}
+.inspector-track-actions > span {
+  margin-right: auto;
+  font-size: 13px;
+}
+.inspector-track-actions button {
+  padding: 5px;
+}
+/* Keep the icon library's intended sizes; global toolbar rules use smaller icons. */
+.dock-inspector .inspector-tabs button svg {
+  width: 22px;
+  height: 22px;
+}
+.dock-inspector .inspector-action svg,
+.dock-inspector .inspector-track-actions svg {
+  width: 20px;
+  height: 20px;
+}
+.radix-themes .dock-inspector .inspector-tabs button {
+  font-size: 15px;
+}
+.radix-themes .dock-inspector .inspector-control-row > label {
+  font-size: 15px;
+}
+.radix-themes .dock-inspector .inspector-section h3 {
+  font-size: 17px;
+}
+.dock-inspector .dock-heading h2 {
+  font-size: 23px;
+}
+.radix-themes .dock-inspector .inspector[data-tab="visual"] .inspector-section {
+  padding: 32px 0;
+  gap: 28px;
+}

@@ -14,6 +14,8 @@ import { frameTime } from "./geometry";
 import { ShortcutHelp } from "./ShortcutHelp";
 import { addTrack } from "./document";
 export function TimelineToolbar({
+  selectedCaption,
+  onRemoveCaption,
   onPlay,
   onFit,
   project,
@@ -27,6 +29,8 @@ export function TimelineToolbar({
   zoom,
   total,
 }: {
+  selectedCaption?: string | null;
+  onRemoveCaption?: () => void;
   onPlay: () => void;
   onFit: () => void;
   project: Project;
@@ -47,14 +51,18 @@ export function TimelineToolbar({
       </h3>
       <TimelineTransport clock={clock} onPlay={onPlay} />
       <div className="timeline-edit">
-        <button title="分割 ⌘B" onClick={onSplit}>
+        <button title="分割 ⌘B" disabled={!!selectedCaption} onClick={onSplit}>
           <Scissors />
           分割
         </button>
         <button
-          title="删除片段 Delete"
-          disabled={!selected}
+          title={selectedCaption ? "删除字幕 Delete" : "删除片段 Delete"}
+          disabled={!selected && !selectedCaption}
           onClick={() => {
+            if (selectedCaption) {
+              onRemoveCaption?.();
+              return;
+            }
             onChange((p) => ({
               ...p,
               clips: p.clips.filter((c) => c.id !== selected),

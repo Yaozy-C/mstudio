@@ -3,7 +3,7 @@ import { CaptionTrack } from "./CaptionTrack";
 import { trackRows } from "./trackRows";
 import { TrackHeading } from "./TrackHeading";
 import { TimelineToolbar } from "./TimelineToolbar";
-import { memo, useMemo, useRef, useEffect } from "react";
+import { memo, useMemo, useRef, useEffect, useState } from "react";
 import { type Project } from "../model";
 import { type PlaybackClock } from "./clock";
 import { ticks, frameTime } from "./geometry";
@@ -41,6 +41,25 @@ export const Timeline = memo(function Timeline({
 }: Props) {
   const { ref, labels, zoom, viewport, changeZoom, onScroll } =
     useTimelineViewport(clock);
+  const [captionId, setCaptionId] = useState<string | null>(null);
+  const selectedCaption =
+    !selected && project.captions.some((c) => c.id === captionId)
+      ? captionId
+      : null;
+  const selectClip = (id: string | null) => {
+    setCaptionId(null);
+    onSelect(id);
+  };
+  const removeCaption = () => {
+    onChange((p) => ({
+      ...p,
+      captions: p.captions.filter((c) => c.id !== selectedCaption),
+    }));
+    setCaptionId(null);
+  };
+  useEffect(() => {
+    if (selected) setCaptionId(null);
+  }, [selected]);
   const seekFrame = useRef(0);
   useEffect(() => () => cancelAnimationFrame(seekFrame.current), []);
   const index = useMemo(() => intervals(project.clips), [project.clips]);
@@ -73,8 +92,31 @@ export const Timeline = memo(function Timeline({
     );
   }
   return (
-    <section className="timeline floating-timeline" aria-label="多轨时间线">
+    <section
+      className="timeline floating-timeline"
+      aria-label="多轨时间线"
+      onKeyDown={(e) => {
+        if (
+          !selectedCaption ||
+          e.defaultPrevented ||
+          e.nativeEvent.isComposing ||
+          (e.target instanceof HTMLElement &&
+            e.target.closest(
+              'input, textarea, select, [contenteditable="true"], [role="menu"]',
+            ))
+        )
+          return;
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          removeCaption();
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b")
+          e.preventDefault();
+      }}
+    >
       <TimelineToolbar
+        selectedCaption={selectedCaption}
+        onRemoveCaption={removeCaption}
         onPlay={onPlay}
         onFit={() =>
           changeZoom(
@@ -200,8 +242,10 @@ export const Timeline = memo(function Timeline({
                       fps={project.fps}
                       selected={selected === e.clip.id}
                       audio={t.kind === "audio"}
+                      muted={!!t.muted}
+                      hidden={!!t.hidden}
                       onSelect={() => {
-                        onSelect(e.clip.id);
+                        selectClip(e.clip.id);
                         clock.pause();
                         clock.seek(e.start);
                       }}
@@ -232,6 +276,11 @@ export const Timeline = memo(function Timeline({
               </div>
             ))}
             <CaptionTrack
+              selected={selectedCaption}
+              onSelect={(id) => {
+                onSelect(null);
+                setCaptionId(id);
+              }}
               {...{ project, clock, zoom, viewport, onChange, onCaption }}
             />
             <Playhead clock={clock} zoom={zoom} />

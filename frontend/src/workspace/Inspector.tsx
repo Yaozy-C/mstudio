@@ -3,8 +3,17 @@ import { ColorRequest } from "../timeline/ColorRequest";
 import { VisualFields } from "../timeline/VisualFields";
 import { detachAudio } from "../timeline/detachAudio";
 import type { Project, Clip } from "../model";
-import { ClipFields } from "../timeline/ClipFields";
-import { PlacementFields } from "../timeline/PlacementFields";
+import { ClipInspectorPanels } from "../timeline/ClipInspectorPanels";
+import { InspectorTrackActions } from "../timeline/InspectorTrackActions";
+import {
+  ImageSquare,
+  Sun,
+  SpeakerHigh,
+  Clock,
+  Waveform,
+} from "@phosphor-icons/react";
+import "../styles/inspector-desk.css";
+
 type Props = {
   project: Project;
   clipId: string | null;
@@ -14,113 +23,90 @@ export function Inspector({ project, clipId, onChange }: Props) {
   const [tab, setTab] = useState("visual");
   const clip = project.clips.find((c) => c.id === clipId);
   const asset = project.assets.find((a) => a.id === clip?.assetId);
-  const video =
-    project.tracks.find((t) => t.id === clip?.trackId)?.kind === "video";
+  const track = project.tracks.find((t) => t.id === clip?.trackId);
+  const video = track?.kind === "video";
   const activeTab =
-    !video && (tab === "visual" || tab === "color") ? "audio" : tab;
+    !video && (tab === "visual" || tab === "color")
+      ? asset?.hasAudio
+        ? "audio"
+        : "time"
+      : tab === "audio" && !asset?.hasAudio
+        ? "visual"
+        : tab;
   const updateClip = (updated: Clip) =>
     onChange((p) => ({
       ...p,
       clips: p.clips.map((c) => (c.id === updated.id ? updated : c)),
     }));
   return (
-    <div className="inspector">
+    <div className="inspector" data-tab={activeTab}>
       {clip ? (
         <>
           <h4 className="inspector-asset" title={asset?.name}>
-            {asset?.name}
+            {asset?.name ?? "素材丢失"}
           </h4>
           <div
             className="inspector-tabs"
             role="group"
             aria-label="片段编辑分类"
           >
-            {[
-              ["visual", "画面"],
-              ["color", "调色"],
-              ["audio", "声音"],
-              ["time", "时间"],
-            ]
+            {(
+              [
+                ["visual", "画面", ImageSquare],
+                ["color", "调色", Sun],
+                ["audio", "声音", SpeakerHigh],
+                ["time", "时间", Clock],
+              ] as const
+            )
               .filter(
                 ([key]) =>
                   key === "time" || (key === "audio" ? asset?.hasAudio : video),
               )
-              .map(([key, label]) => (
+              .map(([key, label, Icon]) => (
                 <button
                   key={key}
                   aria-pressed={activeTab === key}
                   onClick={() => setTab(key)}
                 >
+                  <Icon size={22} />
                   {label}
                 </button>
               ))}
           </div>
-          {activeTab === "audio" &&
-            asset?.hasAudio &&
-            asset.kind === "video" &&
-            project.tracks.find((t) => t.id === clip.trackId)?.kind ===
-              "video" && (
-              <button
-                className="detach-audio"
-                onClick={() => onChange((p) => detachAudio(p, clip.id))}
-              >
-                分离音频
-              </button>
-            )}
-          {activeTab === "time" && (
-            <section className="inspector-section">
-              <h3>时间与轨道</h3>
-              <PlacementFields
-                section="time"
+          <div className="inspector-panel-content">
+            {asset && activeTab !== "color" && (
+              <ClipInspectorPanels
+                tab={activeTab}
                 clip={clip}
+                asset={asset}
                 project={project}
                 update={updateClip}
               />
-              <ClipFields
-                section="time"
-                clip={clip}
-                assetDuration={asset?.duration || 0}
-                image={asset?.kind === "image"}
-                onUpdate={updateClip}
-              />
-            </section>
-          )}
-          {activeTab === "visual" &&
-            project.tracks.find((t) => t.id === clip.trackId)?.kind ===
-              "video" && (
-              <section className="inspector-section">
-                <h3>画面</h3>
-                <PlacementFields
-                  section="visual"
-                  clip={clip}
-                  project={project}
-                  update={updateClip}
-                />
-              </section>
             )}
-          {activeTab === "color" && video && (
-            <>
-              <ColorRequest key={clip.id} clip={clip} />
-              <VisualFields clip={clip} update={updateClip} />
-            </>
-          )}
-          {activeTab === "audio" && asset?.hasAudio && (
-            <section className="inspector-section">
-              <h3>声音</h3>
-              <ClipFields
-                section="audio"
-                clip={clip}
-                assetDuration={asset.duration}
-                image={false}
-                onUpdate={updateClip}
-              />
-              <PlacementFields
-                section="audio"
-                clip={clip}
-                project={project}
-                update={updateClip}
-              />
-            </section>
+            {activeTab === "color" && video && (
+              <ColorRequest key={clip.id} clip={clip}>
+                <VisualFields clip={clip} update={updateClip} />
+              </ColorRequest>
+            )}
+            {activeTab === "audio" &&
+              asset?.hasAudio &&
+              asset.kind === "video" &&
+              video && (
+                <button
+                  className="inspector-action"
+                  onClick={() => onChange((p) => detachAudio(p, clip.id))}
+                >
+                  <Waveform size={20} />
+                  分离音频
+                </button>
+              )}
+          </div>
+          {track && (
+            <InspectorTrackActions
+              track={track}
+              project={project}
+              change={onChange}
+            />
           )}
         </>
       ) : (

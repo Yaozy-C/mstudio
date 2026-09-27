@@ -1,5 +1,14 @@
+import {
+  ArrowCounterClockwise,
+  Sun,
+  CircleHalf,
+  Drop,
+  Thermometer,
+  Sparkle,
+} from "@phosphor-icons/react";
 import type { Clip, Visual } from "../model";
 import { defaultVisual } from "./visualSettings";
+import { InspectorControl } from "./InspectorControl";
 export { defaultVisual } from "./visualSettings";
 export function VisualFields({
   clip,
@@ -12,50 +21,69 @@ export function VisualFields({
   const patch = (fields: Partial<Visual>) =>
     update({ ...clip, visual: { ...value, ...fields } });
   return (
-    <section className="inspector-section">
-      <div className="inline">
-        <h3>手动微调</h3>
-        <button onClick={() => update({ ...clip, visual: undefined })}>
-          重置画面效果
-        </button>
-      </div>
-      <label>
-        特效
-        <select
-          value={value.effect}
-          onChange={(e) =>
-            patch({ effect: e.target.value as Visual["effect"] })
-          }
-        >
-          <option value="none">无特效</option>
-          <option value="grayscale">黑白</option>
-          <option value="sepia">复古</option>
-          <option value="blur">柔焦</option>
-          <option value="vignette">暗角</option>
-        </select>
-      </label>
-      {(
-        [
-          ["brightness", "亮度", -0.5, 0.5],
-          ["contrast", "对比度", 0.5, 1.5],
-          ["saturation", "饱和度", 0, 2],
-          ["temperature", "色温", -1, 1],
-        ] as const
-      ).map(([key, label, min, max]) => (
-        <label key={key}>
-          {label} · {Math.round(value[key] * 100)}
-          {key === "temperature" ? "（负值偏冷，正值偏暖）" : "%"}
-          <input
-            aria-label={label}
-            type="range"
+    <>
+      <section className="inspector-section">
+        <div className="inspector-section-heading">
+          <h3>色彩</h3>
+          <button
+            className="inspector-action"
+            aria-label="重置画面效果"
+            disabled={!clip.visual}
+            onClick={() => update({ ...clip, visual: undefined })}
+          >
+            <ArrowCounterClockwise size={20} />
+            重置
+          </button>
+        </div>
+        {(
+          [
+            ["brightness", "亮度", Sun, -50, 50],
+            ["contrast", "对比度", CircleHalf, 50, 150],
+            ["saturation", "饱和度", Drop, 0, 200],
+            ["temperature", "色温", Thermometer, -100, 100],
+          ] as const
+        ).map(([key, label, icon, min, max]) => (
+          <InspectorControl
+            key={key}
+            label={label}
+            icon={icon}
+            value={value[key] * 100}
+            unit={key === "temperature" ? "" : "%"}
             min={min}
             max={max}
-            step={0.01}
-            value={value[key]}
-            onChange={(e) => patch({ [key]: +e.target.value })}
+            slider
+            endpoints={key === "temperature" ? ["冷", "暖"] : undefined}
+            change={(n) => patch({ [key]: n / 100 })}
           />
+        ))}
+      </section>
+      <section className="inspector-section">
+        <label className="inspector-select-row">
+          <span>
+            <Sparkle size={20} />
+            效果
+          </span>
+          <select
+            aria-label="画面效果"
+            value={value.effect}
+            onChange={(e) =>
+              patch({ effect: e.target.value as Visual["effect"] })
+            }
+          >
+            {[
+              ["none", "无特效"],
+              ["grayscale", "黑白"],
+              ["sepia", "复古"],
+              ["blur", "柔焦"],
+              ["vignette", "暗角"],
+            ].map(([v, label]) => (
+              <option key={v} value={v}>
+                {label}
+              </option>
+            ))}
+          </select>
         </label>
-      ))}
-    </section>
+      </section>
+    </>
   );
 }

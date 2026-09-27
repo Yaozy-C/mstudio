@@ -21,6 +21,7 @@ import "./styles/production-surfaces.css";
 import "./styles/frame-theme.css";
 import "./styles/frame-workspace.css";
 import "./styles/frame-timeline.css";
+import "./styles/timeline-states.css";
 import "./styles/frame-media.css";
 import "./styles/object-menu.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(

@@ -1,3 +1,4 @@
+import { Check, Subtitles } from "@phosphor-icons/react";
 import { useRef } from "react";
 import { uid, type Caption, type Project } from "../model";
 import type { PlaybackClock } from "./clock";
@@ -20,6 +21,8 @@ export function moveCaption(
   return { ...c, start, end: start + c.end - c.start };
 }
 export function CaptionTrack({
+  selected,
+  onSelect,
   project,
   clock,
   zoom,
@@ -27,6 +30,8 @@ export function CaptionTrack({
   onChange,
   onCaption,
 }: {
+  selected?: string | null;
+  onSelect?: (id: string | null) => void;
   project: Project;
   clock: PlaybackClock;
   zoom: number;
@@ -83,6 +88,9 @@ export function CaptionTrack({
             <CaptionChip
               key={c.id}
               caption={c}
+              selected={selected === c.id}
+              select={() => onSelect?.(c.id)}
+              deselect={() => onSelect?.(null)}
               zoom={zoom}
               fps={project.fps}
               clock={clock}
@@ -95,6 +103,9 @@ export function CaptionTrack({
   );
 }
 function CaptionChip({
+  selected,
+  select,
+  deselect,
   caption: c,
   zoom,
   fps,
@@ -102,6 +113,9 @@ function CaptionChip({
   open,
   change,
 }: {
+  selected: boolean;
+  select: () => void;
+  deselect: () => void;
   caption: Caption;
   zoom: number;
   fps: number;
@@ -121,6 +135,7 @@ function CaptionChip({
         {
           label: "编辑字幕",
           run: () => {
+            select();
             clock.pause();
             clock.seek(c.start);
             open?.();
@@ -138,12 +153,21 @@ function CaptionChip({
       ]}
     >
       <button
-        className="caption-chip"
+        className={`caption-chip ${selected ? "selected" : ""}`}
+        aria-pressed={selected}
+        aria-label={`${c.text} ${c.start.toFixed(2)}秒`}
+        onContextMenu={select}
+        onClick={(e) => {
+          if (e.detail === 0) {
+            select();
+            clock.pause();
+            clock.seek(c.start);
+          }
+        }}
         style={{
           left: c.start * zoom,
           width: Math.max(8, (c.end - c.start) * zoom),
           touchAction: "none",
-          cursor: "grab",
         }}
         title="拖动移动字幕 · 两端调整时长 · 双击编辑"
         onDoubleClick={(e) => {
@@ -153,6 +177,7 @@ function CaptionChip({
         onPointerDown={(e) => {
           e.stopPropagation();
           if (e.button !== 0) return;
+          select();
           clock.pause();
           const r = e.currentTarget.getBoundingClientRect();
           drag.current = {
@@ -172,6 +197,8 @@ function CaptionChip({
           if (!d) return;
           if (Math.abs(e.clientX - d.x) > 3) d.moved = true;
           if (!d.moved) return;
+          e.currentTarget.dataset.interaction =
+            d.side === "move" ? "dragging" : "trimming";
           const next = moveCaption(c, (e.clientX - d.x) / zoom, fps, d.side);
           e.currentTarget.style.left = `${next.start * zoom}px`;
           e.currentTarget.style.width = `${Math.max(8, (next.end - next.start) * zoom)}px`;
@@ -180,6 +207,7 @@ function CaptionChip({
           const d = drag.current;
           if (!d) return;
           drag.current = null;
+          delete e.currentTarget.dataset.interaction;
           e.currentTarget.releasePointerCapture(e.pointerId);
           if (d.moved)
             patch(moveCaption(c, (e.clientX - d.x) / zoom, fps, d.side));
@@ -187,17 +215,53 @@ function CaptionChip({
         }}
         onPointerCancel={(e) => {
           drag.current = null;
+          delete e.currentTarget.dataset.interaction;
           e.currentTarget.style.left = `${c.start * zoom}px`;
           e.currentTarget.style.width = `${(c.end - c.start) * zoom}px`;
         }}
         onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            select();
+            open?.();
+          }
+          if (e.key === " " && !selected) {
+            e.preventDefault();
+            select();
+            clock.pause();
+            clock.seek(c.start);
+          }
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b")
+            e.preventDefault();
+          if (e.key === "Delete" || e.key === "Backspace") {
+            e.preventDefault();
+            change((p) => ({
+              ...p,
+              captions: p.captions.filter((v) => v.id !== c.id),
+            }));
+            deselect();
+          }
           if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
             e.preventDefault();
+            select();
             patch(moveCaption(c, (e.key === "ArrowLeft" ? -1 : 1) / fps, fps));
           }
         }}
       >
-        {c.text}
+        {selected && (
+          <Check
+            className="clip-selection-mark"
+            weight="bold"
+            aria-hidden="true"
+          />
+        )}
+        <Subtitles className="caption-type-icon" aria-hidden="true" />
+        <span className="caption-chip-content">
+          <span>{c.text}</span>
+          <small>{(c.end - c.start).toFixed(2)} 秒</small>
+        </span>
+        <span className="caption-edge caption-edge-left" aria-hidden="true" />
+        <span className="caption-edge caption-edge-right" aria-hidden="true" />
       </button>
     </ObjectMenu>
   );

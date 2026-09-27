@@ -1,0 +1,211 @@
+/* Object selection stays visible independently of focus and track state. */
+.radix-themes :is(.timeline-clip, .caption-chip) {
+  border: 1px solid var(--desk-rule);
+  border-radius: 2px;
+  box-sizing: border-box;
+  transition:
+    background-color 100ms,
+    border-color 100ms;
+}
+.radix-themes :is(.timeline-clip, .caption-chip):hover {
+  background: var(--desk-sidebar);
+  border-color: var(--desk-control);
+}
+.radix-themes :is(.timeline-clip, .caption-chip).selected {
+  background: var(--desk-surface);
+  border-color: var(--desk-accent);
+  box-shadow: inset 0 0 0 1px var(--desk-accent);
+}
+.radix-themes :is(.timeline-clip, .caption-chip):focus-visible {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 2px;
+  z-index: 3;
+}
+.clip-selection-mark {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 4px;
+  color: var(--desk-accent);
+}
+.timeline-clip > .clip-title {
+  font-size: 13px;
+  line-height: 16px;
+}
+.timeline-clip small {
+  font-size: 11px;
+  line-height: 14px;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.radix-themes .caption-chip {
+  font-size: 12px;
+  padding: 6px 9px;
+  cursor: grab;
+}
+.timeline-clip .trim-handle {
+  width: 7px;
+  background: transparent;
+}
+.timeline-clip:is(:hover, .selected, :focus-visible) .trim-handle::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 2px;
+  width: 2px;
+  background: var(--desk-muted);
+}
+.timeline-clip.selected .trim-handle {
+  background: color-mix(in srgb, var(--desk-accent) 12%, transparent);
+}
+.timeline-clip.selected .trim-handle::after {
+  background: var(--desk-accent);
+}
+.radix-themes [data-interaction="dragging"] {
+  cursor: grabbing;
+  border-style: dashed;
+}
+.radix-themes [data-interaction="trimming"] {
+  cursor: ew-resize;
+  background: color-mix(in srgb, var(--desk-accent) 8%, var(--desk-surface));
+}
+.track-hidden {
+  opacity: 1;
+}
+.timeline-clip[data-hidden="true"] img {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.timeline-clip[data-hidden="true"]:not(.selected),
+.timeline-clip[data-missing="true"]:not(.selected) {
+  border-style: dashed;
+}
+.timeline-clip[data-muted="true"] .audio-waveform {
+  opacity: 0.25;
+}
+.track-heading .track-identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.radix-themes .track-identity input {
+  width: 100%;
+  flex: auto;
+  font-size: 12px;
+}
+.track-labels .track-state {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-label-viewport,
+.track-labels {
+  width: 216px;
+}
+.radix-themes .track-heading button[aria-pressed="true"] {
+  color: var(--desk-text);
+  box-shadow: inset 0 -2px var(--desk-text);
+}
+.timeline-body {
+  height: calc(100% - 48px);
+}
+.timeline-clip.sound-clip small {
+  position: static;
+  background: transparent;
+  padding: 0;
+}
+.sound-clip > .clip-title {
+  padding-right: 0;
+}
+.sound-clip .audio-waveform {
+  height: 12px;
+  bottom: 1px;
+}
+.sound-clip .waveform-status {
+  bottom: 1px;
+  font-size: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .radix-themes :is(.timeline-clip, .caption-chip) {
+    transition: none;
+  }
+}
+
+.timeline-clip[data-preview="false"] {
+  padding-left: 10px;
+}
+.timeline-clip[data-compact="true"] {
+  padding: 0;
+}
+.timeline-clip[data-compact="true"] > :is(.clip-title, small) {
+  display: none;
+}
+.timeline-clip[data-compact="true"] > img {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.radix-themes .caption-chip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  background: var(--desk-surface);
+  padding: 5px 10px;
+  color: var(--desk-text);
+}
+.radix-themes .caption-chip .caption-type-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--desk-muted);
+}
+.caption-chip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+.caption-chip-content > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.caption-chip-content small {
+  color: var(--desk-muted);
+  font-size: 10px;
+  line-height: 12px;
+}
+.caption-chip.selected .caption-type-icon {
+  color: var(--desk-accent);
+}
+.caption-edge {
+  position: absolute;
+  top: 15px;
+  bottom: 15px;
+  width: 2px;
+  background: var(--desk-muted);
+  opacity: 0;
+}
+.caption-edge-left {
+  left: 2px;
+}
+.caption-edge-right {
+  right: 2px;
+}
+.caption-chip:is(:hover, .selected, :focus-visible) .caption-edge {
+  opacity: 1;
+}
+.caption-chip.selected .caption-edge {
+  background: var(--desk-accent);
+}

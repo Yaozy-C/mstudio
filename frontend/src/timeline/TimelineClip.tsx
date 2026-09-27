@@ -1,3 +1,4 @@
+import { Check } from "@phosphor-icons/react";
 import { requestClipEdit } from "./clipEdits";
 import { Waveform } from "./Waveform";
 import { stretchClip } from "./stretchClip";
@@ -17,6 +18,8 @@ export function TimelineClip({
   fps,
   selected,
   audio,
+  muted = false,
+  hidden = false,
   onOpen,
   onReference,
   onRemove,
@@ -30,6 +33,8 @@ export function TimelineClip({
   fps: number;
   selected: boolean;
   audio: boolean;
+  muted?: boolean;
+  hidden?: boolean;
   onOpen: () => void;
   onReference: () => void;
   onRemove: () => void;
@@ -37,6 +42,13 @@ export function TimelineClip({
   onChange: (f: (p: Project) => Project) => void;
 }) {
   const { clip, start } = entry;
+  const status = [
+    !asset || asset.missing ? "素材丢失" : "",
+    hidden ? "画面已隐藏" : "",
+    muted ? "轨道已静音" : clip.volume === 0 ? "片段已静音" : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const drag = useRef<{ x: number; delta: number } | null>(null);
   const root = useRef<HTMLDivElement>(null);
   function trim(delta: number, side: "left" | "right") {
@@ -105,20 +117,32 @@ export function TimelineClip({
         role="button"
         tabIndex={0}
         draggable
-        aria-label={`${asset?.name ?? "片段"} ${start.toFixed(2)}秒`}
+        aria-label={`${asset?.name ?? "片段"} ${start.toFixed(2)}秒${status ? ` · ${status}` : ""}`}
+        aria-pressed={selected}
+        data-muted={muted || clip.volume === 0}
+        data-hidden={hidden}
+        data-compact={duration(clip) * zoom < 96}
+        data-preview={!!asset?.preview && !audio}
+        data-missing={!asset || asset.missing}
         className={`timeline-clip ${audio ? "sound-clip" : ""} ${selected ? "selected" : ""}`}
         style={{
           left: start * zoom,
           width: Math.max(4, duration(clip) * zoom - 2),
         }}
-        title="双击编辑片段 · 右键更多操作"
+        title={`${asset?.name ?? "素材丢失"}${status ? ` · ${status}` : ""} · 双击编辑片段 · 右键更多操作`}
         onContextMenu={onSelect}
         onDoubleClick={onOpen}
         onClick={onSelect}
         onKeyDown={(e) => {
+          if (e.key === " " && !selected) {
+            e.preventDefault();
+            e.stopPropagation();
+            onSelect();
+          }
           if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
+            onSelect();
             onOpen();
           }
         }}
@@ -127,6 +151,8 @@ export function TimelineClip({
             e.preventDefault();
             return;
           }
+          onSelect();
+          e.currentTarget.dataset.interaction = "dragging";
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData(
             "application/mstudio-clip",
@@ -138,13 +164,24 @@ export function TimelineClip({
             }),
           );
         }}
+        onDragEnd={(e) => delete e.currentTarget.dataset.interaction}
       >
         {asset?.missing && <MissingAsset asset={asset} compact />}
         {!asset?.missing && !audio && asset?.preview && (
           <img draggable={false} loading="lazy" src={mediaUrl(asset.preview)} />
         )}
-        <span>{asset?.name || "素材丢失"}</span>
+        <span className="clip-title">
+          {selected && (
+            <Check
+              className="clip-selection-mark"
+              weight="bold"
+              aria-hidden="true"
+            />
+          )}
+          {asset?.name || "素材丢失"}
+        </span>
         <small>
+          {status && `${status} · `}
           {duration(clip).toFixed(2)}s
           {clip.speed !== 1 ? ` · ${Number(clip.speed.toFixed(2))}×` : ""}
         </small>
@@ -165,8 +202,10 @@ export function TimelineClip({
             onDoubleClick={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => {
+              if (e.button !== 0) return;
               e.preventDefault();
               e.stopPropagation();
+              if (root.current) root.current.dataset.interaction = "trimming";
               onSelect();
               drag.current = { x: e.clientX, delta: 0 };
               e.currentTarget.setPointerCapture(e.pointerId);
@@ -183,6 +222,7 @@ export function TimelineClip({
               if (!drag.current) return;
               const c = trim(drag.current.delta, side);
               drag.current = null;
+              if (root.current) delete root.current.dataset.interaction;
               e.currentTarget.releasePointerCapture(e.pointerId);
               onChange((p) => ({
                 ...p,
@@ -191,6 +231,7 @@ export function TimelineClip({
             }}
             onPointerCancel={() => {
               drag.current = null;
+              if (root.current) delete root.current.dataset.interaction;
               if (root.current) {
                 root.current.style.left = `${start * zoom}px`;
                 root.current.style.width = `${Math.max(4, duration(clip) * zoom - 2)}px`;
