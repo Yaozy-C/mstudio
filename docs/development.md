@@ -4,21 +4,19 @@
 
 - macOS，Xcode Command Line Tools，Rust 1.97.1（由 `rust-toolchain.toml` 固定，Rust 2024 edition）。
 - Bun：前端开发及测试；提交 `frontend/bun.lock`，安装时使用 `--frozen-lockfile`。
-- Python 3.12+、CMake、pkg-config，以及 FFmpeg、SDL2、libxml2 开发库。
+- Python 3.12+、pkg-config，以及 FFmpeg、GStreamer（含 GES）开发库。
 - `ffmpeg` 和 `ffprobe` 必须在 PATH 中，渲染测试使用合成媒体，不需要个人样片。
 
 根目录和 `desktop/` 是两个 Cargo package，各自维护 `Cargo.lock`。
 
-## MLT 原生 SDK
+## GES 运行时
 
 ```sh
-python3 scripts/build-mlt.py
-python3 scripts/bundle-mlt.py
+brew install pkgconf ffmpeg gstreamer
+python3 scripts/bundle-ges.py
 ```
 
-构建脚本使用 `scripts/mlt-source.json` 固定 MLT 官方提交与 SHA-256，再构建所需模块。当前固定提交 `06c4785f951c087c700de942362d1d1c68ffe500` 包含 [FFmpeg 9 支持修复 #1281](https://github.com/mltframework/mlt/pull/1281)，该修复尚未包含在 7.40.0 正式版中。构建目录按提交隔离，避免旧 CMake 缓存引用另一份源码。源码下载到 `desktop/native/vendor/`，SDK 安装到 `desktop/native/runtime/`；这些目录不提交。打包脚本将运行库及其依赖复制到 `desktop/native/bundle/`，不修改系统安装。
-
-可设置 `MLT_SDK` 使用已有兼容 SDK。原生构建和 Tauri 资源需要 SDK 与 staged bundle，因此直接跳过这两步运行桌面 Cargo 检查会失败。
+GES 是桌面预览的必需依赖。开发插件链接位于 `desktop/native/ges-dev-plugins/`；打包副本位于 `desktop/native/ges-bundle/`，均不提交。构建前需完成资源准备。
 
 ## 开发与验证
 
@@ -27,12 +25,10 @@ python3 scripts/bundle-mlt.py
 sh scripts/dev.sh
 ```
 
-完整检查（先准备 MLT）：
+完整检查（先准备 GES）：
 
 ```sh
 sh scripts/check.sh
-python3 scripts/test-mlt.py
-python3 scripts/test-native-player.py
 python3 scripts/test-detached-audio.py
 python3 scripts/test-visual-effects.py
 python3 scripts/test-transitions.py
@@ -40,13 +36,13 @@ python3 scripts/test-transitions.py
 
 ## 可编辑调色、转场与抽帧
 
-`Visual.grade` 保存独立的 SDR 调色参数；`src/grading.rs` 将 mlight 的逐像素明暗、八色 HSL、固定控制点曲线、分区色轮思路提取为无图像/桌面依赖的颜色函数。`grade_lut.rs` 按算法版本和参数生成 33³ `.cube` 临时缓存。项目只保存参数，不保存机器相关 LUT 路径；缓存丢失时可重建。`visual.rs` 为 MLT 和 FFmpeg 提供同一滤镜定义，旧 visual 参数仍在新方案之后执行，保证已有工程不被静默重调。该链路是显示 RGB 创意调整，不是 Log/HDR 输入转换、RAW 显影或局部跟踪蒙版。
+`Visual.grade` 保存独立的 SDR 调色参数；`src/grading.rs` 将 mlight 的逐像素明暗、八色 HSL、固定控制点曲线、分区色轮思路提取为无图像/桌面依赖的颜色函数。`grade_lut.rs` 按算法版本和参数生成 33³ `.cube` 临时缓存。项目只保存参数，不保存机器相关 LUT 路径；缓存丢失时可重建。`visual.rs` 为 GES 和 FFmpeg 提供同一滤镜定义，旧 visual 参数仍在新方案之后执行，保证已有工程不被静默重调。该链路是显示 RGB 创意调整，不是 Log/HDR 输入转换、RAW 显影或局部跟踪蒙版。
 
 `Transition.design` 是结构化组合方案：进度控制点、整体/方向/径向混合、羽化、中心、两侧缩放和位移。`transition_design.rs` 校验并编译 perspective 逐帧运动与 xfade 混合表达式，`transition_render.rs` 用 FFmpeg 渲染接缝；原生播放与导出共用已有转场缓存机制。方案随工程保存、可撤销，未开放任意 shell、脚本或滤镜字符串。移动采样不是光流、真实摄影机运动或运动模糊；画幅外采样延展边缘像素，过度偏移可能拉出条带，需要看预览修正。
 
 现有 `mstudio_read_image` 支持视频 `time`；带 `clipId` 时按片段内时间换算源裁切和速度，应用已保存调色。带 `transition:true` 时以指定后片段的转场开始为时间零点，读取与原生预览共用的实际接缝合成。输出最多 960 像素边长，沿用原有图片工具结果、历史与恢复通道，不新增 agent 调度层。抽帧不含字幕、叠加轨或声音，不等于完整播放验收。只支持图片的模型可以接收视频引用并按需抽帧；原生视频模型仍可接收原视频。
 
-时间线增加 `move_clip`、`retime_clip`、`slip_clip`；都走现有 revision 校验、原子编辑和撤销。变速保持源区间，ripple 只顺移同轨后续片段；跨轨音频/字幕同步须显式安排。默认拒绝新重叠、非法轨道和不足的源余量。前端/后端、抽帧、真实 MLT/FFmpeg 像素与缓存测试分别覆盖这些边界。`scripts/check.sh` 中本地 HTTP 模拟测试需要允许监听回环端口，不使用外部模型账号。
+时间线增加 `move_clip`、`retime_clip`、`slip_clip`；都走现有 revision 校验、原子编辑和撤销。变速保持源区间，ripple 只顺移同轨后续片段；跨轨音频/字幕同步须显式安排。默认拒绝新重叠、非法轨道和不足的源余量。前端/后端、抽帧、真实 GES/FFmpeg 像素与缓存测试分别覆盖这些边界。`scripts/check.sh` 中本地 HTTP 模拟测试需要允许监听回环端口，不使用外部模型账号。
 
 独立检查：
 
@@ -58,7 +54,7 @@ cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D war
 cargo test --manifest-path desktop/Cargo.toml --locked
 ```
 
-`test-mlt.py` 使用合成视频验证实际解码、叠加、不透明度、时长与变速音高。`test-detached-audio.py` 对比原速及变速片段分离前后的实际 PCM，验证音量、起点和静音行为。`test-native-player.py` 在 macOS 使用真实 MLT 和 SDL dummy 音频设备，验证定位、暂停、连续定位、末尾重播以及后台回收后重开；不接触用户工程。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
+`ges_composites` 测试使用真实 GES 管线验证透明字幕、定位、暂停、末尾重播与销毁重开。`test-detached-audio.py` 对比 GES 使用的混音缓存中分离前后的实际 PCM，验证音量、起点和静音行为。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
 
 `test-visual-effects.py` 使用合成素材验证黑白、复古、柔焦、暗角和调色的原生预览与 FFmpeg 导出，比较实际输出像素。音轨波形在后台按素材采样并缓存，裁切、变速和时间线缩放复用缓存。
 
@@ -80,11 +76,11 @@ cargo fmt --manifest-path desktop/Cargo.toml
 sh scripts/bundle.sh
 ```
 
-生成 `Mstudio.app`。此脚本更新本地生成的应用包，不发布 GitHub Release。仓库的 MIT 许可不替代 FFmpeg、MLT 及其传递依赖的许可；发布二进制前需核对实际依赖构建配置、保留其完整许可和所需材料。当前 bundler 只复制 MLT 的许可文件，不代表已经收集所有第三方分发材料。
+生成 `Mstudio.app`。此脚本更新本地生成的应用包，不发布 GitHub Release。仓库的 MIT 许可不替代 FFmpeg、GES 及其传递依赖的许可；发布二进制前需核对实际依赖构建配置、保留其完整许可和所需材料。当前 bundler 复制 SDK 中可用的许可文件，不代表已经收集所有第三方分发材料。
 
 ## Windows 状态
 
-原生 HWND 播放表面已有源码，但尚未完成 Windows 编译、安装器、DPI、声画同步与退出流程的实机验证。需要匹配的 MSVC MLT SDK，配置 `MLT_SDK` 后运行 `scripts/bundle-mlt.py`，使用生成的 `desktop/native/windows-resources.json` 作为 Tauri 附加配置。根目录 `.command` 和 shell 启动入口面向 macOS。
+Windows 的 GES 运行时打包、安装器与实机验证尚未完成。当前打包脚本面向 macOS，不能据此宣称 Windows 已支持。
 
 ## Agent 调色与属性栏
 
@@ -98,7 +94,7 @@ inspect 的 clips/assets/tracks/captions 每页最多12项，按12KB内容预算
 
 依据：[Anthropic 工具设计实践](https://www.anthropic.com/engineering/writing-tools-for-agents)建议按实际工作流合并操作、提供有用的返回值并根据冗余调用调整分页；[Gemini function calling](https://ai.google.dev/gemini-api/docs/function-calling)支持一轮返回多个独立调用。此处复用已有批量 operations 和多调用调度，不新增代码执行沙箱或改变角色分工。轮次减少需以模型实际执行验证，不能通过省略抽帧验收获得。
 
-选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持引用素材的输入类型。Agent 通过 `update_clip.visual` 合并结构化调色参数，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期 revision。它复用 FFmpeg/MLT 渲染，不执行模型提供的任意命令。
+选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持引用素材的输入类型。Agent 通过 `update_clip.visual` 合并结构化调色参数，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期 revision。它复用 FFmpeg/GES 渲染，不执行模型提供的任意命令。
 
 「对比原片」仅临时移除当前片段的预览调色；退出调色页后恢复，不写入项目，也不改变导出。Agent 对话中保留选中片段与返回属性入口。
 
@@ -123,3 +119,19 @@ The interface supports Simplified Chinese and English. General → Language appl
 Run `cd frontend && bun run build && bun test`. Localization tests cover persisted choice, unavailable storage, both rendering languages, preservation of user content, translation coverage and placeholder parity.
 
 Manually check General → Language in both directions, reload to confirm persistence, and inspect long English labels in the project library, settings, creation canvas and timeline. Browser preview cannot verify native file dialogs, native playback or actual generation services.
+
+## Canvas 预览与 GES 后端
+
+桌面预览统一使用 GES，可在成片预览标题旁选择「流畅」（长边 640）或「清晰」（长边 1280）。这只改变预览，不改变工程分辨率或 FFmpeg 导出。播放器通过有界的最新 RGBA 帧交给 WKWebView Canvas；没有逐帧图像编码。弹窗、菜单和画面处于同一 WebView，不再需要原生视图坐标和遮挡检测。二进制包头为 4 个 little-endian u32：序号、宽、高、时间线帧号，之后为连续 RGBA。前端只允许一个在途请求，过期会话不能取帧或控制新播放器。
+
+GES 使用官方 Rust 绑定和独立工作线程，所有 GES 对象与 GLib 默认上下文归该线程；appsink 在暂停时也接收 preroll。GES 排布逐片段视频层、透明字幕、黑场，并播放同一管线内的音频。为了与现有 FFmpeg/GES 效果保持一致，调色及变速视频按片段预计算缓存；转场复用原缓存，声音使用导出混音定义预混（保调变速、淡入淡出、静音、音量和限幅）。因此首次准备或修改效果可能有准备时间，本版不是 GES 原生实时特效实现。缓存按参数、尺寸、源文件路径/大小/修改时间区分，项目原始素材不变。
+
+macOS 开发需要 `brew install gstreamer`，随后 `python3 scripts/bundle-ges.py`。GES 作为必需依赖，不再提供后端切换。GES 库和插件打包到 `Resources/gstreamer`；开发插件链接与打包副本分开，避免同一进程加载两份 GLib/GStreamer。`scripts/bundle.sh` 会完成资源打包与可执行文件链接修正，不依赖目标机器安装 Homebrew。Windows GES 运行时打包尚未实现和验证。
+
+```sh
+cargo test --test preview_ges
+cargo test preview_validation
+GST_PLUGIN_SYSTEM_PATH_1_0="$PWD/desktop/native/ges-dev-plugins" GST_PLUGIN_PATH_1_0= GST_REGISTRY_FORK=no cargo test --manifest-path desktop/Cargo.toml --bin mstudio-desktop ges_composites
+```
+
+GES 集成测试使用合成素材，验证透明字幕、准确定位、暂停、两轮播放和销毁重开；准备测试检查变速时长、灰度像素、缓存复用与源文件不变。`examples/ges_plan.rs` 和 `desktop/examples/ges_play.rs` 可验证只读工程快照，快照不应提交。播放器计数不等于屏幕 vsync 或精确音画同步测量。

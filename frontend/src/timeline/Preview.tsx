@@ -8,14 +8,11 @@ import type { PlaybackClock } from "./clock";
 import { intervals, activeAt, upcoming, inRange } from "./intervals";
 import { tracksOf } from "./document";
 import { MediaLayer } from "./MediaLayer";
-import { usePreviewSources } from "./usePreviewSources";
 import { PlaybackDiagnostics } from "./PlaybackDiagnostics";
 import { ClockReadout } from "./ClockReadout";
 import { captionImage } from "../creation/captions";
 import { useFrameSize } from "./useFrameSize";
 import { native } from "../bridge";
-import { useAudioMix } from "./useAudioMix";
-import { MixPlayer } from "./MixPlayer";
 export function Preview(props: { project: Project; clock: PlaybackClock }) {
   const project = useColorComparison(props.project);
   return native ? (
@@ -32,7 +29,6 @@ const BrowserPreview = memo(function BrowserPreview({
   clock: PlaybackClock;
 }) {
   const frame = useFrameSize(project.width, project.height);
-  const mix = useAudioMix(project, clock);
   const [view, setView] = useState({
     ids: [] as string[],
     warm: [] as string[],
@@ -41,7 +37,6 @@ const BrowserPreview = memo(function BrowserPreview({
   });
   const [error, setError] = useState("");
   const [element, setElement] = useState<HTMLVideoElement | null>(null);
-  const [smooth, setSmooth] = useState(true);
   const [diagnostics, setDiagnostics] = useState(false);
   const [stats] = useState(() => ({ seeks: 0, waiting: 0, playCalls: 0 }));
   const masterId = useRef<string | undefined>(undefined);
@@ -99,16 +94,10 @@ const BrowserPreview = memo(function BrowserPreview({
           asset &&
           track &&
           ((track.kind === "video" && !track.hidden) ||
-            (!native && asset.hasAudio && !track.muted))
+            (asset.hasAudio && !track.muted))
         );
       }),
     [index, view.ids, view.warm, assets, tracks],
-  );
-  const sources = usePreviewSources(
-    project.id,
-    shown.map((e) => assets.get(e.clip.assetId)),
-    clock,
-    smooth,
   );
   const candidates = shown.filter(
     (e) =>
@@ -155,10 +144,8 @@ const BrowserPreview = memo(function BrowserPreview({
                 entry={e}
                 asset={asset}
                 track={track}
-                path={sources.paths[asset.id]}
                 active={view.ids.includes(e.clip.id)}
-                master={!mix.path && master?.clip.id === e.clip.id}
-                silent={native}
+                master={master?.clip.id === e.clip.id}
                 clock={clock}
                 stats={stats}
                 onError={setError}
@@ -166,15 +153,6 @@ const BrowserPreview = memo(function BrowserPreview({
               />
             ) : null;
           })}
-          {mix.path && (
-            <MixPlayer
-              path={mix.path}
-              total={mix.total}
-              clock={clock}
-              stats={stats}
-              onError={setError}
-            />
-          )}
           {(project.captions ?? [])
             .filter((c) => view.captions.includes(c.id))
             .map((c) => (
@@ -194,36 +172,12 @@ const BrowserPreview = memo(function BrowserPreview({
         </div>
       </div>
       <div className="preview-options">
-        <select
-          aria-label="预览画质"
-          value={smooth ? "smooth" : "original"}
-          onChange={(e) => {
-            clock.pause();
-            setError("");
-            setSmooth(e.target.value === "smooth");
-          }}
-        >
-          <option value="smooth">流畅预览 · 640p</option>
-          <option value="original">原片画质</option>
-        </select>
         <button onClick={() => setDiagnostics((v) => !v)}>诊断</button>
       </div>
       {project.clips.some((c) => c.transition) && (
         <small className="preview-status">
           转场效果请在桌面应用中预览；浏览器当前显示直接切换。
         </small>
-      )}
-      {sources.pending && (
-        <small className="preview-status">正在准备代理，当前播放原片</small>
-      )}
-      {mix.pending && (
-        <small className="preview-status">正在准备声音预览…</small>
-      )}
-      {mix.error && (
-        <ErrorNotice error={mix.error} fallback="OPERATION_FAILED" />
-      )}
-      {sources.error && (
-        <small className="preview-status">{sources.error}</small>
       )}
       {diagnostics && <PlaybackDiagnostics element={element} stats={stats} />}
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
@@ -239,7 +193,7 @@ const BrowserPreview = memo(function BrowserPreview({
         </button>
         <button
           className="play-button"
-          disabled={!project.clips.length || mix.pending || !!mix.error}
+          disabled={!project.clips.length}
           title={view.playing ? "暂停 Space" : "播放 Space"}
           onClick={clock.toggle}
         >

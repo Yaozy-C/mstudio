@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-"""Verify detached audio remains audible, aligned and single-gain in real MLT output."""
+"""Verify detached audio remains audible, aligned and single-gain in the GES audio cache."""
 from pathlib import Path
 import array
 import json
 import math
-import os
 import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[1]
-sdk = Path(os.environ.get('MLT_SDK', root / 'desktop/native/runtime'))
-env = dict(os.environ, MLT_DATA=str(sdk / 'share/mlt'), MLT_REPOSITORY=str(sdk / 'lib/mlt'))
 
 def run(args):
-    result = subprocess.run([str(a) for a in args], cwd=root, env=env,
+    result = subprocess.run([str(a) for a in args], cwd=root,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
     if result.returncode:
         raise RuntimeError(result.stderr.decode(errors='replace'))
@@ -43,11 +40,12 @@ with tempfile.TemporaryDirectory(prefix='mstudio-detach-') as folder:
             spec = dict(width=320, height=240, fps=30, tracks=tracks, clips=clips, captions=[])
             fixture = work / 'fixture.json'
             fixture.write_text(json.dumps(dict(spec=spec, assets=assets)))
-            graph = work / 'graph.mlt'
-            graph.write_bytes(run(['cargo', 'run', '--quiet', '--example', 'mlt_graph', fixture, work / 'cache']))
-            output = work / 'output.wav'
-            run([sdk / 'bin/melt', '-repository', sdk / 'lib/mlt', graph, '-consumer',
-                 f'avformat:{output}', 'vn=1', 'acodec=pcm_s16le', 'real_time=-1'])
+            plan = json.loads(run(['cargo', 'run', '--quiet', '--example', 'ges_plan', fixture, work / 'cache']))
+            output = plan['audio']
+            if output is None:
+                output = work / 'silence.wav'
+                run(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo',
+                     '-t', plan['duration'], output])
             samples = array.array('f', run(['ffmpeg', '-v', 'error', '-i', output,
                                           '-f', 'f32le', '-ac', '1', '-ar', '48000', '-']))
             outputs.append(samples)

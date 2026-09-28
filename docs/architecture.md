@@ -4,9 +4,9 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 ## 核心边界
 
-- `src/`：独立 Rust 媒体核心，调用 FFmpeg / ffprobe 进行媒体探测、代理、混音和导出。`preview_mlt.rs` 将时间线转换为 MLT 图。
+- `src/`：独立 Rust 媒体核心，调用 FFmpeg / ffprobe 进行媒体探测、代理、混音和导出。`preview_ges.rs` 将时间线转换为 GES 播放计划。
 - `desktop/src/`：Tauri 命令、持久化、导入、模型适配、生成任务和 Agent 执行。`assistant/harness/` 负责轮次、工具执行和任务恢复。
-- `desktop/native/`：MLT 播放器与平台显示表面；桌面视频像素不通过 IPC 传输。
+- `desktop/native/`：开发和打包所需的 GStreamer/GES 运行库（不提交）。
 - `frontend/src/creative/`、`production/`：脚本、分镜、画布和生成流程。
 - `frontend/src/timeline/`：多轨编辑、播放时钟、素材拖放及预览控制。
 - `skills/`：应用自带的创作规则，由 Tauri resources 分发，不依赖开发者个人技能目录。
@@ -19,13 +19,13 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 ## 预览与导出
 
-桌面预览由 MLT 处理解码、合成与音频，macOS 使用 Core Animation 呈现，Windows 表面仍待实机验证。浏览器界面使用 HTML 媒体预览作为开发模式。导出使用 FFmpeg 合成管线；两条管线需要分别验证。
+桌面预览由 GES 处理解码、合成与音频，通过二进制 IPC 将最新 RGBA 帧呈现在 WebView Canvas。Windows 打包仍待实现与实机验证。浏览器界面使用 HTML 媒体预览作为开发模式。导出使用 FFmpeg 合成管线；两条管线需要分别验证。
 
 ## 外部服务
 
 模型适配器负责请求转换、凭据和任务轮询。远程服务仅接收本次请求选择的上下文与媒体；配置的端点决定数据接收方。本地凭据数据库不应上传仓库或用于公开复现。
 
-预览控制保持音频设备运行，定位请求在前端合并并保留播放/暂停边界；原生层清除旧缓冲帧。轨道名称和画布关联不参与渲染规格比较，连续参数变动停止 120 毫秒后再重建。播放器回收先在主线程移交所有权，再由后台线程关闭音频设备，最后回主线程销毁显示表面；回收与新建串行执行，避免旧设备关闭影响新设备。隐藏助手面板时保留任务运行时，但卸载消息视图。
+预览控制保持音频设备运行，定位请求在前端合并并保留播放/暂停边界；原生层清除旧缓冲帧。轨道名称和画布关联不参与渲染规格比较，连续参数变动停止 120 毫秒后再重建。播放器在后台线程关闭 GES 管线并回收；回收与新建串行执行，避免旧设备关闭影响新设备。隐藏助手面板时保留任务运行时，但卸载消息视图。
 
 ## Agent 任务上下文
 
@@ -44,3 +44,9 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 参考：[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)、[Deep Agents](https://www.langchain.com/blog/context-management-for-deepagents)。
 
 编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。工程编辑版本忽略画布视口、卡片位置与尺寸变化，内容修改仍使用严格版本检查。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。同一子任务连续三次修改遇到相同错误会停止重复尝试，读取操作不会清零计数，成功修改才清零；16 步上限保留，以 `step-limit` 返回给统筹。
+
+### GES Canvas 预览
+
+`native_preview` 保留现有 IPC 命名，负责会话所有权与生命周期；`preview_validate` 校验输入，`preview_prepare` 将工程编译成 GES 播放计划。`ges_engine` 在独立线程持有 GES 管线，返回最新一帧的 RGBA 二进制数据；`previewFrames` 在一个在途请求内提交给 Canvas。无需 C++ 桥接或原生显示浮层。
+
+GES 首版按片段缓存 FFmpeg 调色/变速，复用转场与导出音频混音逻辑；GES 负责时间线层级、字幕、时钟和 seek。切换预览清晰度不会写入工程或改变导出路径。技术取舍是保持现有效果语义，代价是效果修改后的准备时间。未来可逐项引入 GES 原生效果，但必须先验证与现有导出的一致性。

@@ -18,7 +18,6 @@ HSL 按红橙黄绿青蓝紫洋红顺序，每行 [色相偏移,饱和度,明度
 - [Blackmagic Design 官方培训](https://www.blackmagicdesign.com/products/davinciresolve/training)：Color、Color Management 教程及 Colorist Guide，学习色彩管理、镜头匹配与调色工作顺序；教程涉及的高级能力不等于本应用已经支持。
 - [DaVinci Resolve Color 功能说明](https://www.blackmagicdesign.com/products/davinciresolve/color)：了解区域调整与专业监看能力边界。
 - [FFmpeg 官方滤镜文档](https://ffmpeg.org/ffmpeg-filters.html)：核对 eq、colorbalance 的真实参数意义。
-- [MLT lut3d 实现接口](https://www.mltframework.org/plugins/FilterAvfilter-lut3d/)：预览端使用 file 和 interp，和 FFmpeg 导出共享生成的 LUT；参数名字相同不等于不同引擎算法相同，因此必须检查实际像素。
 - [Shotcut 明暗滤镜实现](https://github.com/mltframework/shotcut/blob/master/src/qml/filters/brightness/ui.qml)：参考将用户参数与底层滤镜绑定、保留可编辑状态的做法。本应用的 LUT 调色不照搬该滤镜公式。
 
 这些是学习与核验入口，本技能为应用操作规范，不复制整本课程，也不承诺读完即达到大师水准。

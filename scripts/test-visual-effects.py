@@ -2,21 +2,21 @@
 """Compare real native-preview and export frames for basic effects and grading."""
 from pathlib import Path
 import json
-import os
 import subprocess
 import tempfile
+from ges_test_frame import snapshot
 
 root = Path(__file__).resolve().parents[1]
-sdk = Path(os.environ.get('MLT_SDK', root / 'desktop/native/runtime'))
-env = dict(os.environ, MLT_DATA=str(sdk / 'share/mlt'), MLT_REPOSITORY=str(sdk / 'lib/mlt'))
 def run(args):
-    p = subprocess.run([str(a) for a in args], cwd=root, env=env,
+    p = subprocess.run([str(a) for a in args], cwd=root,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
     if p.returncode: raise RuntimeError(p.stderr.decode(errors='replace'))
     return p.stdout
 
 def pixels(path):
-    return run(['ffmpeg','-v','error','-ss','0.3','-i',path,'-frames:v','1','-vf','scale=160:120','-pix_fmt','rgb24','-f','rawvideo','-'])
+    position = 0.3
+    if path.suffix == ".json": path, position = snapshot(path,position), 0
+    return run(['ffmpeg','-v','error','-ss',position,'-i',path,'-frames:v','1','-vf','scale=160:120','-pix_fmt','rgb24','-f','rawvideo','-'])
 
 with tempfile.TemporaryDirectory(prefix='mstudio-effects-') as directory:
     folder = Path(directory)
@@ -35,9 +35,8 @@ with tempfile.TemporaryDirectory(prefix='mstudio-effects-') as directory:
         clip=dict(id='v',assetId='v',start=0,trimIn=0,trimOut=1,speed=1,volume=0,trackId='v1',visual=visual)
         spec=dict(width=320,height=240,fps=30,tracks=[dict(id='v1',kind='video')],clips=[clip],captions=[])
         fixture=folder/'fixture.json';fixture.write_text(json.dumps(dict(spec=spec,assets=assets)))
-        xml=folder/'preview.mlt';xml.write_bytes(run(['cargo','run','--quiet','--example','mlt_graph',fixture]))
-        preview=folder/'preview.mp4'
-        run([sdk/'bin/melt','-repository',sdk/'lib/mlt',xml,'-consumer',f'avformat:{preview}','vcodec=libx264','an=1','real_time=-1','preset=ultrafast'])
+        xml=folder/'preview.json';xml.write_bytes(run(['cargo','run','--quiet','--example','ges_plan',fixture,folder/'cache']))
+        preview=xml
         exported=folder/'export.mp4'
         run(['cargo','run','--quiet','--example','render_fixture',fixture,folder/'render',exported])
         a,b=pixels(preview),pixels(exported)

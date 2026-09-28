@@ -37,7 +37,7 @@ pub fn schema() -> Value {
     properties.insert("ripple".into(), json!({"type":"boolean","description":"retime_clip：保持源区间与起点，按 speed 改变时长；true 顺移同轨原尾点及之后的片段，其他轨道和字幕不动。默认 false"}));
     properties.insert("allowOverlap".into(), json!({"type":"boolean","description":"move_clip/retime_clip 默认拒绝同轨重叠；仅用户明确需要叠加时设 true"}));
     properties.insert("speed".into(), json!({"type":"number","minimum":0.25,"maximum":4,"description":"播放倍率；retime_clip 推荐用于变速，可配合 ripple。move_clip 使用 start（时间线秒数，自动对齐帧）及可选 trackId，不改变源区间"}));
-    properties.insert("visual".into(), json!({"type":["object","null"],"description":"update_clip 的非破坏式调色；只覆盖指定参数，保留其余效果；null 清除。由本地 FFmpeg 滤镜执行并同步到 MLT 预览与成片导出，不是生成新视频。参数是绝对值。","additionalProperties":false,"properties":{
+    properties.insert("visual".into(), json!({"type":["object","null"],"description":"update_clip 的非破坏式调色；只覆盖指定参数，保留其余效果；null 清除。由本地 FFmpeg 滤镜执行并同步到 GES 预览与成片导出，不是生成新视频。参数是绝对值。","additionalProperties":false,"properties":{
         "brightness":{"type":"number","minimum":-0.5,"maximum":0.5,"description":"亮度，默认0，FFmpeg eq"},
         "contrast":{"type":"number","minimum":0.5,"maximum":1.5,"description":"对比度，默认1，FFmpeg eq"},
         "saturation":{"type":"number","minimum":0,"maximum":2,"description":"饱和度，默认1，FFmpeg eq"},

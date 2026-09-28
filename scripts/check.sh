@@ -10,4 +10,4 @@ cargo fmt --manifest-path desktop/Cargo.toml -- --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D warnings
-cargo test --manifest-path desktop/Cargo.toml --locked
+GST_PLUGIN_SYSTEM_PATH_1_0="$PWD/desktop/native/ges-dev-plugins" GST_PLUGIN_PATH_1_0= GST_REGISTRY_FORK=no cargo test --manifest-path desktop/Cargo.toml --locked --bin mstudio-desktop

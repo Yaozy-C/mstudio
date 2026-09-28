@@ -11,10 +11,8 @@ export const MediaLayer = memo(function MediaLayer({
   entry,
   asset,
   track,
-  path,
   active,
   master,
-  silent = false,
   clock,
   stats,
   onError,
@@ -23,10 +21,8 @@ export const MediaLayer = memo(function MediaLayer({
   entry: IndexedClip;
   asset: Asset;
   track: Track;
-  path?: string;
   active: boolean;
   master: boolean;
-  silent?: boolean;
   clock: PlaybackClock;
   stats: TransportStats;
   onError: (s: string) => void;
@@ -34,7 +30,7 @@ export const MediaLayer = memo(function MediaLayer({
 }) {
   useLanguage();
   const ref = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
-  const src = mediaUrl(path || asset.path);
+  const src = mediaUrl(asset.path);
   const bound = useMemo(
     () =>
       track.muted ? { ...entry, clip: { ...entry.clip, volume: 0 } } : entry,
@@ -43,7 +39,7 @@ export const MediaLayer = memo(function MediaLayer({
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || asset.missing) return;
-    el.muted = silent || !active || !asset.hasAudio || !!track.muted;
+    el.muted = !active || !asset.hasAudio || !!track.muted;
     if (!active) {
       const prepare = () => {
         if (
@@ -73,7 +69,6 @@ export const MediaLayer = memo(function MediaLayer({
     entry.start,
     asset.hasAudio,
     track.muted,
-    silent,
     asset.missing,
   ]);
   const c = entry.clip;
@@ -118,7 +113,7 @@ export const MediaLayer = memo(function MediaLayer({
       src={src}
       preload="auto"
       playsInline
-      muted={silent || !active || !asset.hasAudio || !!track.muted}
+      muted={!active || !asset.hasAudio || !!track.muted}
       onError={error}
     />
   );

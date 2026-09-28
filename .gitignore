@@ -6,9 +6,11 @@
 *.app/
 /desktop/gen/
 /desktop/native/vendor/
-/desktop/native/build-mlt/
+/desktop/native/build-*/
 /desktop/native/runtime/
 /desktop/native/bundle/
+/desktop/native/ges-bundle/
+/desktop/native/ges-dev-plugins/
 /desktop/native/windows-resources.json
 
 # Local design explorations, review artifacts and generated media

@@ -720,13 +720,8 @@
   "声音淡入 / 秒": "Audio fade in / sec",
   "声音淡出 / 秒": "Audio fade out / sec",
   "等待视频播放": "Waiting for video playback",
-  "预览画质": "Preview quality",
-  "流畅预览 · 640p": "Smooth preview · 640p",
-  "原片画质": "Original quality",
   "诊断": "Diagnostics",
   "转场效果请在桌面应用中预览；浏览器当前显示直接切换。": "Preview transitions in the desktop app. The browser currently shows hard cuts.",
-  "正在准备代理，当前播放原片": "Preparing proxy; playing the original for now",
-  "正在准备声音预览…": "Preparing audio preview…",
   "查看时间线快捷键": "View timeline shortcuts",
   "时间线快捷键": "Timeline shortcuts",
   "关闭快捷键": "Close shortcuts",
@@ -1336,5 +1331,8 @@
   "暂无脚本": "No script yet",
   "暂无字幕": "No subtitles yet",
   "画布为空": "Canvas is empty",
-  "{v0} 个镜头": "{v0} shots"
+  "{v0} 个镜头": "{v0} shots",
+  "预览清晰度": "Preview quality",
+  "流畅": "Smooth",
+  "清晰": "Sharp"
 }

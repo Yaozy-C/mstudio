@@ -2,10 +2,11 @@
 mod app_error;
 mod asset_library;
 mod assistant;
-mod audio_preview;
 mod canvas_inputs;
 mod creation_commands;
 mod database;
+mod ges_engine;
+mod ges_runtime;
 mod imports;
 mod job_download;
 mod job_locks;
@@ -15,7 +16,7 @@ mod media_commands;
 mod model_adapters;
 mod models;
 mod native_preview;
-mod preview_commands;
+mod preview_prepare;
 mod project_storage;
 mod projects;
 mod reference_commands;
@@ -27,6 +28,7 @@ fn finish_exit(app: tauri::AppHandle) {
     app.exit(0);
 }
 fn main() {
+    ges_runtime::configure();
     tauri::Builder::default()
         .setup(|app| {
             let store = database::Store::open(app.path().app_data_dir()?)?;
@@ -45,7 +47,7 @@ fn main() {
             waveform::audio_waveform,
             native_preview::native_preview_open,
             native_preview::native_preview_control,
-            native_preview::native_preview_rect,
+            native_preview::native_preview_frame,
             native_preview::native_preview_status,
             storage::storage_settings,
             storage::choose_storage_directory,
@@ -56,13 +58,11 @@ fn main() {
             asset_library::remove_global_asset,
             asset_library::use_global_asset,
             imports::import_global_media,
-            audio_preview::prepare_audio_preview,
             reference_commands::upload_references,
             creation_commands::list_voices,
             creation_commands::generate_voice,
             creation_commands::store_caption_image,
             creation_commands::save_subtitles,
-            preview_commands::prepare_preview,
             assistant::profiles::agent_catalog,
             assistant::profiles::save_agent,
             assistant::agent_history,

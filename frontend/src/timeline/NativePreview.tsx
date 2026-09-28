@@ -7,15 +7,14 @@ import type { PlaybackClock } from "./clock";
 import { prepareCaptions } from "../creation/prepareCaptions";
 import { ClockReadout } from "./ClockReadout";
 import { previewSpec } from "./previewSpec";
-import { fittedVideoRect, previewCovered } from "./previewOcclusion";
+import { startPreviewFrames } from "./previewFrames";
+import { StudioSelect } from "../ui/StudioSelect";
 import { PreviewCommands } from "./previewCommands";
 import { ErrorNotice } from "../errors/ErrorNotice";
 type Status = {
   frame: number;
   playing: boolean;
   total: number;
-  shown: number;
-  skipped: number;
 };
 const captionCache = new Map<string, string>();
 export function NativePreview({
@@ -26,7 +25,8 @@ export function NativePreview({
   clock: PlaybackClock;
 }) {
   useLanguage();
-  const stage = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [edge, setEdge] = useState("640");
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
@@ -55,9 +55,7 @@ export function NativePreview({
       opened = false,
       polling = false;
     let timer: ReturnType<typeof setInterval> | undefined;
-    let pendingRect = 0;
-    let observer: ResizeObserver | undefined;
-    let mutations: MutationObserver | undefined;
+    let stopFrames: (() => void) | undefined;
 
     const fail = (e: unknown) => {
       if (alive) {
@@ -78,32 +76,6 @@ export function NativePreview({
     clock.ready = false;
     setReady(false);
     setError("");
-    let lastRect = "";
-    const rect = () => {
-      pendingRect = 0;
-      if (!alive || !opened || !stage.current) return;
-      const r = fittedVideoRect(
-        stage.current.getBoundingClientRect(),
-        doc.width,
-        doc.height,
-      );
-      const covered = previewCovered(r);
-      const bounds = {
-        token,
-        x: r.x,
-        y: r.y,
-        width: r.width,
-        height: r.height,
-        visible: !covered && !document.hidden,
-      };
-      const key = JSON.stringify(bounds);
-      if (key === lastRect) return;
-      lastRect = key;
-      void bridge("native_preview_rect", bounds).catch(fail);
-    };
-    const scheduleRect = () => {
-      if (!pendingRect) pendingRect = requestAnimationFrame(rect);
-    };
     const load = async () => {
       if (!doc.clips.length && !doc.captions.length) return;
       doc.captions = await prepareCaptions(
@@ -126,6 +98,7 @@ export function NativePreview({
         token,
         projectId: project.id,
         spec: doc,
+        edge: Number(edge),
       });
       if (!alive) {
         await bridge("native_preview_control", { token, action: "close" });
@@ -135,19 +108,8 @@ export function NativePreview({
       command("seek", Math.round(clock.getSnapshot().time * doc.fps));
       clock.ready = true;
       setReady(true);
-      rect();
-      observer = new ResizeObserver(scheduleRect);
-      observer.observe(stage.current!);
-      mutations = new MutationObserver(scheduleRect);
-      mutations.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["style", "class", "data-state", "hidden"],
-      });
-      window.addEventListener("resize", scheduleRect);
-      window.addEventListener("scroll", scheduleRect, true);
-      document.addEventListener("visibilitychange", scheduleRect);
+      if (canvas.current)
+        stopFrames = startPreviewFrames(canvas.current, token, fail);
       timer = setInterval(async () => {
         if (polling || !alive || commands.busy) return;
         const revision = commands.revision;
@@ -176,26 +138,34 @@ export function NativePreview({
       clock.ready = true;
       detach();
       clearInterval(timer);
-      cancelAnimationFrame(pendingRect);
-      observer?.disconnect();
-      mutations?.disconnect();
-      window.removeEventListener("resize", scheduleRect);
-      window.removeEventListener("scroll", scheduleRect, true);
-      document.removeEventListener("visibilitychange", scheduleRect);
+      stopFrames?.();
       void bridge("native_preview_control", { token, action: "close" }).catch(
         () => {},
       );
     };
-  }, [spec, project.id, clock]);
+  }, [spec, project.id, clock, edge]);
   return (
     <div className="preview">
       <header>
         <span>{t("成片预览")}</span>
-        <small>
-          {project.width} × {project.height}
-        </small>
+        <div className="preview-selectors">
+          <StudioSelect
+            label={t("预览清晰度")}
+            value={edge}
+            onValueChange={setEdge}
+            options={[
+              { value: "640", label: t("流畅") },
+              { value: "1280", label: t("清晰") },
+            ]}
+          />
+        </div>
       </header>
-      <div className="preview-stage" ref={stage}>
+      <div className="preview-stage">
+        <canvas
+          ref={canvas}
+          className="preview-canvas"
+          style={{ visibility: ready ? "visible" : "hidden" }}
+        />
         {!ready && (
           <div className="preview-placeholder">
             <Play size={26} />
