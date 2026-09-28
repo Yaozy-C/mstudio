@@ -63,7 +63,7 @@
   color: var(--desk-text);
 }
 .agent-compose-actions > .attachment-picker > button:hover {
-  background: #e7e4dc0c;
+  background: transparent;
 }
 .agent-compose-actions .composer-model {
   display: flex;
@@ -87,7 +87,7 @@
   flex-shrink: 0;
 }
 .agent-compose-actions .composer-model:hover {
-  background: #e7e4dc08;
+  background: transparent;
   border-radius: 7px;
 }
 .composer-submit {
@@ -102,13 +102,13 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--desk-sidebar);
-  color: var(--desk-muted);
+  background: var(--desk-text);
+  color: var(--desk-surface);
 }
 .agent-compose-actions .composer-submit button:disabled {
-  opacity: 1;
-  background: var(--desk-sidebar);
-  color: var(--desk-muted);
+  opacity: 0.35;
+  background: var(--desk-text);
+  color: var(--desk-surface);
   cursor: not-allowed;
 }
 .composer-footer {
@@ -169,7 +169,7 @@
   color: var(--desk-muted);
 }
 .agent-composer .composer-tools .composer-icon-button:hover {
-  background: var(--desk-sidebar);
+  background: transparent;
   color: var(--desk-text);
 }
 .composer-tools > .conversation-model {

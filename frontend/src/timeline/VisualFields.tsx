@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import {
   ArrowCounterClockwise,
@@ -29,15 +30,14 @@ export function VisualFields({
       <section className="inspector-section">
         <div className="inspector-section-heading">
           <h3>{t("色彩")}</h3>
-          <button
-            className="inspector-action"
+          <ActionButton
+            icon={ArrowCounterClockwise}
             aria-label={t("重置画面效果")}
             disabled={!clip.visual}
             onClick={() => update({ ...clip, visual: undefined })}
           >
-            <ArrowCounterClockwise size={20} />
             {t("重置")}
-          </button>
+          </ActionButton>
         </div>
         {(
           [

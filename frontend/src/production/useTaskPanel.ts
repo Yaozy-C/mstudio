@@ -29,6 +29,7 @@ export function useTaskPanel(
     showTask: (task: ProductionTask) => {
       setActiveTaskKey(task.key);
       setTaskPanelOpen(true);
+      window.dispatchEvent(new Event("studio-show-generation"));
     },
     referencedTask: runs.find((t) => t.key === referencedTaskKey),
     clearTaskReference: (key?: string) =>

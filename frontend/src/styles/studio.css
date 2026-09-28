@@ -66,8 +66,9 @@
 .studio-top .chrome-action:hover,
 .studio-top button[data-state="open"],
 .studio-top button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .studio-top .chrome-caret {
   width: 11px;

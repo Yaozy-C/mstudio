@@ -22,7 +22,7 @@
   flex-shrink: 0;
 }
 .radix-themes .conversation-model-trigger:is(:hover, [data-state="open"]) {
-  background: var(--desk-sidebar);
+  background: transparent;
   color: var(--desk-text);
 }
 .radix-themes .conversation-model-menu {

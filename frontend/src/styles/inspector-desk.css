@@ -19,8 +19,8 @@
   margin: 0 0 24px;
   flex-shrink: 0;
 }
-.radix-themes .precision-panel button,
-.radix-themes .precision-panel button:hover:not(:disabled),
+.radix-themes .precision-panel button:not(.action-button),
+.radix-themes .precision-panel button:not(.action-button):hover:not(:disabled),
 .radix-themes .timeline button:not(.caption-chip),
 .radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
   background: transparent;
@@ -28,7 +28,7 @@
   box-shadow: none;
   border-radius: 0;
 }
-.radix-themes .precision-panel button:hover:not(:disabled),
+.radix-themes .precision-panel button:not(.action-button):hover:not(:disabled),
 .radix-themes .timeline button:not(.caption-chip):hover:not(:disabled) {
   color: var(--desk-accent);
 }
@@ -37,6 +37,7 @@
   color: var(--desk-accent);
   background: transparent;
   box-shadow: none;
+  font-weight: 600;
 }
 .radix-themes .precision-panel .inspector-tabs {
   display: flex;
@@ -86,16 +87,6 @@
   align-items: center;
   justify-content: space-between;
 }
-.radix-themes .precision-panel .inspector-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 9px;
-  justify-self: start;
-  padding: 5px 0;
-  min-height: 32px;
-  font-size: 14px;
-}
 .inspector-control {
   display: grid;
   gap: 10px;
@@ -137,6 +128,7 @@
   height: 32px;
   font-size: 15px;
   font-variant-numeric: tabular-nums;
+  text-align: right;
   padding: 3px 5px;
 }
 .radix-themes .precision-panel .inspector-range {
@@ -245,35 +237,12 @@
   resize: vertical;
 }
 .radix-themes .precision-panel .inspector-send {
-  color: var(--desk-accent);
   flex-shrink: 0;
-  font-size: 13px;
-}
-.inspector-track-actions {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 18px 0;
-  margin-top: 20px;
-  border-top: 1px solid var(--desk-rule);
-  flex-shrink: 0;
-}
-.inspector-track-actions > span {
-  margin-right: auto;
-  font-size: 13px;
-}
-.inspector-track-actions button {
-  padding: 5px;
 }
 /* Keep the icon library's intended sizes; global toolbar rules use smaller icons. */
 .precision-panel .inspector-tabs button svg {
   width: 22px;
   height: 22px;
-}
-.precision-panel .inspector-action svg,
-.precision-panel .inspector-track-actions svg {
-  width: 20px;
-  height: 20px;
 }
 .radix-themes .precision-panel .inspector-tabs button {
   font-size: 15px;

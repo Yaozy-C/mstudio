@@ -71,11 +71,9 @@ export function App() {
         onSettings={setSettings}
       />
       <main className="library-main">
-        <div className="eyebrow">YOUR CREATIVE SPACE</div>
         <header className="library-heading">
           <div>
-            <h1>{t("让想法，成为画面。")}</h1>
-            <p>{t("从第一张参考图，到最后一帧。都在一个空间里。")}</p>
+            <h1>{t("项目空间")}</h1>
           </div>
           <button className="primary" onClick={() => setCreating(true)}>
             <Plus />
@@ -160,16 +158,9 @@ export function App() {
             onClick={() => setCreating(true)}
           >
             <Plus size={28} />
-            <strong>{t("开启一个新故事")}</strong>
-            <span>{t("参考、创作、剪辑、成片")}</span>
+            <strong>{t("新建项目")}</strong>
           </button>
         </section>
-        <div className="workflow-intro">
-          <span>{t("01 / 收集素材")}</span>
-          <span>{t("02 / 画布构思")}</span>
-          <span>{t("03 / 时间线剪辑")}</span>
-          <span>{t("04 / 导出成片")}</span>
-        </div>
         {!native && (
           <p className="subtle">
             {t("浏览器界面预览 · 素材导入、生成与导出请使用桌面应用")}
@@ -186,8 +177,7 @@ export function App() {
               void create().catch((e) => setError(String(e)));
             }}
           >
-            <div className="eyebrow">NEW PROJECT</div>
-            <h2>{t("给这个故事起个名字")}</h2>
+            <h2>{t("新建项目")}</h2>
             <input
               autoFocus
               placeholder={t("例如：夏日出行 · 商品短片")}

@@ -58,7 +58,7 @@
   padding: 5px;
 }
 .preview-transport .play-button {
-  background: var(--desk-sidebar);
+  background: transparent;
   border-radius: 50%;
   height: 28px;
   width: 28px;

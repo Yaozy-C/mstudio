@@ -46,7 +46,7 @@ export function CanvasControls({
       )}
       {empty && (
         <div className="canvas-empty">
-          <h2>{t("从脚本开始，把画面做出来。")}</h2>
+          <h2>{t("画布为空")}</h2>
           <p>{t("让 Agent 拆出镜头，或从素材的右键菜单放入画布。")}</p>
         </div>
       )}

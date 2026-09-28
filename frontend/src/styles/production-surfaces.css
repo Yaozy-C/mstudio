@@ -50,10 +50,11 @@
   color: var(--desk-muted);
 }
 .radix-themes .hub-categories button[aria-pressed="true"] {
-  background: var(--desk-bg);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
   border-color: var(--desk-rule);
   box-shadow: none;
+  font-weight: 600;
 }
 .radix-themes :is(.hub-model-card, .spec-card, .hub-provider-list article) {
   background: var(--desk-bg);
@@ -86,9 +87,10 @@
   border-color: transparent;
 }
 .radix-themes .chrome-action[aria-pressed="true"] {
-  background: var(--desk-sidebar);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
   border-color: var(--desk-rule);
+  font-weight: 600;
 }
 .radix-themes .floating-panel {
   background: var(--desk-bg);
@@ -121,9 +123,6 @@
   color: var(--desk-accent);
   margin-bottom: 16px;
 }
-.radix-themes .agent-welcome .eyebrow {
-  display: none;
-}
 .radix-themes .agent-welcome h3 {
   color: var(--desk-text);
   font-size: 21px;
@@ -132,10 +131,6 @@
 .radix-themes .agent-welcome p {
   color: var(--desk-muted);
   font-size: 14px;
-}
-.radix-themes .agent-welcome > small {
-  color: var(--desk-muted);
-  font-size: 12px;
 }
 .radix-themes .agent-starters button {
   background: transparent;

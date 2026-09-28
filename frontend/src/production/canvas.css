@@ -130,7 +130,9 @@
   border-color: transparent;
 }
 .selection-actions button[aria-pressed="true"] {
-  background: #e7e4dc;
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .selection-box {
   position: absolute;

@@ -66,8 +66,9 @@
   color: inherit;
 }
 .task-panel-list > button.selected {
-  background: var(--desk-paper, #f4f0e7);
+  background: transparent;
   border-color: var(--desk-rule);
+  font-weight: 600;
 }
 .task-panel-list button > span {
   display: grid;

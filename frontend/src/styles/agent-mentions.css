@@ -28,7 +28,7 @@
   color: var(--desk-text);
 }
 .agent-compose-actions .composer-mention-trigger:hover {
-  background: #e7e4dc0c;
+  background: transparent;
 }
 .agent-mention-menu {
   position: absolute;

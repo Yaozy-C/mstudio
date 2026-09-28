@@ -38,7 +38,7 @@
   justify-content: flex-start;
   width: 100%;
   border: 1px solid var(--desk-rule);
-  background: var(--desk-bg);
+  background: transparent;
   padding: 13px 12px;
   border-radius: 9px;
   font-size: 12px;
@@ -46,7 +46,7 @@
   text-align: left;
 }
 .agent-starters button:hover {
-  background: var(--desk-sidebar);
+  background: transparent;
   border-color: var(--desk-rule);
 }
 .agent-starters button span {
@@ -55,13 +55,6 @@
 .agent-starters button > svg:last-child {
   width: 13px;
   color: var(--desk-muted);
-}
-.agent-welcome > small {
-  display: block;
-  color: var(--desk-muted);
-  font-size: 10px;
-  text-align: center;
-  margin-top: 21px;
 }
 .agent-connect-callout {
   width: 100%;

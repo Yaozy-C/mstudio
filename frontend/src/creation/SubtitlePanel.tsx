@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { InspectorControl } from "../timeline/InspectorControl";
 import {
   Plus,
@@ -38,7 +39,8 @@ export function SubtitlePanel({
   return (
     <div className="creation-form">
       <div className="subtitle-actions">
-        <button
+        <ActionButton
+          icon={Plus}
           onClick={() => {
             const start = clock.getSnapshot().time;
             change((p) => ({
@@ -50,14 +52,16 @@ export function SubtitlePanel({
             }));
           }}
         >
-          <Plus size={20} />
           {t("添加字幕")}
-        </button>
-        <button onClick={() => input.current?.click()}>
-          <UploadSimple size={20} />
+        </ActionButton>
+        <ActionButton
+          icon={UploadSimple}
+          onClick={() => input.current?.click()}
+        >
           {t("导入 SRT")}
-        </button>
-        <button
+        </ActionButton>
+        <ActionButton
+          icon={DownloadSimple}
           disabled={!captions.length || captions.some((c) => !validCaption(c))}
           onClick={() =>
             void bridge("save_subtitles", { text: toSrt(captions) }).catch(
@@ -65,9 +69,8 @@ export function SubtitlePanel({
             )
           }
         >
-          <DownloadSimple size={20} />
           {t("导出 SRT")}
-        </button>
+        </ActionButton>
       </div>
       <input
         hidden
@@ -96,13 +99,7 @@ export function SubtitlePanel({
         }}
       />
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
-      {!captions.length && (
-        <p className="subtle">
-          {t(
-            "添加字幕、导入已有 SRT，或在配音时同步生成。手动时间以秒为单位。",
-          )}
-        </p>
-      )}
+      {!captions.length && <p className="subtle">{t("暂无字幕")}</p>}
       {captions.map((c, i) => (
         <article className="caption-editor" key={c.id}>
           <div className="inline">

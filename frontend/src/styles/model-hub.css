@@ -69,9 +69,10 @@
   white-space: nowrap;
 }
 .hub-categories button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
-  color: var(--desk-text);
-  box-shadow: 0 1px 5px #0002;
+  background: transparent;
+  color: var(--desk-accent);
+  box-shadow: none;
+  font-weight: 600;
 }
 .hub-section-head,
 .hub-card-top {

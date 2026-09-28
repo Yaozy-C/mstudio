@@ -39,7 +39,7 @@
 }
 .composer-mode-menu button:hover,
 .composer-media-option:hover {
-  background: var(--desk-sidebar);
+  background: transparent;
 }
 .composer-media-menu {
   width: 290px;
@@ -49,7 +49,7 @@
 }
 .composer-model-tabs {
   display: flex;
-  background: var(--desk-sidebar);
+  background: transparent;
   border-radius: 8px;
   padding: 3px;
   margin: 12px 0;
@@ -62,7 +62,9 @@
   border-radius: 6px;
 }
 .composer-model-tabs button[aria-pressed="true"] {
-  background: var(--desk-surface);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .composer-media-option {
   display: flex;
@@ -142,9 +144,10 @@
   color: var(--desk-muted);
 }
 .parameter-choices button[aria-pressed="true"] {
-  border-color: var(--desk-ink);
-  color: var(--desk-ink);
-  background: var(--desk-sidebar);
+  border-color: var(--desk-accent);
+  color: var(--desk-accent);
+  background: transparent;
+  font-weight: 600;
 }
 .ratio-choices > div {
   display: grid;

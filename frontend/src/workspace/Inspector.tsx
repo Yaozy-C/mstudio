@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { ColorRequest } from "../timeline/ColorRequest";
@@ -5,7 +6,6 @@ import { VisualFields } from "../timeline/VisualFields";
 import { detachAudio } from "../timeline/detachAudio";
 import type { Project, Clip } from "../model";
 import { ClipInspectorPanels } from "../timeline/ClipInspectorPanels";
-import { InspectorTrackActions } from "../timeline/InspectorTrackActions";
 import {
   ImageSquare,
   Sun,
@@ -94,22 +94,14 @@ export function Inspector({ project, clipId, onChange }: Props) {
               asset?.hasAudio &&
               asset.kind === "video" &&
               video && (
-                <button
-                  className="inspector-action"
+                <ActionButton
+                  icon={Waveform}
                   onClick={() => onChange((p) => detachAudio(p, clip.id))}
                 >
-                  <Waveform size={20} />
                   {t("分离音频")}
-                </button>
+                </ActionButton>
               )}
           </div>
-          {track && (
-            <InspectorTrackActions
-              track={track}
-              project={project}
-              change={onChange}
-            />
-          )}
         </>
       ) : (
         <>
@@ -161,9 +153,6 @@ export function Inspector({ project, clipId, onChange }: Props) {
               }
             />
           </label>
-          <p className="subtle">
-            {t("精确剪辑请选中时间线片段。画布内容可以直接引用给 Agent。")}
-          </p>
         </>
       )}
     </div>

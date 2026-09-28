@@ -46,7 +46,6 @@ export function StudioSidebar({
         </span>
         m <i>/</i> studio
       </div>
-      <div className="nav-caption">WORKSPACE</div>
       <button
         className={`nav-item ${activePage === "projects" ? "active" : ""}`}
         aria-current={activePage === "projects" ? "page" : undefined}
@@ -72,10 +71,6 @@ export function StudioSidebar({
           {name}
         </button>
       ))}
-      <div className="nav-bottom">
-        <span className="online-dot" />
-        {t("本地工作室")} <small>v0.1</small>
-      </div>
     </nav>
   );
 }

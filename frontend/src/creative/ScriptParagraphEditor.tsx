@@ -1,5 +1,6 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
-import { Trash } from "@phosphor-icons/react";
+import { Trash, FilmStrip, Sparkle } from "@phosphor-icons/react";
 import { flushPendingEdits } from "../workspace/pendingEdits";
 import { writeScript } from "./scriptWrite";
 import { DurationInput } from "./ScriptTiming";
@@ -91,7 +92,8 @@ export function ScriptParagraphEditor({
         />
       ))}
       <footer>
-        <button
+        <ActionButton
+          icon={Trash}
           aria-label={t("{v0} · 删除段落", { v0: context })}
           title={t("删除段落，保留关联镜头；可撤销")}
           onClick={() => {
@@ -114,14 +116,15 @@ export function ScriptParagraphEditor({
             }));
           }}
         >
-          <Trash aria-hidden="true" /> {t("删除段落")}
-        </button>
+          {t("删除段落")}
+        </ActionButton>
         {shots.length > 0 && (
-          <button onClick={() => openShots(shots[0].id)}>
+          <ActionButton icon={FilmStrip} onClick={() => openShots(shots[0].id)}>
             {t("查看这段的")} {shots.length} {t("个镜头")}
-          </button>
+          </ActionButton>
         )}
-        <button
+        <ActionButton
+          icon={Sparkle}
           disabled={!s.action.trim() && !s.dialogue.trim()}
           onClick={() =>
             requestCreativeTask(
@@ -137,7 +140,7 @@ export function ScriptParagraphEditor({
           }
         >
           {shots.length ? t("用 AI 调整这段镜头") : t("用 AI 设计这段镜头")}
-        </button>
+        </ActionButton>
       </footer>
       <details onToggle={(e) => setSplitting(e.currentTarget.open)}>
         <summary>{t("手动创建镜头草稿")}</summary>

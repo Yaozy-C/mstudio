@@ -15,9 +15,10 @@
   background: transparent;
 }
 .inspector-tabs button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
+  background: transparent;
   font-weight: 600;
-  box-shadow: inset 0 -2px var(--desk-text);
+  box-shadow: none;
+  color: var(--desk-accent);
 }
 .color-request {
   display: grid;

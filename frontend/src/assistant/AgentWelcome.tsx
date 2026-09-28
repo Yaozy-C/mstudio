@@ -65,14 +65,7 @@ export function AgentWelcome({
       <div className="agent-welcome-mark">
         <AgentMark size={28} />
       </div>
-      <div className="eyebrow">LET’S CREATE TOGETHER</div>
-      <h3>
-        {editingFrame
-          ? t("想怎么调整？")
-          : hasContent
-            ? t("接下来，一起打磨。")
-            : t("你的下一个故事，从这里开始。")}
-      </h3>
+      {editingFrame && <h3>{t("想怎么调整？")}</h3>}
       <p>
         {editingFrame
           ? t(
@@ -100,11 +93,6 @@ export function AgentWelcome({
           <ArrowUpRight />
         </button>
       )}
-      <small>
-        {editingFrame
-          ? t("点结果，接着聊、接着改。图片和视频模型在输入框下方选择。")
-          : t("修改写入当前项目 · 生成内容前由你确认")}
-      </small>
     </div>
   );
 }

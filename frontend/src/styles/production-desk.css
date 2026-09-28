@@ -25,20 +25,20 @@ body,
   font-size: 13px;
   border-radius: 6px;
   color: var(--desk-text);
-  border-color: var(--desk-control);
-  background: var(--desk-surface);
+  border-color: transparent;
+  background: transparent;
 }
 .radix-themes button:hover:not(:disabled) {
-  background: var(--desk-sidebar);
+  background: transparent;
   border-color: var(--desk-rule);
 }
 .radix-themes button.primary {
-  background: var(--desk-accent);
+  background: var(--desk-text);
   border-color: var(--desk-accent);
-  color: var(--desk-muted);
+  color: var(--desk-surface);
 }
 .radix-themes button.primary:hover:not(:disabled) {
-  background: var(--desk-sidebar);
+  background: var(--desk-text);
 }
 .radix-themes :is(button, input, textarea, select):focus-visible {
   outline: 2px solid var(--desk-accent);
@@ -107,7 +107,7 @@ body,
   border: 0;
   color: var(--desk-accent);
 }
-.radix-themes :is(.nav-caption, .nav-bottom, .sidebar-project) {
+.radix-themes .sidebar-project {
   color: var(--desk-muted);
 }
 .radix-themes .nav-item {
@@ -117,8 +117,9 @@ body,
   font-size: 14px;
 }
 .radix-themes .nav-item.active {
-  background: var(--desk-bg);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .radix-themes .settings-nav {
   margin-top: 14px;
@@ -134,9 +135,10 @@ body,
   font-size: 14px;
 }
 .radix-themes .settings-nav button[aria-pressed="true"] {
-  background: var(--desk-bg);
+  background: transparent;
   border-left-color: var(--desk-accent);
-  color: var(--desk-text);
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .radix-themes .settings-nav svg {
   width: 19px;

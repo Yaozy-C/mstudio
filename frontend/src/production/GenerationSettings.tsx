@@ -130,11 +130,11 @@ export function GenerationSettings({
           <X size={18} />
         </button>
       </div>
-      <p className="generation-setting-note">
-        {project.nodes.find((n) => n.id === draft.ownerId)?.title ??
-          t("本次生成")}{" "}
-        {t("· 发起前设置")}
-      </p>
+      {draft.ownerId && (
+        <p className="generation-setting-note">
+          {project.nodes.find((n) => n.id === draft.ownerId)?.title}
+        </p>
+      )}
       <GenerationMethod draft={draft} models={models} change={patch} />
       {!inline && (
         <label className="generation-setting-field">

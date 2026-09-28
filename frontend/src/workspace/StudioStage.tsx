@@ -48,7 +48,13 @@ export function StudioStage({
       ) : (
         <Preview project={props.project} clock={clock} />
       )}
-      <TaskPanel project={props.project} canvas={canvas} settings={settings} />
+      {view !== "film" && (
+        <TaskPanel
+          project={props.project}
+          canvas={canvas}
+          settings={settings}
+        />
+      )}
     </main>
   );
 }

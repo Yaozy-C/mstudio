@@ -15,7 +15,7 @@
   font-size: 13px;
 }
 .radix-themes button:hover:not(:disabled) {
-  background: var(--desk-sidebar);
+  background: transparent;
   border-color: var(--desk-control);
 }
 .radix-themes button.primary {
@@ -48,8 +48,9 @@ input[type="range"] {
     .settings-nav button[aria-pressed="true"],
     .hub-categories button[aria-pressed="true"]
   ) {
-  background: #dedad1;
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .radix-themes .settings-nav button[aria-pressed="true"] {
   border-left-color: var(--desk-accent);
@@ -83,9 +84,10 @@ input[type="range"] {
   color: var(--desk-text);
 }
 .radix-themes .quote-button.attached {
-  color: #ad3523;
+  color: var(--desk-accent);
   border-color: var(--desk-accent);
-  background: #f6e6e0;
+  background: transparent;
+  font-weight: 600;
 }
 .radix-themes .agent-message.user {
   background: transparent;
@@ -130,10 +132,6 @@ input[type="range"] {
   font-size: 36px;
   letter-spacing: -1px;
   font-weight: 600;
-}
-.library-main > .eyebrow {
-  color: var(--desk-muted);
-  letter-spacing: 1px;
 }
 .radix-themes .project-card {
   border: 0;

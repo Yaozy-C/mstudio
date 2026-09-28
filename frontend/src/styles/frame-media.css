@@ -19,8 +19,10 @@
   font-size: 12px;
 }
 .radix-themes .media-scopes button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
-  box-shadow: inset 0 -2px var(--desk-text);
+  background: transparent;
+  box-shadow: none;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .media-scope-hint {
   font-size: 11px;
@@ -63,7 +65,9 @@
   color: var(--desk-muted);
 }
 .radix-themes .media-categories button[aria-pressed="true"] {
-  background: #dcd8ce;
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .dock-media .media-foot {
   flex-shrink: 0;

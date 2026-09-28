@@ -23,10 +23,10 @@ button {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid var(--desk-rule);
+  border: 1px solid transparent;
   border-radius: 7px;
   color: var(--desk-text);
-  background: var(--desk-bg);
+  background: transparent;
   padding: 8px 12px;
   font-size: 12px;
   transition:
@@ -34,7 +34,7 @@ button {
     border-color 0.15s;
 }
 button:hover {
-  background: var(--desk-sidebar);
+  background: transparent;
   border-color: var(--desk-rule);
 }
 button:disabled {
@@ -47,13 +47,13 @@ button svg {
   height: 17px;
 }
 button.primary {
-  background: var(--desk-sidebar);
-  color: var(--desk-muted);
+  background: var(--desk-text);
+  color: var(--desk-surface);
   border-color: var(--desk-rule);
   font-weight: 600;
 }
 button.primary:hover {
-  background: var(--desk-sidebar);
+  background: var(--desk-text);
 }
 button.icon-button {
   width: 31px;

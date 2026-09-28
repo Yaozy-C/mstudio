@@ -113,13 +113,6 @@ export function MediaModels({
       <div className="hub-section-head">
         <div>
           <h3>{t("{kind}模型", { kind: t(mediaLabels[kind]) })}</h3>
-          <p>
-            {kind === "image"
-              ? t("参考画面、分镜静帧与视觉探索。")
-              : kind === "video"
-                ? t("让分镜变成镜头，让创意开始运动。")
-                : t("为画面添加声音、音乐与氛围。")}
-          </p>
         </div>
         <button
           className="primary"

@@ -123,7 +123,9 @@
   background: transparent;
 }
 .attachment-tabs button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .attachment-tabs small {
   margin-left: auto;

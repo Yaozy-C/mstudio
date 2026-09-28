@@ -62,7 +62,7 @@ test("language UI, errors and dynamic messages switch in both directions", () =>
     renderToStaticMarkup(
       <ScriptNextStep hasScript count={3} next={() => {}} />,
     ),
-  ).toContain("3 shots planned");
+  ).toContain("3 shots");
   setLanguage("zh-CN");
   expect(renderToStaticMarkup(<LanguageSettings />)).toContain(
     'aria-label="界面语言"',

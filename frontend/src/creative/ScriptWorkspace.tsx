@@ -68,9 +68,7 @@ export function ScriptWorkspace({
     <section className="script-workspace">
       <header className="script-heading">
         <div>
-          <small>01 / SCRIPT</small>
-          <h1>{t("从想法开始，让 AI 起草。")}</h1>
-          <p>{t("先写清声画内容，再设计整片镜头与关键画格。")}</p>
+          <h1>{t("脚本")}</h1>
         </div>
       </header>
       {plan ? (

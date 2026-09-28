@@ -70,8 +70,7 @@ export function ExportDialog({
       <section className="modal export-modal">
         <header>
           <div>
-            <div className="eyebrow">FINAL CUT</div>
-            <h2>{path ? t("成片已就绪") : t("导出你的作品")}</h2>
+            <h2>{path ? t("成片已就绪") : t("导出成片")}</h2>
           </div>
           <button className="icon-button" disabled={busy} onClick={onClose}>
             <X />

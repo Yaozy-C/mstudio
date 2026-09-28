@@ -1,3 +1,4 @@
+import { useTaskNavigation } from "./useTaskNavigation";
 import { initialPanels, toggleStudioPanel } from "./studioPanels";
 import { useSidebarWidths } from "../ui/useSidebarWidths";
 import { GenerationTaskSettings } from "../production/GenerationTaskSettings";
@@ -45,16 +46,11 @@ export function Studio({ initial, onBack }: StudioProps) {
   });
   const [view, setView] = useState<StudioView>("script");
   const activeView = panels.preview ? "film" : view;
-  useEffect(() => {
-    const show = (event: Event) => {
-      const id = (event as CustomEvent<string>).detail;
-      setNodeId(id);
-      setView("script");
-      setPanels((p) => ({ ...p, preview: false }));
-    };
-    window.addEventListener("studio-show-script", show);
-    return () => window.removeEventListener("studio-show-script", show);
-  }, []);
+  useTaskNavigation(activeView, (next, id) => {
+    if (id) setNodeId(id);
+    setView(next);
+    setPanels((p) => ({ ...p, preview: false }));
+  });
   const togglePanel = (key: keyof typeof panels) => {
     if (key === "agent" || key === "inspector") setCreationTab(null);
     if (key === "inspector" && nodeId && !clipId) setEditing(nodeId);

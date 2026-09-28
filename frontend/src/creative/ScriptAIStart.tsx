@@ -10,13 +10,7 @@ export function ScriptAIStart({
   useLanguage();
   return (
     <section className="script-ai-start" aria-label={t("AI 脚本起草")}>
-      <small>{t("脚本 → 镜头方案 → 分镜图")}</small>
-      <h2>{t("第一份脚本，从对话开始。")}</h2>
-      <p>
-        {t(
-          "在右侧聊天里告诉创意编剧你想拍什么。用 @ 或素材右键菜单附加参考资料， 生成的脚本会显示在这里。",
-        )}
-      </p>
+      <h2>{t("暂无脚本")}</h2>
       <div className="script-ai-actions">
         <button
           className="primary"

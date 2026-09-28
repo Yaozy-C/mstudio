@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -187,8 +188,9 @@ export function SpeechPanel({
         </label>
       </fieldset>
       <div className="speech-submit">
-        <button
-          className="inspector-action speech-generate"
+        <ActionButton
+          icon={ArrowRight}
+          className="speech-generate"
           disabled={
             busy ||
             !native ||
@@ -200,9 +202,8 @@ export function SpeechPanel({
           }
           onClick={() => void generate()}
         >
-          <ArrowRight size={20} />
           {busy ? t("正在配音…") : t("生成并加入时间线")}
-        </button>
+        </ActionButton>
         <p className="subtle">
           {!text.trim() ? t("填写配音稿后即可生成") : t("从当前播放位置插入")}
         </p>

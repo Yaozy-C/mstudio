@@ -212,9 +212,6 @@ export function GenerationRun({
         <div className="run-actions">
           <div role="status" aria-live="polite">
             <span>{t(runProgress(task))}</span>
-            {!task.error && task.status !== "UNKNOWN" && (
-              <small> {t("· 自动跟踪进度，完成后会收取结果")}</small>
-            )}
             {task.error && (
               <small>
                 {task.status === "UNKNOWN"

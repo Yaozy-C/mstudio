@@ -12,11 +12,8 @@
   flex-direction: column;
   background: var(--desk-bg);
 }
-.nav-caption {
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  color: var(--desk-muted);
-  margin: 56px 12px 16px;
+.library-nav > .brand {
+  margin-bottom: 32px;
 }
 .nav-item {
   justify-content: flex-start;
@@ -33,18 +30,9 @@
   font-size: 11px;
 }
 .nav-item.active {
-  background: var(--desk-bg);
-  color: var(--desk-text);
-}
-.nav-bottom {
-  margin-top: auto;
-  padding: 20px 10px 0;
-  font-size: 11px;
-  color: var(--desk-muted);
-}
-.nav-bottom small {
-  float: right;
-  color: var(--desk-muted);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .library-main {
   padding: 62px 60px;
@@ -60,11 +48,6 @@
   font-size: 34px;
   font-weight: 500;
   letter-spacing: -1px;
-}
-.library-heading p {
-  margin-top: 15px;
-  color: var(--desk-muted);
-  font-size: 13px;
 }
 .library-heading .primary {
   padding: 12px 19px;
@@ -177,20 +160,6 @@
   color: var(--desk-muted);
   border-radius: 10px;
 }
-.new-project-card span {
-  font-size: 11px;
-  color: var(--desk-muted);
-}
-.workflow-intro {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid var(--desk-rule);
-  margin-top: 72px;
-  padding-top: 24px;
-  color: var(--desk-muted);
-  font-size: 11px;
-  letter-spacing: 1px;
-}
 
 .studio-sidebar {
   position: sticky;
@@ -227,8 +196,9 @@
   text-align: left;
 }
 .settings-nav button[aria-pressed="true"] {
-  background: var(--desk-bg);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .settings-nav svg {
   width: 17px;

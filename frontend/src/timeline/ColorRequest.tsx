@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { CircleHalf, Sparkle, ArrowRight } from "@phosphor-icons/react";
@@ -33,15 +34,14 @@ export function ColorRequest({
   return (
     <>
       <div className="inspector-comparison">
-        <button
-          className="inspector-action"
+        <ActionButton
+          icon={CircleHalf}
           aria-pressed={comparing}
           disabled={!clip.visual}
           onClick={() => setCompare((v) => !v)}
         >
-          <CircleHalf size={22} />
           {comparing ? t("返回调色效果") : t("原片对比")}
-        </button>
+        </ActionButton>
       </div>
       {children}
       <section className="inspector-section inspector-agent">
@@ -70,14 +70,14 @@ export function ColorRequest({
             onChange={(e) => setText(e.target.value)}
             placeholder={t("整体偏冷，保留产品原色")}
           />
-          <button
-            className="inspector-action inspector-send"
+          <ActionButton
+            icon={ArrowRight}
+            className="inspector-send"
             disabled={!text.trim()}
             type="submit"
           >
-            <ArrowRight size={20} />
             {t("发起调色")}
-          </button>
+          </ActionButton>
         </form>
       </section>
     </>

@@ -27,19 +27,19 @@
   gap: 4px;
   padding: 3px;
   margin: 12px 0;
-  border-radius: 8px;
-  background: var(--desk-sidebar);
+  background: transparent;
 }
 .reference-picker-tabs button {
   flex: 1;
   border: 0;
-  border-radius: 6px;
   padding: 6px;
   font-size: 12px;
   background: transparent;
 }
 .reference-picker-tabs button[aria-pressed="true"] {
-  background: var(--desk-surface);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .reference-picker input {
   width: 100%;

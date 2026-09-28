@@ -1332,5 +1332,9 @@
   "宋体": "Serif",
   "等宽": "Monospace",
   "字/分钟": "words/min",
-  "删除字幕 {number}": "Delete caption {number}"
+  "删除字幕 {number}": "Delete caption {number}",
+  "暂无脚本": "No script yet",
+  "暂无字幕": "No subtitles yet",
+  "画布为空": "Canvas is empty",
+  "{v0} 个镜头": "{v0} shots"
 }

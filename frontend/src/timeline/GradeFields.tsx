@@ -1,5 +1,6 @@
+import { ActionButton } from "../ui/ActionButton";
 import { useState } from "react";
-import { Sun } from "@phosphor-icons/react";
+import { Sun, ArrowCounterClockwise } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import { defaultGrade, gradeControls, type Grade } from "./grading";
 import { InspectorControl } from "./InspectorControl";
@@ -49,13 +50,13 @@ export function GradeFields({
   return (
     <details className="inspector-section" open={grade ? true : undefined}>
       <summary>{t("自定义调色")}</summary>
-      <button
-        className="inspector-action"
+      <ActionButton
+        icon={ArrowCounterClockwise}
         disabled={!grade}
         onClick={() => change(undefined)}
       >
         {t("重置调色方案")}
-      </button>
+      </ActionButton>
       {(
         Object.entries(gradeControls) as [
           keyof typeof gradeControls,

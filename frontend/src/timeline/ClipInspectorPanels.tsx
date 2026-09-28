@@ -1,3 +1,4 @@
+import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import {
   ArrowsHorizontal,
@@ -54,13 +55,12 @@ export function ClipInspectorPanels({
             max={200}
             change={(y) => patch({ y: y / 100 })}
           />
-          <button
-            className="inspector-action"
+          <ActionButton
+            icon={Crosshair}
             onClick={() => patch({ x: 0.5, y: 0.5 })}
           >
-            <Crosshair size={20} />
             {t("居中")}
-          </button>
+          </ActionButton>
         </section>
         <section className="inspector-section">
           <h3>{t("大小")}</h3>

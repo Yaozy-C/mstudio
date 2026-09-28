@@ -32,8 +32,9 @@
   color: var(--desk-muted);
 }
 .settings-tabs button[aria-pressed="true"] {
-  background: var(--desk-sidebar);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .model-default {
   padding: 16px 18px;
@@ -271,7 +272,6 @@
     margin-left: 52px;
   }
 }
-
 .service-picker > button {
   margin-top: 10px;
 }
@@ -285,7 +285,6 @@
   font-size: 15px;
   margin: 0;
 }
-
 .model-inputs > strong {
   font-size: 13px;
 }

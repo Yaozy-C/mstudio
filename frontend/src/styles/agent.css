@@ -161,7 +161,7 @@
 }
 .agent-task-toolbar .agent-new-task:hover,
 .agent-task-toolbar .agent-new-task[aria-pressed="true"] {
-  background: var(--desk-sidebar);
+  background: transparent;
 }
 .agent-task-toolbar .agent-new-task:disabled {
   opacity: 0.45;

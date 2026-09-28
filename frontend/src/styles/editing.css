@@ -51,11 +51,12 @@
   color: var(--desk-text);
 }
 .radix-themes .track-heading button:hover {
-  background: var(--desk-sidebar);
+  background: transparent;
 }
 .radix-themes .track-heading button[aria-pressed="true"] {
-  color: var(--desk-muted);
-  background: var(--desk-sidebar);
+  color: var(--desk-accent);
+  background: transparent;
+  font-weight: 600;
 }
 .track-hidden {
   opacity: 0.4;
@@ -148,8 +149,9 @@
   background: transparent;
 }
 .creation-tabs button.active {
-  background: var(--desk-sidebar);
-  color: var(--desk-text);
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
 }
 .creation-form {
   padding: 14px;

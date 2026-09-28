@@ -80,9 +80,6 @@
   border-top: 1px solid var(--desk-rule);
   padding-top: 20px;
 }
-.radix-themes .dock-creation .speech-generate {
-  color: var(--desk-accent);
-}
 .speech-submit p,
 .dock-creation .creation-form > .subtle {
   font-size: 12px;
@@ -96,12 +93,6 @@
   gap: 8px;
   padding: 16px 0;
   border-bottom: 1px solid var(--desk-rule);
-}
-.radix-themes .dock-creation .subtitle-actions button {
-  padding: 6px 0;
-  gap: 6px;
-  font-size: 13px;
-  min-height: 32px;
 }
 .radix-themes .dock-creation .caption-editor {
   border: 0;
@@ -146,7 +137,6 @@
   background: transparent;
   font-size: 14px;
 }
-.dock-creation .subtitle-actions svg,
 .dock-creation .caption-editor > .inline svg {
   width: 20px;
   height: 20px;

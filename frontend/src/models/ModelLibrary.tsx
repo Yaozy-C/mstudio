@@ -56,9 +56,6 @@ export function ModelLibrary({
           {t("接入其他模型")}
         </button>
       </div>
-      <p className="model-hint">
-        {t("选择型号后填写连接信息。没有找到需要的型号，可以接入其他模型。")}
-      </p>
       <div className="model-picker-filter">
         <StudioSelect
           label={t("筛选厂商")}

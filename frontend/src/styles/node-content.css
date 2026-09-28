@@ -21,19 +21,19 @@
   border-radius: 6px;
 }
 .node-actions .node-reference {
-  background: var(--desk-sidebar);
+  background: transparent;
   color: var(--desk-text);
   font-size: 12px;
   padding: 6px 10px;
   gap: 5px;
 }
 .node-actions .node-reference.attached {
-  background: var(--desk-sidebar);
+  background: transparent;
   color: var(--desk-text);
 }
 .node-actions button:hover,
 .node-actions button:focus-visible {
-  background: var(--desk-sidebar);
+  background: transparent;
   color: var(--desk-text);
 }
 .canvas-node-editor {

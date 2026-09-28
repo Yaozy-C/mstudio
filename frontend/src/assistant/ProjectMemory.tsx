@@ -95,10 +95,9 @@ export function ProjectMemory({
   return (
     <section className="project-memory">
       <div className="hub-intro">
-        <div className="eyebrow">
-          {name} {t("· 项目记忆")}
-        </div>
-        <h2>{t("让后续创作记得已确定的事。")}</h2>
+        <h2>
+          {name} · {t("项目记忆")}
+        </h2>
         <p>
           {t(
             "保存目标、约束与关键决定。同一项目的 Agent 共享，切换模型或清空聊天后保留。",
