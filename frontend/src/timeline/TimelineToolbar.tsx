@@ -13,6 +13,7 @@ import { TimelineTransport } from "./TimelineTransport";
 import { ClockReadout } from "./ClockReadout";
 import { frameTime } from "./geometry";
 import { ShortcutHelp } from "./ShortcutHelp";
+import { packClips } from "./packClips";
 import { addTrack } from "./document";
 export function TimelineToolbar({
   selectedCaption,
@@ -86,6 +87,16 @@ export function TimelineToolbar({
         </button>
         <button onClick={() => onChange((p) => addTrack(p, "audio"))}>
           {t("＋音轨")}
+        </button>
+        <button
+          title={t("所有轨道按当前顺序从 0 秒首尾相接（可撤销）")}
+          disabled={!project.clips.length}
+          onClick={() => {
+            clock.pause();
+            onChange((p) => packClips(p));
+          }}
+        >
+          {t("一键排片")}
         </button>
       </div>
       <span className="time-display">

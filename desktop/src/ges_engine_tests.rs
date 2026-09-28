@@ -61,6 +61,19 @@ fn ges_composites_seeks_replays_and_closes() {
                 opacity: 1.,
             },
             Layer {
+                // A transition overlay starting between output frames, as
+                // produced by retimed clips (for example 12.69 s at 30 fps).
+                path: red.to_string_lossy().into(),
+                start: 0.69,
+                duration: 0.5,
+                trim: 0.,
+                x: 0,
+                y: 0,
+                width: 160,
+                height: 90,
+                opacity: 1.,
+            },
+            Layer {
                 path: png.to_string_lossy().into(),
                 start: 0.5,
                 duration: 1.,
@@ -105,6 +118,21 @@ fn ges_composites_seeks_replays_and_closes() {
             }
             assert!(start.elapsed() < Duration::from_secs(5));
             std::thread::sleep(Duration::from_millis(20));
+        }
+    }
+    // No sleeps between commands: replies must acknowledge completed seeks,
+    // even when crossing layer boundaries immediately after a play/pause.
+    for _ in 0..4 {
+        for target in [14, 16, 20, 21, 35, 36, 44, 46, 0, 59] {
+            p.control("pause", 0).unwrap();
+            p.control("seek", target).unwrap();
+            let frame = p.frame(0);
+            assert_eq!(
+                u32::from_le_bytes(frame[12..16].try_into().unwrap()),
+                target as u32
+            );
+            assert!(frame[16] > 180 && frame[17] < 40, "black frame at {target}");
+            p.control("play", 0).unwrap();
         }
     }
     drop(p);

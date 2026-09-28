@@ -1334,5 +1334,17 @@
   "{v0} 个镜头": "{v0} shots",
   "预览清晰度": "Preview quality",
   "流畅": "Smooth",
-  "清晰": "Sharp"
+  "清晰": "Sharp",
+  "所有轨道按当前顺序从 0 秒首尾相接（可撤销）": "Arrange each track consecutively from 0 seconds in timeline order (undoable)",
+  "此轨道按当前顺序从 0 秒首尾相接（可撤销）": "Arrange this track consecutively from 0 seconds in timeline order (undoable)",
+  "排片轨道 {v0}": "Arrange track {v0}",
+  "一键排片": "Arrange clips",
+  "变速方式": "Retime mode",
+  "播放倍率": "Playback rate",
+  "目标时长": "Target duration",
+  "输入 {v0}–{v1} 秒，精确到 0.1 秒；回车或离开输入框应用": "Enter {v0}–{v1} seconds in 0.1-second increments; press Enter or leave the field to apply",
+  "片段过短，无法按 0.1 秒设置目标时长": "This clip is too short for a target duration in 0.1-second increments",
+  "重新加载预览": "Reload preview",
+  "后一段画面从圆心向外扩大，直到铺满画面。": "The incoming clip expands from the center to fill the frame.",
+  "前一段画面在圆内缩小，露出后一段画面。": "The outgoing clip shrinks inside a circle to reveal the incoming clip."
 }

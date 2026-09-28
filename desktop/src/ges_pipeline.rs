@@ -7,6 +7,15 @@ use std::sync::{Arc, Mutex};
 pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<ges::Pipeline> {
     gst::init()?;
     ges::init()?;
+    // VideoToolbox can return an opaque black frame when GES seeks across
+    // overlapping H.264 layers. Use the bundled software decoder for this
+    // bounded-resolution preview, including normal playback through a seam.
+    #[cfg(target_os = "macos")]
+    for name in ["vtdec", "vtdec_hw"] {
+        if let Some(factory) = gst::ElementFactory::find(name) {
+            factory.set_rank(gst::Rank::NONE);
+        }
+    }
     for name in [
         "nlecomposition",
         "compositor",

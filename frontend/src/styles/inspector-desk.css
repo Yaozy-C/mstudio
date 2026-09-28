@@ -263,3 +263,16 @@
   padding: 32px 0;
   gap: 28px;
 }
+
+.inspector-control .retime-hint {
+  margin: 8px 0;
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.inspector-control .retime-hint[role="alert"] {
+  color: var(--desk-accent);
+}
+.inspector-number input[aria-invalid="true"] {
+  outline: 1px solid var(--desk-accent);
+}

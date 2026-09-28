@@ -32,6 +32,7 @@ sh scripts/check.sh
 python3 scripts/test-detached-audio.py
 python3 scripts/test-visual-effects.py
 python3 scripts/test-transitions.py
+python3 scripts/test-circle-transitions.py
 ```
 
 ## 可编辑调色、转场与抽帧
@@ -54,7 +55,9 @@ cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D war
 cargo test --manifest-path desktop/Cargo.toml --locked
 ```
 
-`ges_composites` 测试使用真实 GES 管线验证透明字幕、定位、暂停、末尾重播与销毁重开。`test-detached-audio.py` 对比 GES 使用的混音缓存中分离前后的实际 PCM，验证音量、起点和静音行为。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
+`ges_composites` 测试使用真实 GES 管线验证透明字幕、定位、暂停、末尾重播与销毁重开。圆形展开/收拢使用像素坐标圆形遮罩与 2 像素羽化，进度覆盖到最后一个编码帧；短转场按帧数输出，素材尾部先解码预留帧再补帧，避免空输入。`test-circle-transitions.py` 检查横竖画幅、24/30/60 fps、0.05–1 秒转场的每帧单调性和首尾画面。`ges_playback_frames` 示例可记录实际播放的连续帧，补充暂停寻帧测试。`ges_seek_stress plan.json` 连续执行 800 次暂停、定位、播放；原生播放器在回执前等待 GES 状态切换和寻帧完成，避免快速定位相互冲突。macOS 预览禁用 `vtdec` / `vtdec_hw`，改用随包软件解码器：VideoToolbox 在转场叠层寻帧时可返回不透明黑帧。此回归需要在与桌面应用相同的系统权限下检查；隔离环境可能直接回退软件解码而掩盖问题。预览错误后可点击「重新加载预览」恢复。前端在目标帧实际绘制后才显示新预览，寻帧期间及暂停时丢弃不属于目标位置的旧帧；`ges_seek_pixels plan.json first-frame last-frame` 可在已知非黑画面区间反复定位并检查像素，避免只检验命令是否成功。
+
+`test-detached-audio.py` 对比 GES 使用的混音缓存中分离前后的实际 PCM，验证音量、起点和静音行为。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
 
 `test-visual-effects.py` 使用合成素材验证黑白、复古、柔焦、暗角和调色的原生预览与 FFmpeg 导出，比较实际输出像素。音轨波形在后台按素材采样并缓存，裁切、变速和时间线缩放复用缓存。
 

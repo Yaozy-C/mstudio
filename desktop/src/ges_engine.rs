@@ -8,7 +8,7 @@ use gstreamer_editing_services as ges;
 use mstudio::preview_ges::Plan;
 use pipeline::build;
 use std::sync::{Arc, Mutex, mpsc};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
@@ -25,6 +25,60 @@ pub struct Player {
 fn time(s: f64) -> gst::ClockTime {
     gst::ClockTime::from_nseconds((s * 1e9).round() as u64)
 }
+// A seek returning Ok only means that its event was accepted. Wait for
+// preroll/state completion before acknowledging it to the command queue.
+fn settle(pipeline: &ges::Pipeline) -> Result<(), String> {
+    let (result, _, _) = pipeline.state(gst::ClockTime::from_seconds(5));
+    match result {
+        Ok(gst::StateChangeSuccess::Async) => Err("预览定位等待超时，请重试".into()),
+        Ok(_) => Ok(()),
+        Err(error) => Err(format!("预览状态切换失败：{error}")),
+    }
+}
+fn seek(
+    pipeline: &ges::Pipeline,
+    frames: &Mutex<Vec<u8>>,
+    frame: i32,
+    fps: u32,
+    resume: bool,
+) -> Result<(), String> {
+    // Seek while paused so its preroll cannot run past the requested frame.
+    pipeline
+        .set_state(gst::State::Paused)
+        .map_err(|e| e.to_string())?;
+    settle(pipeline)?;
+    pipeline
+        .seek_simple(
+            gst::SeekFlags::FLUSH | gst::SeekFlags::ACCURATE,
+            time(frame as f64 / fps as f64),
+        )
+        .map_err(|e| e.to_string())?;
+    settle(pipeline)?;
+    // At EOS get_state can finish before the new preroll callback. The frame
+    // packet is the authoritative completion signal used by the WebView.
+    let deadline = Instant::now() + Duration::from_secs(5);
+    loop {
+        let ready = {
+            let packet = frames.lock().unwrap();
+            packet.len() > 16
+                && u32::from_le_bytes(packet[12..16].try_into().unwrap()) == frame as u32
+        };
+        if ready {
+            break;
+        }
+        if Instant::now() >= deadline {
+            return Err("预览定位等待画面超时，请重新加载预览".into());
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    if resume {
+        pipeline
+            .set_state(gst::State::Playing)
+            .map_err(|e| e.to_string())?;
+        settle(pipeline)?;
+    }
+    Ok(())
+}
 impl Player {
     pub fn open(plan: Plan) -> Result<Self, String> {
         let (tx, rx) = mpsc::channel::<(String, i32, Reply)>();
@@ -34,7 +88,7 @@ impl Player {
         let join = std::thread::spawn(move || {
             let context = ges::glib::MainContext::default();
             let _ = context.with_thread_default(|| {
-                let result = build(&plan, copy);
+                let result = build(&plan, copy.clone());
                 match result {
                     Err(e) => {
                         let _ = ready_tx.send(Err(e.to_string()));
@@ -81,13 +135,7 @@ impl Player {
                                 match action.as_str() {
                                     "play" => {
                                         if ended {
-                                            pipeline
-                                                .seek_simple(
-                                                    gst::SeekFlags::FLUSH
-                                                        | gst::SeekFlags::ACCURATE,
-                                                    gst::ClockTime::ZERO,
-                                                )
-                                                .map_err(|e| e.to_string())?;
+                                            seek(&pipeline, &copy, 0, plan.fps, false)?;
                                             ended = false;
                                         }
                                         pipeline
@@ -102,19 +150,20 @@ impl Player {
                                         playing = false;
                                     }
                                     "seek" => {
-                                        pipeline
-                                            .seek_simple(
-                                                gst::SeekFlags::FLUSH | gst::SeekFlags::ACCURATE,
-                                                time(
-                                                    frame.clamp(0, total - 1) as f64
-                                                        / plan.fps as f64,
-                                                ),
-                                            )
-                                            .map_err(|e| e.to_string())?;
+                                        seek(
+                                            &pipeline,
+                                            &copy,
+                                            frame.clamp(0, total - 1),
+                                            plan.fps,
+                                            playing,
+                                        )?;
                                         ended = false;
                                     }
                                     "status" => {}
                                     _ => return Err("未知播放指令".into()),
+                                }
+                                if matches!(action.as_str(), "seek" | "pause" | "play") {
+                                    settle(&pipeline)?;
                                 }
                                 let position = pipeline
                                     .query_position::<gst::ClockTime>()

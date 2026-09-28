@@ -138,6 +138,12 @@ function Seam({
             onChange={(e) => apply(value!.kind, +e.target.value)}
           />
         </label>
+        {value?.kind === "circleopen" && (
+          <p>{t("后一段画面从圆心向外扩大，直到铺满画面。")}</p>
+        )}
+        {value?.kind === "circleclose" && (
+          <p>{t("前一段画面在圆内缩小，露出后一段画面。")}</p>
+        )}
         {value?.kind === "custom" && (
           <TransitionDesignFields
             design={value.design!}

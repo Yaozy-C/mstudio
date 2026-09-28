@@ -123,7 +123,7 @@ pub fn prepare(
         let w = ((spec.width as f64 * ratio / 2.).round() as u32 * 2).max(2);
         let h = ((spec.height as f64 * ratio / 2.).round() as u32 * 2).max(2);
         let mut hash = std::collections::hash_map::DefaultHasher::new();
-        ("transition-v3", w, h, spec.fps).hash(&mut hash);
+        ("transition-v4", w, h, spec.fps).hash(&mut hash);
         for (c, a) in [(left, &a), (right, &b)] {
             serde_json::to_string(c)?.hash(&mut hash);
             a.path.hash(&mut hash);

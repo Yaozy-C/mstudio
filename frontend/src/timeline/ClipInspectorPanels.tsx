@@ -1,3 +1,4 @@
+import { ClipSpeedControl } from "./ClipSpeedControl";
 import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import {
@@ -125,13 +126,9 @@ export function ClipInspectorPanels({
             <Gauge size={20} />
             {t("速度")}
           </h3>
-          <InspectorControl
-            label={t("播放速度")}
-            value={clip.speed}
-            unit="×"
-            min={0.25}
-            max={4}
-            step={0.05}
+          <ClipSpeedControl
+            key={clip.id}
+            clip={clip}
             change={(speed) => patch({ speed })}
           />
           <div className="inspector-duration">

@@ -1,6 +1,6 @@
 import { t, useLanguage } from "../i18n";
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, SkipBack } from "@phosphor-icons/react";
+import { Play, Pause, SkipBack, ArrowClockwise } from "@phosphor-icons/react";
 import { bridge } from "../bridge";
 import type { Project } from "../model";
 import type { PlaybackClock } from "./clock";
@@ -10,6 +10,7 @@ import { previewSpec } from "./previewSpec";
 import { startPreviewFrames } from "./previewFrames";
 import { StudioSelect } from "../ui/StudioSelect";
 import { PreviewCommands } from "./previewCommands";
+import { ActionButton } from "../ui/ActionButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
 type Status = {
   frame: number;
@@ -30,6 +31,7 @@ export function NativePreview({
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
   const requestedSpec = previewSpec(project);
   const [settled, setSettled] = useState({
     id: project.id,
@@ -106,10 +108,28 @@ export function NativePreview({
       }
       opened = true;
       command("seek", Math.round(clock.getSnapshot().time * doc.fps));
-      clock.ready = true;
-      setReady(true);
       if (canvas.current)
-        stopFrames = startPreviewFrames(canvas.current, token, fail);
+        stopFrames = startPreviewFrames(
+          canvas.current,
+          (last) =>
+            bridge<ArrayBuffer>("native_preview_frame", { token, last }),
+          fail,
+          (position) => {
+            const state = clock.getSnapshot();
+            const target = Math.max(
+              0,
+              Math.min(
+                Math.ceil(clock.total * doc.fps) - 1,
+                Math.round(state.time * doc.fps),
+              ),
+            );
+            return !commands.busy && (state.playing || position === target);
+          },
+          () => {
+            clock.ready = true;
+            setReady(true);
+          },
+        );
       timer = setInterval(async () => {
         if (polling || !alive || commands.busy) return;
         const revision = commands.revision;
@@ -143,7 +163,7 @@ export function NativePreview({
         () => {},
       );
     };
-  }, [spec, project.id, clock, edge]);
+  }, [spec, project.id, clock, edge, retry]);
   return (
     <div className="preview">
       <header>
@@ -177,7 +197,17 @@ export function NativePreview({
           </div>
         )}
       </div>
-      {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
+      {error && (
+        <>
+          <ErrorNotice error={error} fallback="OPERATION_FAILED" />
+          <ActionButton
+            icon={ArrowClockwise}
+            onClick={() => setRetry((n) => n + 1)}
+          >
+            {t("重新加载预览")}
+          </ActionButton>
+        </>
+      )}
       <div className="preview-transport">
         <button
           title={t("回到起点 Home")}

@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory(prefix='mstudio-transitions-') as directory:
         if kind=='fade': assert mid[0]>80 and mid[2]>80,(kind,mid)
         if kind=='fadeblack': assert max(mid)<90,(kind,mid)
         if kind=='fadewhite': assert min(mid)>170,(kind,mid)
-        if kind in ['fade','slideleft','custom']:
+        if kind in ['fade','slideleft','circleopen','circleclose','custom']:
             preview=xml; exported=folder/'export.mp4'
             run(['cargo','run','--quiet','--example','render_fixture',fixture,folder/'render',exported])
             for t in [1,1.6,2,2.4,3]:

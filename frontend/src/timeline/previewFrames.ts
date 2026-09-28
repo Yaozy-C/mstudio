@@ -1,4 +1,3 @@
-import { bridge } from "../bridge";
 export function decodePreviewFrame(buffer: ArrayBuffer) {
   if (!buffer.byteLength) return null;
   if (buffer.byteLength < 16) throw new Error("预览帧数据不完整");
@@ -14,17 +13,26 @@ export function decodePreviewFrame(buffer: ArrayBuffer) {
     buffer.byteLength !== 16 + width * height * 4
   )
     throw new Error("预览帧尺寸无效");
-  return { sequence, width, height, pixels: new Uint8ClampedArray(buffer, 16) };
+  return {
+    sequence,
+    position: header.getUint32(12, true),
+    width,
+    height,
+    pixels: new Uint8ClampedArray(buffer, 16),
+  };
 }
 // One request in flight; no accumulating frame queue while the UI is busy.
 export function startPreviewFrames(
   canvas: HTMLCanvasElement,
-  token: string,
+  read: (last: number) => Promise<ArrayBuffer>,
   fail: (e: unknown) => void,
+  accept: (position: number) => boolean = () => true,
+  ready: () => void = () => {},
 ) {
   let alive = true,
     scheduled = 0,
-    last = 0;
+    last = 0,
+    presented = false;
   const context = canvas.getContext("2d");
   if (!context) {
     fail(new Error("无法创建预览画布"));
@@ -34,13 +42,12 @@ export function startPreviewFrames(
     if (!alive) return;
     try {
       if (!document.hidden) {
-        const data = await bridge<ArrayBuffer>("native_preview_frame", {
-          token,
-          last,
-        });
+        const data = await read(last);
         if (!alive) return;
         const frame = decodePreviewFrame(data);
-        if (frame) {
+        // Recheck after the async read: a seek may have started while this
+        // request was in flight. Never paint preroll/old-position frames.
+        if (frame && accept(frame.position)) {
           if (canvas.width !== frame.width || canvas.height !== frame.height) {
             canvas.width = frame.width;
             canvas.height = frame.height;
@@ -51,6 +58,10 @@ export function startPreviewFrames(
             0,
           );
           last = frame.sequence;
+          if (!presented) {
+            presented = true;
+            ready();
+          }
         }
       }
       if (alive) scheduled = requestAnimationFrame(tick);

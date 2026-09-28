@@ -1,5 +1,6 @@
 import { t, useLanguage } from "../i18n";
 import {
+  ArrowsHorizontal,
   Eye,
   EyeSlash,
   SpeakerHigh,
@@ -8,6 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import type { Project, Track } from "../model";
+import { packClips } from "./packClips";
 import { removeTrack } from "./document";
 export function TrackHeading({
   track,
@@ -74,6 +76,14 @@ export function TrackHeading({
             {track.hidden ? <EyeSlash size={14} /> : <Eye size={14} />}
           </button>
         )}
+        <button
+          title={t("此轨道按当前顺序从 0 秒首尾相接（可撤销）")}
+          aria-label={t("排片轨道 {v0}", { v0: track.name })}
+          disabled={!count}
+          onClick={() => onChange((p) => packClips(p, track.id))}
+        >
+          <ArrowsHorizontal size={14} />
+        </button>
         <button
           className="delete-track"
           title={title}
