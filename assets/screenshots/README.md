@@ -2,6 +2,7 @@
 
 These are actual captures of the Mstudio macOS desktop app with its interface set to English, captured on September 30, 2026 from the build of commit `96bc900`.
 
+- `agent-workspace.jpg`: a script attached to an unsent example revision request in the Agent workspace; no completed Agent execution is depicted.
 - `timeline.jpg`: native portrait preview, clip color controls and a three-clip timeline.
 - `script.jpg`: manually written English demo script with separate action, text, narration and sound fields.
 - `canvas.jpg`: three imported landscape illustrations arranged on the production canvas.
