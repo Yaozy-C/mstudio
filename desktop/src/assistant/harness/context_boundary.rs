@@ -238,3 +238,26 @@ mod tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[cfg(test)]
+mod language_upgrade_tests {
+    use super::*;
+    #[test]
+    fn english_snapshot_replaces_legacy_snapshot_without_dropping_user_content() {
+        let user = Message::user("保持中文对白和品牌名称");
+        let mut history = vec![
+            Message::user("当前工程快照（参考数据；更多内容请按需 inspect）：\n{\"revision\":1}"),
+            user.clone(),
+        ];
+        let fresh = Message::user(
+            "Current project snapshot (reference data; inspect more details as needed):\n{\"revision\":2}",
+        );
+        let mut additions = vec![fresh.clone()];
+        refresh_snapshot(&mut history, &mut additions);
+        assert!(additions.is_empty());
+        assert_eq!(
+            serde_json::to_value(&history).unwrap(),
+            serde_json::to_value(vec![fresh, user]).unwrap()
+        );
+    }
+}

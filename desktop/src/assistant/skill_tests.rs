@@ -45,5 +45,5 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
         skills::storage::read(&db, "", "product-storyboard", "SKILL.md", 0, true).unwrap()["text"],
         "Updated current instructions"
     );
-    assert!(skills::guidance(&skills::storage::catalog(&db, "[]").unwrap()).contains("skills：[]"));
+    assert!(skills::guidance(&skills::storage::catalog(&db, "[]").unwrap()).contains("Skills: []"));
 }

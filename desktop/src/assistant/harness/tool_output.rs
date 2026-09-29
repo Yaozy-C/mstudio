@@ -45,14 +45,14 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         view["resultRef"] = json!(call.id);
         view["turnId"] = json!(turn);
         view["readWith"] = json!(
-            "mstudio_read_result(callId=resultRef, turnId=turnId, offset=0) 读取完整说明；未显示内容可能包含设计理由或待办。"
+            "Read the full explanation with mstudio_read_result(callId=resultRef, turnId=turnId, offset=0); omitted content may include design rationale or remaining work."
         );
         return view;
     }
     if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= limit {
         return value.clone();
     }
-    let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0); 当前任务内；跨任务时补充 turnId","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
+    let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0) for this task; supply turnId for another task.","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
     // Never turn an applied edit or a real error into a synthetic failure.
     for key in [
         "ok",
@@ -80,7 +80,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
             } else if key == "error" {
                 result[key] = json!(
                     v.as_str()
-                        .unwrap_or("工具执行失败；读取完整结果查看详情")
+                        .unwrap_or("Tool failed; read the full result for details.")
                         .chars()
                         .take(400)
                         .collect::<String>()
@@ -105,7 +105,7 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
                 .ok()
                 .flatten();
         if owner.as_deref() != Some(&t.profile.id) {
-            return json!({"error":"不能读取其他角色的结果","code":"FORBIDDEN"});
+            return json!({"error":"Cannot read another role's results","code":"FORBIDDEN"});
         }
     }
     read_page(
@@ -134,7 +134,7 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
             json!({"turnId":turn,"callId":call,"text":text.chars().skip(offset).take(LIMIT).collect::<String>(),"totalCharacters":total,"nextOffset":if offset.saturating_add(LIMIT)<total{Some(offset+LIMIT)}else{None}})
         }
         Err(_) => {
-            json!({"error":"当前工程找不到该工具结果；使用原结果的 turnId 和 callId","code":"RESULT_NOT_FOUND"})
+            json!({"error":"Tool result not found in this project; use its original turnId and callId","code":"RESULT_NOT_FOUND"})
         }
     }
 }

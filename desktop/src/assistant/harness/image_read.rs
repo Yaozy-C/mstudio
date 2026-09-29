@@ -15,10 +15,10 @@ pub fn read(store: &Store, project: &str, profile: &Profile, args: &Value) -> Va
         let id = args["assetId"]
             .as_str()
             .filter(|id| !id.is_empty() && id.len() < 100)
-            .context("请使用 inspect 返回的真实 assetId")?;
+            .context("Use a real assetId returned by inspect")?;
         ensure!(
             profile.inputs.image,
-            "当前对话模型未启用图片输入；请在模型设置中选择支持看图的对话模型，未发送图片。"
+            "Image input is disabled for this chat model. Select an image-capable chat model in settings; no image sent."
         );
         let raw: String = store.db.lock().unwrap().query_row(
             "SELECT document FROM projects WHERE id=?1",
@@ -30,29 +30,32 @@ pub fn read(store: &Store, project: &str, profile: &Profile, args: &Value) -> Va
             doc["assets"]
                 .as_array()
                 .is_some_and(|a| a.iter().any(|v| v["id"] == id)),
-            "素材不属于当前项目，请从 inspect 获取当前工程的 assetId"
+            "Asset is outside this project; obtain a current-project assetId from inspect"
         );
         let assets = store.assets()?;
         let asset = assets
             .iter()
             .find(|a| a.id == id)
-            .context("素材记录不存在")?;
+            .context("Asset record not found")?;
         let (image_id, parts) = if args["transition"] == true {
             transition_frame::parts(store, project, &doc, args)?
         } else if asset.kind == "video" {
             video_frame::parts(store, asset, &doc, args)?
         } else {
-            ensure!(asset.kind == "image", "此工具仅支持图片或视频抽帧");
+            ensure!(
+                asset.kind == "image",
+                "This tool supports only images or video frames"
+            );
             ensure!(
                 args.get("clipId").is_none() && args.get("time").is_none(),
-                "静态图片不接受视频抽帧参数"
+                "Still images do not accept video-frame parameters"
             );
             (id.to_owned(), media_input::parts(store, asset, profile)?)
         };
         let Message::User { content } =
             crate::assistant::agent::convert(&json!({"role":"user","content":parts}))
         else {
-            anyhow::bail!("图片转换失败");
+            anyhow::bail!("Image conversion failed");
         };
         let image = content
             .into_iter()
@@ -60,7 +63,7 @@ pub fn read(store: &Store, project: &str, profile: &Profile, args: &Value) -> Va
                 UserContent::Image(i) => Some(i),
                 _ => None,
             })
-            .context("图片内容缺失")?;
+            .context("Image content missing")?;
         // Use the same canonical multimodal tool-result path as restored images.
         Ok(json!({"ok":true,"imageId":image_id,"__offloadedImage":image}))
     })();

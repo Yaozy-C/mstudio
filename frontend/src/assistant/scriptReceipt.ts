@@ -21,6 +21,7 @@ export function scriptReceipt(p: Project, operations: unknown) {
       paragraphCount: n.screenplay?.script?.length ?? 0,
       duration: scriptDuration(n.screenplay?.script ?? []),
       paragraphIds: n.screenplay?.script?.map((s) => s.id) ?? [],
-      message: "结构化脚本已写入脚本页面并保存；现有镜头和素材保留",
+      message:
+        "Structured script saved to the screenplay; existing shots and media retained.",
     }));
 }

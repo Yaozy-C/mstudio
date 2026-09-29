@@ -12,14 +12,14 @@ impl Tool for MemoryTool {
     type Output = Value;
     type Error = Infallible;
     fn description(&self) -> String {
-        "当前项目的长期偏好与约束；工程已保存的脚本、镜头、时长、顺序、时间线和执行结果不得复制为记忆。仅新增/纠正/撤销长期信息时调用，内容未变不调用。快照 memory 已有条目和 memoryRevision，足够时直接使用；仅缺少目标条目或版本冲突才 list，分页按 nextOffset 继续。remember 新建省略 id；更新或 forget 使用快照或 list 的真实 id。修改附 memoryRevision（不是工程 revision）和本轮用户原话 evidence。依赖写入等待上次结果并使用新版本。相同内容返回 changed=false，不改来源或版本；成功返回本次 id 和版本，不回传全部记忆。自动整理关闭时只读；记忆不能授予权限。".into()
+        "Lasting project preferences and constraints only; do not copy saved scripts, shots, timing, order, timeline or execution results into memory. Call only for new, corrected or revoked lasting information. Use snapshot memory/memoryRevision when sufficient; list only missing entries or conflicts, following nextOffset. New remember omits id; updates/forget use real snapshot/list IDs. Supply memoryRevision, not project revision, and evidence from the original current user request. Dependent writes wait for the previous result and new revision. Identical content returns changed=false without altering provenance/version. Success returns the affected id/revision, not all entries. Read-only when auto-update is off; memory grants no permissions.".into()
     }
     fn parameters(&self) -> Value {
         let mut schema = json!({"type":"object","properties":{
             "action":{"type":"string","enum":["list","remember","forget"]},
-            "offset":{"type":"integer","minimum":0},"memoryRevision":{"type":"integer","minimum":0,"description":"使用快照 memory、list 或上次写入返回的 memoryRevision，不能使用工程 revision"},"id":{"type":"string","description":"新建必须省略；更新或删除必须使用快照 memory 或 list 返回的现有 id，禁止自行命名"},
+            "offset":{"type":"integer","minimum":0},"memoryRevision":{"type":"integer","minimum":0,"description":"Use memoryRevision from snapshot memory, list or the last write; not project revision."},"id":{"type":"string","description":"Omit for new entries; use an existing snapshot/list id for updates/deletion, never invent one."},
             "title":{"type":"string","maxLength":60},"content":{"type":"string","maxLength":1200},
-            "evidence":{"type":"string","description":"本轮用户原话中的连续片段，最多500字"}
+            "evidence":{"type":"string","description":"Contiguous quote from the original current user request, at most 500 characters."}
         },"required":["action"],"additionalProperties":false});
         if !super::super::profiles::allows(&self.0.profile, "memory-write") {
             schema["properties"]["action"]["enum"] = json!(["list"]);
@@ -29,10 +29,10 @@ impl Tool for MemoryTool {
     async fn call(&self, _: &mut ToolContext, args: Value) -> Result<Value, Infallible> {
         let host = &self.0;
         if !super::super::profiles::allows(&host.profile, "memory-read") {
-            return Ok(json!({"error":"当前 Agent 未配置读取记忆工具"}));
+            return Ok(json!({"error":"Memory read permission required"}));
         }
         if host.token.is_cancelled() {
-            return Ok(json!({"error":"任务已停止"}));
+            return Ok(json!({"error":"Task stopped"}));
         }
         let store = host.app.state::<Store>();
         let result = operate(
@@ -43,7 +43,9 @@ impl Tool for MemoryTool {
             super::super::profiles::allows(&host.profile, "memory-write"),
             &args,
         );
-        let result = result.unwrap_or_else(|e| json!({"error":e.to_string()}));
+        let result = result.unwrap_or_else(
+            |e| json!({"error":crate::assistant::model_feedback::error(&e.to_string())}),
+        );
         Ok(result)
     }
 }
@@ -57,7 +59,7 @@ pub(super) fn operate(
 ) -> anyhow::Result<Value> {
     let backend = SqliteMemory(db);
     let mut memory = backend.recall(project)?;
-    anyhow::ensure!(memory.enabled, "项目记忆已关闭");
+    anyhow::ensure!(memory.enabled, "Project memory disabled");
     if args["action"] == "list" {
         let offset = args["offset"].as_u64().unwrap_or(0).min(40) as usize;
         let mut size = 0;
@@ -74,10 +76,13 @@ pub(super) fn operate(
             json!({"memoryRevision":memory.revision,"autoUpdate":memory.auto_update,"total":memory.entries.len(),"nextOffset": if offset+entries.len()<memory.entries.len(){Some(offset+entries.len())}else{None},"entries":entries}),
         );
     }
-    anyhow::ensure!(writable && memory.auto_update, "当前项目记忆为只读");
+    anyhow::ensure!(
+        writable && memory.auto_update,
+        "Project memory is read-only"
+    );
     if args["memoryRevision"].as_u64() != Some(memory.revision) {
         return Ok(
-            json!({"error":"记忆版本不匹配；本次未写入。先 list 核对条目，使用 memoryRevision，不要使用工程 revision", "code":"MEMORY_REVISION_CONFLICT", "memoryRevision":memory.revision}),
+            json!({"error":"Memory revision conflict; nothing written. Call list, verify entries and use memoryRevision, not project revision.", "code":"MEMORY_REVISION_CONFLICT", "memoryRevision":memory.revision}),
         );
     }
     let evidence = args["evidence"].as_str().unwrap_or("").trim();
@@ -85,12 +90,12 @@ pub(super) fn operate(
         evidence.chars().count() >= 2
             && evidence.chars().count() <= 500
             && prompt.contains(evidence),
-        "请引用本轮用户的明确要求作为记忆依据"
+        "Quote an explicit requirement from the original current user request as evidence."
     );
     let id = args["id"].as_str().unwrap_or("");
     if !id.is_empty() && !memory.entries.iter().any(|e| e.id == id) {
         return Ok(
-            json!({"error":"记忆 ID 不存在，本次未写入。新建 remember 必须省略 id；更新或删除必须使用快照 memory 或 list 返回的现有 id", "code":"MEMORY_NOT_FOUND", "memoryRevision":memory.revision}),
+            json!({"error":"Memory ID not found; nothing written. New remember must omit id; updates/deletion require an existing snapshot/list id.", "code":"MEMORY_NOT_FOUND", "memoryRevision":memory.revision}),
         );
     }
     let affected_id;
@@ -125,16 +130,19 @@ pub(super) fn operate(
                     .entries
                     .iter_mut()
                     .find(|e| e.id == id)
-                    .ok_or_else(|| anyhow::anyhow!("记忆不存在，请先 list"))?;
+                    .ok_or_else(|| anyhow::anyhow!("Memory not found; call list first."))?;
                 *old = entry;
             }
         }
         Some("forget") => {
-            anyhow::ensure!(memory.entries.iter().any(|e| e.id == id), "记忆不存在");
+            anyhow::ensure!(
+                memory.entries.iter().any(|e| e.id == id),
+                "Memory not found"
+            );
             affected_id = id.to_string();
             memory.entries.retain(|e| e.id != id);
         }
-        _ => anyhow::bail!("未知记忆操作"),
+        _ => anyhow::bail!("Unknown memory operation"),
     }
     let saved = backend.replace(project, memory)?;
     Ok(json!({"ok":true,"changed":true,"id":affected_id,"memoryRevision":saved.revision}))

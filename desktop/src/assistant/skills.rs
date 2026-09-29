@@ -1,3 +1,6 @@
+mod contract_migration;
+mod metadata;
+use metadata::{model_catalog, model_metadata};
 mod prompt_migration;
 mod prompt_scope;
 pub mod storage;
@@ -79,6 +82,7 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     storage::install_core_defaults(&db)?;
     prompt_migration::migrate(&db)?;
     prompt_scope::install(&db)?;
+    contract_migration::migrate(&db)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {
@@ -137,12 +141,12 @@ pub fn tool(app: &tauri::AppHandle, setting: &str, args: &Value) -> Result<Value
     let store = app.state::<crate::database::Store>();
     let db = store.db.lock().unwrap();
     if args["action"] == "skills" {
-        return storage::catalog(&db, setting);
+        return storage::catalog(&db, setting).map(model_catalog);
     }
     storage::read(
         &db,
         setting,
-        args["skill"].as_str().context("请指定 skill")?,
+        args["skill"].as_str().context("Specify skill")?,
         args["path"].as_str().unwrap_or("SKILL.md"),
         args["offset"].as_u64().unwrap_or(0).min(200_000) as usize,
         true,
@@ -168,12 +172,15 @@ pub fn guidance(catalog: &Value) -> String {
         .into_iter()
         .flatten()
         .filter(|s| s["available"] == true && s["enabled"] == true)
-        .map(|s| json!({"id":s["id"],"name":s["name"],"description":s["description"]}))
+        .map(|s| {
+            let s = model_metadata(s.clone());
+            json!({"id":s["id"],"name":s["name"],"description":s["description"]})
+        })
         .collect();
     format!(
-        "\n已启用的 Mstudio 内置 skills：{}。目录外的 CORE.md 是已自动加载的数据库核心规则；其余正文按需读取。根据本轮任务和技能描述选择适用 Skill；用户明确指定时读取该 Skill。已装配提示词 Skill 的 Agent 应用该 Skill 全文加载的依赖规则，未装配的角色不代写 Prompt；其他任务核心规则足够时直接执行；需要专业细则时用 mstudio_read_skill 读取对应 SKILL.md 或 references，普通问答无需读取。不要仅因角色绑定就读取全部 Skills。若返回 nextOffset，继续读取主规则；之后仅在当前步骤需要时读取相关 references，不按角色预先加载，也不一次塞入全部文件。当前上下文已有完整规则时直接复用；仅有阅读记录或摘要时，按需重新读取所需规则。相对路径基于该 skill 根目录，跨技能链接也可按原路径读取；用 mstudio_skills 查看 Skill 目录，主规则读取结果中的 resources 列出可读参考文件。规则正文以应用数据库为准，应用文件仅提供首次默认值，独立于 Codex，遵循当前用户明确要求；商品技能的商品/市场偏好仅用于适用任务，不强加到通用视频。规则中项目文件、版本和审核记录对应当前工程、引用和聊天，不新增版本或审批面板；逐镜观看变化、机位、动作来源/支撑→路径/接触→去向、主体/相机速度与切口写入 shot 的 text，时长写 shot.duration，画格使用 shot.frames；不要发明字段。素材选择依据以镜头 ID、assetId 和源区间在交接中说明，实际剪辑使用 clip 的 trimIn/trimOut/start/speed。没有文件或 shell 工具时不尝试创建 PROJECT.md、review.json 或运行技能脚本，使用现有工程与消息记录同等证据；没有动态/音频输入就明确未验收。新委托不自动继承旧剧情与旧批准。当前用户已授权的范围继续有效。工具未提供的文件读写、浏览、图像生成、子 Agent 或 shell 能力不能假装执行，说明具体缺口并继续可做的部分。技能阅读不会调用视频模型或产生生成费用。",
+        "Enabled Mstudio Skills: {}. CORE.md bodies below are already loaded from the application database. Apply fully injected dependencies for assigned prompt-authoring Skills; other roles do not inherit prompt-authoring duties. Choose additional reading by the current task and Skill description, not merely role assignment. Read explicitly requested Skills unless their current full text is already present. Use mstudio_read_skill for SKILL.md or references only when core rules are insufficient; ordinary questions need no Skill read. Follow nextOffset to finish a needed document, then load only relevant references. A read receipt or summary is not the full rule text. Paths are relative to the Skill root; permitted cross-Skill links are supported. mstudio_skills lists resources. Database bodies are authoritative; bundled files seed defaults and are independent of Codex. Apply product/market preferences only to relevant tasks. Map document/revision/review instructions to existing project objects, references and chat; do not invent files, fields or approval panels. Store shot design in the shot node's top-level text, timing in shot.duration and frames in shot.frames. Hand off source choices using shot/asset IDs and ranges; edit clips with trimIn/trimOut/start/speed. Without file or shell tools, use project records instead of creating PROJECT.md/review.json or running scripts. Without motion/audio evidence, state what remains unchecked. A new brief does not inherit an old story or approval, while current explicit authorization remains valid. Do not claim unavailable browsing, generation, delegation or file operations; report concrete gaps and continue supported work. Reading Skills does not submit paid generation tasks.",
         json!(available)
-    ) + "\n已自动加载的核心规则（无需重复读取）：\n"
+    ) + "\nAlready loaded core rules (do not reread unchanged bodies):\n"
         + &core.join("\n\n")
 }
 

@@ -15,7 +15,7 @@ pub struct ProjectHost {
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
         "inspect",
-        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询；批量任务按 turnId/status 筛选，先用 fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] 获取每页最多30项的进度与整批 batch 统计，按 nextOffset 继续；镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。列表每页最多12项并受大小限制；8镜等小组可一次读取，优先指定必要 fields，按 nextOffset 补读。互不依赖的读取同批调用。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
+        "Read project content needed for this task. For generation, query section=generation/taskKey or filter turnId/status; fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] yields up to 30 tasks per page and whole-batch statistics. Follow nextOffset. For shots use nodeIds/fields; for scripts use fields=[script], paragraphIds and scriptFields. Omitted fields return summaries. Other lists have up to 12 entries per page and size limits; read small groups together with needed fields. Batch independent reads. revision is returned, not a query argument; establish current target state before editing.",
         &[
             "section",
             "ids",
@@ -32,18 +32,22 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
     ),
     (
         "read_skill",
-        "读取已启用技能的主规则或引用文件；独立文件请同批调用，nextOffset 分页须按顺序继续。",
+        "Read an enabled Skill or permitted reference. Batch independent files; follow nextOffset pages sequentially.",
         &["skill", "path", "offset"],
     ),
-    ("skills", "列出当前 Agent 已启用的技能与文件目录。", &[]),
+    (
+        "skills",
+        "List Skills and resource directories enabled for this Agent.",
+        &[],
+    ),
     (
         "history",
-        "分页检索项目历史对话；taskId 可限定当前或已知任务，完整原文按 textOffset 继续读取。",
+        "Paginate project conversation history; taskId narrows to the current or known task. Follow textOffset for full text.",
         &["offset", "messageId", "textOffset", "taskId"],
     ),
     (
         "models",
-        "分页查看已启用媒体模型；指定 mediaModelId 读取该模型专属提示词规则。",
+        "Paginate enabled media models; use mediaModelId for model-specific prompt rules.",
         &["offset", "mediaModelId"],
     ),
     ("edit", "", &["revision", "operations"]),
@@ -52,10 +56,10 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
 impl ProjectHost {
     pub async fn read_image(&self, call: &ToolCall) -> Value {
         let Some(t) = &self.tool else {
-            return json!({"error":"工具不可用"});
+            return json!({"error":"Tool unavailable"});
         };
         if !profiles::allows(&t.profile, "inspect") {
-            return json!({"error":"没有读取工程权限","code":"FORBIDDEN"});
+            return json!({"error":"Project read permission required","code":"FORBIDDEN"});
         }
         let store = t.app.state::<crate::database::Store>();
         let _files = store.files.read().await;
@@ -72,7 +76,7 @@ impl ProjectHost {
             )
         })
         .await
-        .unwrap_or_else(|e| json!({"error":format!("读取媒体失败：{e}")}))
+        .unwrap_or_else(|e| json!({"error":format!("Media read failed: {e}")}))
     }
 
     fn action<'a>(&self, name: &'a str) -> Option<&'a str> {
@@ -100,7 +104,7 @@ impl Host for ProjectHost {
         let Some(t) = &self.tool else { return vec![] };
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
-        definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"分页读取已卸载的完整工具结果。callId 来自 resultRef；省略 turnId 为当前轮，读取历史结果时使用它的 turnId。offset 按返回 nextOffset 继续。".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
+        definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
             if !profiles::allows(&t.profile, action) {
                 continue;
@@ -131,12 +135,12 @@ impl Host for ProjectHost {
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(ToolDefinition {
                 name: "mstudio_read_image".into(),
-                description: "读取真实图片或按 time 抽取视频帧，图片直接返回模型。assetId 使用 inspect 的真实素材 ID。视频 time 默认是源视频秒数；提供 clipId 则是片段内秒数，自动换算裁切/变速并应用当前调色，但不含转场、叠加轨和字幕。transition:true 配合后片段 clipId 时，time 改为转场开始后的秒数，返回实际转场合成（不含叠加轨、字幕或声音）。检查开头、中间、结尾及接缝两侧，不能把抽样称为看完整片。当前模型须支持图片输入。".into(),
+                description: "Read real image pixels or a video frame directly into the model. Use an assetId returned by inspect. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
                 parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
             });
             definitions.push(ToolDefinition {
                 name: "mstudio_reopen_image".into(),
-                description: "按卸载提示中的 imageId 重新读取历史图像。仅可读取当前工程已卸载的图像；图像将作为图片工具结果返回。".into(),
+                description: "Reopen a historical offloaded image by imageId from its notice. Only offloaded images in this project are accessible; returns actual image content.".into(),
                 parameters: json!({"type":"object","properties":{"imageId":{"type":"string"}},"required":["imageId"],"additionalProperties":false}),
             });
         }
@@ -156,7 +160,7 @@ impl Host for ProjectHost {
                 .filter(|p| ids.contains(&p.id))
                 .map(|p| json!({"id":p.id,"tools":p.tool_ids}))
                 .collect();
-            definition.description.push_str(&format!("可用角色与权限：{}。交付公共白底资产用 project-assets，script 用 project-script，shots 用 project-shots，image-prompts/images 用 project-frames，video-prompts/videos 用 project-production，timeline 用 project-timeline；生成还需 media-generation。",json!(roster)));
+            definition.description.push_str(&format!("Available roles and permissions: {}. Shared white-background assets require project-assets; scripts project-script; shots project-shots; image prompts/images project-frames; video prompts/videos project-production; timeline project-timeline. Generation additionally requires media-generation.",json!(roster)));
 
             definitions.push(definition);
             definitions.extend(super::delegation::control_definitions());
@@ -187,7 +191,7 @@ impl Host for ProjectHost {
     }
     async fn execute(&self, call: &ToolCall) -> Value {
         let Some(t) = &self.tool else {
-            return json!({"error":"工具不可用", "code":"UNKNOWN_TOOL"});
+            return json!({"error":"Tool unavailable", "code":"UNKNOWN_TOOL"});
         };
         if call.function.name == "mstudio_delegate" {
             return super::delegation::execute(self, call).await;
@@ -206,20 +210,20 @@ impl Host for ProjectHost {
 }
 
 fn edit_description() -> String {
-    "按当前角色权限批量修改工程；revision 使用 inspect 返回值，操作原子保存且可撤销。只修改本轮目标，已有对象沿用 ID；add_node 必填 id/kind/title，shot 关联 screenplayId；省略字段保留原值。update_node 更新卡片：screenplay.script 为脚本，镜头 text 为动作与摄影设计，shot.prompt 为视频草稿，shot.framePrompt/frames 为画格草稿与图片。修改已有生成任务用 update_generation(taskKey,text)，不顺带覆盖镜头草稿；统一更新任务 prompt，保留已有结果；已发出的请求不会被追写。仅改提示词不生成；明确要求重生成才用 regenerate_generation(taskKey)，沿用模型、输入与参数。request_generation 创建媒体任务，text 必须是完整模型提示词，程序不会追加脚本；references 明确素材 ID、用途与 role，省略时仅沿用本轮输入框引用，不自动补入工程素材。模型按用户选择，任务状态不等于生成完成或视觉通过。choose_take 选择素材，assemble_screenplay 编排镜头；时间线 start 为成片起点，trimIn/trimOut 为源区间，speed 为绝对倍速。savedClips 返回实际保存的时间线变化，complete=true 时可用于参数核对，不必立即再读同一批片段；complete=false 时按需 inspect。参数回执不能代替抽帧或播放验收。失败按返回原因修正；状态不确定时先查目标，避免重复提交。创作方法与角色交接按适用 skill 执行。".into()
+    "Batch authorized project edits using the latest inspect revision. Operations save atomically and support undo. Preserve existing IDs and omitted fields; add_node requires id/kind/title, and shots link screenplayId. update_node: screenplay.script holds paragraphs, node text holds shot action/staging, shot.prompt video drafts, shot.framePrompt/frames image drafts/assets. update_generation(taskKey,text) updates the task prompt, preserves existing results and does not change a shot draft or already-submitted request. Prompt edits do not generate; explicitly requested regenerate_generation(taskKey) reuses the model, inputs and parameters. request_generation requires the complete final prompt in text; scripts are not appended automatically. references contains real asset IDs, purposes and roles; omission inherits only current composer references, not arbitrary project assets. Use the selected model. choose_take selects media; assemble_screenplay arranges shots. start is output time, trimIn/trimOut source range, speed absolute. savedClips contains actual saved timeline values: when complete=true, use it for parameter verification; inspect missing or uncertain values when complete=false. Receipts do not replace pixel/playback checks. Correct reported errors; inspect uncertain effects before retrying. Use assigned Skills for creative methods.".into()
 }
 
 pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Value {
     let mut args = call.function.arguments.clone();
     if call.function.name == "mstudio_reopen_image" {
         if !profiles::allows(&t.profile, "inspect") {
-            return json!({"error":"没有读取工程权限","code":"FORBIDDEN"});
+            return json!({"error":"Project read permission required","code":"FORBIDDEN"});
         }
         let Some(id) = args["imageId"]
             .as_str()
             .filter(|id| id.starts_with("image-") && id.len() < 100)
         else {
-            return json!({"error":"此工具只接受历史卸载提示中的 imageId。读取生成图片请用 mstudio_read_image(assetId)，素材 ID 从 inspect 获取，不要传文件名或任务 ID。","code":"INVALID_ARGS"});
+            return json!({"error":"This tool accepts only imageId from an offload notice. For generated images use mstudio_read_image(assetId), with a real asset ID from inspect, not a filename or task ID.","code":"INVALID_ARGS"});
         };
         let store = t.app.state::<crate::database::Store>();
         let db = store.db.lock().unwrap();
@@ -240,7 +244,7 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
         .strip_prefix("mstudio_")
         .filter(|a| ACTIONS.iter().any(|(name, _, _)| name == a))
     else {
-        return json!({"error":"未知工具", "code":"UNKNOWN_TOOL"});
+        return json!({"error":"Unknown tool", "code":"UNKNOWN_TOOL"});
     };
     args["action"] = json!(action);
     t.execute(args, format!("{}:{}{}", t.turn, prefix, call.id.as_str()))

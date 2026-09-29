@@ -28,7 +28,10 @@ pub fn seed(db: &Connection, root: &Path) -> Result<()> {
     let tx = db.unchecked_transaction()?;
     for (id, _, _) in SKILLS {
         let base = root.join(id);
-        ensure!(base.join("SKILL.md").is_file(), "初始规则缺失：{id}");
+        ensure!(
+            base.join("SKILL.md").is_file(),
+            "Missing default rules: {id}"
+        );
         seed_directory(&tx, id, &base, &base)?;
     }
     tx.execute(
@@ -128,13 +131,16 @@ pub fn install_core_defaults(db: &Connection) -> Result<()> {
 fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
-        ensure!(!entry.file_type()?.is_symlink(), "规则资源不能是符号链接");
+        ensure!(
+            !entry.file_type()?.is_symlink(),
+            "Rule resources cannot be symlinks"
+        );
         let path = entry.path();
         if path.is_dir() {
             seed_directory(db, id, base, &path)?;
         } else if path.extension().and_then(|v| v.to_str()) == Some("md") {
             let text = std::fs::read_to_string(&path)?;
-            ensure!(text.len() <= 200_000, "规则文件过大");
+            ensure!(text.len() <= 200_000, "Rule file too large");
             db.execute(
                 "INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES(?1,?2,?3)",
                 params![id, path.strip_prefix(base)?.to_string_lossy(), text],
@@ -144,7 +150,10 @@ fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<
     Ok(())
 }
 fn resolve(id: &str, resource: &str) -> Result<(String, String)> {
-    ensure!(SKILLS.iter().any(|s| s.0 == id), "未安装此创作 skill");
+    ensure!(
+        SKILLS.iter().any(|s| s.0 == id),
+        "Creative Skill not installed"
+    );
     let resource = resource.split('#').next().unwrap_or("SKILL.md");
     let mut parts = vec![id.to_owned()];
     for part in Path::new(resource).components() {
@@ -152,19 +161,19 @@ fn resolve(id: &str, resource: &str) -> Result<(String, String)> {
             Component::Normal(v) => parts.push(v.to_string_lossy().into_owned()),
             Component::CurDir => {}
             Component::ParentDir => {
-                ensure!(!parts.is_empty(), "规则路径越界");
+                ensure!(!parts.is_empty(), "Rule path escapes its root");
                 parts.pop();
             }
-            _ => anyhow::bail!("请使用 skill 内相对路径"),
+            _ => anyhow::bail!("Use a relative path within the Skill"),
         }
     }
     ensure!(
         parts.len() >= 2 && SKILLS.iter().any(|s| s.0 == parts[0]),
-        "规则路径超出已安装 skills"
+        "Rule path outside installed Skills"
     );
     let owner = parts.remove(0);
     let path = parts.join("/");
-    ensure!(path.ends_with(".md"), "仅支持 Markdown 规则");
+    ensure!(path.ends_with(".md"), "Only Markdown rules supported");
     Ok((owner, path))
 }
 pub fn catalog(db: &Connection, setting: &str) -> Result<Value> {
@@ -204,10 +213,10 @@ pub fn read(
     active_only: bool,
 ) -> Result<Value> {
     let (owner, path) = resolve(id, resource)?;
-    ensure!(!active_only || enabled(setting, id)?, "此 skill 已停用");
+    ensure!(!active_only || enabled(setting, id)?, "Skill disabled");
     ensure!(
         !active_only || enabled(setting, &owner)? || dependency(id, &owner),
-        "引用的 skill 已停用"
+        "Referenced Skill disabled"
     );
     let (text, revision): (String, i64) = db
         .query_row(
@@ -216,7 +225,7 @@ pub fn read(
             |r| Ok((r.get(0)?, r.get(1)?)),
         )
         .optional()?
-        .context("规则文档不存在")?;
+        .context("Rule document not found")?;
     let mut stmt = db.prepare(
         "SELECT path FROM skill_resources WHERE skill_id=?1 AND path!='SKILL.md' ORDER BY path",
     )?;

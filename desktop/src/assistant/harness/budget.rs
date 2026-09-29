@@ -159,7 +159,9 @@ pub fn prune_tool_results(session: &mut Session, host: &impl Host) -> Result<boo
                     .chars()
                     .rev()
                     .collect();
-                text.text = format!("{head}\n[较早工具结果中间内容已省略，可重新 inspect]\n{tail}");
+                text.text = format!(
+                    "{head}\n[Middle of an earlier tool result omitted; inspect again if needed]\n{tail}"
+                );
                 pruned = true;
             }
         }

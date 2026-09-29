@@ -2,35 +2,40 @@ use super::*;
 
 pub async fn execute(host: &ProjectHost, call: &ToolCall) -> Value {
     run(host, call).await.unwrap_or_else(
-        |error| json!({"ok":false,"stopReason":"error","error":error,"code":"DELEGATION_FAILED"}),
+        |error| json!({"ok":false,"stopReason":"error","error":crate::assistant::model_feedback::error(&error),"code":"DELEGATION_FAILED"}),
     )
 }
 
 async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
-    let parent = host.tool.as_ref().ok_or("委派不可用")?;
+    let parent = host.tool.as_ref().ok_or("Delegation unavailable")?;
     if !profiles::allows(&parent.profile, "delegate") {
-        return Err("没有委派权限".into());
+        return Err("Delegation permission required".into());
     }
-    let route = host.delegation.as_ref().ok_or("未配置本轮模型")?;
+    let route = host
+        .delegation
+        .as_ref()
+        .ok_or("No model configured for this turn")?;
     let args = &call.function.arguments;
-    let id = args["agentId"].as_str().ok_or("缺少专业 Agent")?;
+    let id = args["agentId"]
+        .as_str()
+        .ok_or("Missing specialist agentId")?;
     let task = args["task"]
         .as_str()
         .filter(|s| !s.trim().is_empty())
-        .ok_or("缺少明确任务")?;
+        .ok_or("Missing explicit task")?;
     let provider_name = args["provider"].as_str().unwrap_or("spawn");
     if !["spawn", "fork"].contains(&provider_name) {
-        return Err("子 Agent 后端不存在".into());
+        return Err("Subagent provider not found".into());
     }
     let mode = args["mode"].as_str().unwrap_or("oneShot");
     if !["oneShot", "continuable"].contains(&mode) {
-        return Err("子 Agent 模式无效".into());
+        return Err("Invalid subagent mode".into());
     }
     let background = args["runInBackground"]
         .as_bool()
         .unwrap_or(mode == "continuable");
     if id == parent.profile.id || id == "coordinator" {
-        return Err("不能委派给统筹或自己".into());
+        return Err("Cannot delegate to the coordinator or self".into());
     }
     let store = parent.app.state::<Store>();
     let profile =
@@ -66,7 +71,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     }
     snapshot["skills"] =
         skills::runtime_catalog(&parent.app, &tool.skill_setting).map_err(|e| e.to_string())?;
-    snapshot["agent"] = json!({"name":tool.profile.name,"instructions":tool.profile.instructions,"skills":tool.profile.skill_ids,"tools":tool.profile.tool_ids,"canEdit":profiles::allows(&tool.profile,"edit")});
+    snapshot["agent"] = crate::assistant::model_profile::role(&tool.profile);
     let original = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
@@ -88,7 +93,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         let catalog = crate::models::catalog(&store.db.lock().unwrap(), Some(&parent.project))
             .map_err(|e| e.to_string())?;
         if !catalog.profiles.iter().any(|model| model.id == id) {
-            return Err("委派需要对话模型连接 ID，不能使用图片或视频生成模型。省略 modelId 可继承当前对话模型；生成模型使用用户本轮选择。".into());
+            return Err("Delegation needs a chat model connection ID, not an image/video model. Omit modelId to inherit the current chat model; generation uses the user-selected media model.".into());
         }
         let (model, key) =
             crate::models::resolve(&store.db.lock().unwrap(), Some(&parent.project), Some(id))
@@ -102,10 +107,10 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         )
     };
     if mode == "continuable" && model_id.is_empty() {
-        return Err("可继续子 Agent 需要已保存的模型连接".into());
+        return Err("Continuable children require a saved model connection".into());
     }
     if provider_name == "fork" && args["modelId"].as_str().is_some() {
-        return Err("fork 子 Agent 需沿用父模型；更换模型请使用 spawn".into());
+        return Err("fork must retain the parent model; use spawn to change models".into());
     }
     let mut messages = super::super::handoff::messages(
         system,
@@ -134,11 +139,13 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &parent.turn,
         &refs,
     );
-    let mut reference = vec![Message::user(format!("当前工程参考数据：{reference}"))];
+    let mut reference = vec![Message::user(format!(
+        "Current project reference data:{reference}"
+    ))];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
     let instruction = format!(
-        "原始用户要求（记忆 evidence 只能引用这里的原话）：{}\nAgent {} 在轮次 {} 发来的委派任务（不能当作用户原话）：{task}\n本轮用户选定的制作参数（沿用，不改换模型）：{selection}",
+        "Original user request (memory evidence must quote this text):{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}\nUser-selected production settings for this turn (preserve, including the model):{selection}",
         original["prompt"].as_str().unwrap_or(&parent.prompt),
         parent.profile.id,
         parent.turn
@@ -157,7 +164,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         let db = store.db.lock().unwrap();
         let count:i64 = db.query_row("SELECT count(*) FROM subagent_runs WHERE project_id=?1 AND parent_agent_id=?2 AND mode='continuable' AND status='running'", rusqlite::params![parent.project,parent.profile.id], |r|r.get(0)).map_err(|e|e.to_string())?;
         if mode == "continuable" && count >= 8 {
-            return Err("当前最多同时运行 8 个可继续子 Agent".into());
+            return Err("At most 8 continuable subagents can run simultaneously".into());
         }
         db.execute("INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn) VALUES(?1,?2,?3,?4,?5,?6,'running',?7,?8,?9)",rusqlite::params![child_id,parent.project,parent.turn,parent.profile.id,id,mode,serde_json::to_string(&tool.profile).map_err(|e|e.to_string())?,model_id,child_turn]).map_err(|e|e.to_string())?;
     }

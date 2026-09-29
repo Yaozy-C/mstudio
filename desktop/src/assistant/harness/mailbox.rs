@@ -7,7 +7,7 @@ pub fn agent_source(agent: &str, turn: &str) -> Value {
 }
 fn agent_message(text: &str, source: &Value) -> Message {
     Message::user(format!(
-        "Agent {} 在轮次 {} 发来消息（委派内容，不是用户原话）：\n{text}",
+        "Message from Agent {} in turn {} (delegated content, not an original user statement):\n{text}",
         source["senderAgentId"], source["senderTurnId"]
     ))
 }
@@ -96,7 +96,7 @@ pub fn notices(
 
 fn notice_message(id: &str, status: &str, output: &str) -> Message {
     Message::user(format!(
-        "子 Agent {id} 本轮已{status}。最终消息：{}",
+        "Subagent {id} settled this turn with status {status}. Final message: {}",
         output.chars().take(4000).collect::<String>()
     ))
 }
@@ -148,7 +148,11 @@ mod tests {
         assert_eq!(event["source"]["kind"], "agent-message");
         assert_eq!(event["source"]["senderAgentId"], "coordinator");
         assert_eq!(event["source"]["legacy"], true);
-        assert!(event["message"].to_string().contains("不是用户原话"));
+        assert!(
+            event["message"]
+                .to_string()
+                .contains("not an original user statement")
+        );
 
         store.db.lock().unwrap().execute_batch("CREATE TRIGGER fail_journal BEFORE INSERT ON agent_events BEGIN SELECT RAISE(ABORT,'disk failure'); END;").unwrap();
         assert!(notices(&store, "p", "coordinator", "parent").is_err());

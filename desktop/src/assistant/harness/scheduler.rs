@@ -48,7 +48,7 @@ async fn group(
             let invalid = validate(definitions, call);
             in_flight.push(async move {
                 let value = if host.token().is_cancelled() {
-                    json!({"error":"调用尚未执行，任务已停止", "code":"ABORTED_BEFORE_DISPATCH"})
+                    json!({"error":"Task stopped before dispatch; call not executed", "code":"ABORTED_BEFORE_DISPATCH"})
                 } else if let Some(error) = invalid {
                     error
                 } else {
@@ -100,10 +100,12 @@ async fn group(
 }
 fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
     let Some(definition) = definitions.iter().find(|d| d.name == call.function.name) else {
-        return Some(json!({"error":"当前 Agent 未提供此工具", "code":"UNKNOWN_TOOL"}));
+        return Some(json!({"error":"Tool not available to this Agent", "code":"UNKNOWN_TOOL"}));
     };
     if call.function.arguments.to_string().len() > 24_000 {
-        return Some(json!({"error":"工具参数超过 24 KB，请拆分操作", "code":"INVALID_ARGS"}));
+        return Some(
+            json!({"error":"Tool arguments exceed 24 KB; split the operations", "code":"INVALID_ARGS"}),
+        );
     }
     super::schema::validate(&definition.parameters, &call.function.arguments)
         .err()
