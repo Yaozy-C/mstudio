@@ -76,7 +76,7 @@
   "正在迁移并校验文件，请勿关闭应用…": "Migrating and verifying files. Keep the app open…",
   "迁移中…": "Migrating…",
   "迁移并切换": "Migrate and switch",
-  "项目助手": "Project assistant",
+  "Agent 工作台": "Agent workspace",
   "已选片段 ·": "Selected clip ·",
   "秒起": "sec start",
   "调整画面、调色、声音和时间": "Adjust visuals, color, sound and timing",
@@ -122,5 +122,18 @@
   "通用设置": "General",
   "已有文件会复制并校验后迁移到下方位置，完成后重新载入应用。请保持存储设备连接。": "Existing files will be copied and verified at the location below. The app will reload when finished. Keep your storage device connected.",
   "图片细节预览": "Image detail preview",
-  "拖动平移 · ⌘/Ctrl + 滚轮缩放 · 双击切换": "Drag to pan · ⌘/Ctrl + scroll to zoom · Double-click to toggle"
+  "拖动平移 · ⌘/Ctrl + 滚轮缩放 · 双击切换": "Drag to pan · ⌘/Ctrl + scroll to zoom · Double-click to toggle",
+  "开始创作": "Start creating",
+  "从一个想法，开始你的第一支视频": "Start your first video with an idea",
+  "告诉 Agent 视频主题、用途和大致时长，从脚本开始一起完成。": "Tell the Agent your topic, purpose and approximate length, then work together from the script onward.",
+  "和 Agent 开始创作": "Start with Agent",
+  "创作流程": "Creation workflow",
+  "告诉 Agent 你想做什么视频，一起确定内容、画面和台词。": "Describe your video to the Agent and work out its story, visuals and dialogue.",
+  "把脚本拆成镜头，生成图片、视频，或使用你已有的素材。": "Break the script into shots, generate images and videos, or use your own media.",
+  "把素材加入时间线，调整顺序、声音与字幕，预览后导出。": "Add media to the timeline, edit the sequence, sound and captions, then preview and export.",
+  "可以这样开始": "Try starting with this",
+  "点击示例，修改后发送": "Choose an example, edit it, then send",
+  "帮我写一支 30 秒的商品介绍视频，突出使用场景和产品特点。": "Help me write a 30-second product video highlighting how it is used and its key features.",
+  "我有一组旅行素材，想剪成 1 分钟的短片，先帮我梳理脚本。": "I have travel footage for a one-minute film. Help me outline the script first.",
+  "有参考资料？在「素材」中上传，再用对话框的 @ 引用给 Agent。": "Have references? Upload them in Media, then use @ in the conversation to share them with the Agent."
 }

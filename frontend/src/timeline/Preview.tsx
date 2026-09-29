@@ -127,12 +127,6 @@ const BrowserPreview = memo(function BrowserPreview({
   );
   return (
     <div className="preview">
-      <header>
-        <span>成片预览</span>
-        <small>
-          {project.width} × {project.height}
-        </small>
-      </header>
       <div className="preview-stage" ref={frame.ref}>
         <div className="preview-frame" style={frame.size}>
           {layers.map((e) => {

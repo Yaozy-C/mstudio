@@ -5,26 +5,37 @@ import { UnknownRunRecovery } from "./UnknownRunRecovery";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { runProgress } from "./runProgress";
-import { Image, VideoCamera } from "@phosphor-icons/react";
+import {
+  Image,
+  VideoCamera,
+  ArrowClockwise,
+  SlidersHorizontal,
+  X,
+} from "@phosphor-icons/react";
 import { native, mediaUrl } from "../bridge";
 import type { Project } from "../model";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 import { canvasSnapshot, inputFor, roleLabels } from "./request";
-import { GenerationResult } from "./GenerationResult";
+import { GenerationResults } from "./GenerationResults";
+import type { ReactNode } from "react";
+import { ActionButton } from "../ui/ActionButton";
 import { pendingRun, runStatuses, useRunActions } from "./useRunActions";
 import "./conversation.css";
+import "./task-detail.css";
 
 export function GenerationRun({
   task,
   project,
   canvas,
   settings,
+  headerAction,
 }: {
   task: ProductionTask;
   project: Project;
   canvas: ProductionController;
   settings: () => void;
+  headerAction?: ReactNode;
   follow: (
     task: ProductionTask,
     text?: string,
@@ -46,8 +57,6 @@ export function GenerationRun({
     } catch (error) {
       issue = normalizeError(error, "VALIDATION_FAILED").message;
     }
-  const resultIds =
-    task.resultAssetIds ?? (task.resultAssetId ? [task.resultAssetId] : []);
   const Icon = task.kind === "image" ? Image : VideoCamera;
   return (
     <section
@@ -65,6 +74,7 @@ export function GenerationRun({
         <span role="status" className={pending ? "run-active" : ""}>
           {t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
         </span>
+        {headerAction}
       </header>
       {node && <small className="run-owner">{node.title}</small>}
       <p className="run-instruction">{task.instruction || task.prompt}</p>
@@ -108,6 +118,7 @@ export function GenerationRun({
               }[task.mode]}
         </span>
       </div>
+      <GenerationResults task={task} project={project} canvas={canvas} />
       <div className="run-references" aria-label={t("本次使用素材")}>
         {task.inputs
           .filter((r) => r.assetId)
@@ -141,28 +152,6 @@ export function GenerationRun({
           })}
       </div>
       <TaskPromptEditor key={task.key} task={task} canvas={canvas} />
-      {resultIds.length > 0 && task.kind === "image" && (
-        <p role="status">
-          {t("已生成")} {resultIds.length} {t("张图片")}
-        </p>
-      )}
-      {resultIds.map((resultId) => (
-        <GenerationResult
-          key={resultId}
-          task={{ ...task, resultAssetId: resultId }}
-          project={project}
-          reference={(id) => {
-            canvas.setTaskPanelOpen(false);
-            canvas.attach({ kind: "asset", id });
-          }}
-          locate={() => {
-            canvas.setTaskPanelOpen(false);
-            window.dispatchEvent(new Event("studio-show-canvas"));
-            const item = canvas.items.find((n) => n.assetId === resultId);
-            if (item) canvas.focusItem(item.key);
-          }}
-        />
-      ))}
       {editable && !models.length && (
         <button type="button" onClick={settings}>
           {t("连接生成模型")}
@@ -194,7 +183,8 @@ export function GenerationRun({
       </ErrorNotice>
       {editable && (
         <div className="run-actions">
-          <button
+          <ActionButton
+            icon={ArrowClockwise}
             type="button"
             disabled={!native || busy}
             onClick={() =>
@@ -206,24 +196,26 @@ export function GenerationRun({
                 ? t("重新生成")
                 : t("重试")
               : t("生成")}
-          </button>
+          </ActionButton>
           {editable && (
-            <button
+            <ActionButton
+              icon={SlidersHorizontal}
               type="button"
               disabled={busy}
               onClick={() => canvas.configure(task)}
             >
               {t("设置")}
-            </button>
+            </ActionButton>
           )}
           {canEditOriginal(task) && (
-            <button
+            <ActionButton
+              icon={X}
               type="button"
               disabled={busy}
               onClick={() => void check(true)}
             >
               {t("取消")}
-            </button>
+            </ActionButton>
           )}
         </div>
       )}

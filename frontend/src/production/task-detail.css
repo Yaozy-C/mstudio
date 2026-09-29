@@ -1,0 +1,202 @@
+/* Task details: result first, aligned metadata, compact secondary editing. */
+.task-panel-detail {
+  padding: 24px;
+}
+.task-panel-detail .generation-run {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.task-panel-detail .generation-run > header {
+  min-height: 36px;
+  gap: 12px;
+}
+.task-panel-detail .generation-run > header strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+.task-panel-detail .generation-run > header > span {
+  font-size: 12px;
+}
+.radix-themes .task-record-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.task-panel-detail .run-instruction {
+  margin: 12px 0 8px;
+}
+.task-panel-detail .run-metadata {
+  font-size: 11px;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+.run-results {
+  margin: 24px 0;
+}
+.run-result-count {
+  margin: 0 0 12px;
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.generation-results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+}
+.generation-results-grid > .generation-result {
+  display: flex;
+  flex-direction: column;
+  width: calc((100% - 32px) / 3);
+  min-width: 0;
+}
+.generation-results-grid .generation-result-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: clamp(180px, 28vh, 320px);
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.generation-results-grid .generation-result-image img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+}
+.generation-results-video .generation-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 16px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.generation-results-video .generation-result + .generation-result {
+  margin-top: 16px;
+}
+.generation-results-video video {
+  width: 100%;
+  height: clamp(240px, 38vh, 440px);
+  max-height: none;
+  object-fit: contain;
+  background: var(--desk-bg);
+}
+.run-results .generation-result-tools {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  order: 2;
+  width: 100%;
+  padding-top: 8px;
+}
+.run-results .result-reference {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  opacity: 1;
+}
+.run-results .result-reference:hover {
+  color: var(--desk-accent);
+}
+.task-panel-detail .run-references {
+  padding-top: 16px;
+  margin: 24px 0;
+  border-top: 1px solid var(--desk-rule);
+  gap: 12px;
+}
+.run-references:empty {
+  display: none;
+}
+.task-panel-detail .run-references img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+}
+.task-prompt-editor {
+  padding: 16px 0;
+  border-top: 1px solid var(--desk-rule);
+}
+.task-prompt-editor > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--desk-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+.task-prompt-editor > summary::-webkit-details-marker {
+  display: none;
+}
+.task-prompt-editor:not([open]) > summary svg {
+  transform: rotate(-90deg);
+}
+.task-prompt-editor label {
+  display: block;
+  margin: 16px 0 12px;
+}
+.task-prompt-editor textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  min-height: 180px;
+  max-height: 340px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.task-prompt-editor .run-actions {
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+.generation-run > .run-actions {
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 0;
+  margin: 16px 0 0;
+  border-top: 1px solid var(--desk-rule);
+}
+.task-panel-detail .generation-run > .run-actions {
+  position: sticky;
+  bottom: -24px;
+  z-index: 2;
+  background: var(--desk-surface);
+}
+@media (max-width: 900px) {
+  .task-panel-detail .generation-run > .run-actions {
+    bottom: -10px;
+  }
+}
+
+.generation-run .run-references button {
+  width: 64px;
+}
+.generation-results-video video {
+  border-radius: 0;
+}

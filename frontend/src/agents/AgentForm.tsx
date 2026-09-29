@@ -68,8 +68,7 @@ export function AgentForm({
           backTarget,
         )}
       <div className="agent-detail-navigation">
-        <label>
-          {t("当前 Agent")}
+        <div className="agent-detail-selector">
           <StudioSelect
             label={t("切换 Agent")}
             disabled={busy}
@@ -82,7 +81,7 @@ export function AgentForm({
               ...agents.map((a) => ({ value: a.id, label: agentLabel(a) })),
             ]}
           />
-        </label>
+        </div>
         <button className="primary" disabled={busy}>
           {busy ? t("保存中…") : t("保存 Agent")}
         </button>

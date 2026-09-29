@@ -7,12 +7,10 @@ export function StudioInspector({
   ...props
 }: ComponentProps<typeof Inspector> & { close: () => void }) {
   useLanguage();
+  if (!props.project.clips.some((clip) => clip.id === props.clipId))
+    return null;
   return (
-    <DockPanel
-      id="inspector"
-      title={props.clipId ? t("编辑片段") : t("项目设置")}
-      onClose={close}
-    >
+    <DockPanel id="inspector" title={t("编辑片段")} onClose={close}>
       <Inspector {...props} />
     </DockPanel>
   );

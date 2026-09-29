@@ -81,7 +81,7 @@
   white-space: nowrap;
 }
 .task-panel-detail {
-  padding: 12px 18px;
+  padding: 24px;
 }
 .task-panel-detail .generation-run {
   padding: 0;
@@ -94,36 +94,11 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.task-panel-record-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-.task-panel-record-actions button {
-  color: var(--desk-muted);
-  font-size: 11px;
-}
 .task-active {
   color: var(--desk-accent) !important;
 }
 .task-failed {
   color: #a64830 !important;
-}
-.task-prompt-editor label {
-  display: block;
-  margin: 8px 0;
-}
-.task-prompt-editor textarea {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  resize: vertical;
-  min-height: 100px;
-  max-height: 240px;
-  font: inherit;
-  font-size: 12px;
-  line-height: 1.6;
-  padding: 10px;
 }
 .radix-themes .generation-task-entry {
   display: flex;
@@ -221,9 +196,8 @@
 
 .radix-themes .generation-batch button,
 .radix-themes .generation-pagination button,
-.radix-themes .run-actions button,
-.radix-themes .generation-settings footer button,
-.radix-themes .script-paragraph footer .action-button {
+.radix-themes .run-actions button:not(.action-button),
+.radix-themes .generation-settings footer button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -237,10 +211,6 @@
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
-}
-.radix-themes .script-paragraph footer .action-button > svg {
-  width: 16px;
-  height: 16px;
 }
 .generation-batch button + button {
   margin-left: 6px;

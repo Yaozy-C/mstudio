@@ -1,0 +1,21 @@
+/* Requests use the same full-width field and right-aligned action pattern. */
+.precision-panel .inspector-agent form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+.radix-themes .precision-panel .inspector-agent textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.inspector-request-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.inspector-section-heading {
+  gap: 16px;
+}

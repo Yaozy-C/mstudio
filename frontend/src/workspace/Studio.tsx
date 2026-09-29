@@ -52,7 +52,10 @@ export function Studio({ initial, onBack }: StudioProps) {
     setView(next);
     setPanels((p) => ({ ...p, preview: false }));
   });
+  const canInspect = project.clips.some((clip) => clip.id === clipId);
+  const inspectorOpen = panels.inspector && canInspect;
   const togglePanel = (key: keyof typeof panels) => {
+    if (key === "inspector" && !canInspect && activeView === "film") return;
     if (key === "agent" || key === "inspector") setCreationTab(null);
     if (key === "inspector" && nodeId && !clipId) setEditing(nodeId);
     else setPanels((p) => toggleStudioPanel(p, key));
@@ -116,6 +119,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   useClipEditing(m, clipId, clock, activeView === "film", setClipId);
   const split = () => playback.split(clipId);
   useShortcuts(m, setError, {
+    film: activeView === "film",
     clock,
     split,
     toggleTimeline: () => {
@@ -138,7 +142,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   }, [settingsOpen, clock]);
   const sidebarWidths = useSidebarWidths({
     ...panels,
-    agent: panels.agent || panels.inspector || !!creationTab,
+    agent: panels.agent || inspectorOpen || !!creationTab,
   });
   const editNode = project.nodes.find((n) => n.id === editing);
   return (
@@ -147,11 +151,12 @@ export function Studio({ initial, onBack }: StudioProps) {
         hidden={settingsOpen}
         style={sidebarWidths.style}
         data-media={panels.media}
-        data-agent={panels.agent || panels.inspector || !!creationTab}
+        data-agent={panels.agent || inspectorOpen || !!creationTab}
         data-view={activeView}
         className={`studio-shell ${panels.timeline && activeView === "film" ? "" : "timeline-hidden"}`}
       >
         <StudioChrome
+          canInspect={canInspect}
           tasks={
             <TaskPanel
               project={project}
@@ -171,11 +176,10 @@ export function Studio({ initial, onBack }: StudioProps) {
           m={m}
           onBack={onBack}
           setError={setError}
-          onSettings={() => setDialog("settings")}
           onModels={() => setDialog("models")}
           onExport={() => setDialog("export")}
           togglePanel={togglePanel}
-          panels={panels}
+          panels={{ ...panels, inspector: inspectorOpen }}
           addNote={addNote}
           onCreation={setCreationTab}
         />
@@ -225,7 +229,7 @@ export function Studio({ initial, onBack }: StudioProps) {
             busy={busy}
           />
         )}
-        {panels.inspector && !creationTab && (
+        {inspectorOpen && !creationTab && (
           <StudioInspector
             project={project}
             clipId={clipId}
@@ -241,7 +245,7 @@ export function Studio({ initial, onBack }: StudioProps) {
           clipId={clipId}
           clock={clock}
           draft={attachments}
-          visible={panels.agent && !panels.inspector && !creationTab}
+          visible={panels.agent && !inspectorOpen && !creationTab}
           flush={m.flush}
           work={activeView === "script" ? scriptContext : { view: activeView }}
           onSettings={() => setDialog("models")}

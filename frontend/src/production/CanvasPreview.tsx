@@ -1,9 +1,11 @@
+import "./shot-editor.css";
+import { ActionButton } from "../ui/ActionButton";
 import { ZoomableImage } from "../workspace/ZoomableImage";
 import { t, useLanguage } from "../i18n";
 import { actionText, editShotText } from "../creative/shotText";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
-import { X } from "@phosphor-icons/react";
+import { X, FloppyDisk, FilmSlate } from "@phosphor-icons/react";
 import { mediaUrl } from "../bridge";
 import { collectAsset, isLibraryAsset } from "../workspace/assetLibrary";
 import { MissingAsset } from "../workspace/MissingAsset";
@@ -50,11 +52,14 @@ export function CanvasPreview({
       }}
     >
       <Dialog.Content
-        className={`media-preview-dialog canvas-preview${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
+        className={`media-preview-dialog canvas-preview${!asset ? " shot-editor-dialog" : ""}${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
         aria-describedby={undefined}
       >
         <header>
-          <Dialog.Title>{item.title}</Dialog.Title>
+          <Dialog.Title>
+            {!asset && <FilmSlate size={22} />}
+            {item.title}
+          </Dialog.Title>
           <Dialog.Close>
             <button aria-label={t("关闭预览")}>
               <X />
@@ -78,35 +83,44 @@ export function CanvasPreview({
             )}
           </div>
         ) : (
-          <>
-            <label>
-              {t("镜头画面与动作")}
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={8}
-              />
-            </label>
-            {node?.shot && (
+          <form
+            className="shot-editor-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              save();
+              close();
+            }}
+          >
+            <div className="shot-editor-fields">
               <label>
-                {t("台词 / 旁白")}
+                {t("镜头画面与动作")}
                 <textarea
-                  value={dialogue}
-                  onChange={(e) => setDialogue(e.target.value)}
-                  rows={3}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={12}
                 />
               </label>
-            )}
-            <button
-              className="primary"
-              onClick={() => {
-                save();
-                close();
-              }}
-            >
-              {t("保存镜头内容")}
-            </button>
-          </>
+              {node?.shot && (
+                <label>
+                  {t("台词 / 旁白")}
+                  <textarea
+                    value={dialogue}
+                    onChange={(e) => setDialogue(e.target.value)}
+                    rows={3}
+                  />
+                </label>
+              )}
+            </div>
+            <footer className="shot-editor-actions">
+              <ActionButton icon={X} onClick={close}>
+                {t("取消")}
+              </ActionButton>
+              <button className="primary" type="submit">
+                <FloppyDisk size={18} />
+                {t("保存镜头内容")}
+              </button>
+            </footer>
+          </form>
         )}
         {asset && (
           <footer>

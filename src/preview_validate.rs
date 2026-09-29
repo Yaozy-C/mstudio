@@ -3,7 +3,7 @@ use crate::model::{Asset, RenderSpec};
 use anyhow::{Context, Result, ensure};
 use std::collections::HashMap;
 pub fn validate(spec: &RenderSpec, assets: &[Asset], edge: u32) -> Result<()> {
-    ensure!([640, 1280].contains(&edge), "预览清晰度无效");
+    ensure!([0, 640, 1280].contains(&edge), "预览清晰度无效");
     ensure!([24, 25, 30, 60].contains(&spec.fps), "不支持的预览帧率");
     ensure!(
         (64..=3840).contains(&spec.width) && (64..=3840).contains(&spec.height),

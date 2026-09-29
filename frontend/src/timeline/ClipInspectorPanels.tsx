@@ -11,6 +11,7 @@ import {
   Gauge,
   BracketsSquare,
   SpeakerHigh,
+  Waveform,
 } from "@phosphor-icons/react";
 import { duration, type Clip, type Asset, type Project } from "../model";
 import { validateClip } from "./document";
@@ -21,12 +22,14 @@ export function ClipInspectorPanels({
   asset,
   project,
   update,
+  detach,
 }: {
   tab: string;
   clip: Clip;
   asset: Asset;
   project: Project;
   update: (clip: Clip) => void;
+  detach?: () => void;
 }) {
   useLanguage();
   const patch = (fields: Partial<Clip>) => {
@@ -37,7 +40,15 @@ export function ClipInspectorPanels({
     return (
       <>
         <section className="inspector-section">
-          <h3>{t("位置")}</h3>
+          <div className="inspector-section-heading">
+            <h3>{t("位置")}</h3>
+            <ActionButton
+              icon={Crosshair}
+              onClick={() => patch({ x: 0.5, y: 0.5 })}
+            >
+              {t("居中")}
+            </ActionButton>
+          </div>
           <InspectorControl
             label={t("水平")}
             icon={ArrowsHorizontal}
@@ -56,12 +67,6 @@ export function ClipInspectorPanels({
             max={200}
             change={(y) => patch({ y: y / 100 })}
           />
-          <ActionButton
-            icon={Crosshair}
-            onClick={() => patch({ x: 0.5, y: 0.5 })}
-          >
-            {t("居中")}
-          </ActionButton>
         </section>
         <section className="inspector-section">
           <h3>{t("大小")}</h3>
@@ -181,7 +186,14 @@ export function ClipInspectorPanels({
     );
   return (
     <section className="inspector-section">
-      <h3>{t("声音")}</h3>
+      <div className="inspector-section-heading">
+        <h3>{t("声音")}</h3>
+        {detach && (
+          <ActionButton icon={Waveform} onClick={detach}>
+            {t("分离音频")}
+          </ActionButton>
+        )}
+      </div>
       <InspectorControl
         label={t("音量")}
         icon={SpeakerHigh}

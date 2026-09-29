@@ -1,3 +1,4 @@
+import { At } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import type { WorkContext } from "../assistant/workContext";
 import { ScriptTiming } from "./ScriptTiming";
@@ -6,7 +7,6 @@ import { ScriptAIStart } from "./ScriptAIStart";
 import { creativeTask, requestCreativeTask } from "./aiTasks";
 import { useEffect, useState } from "react";
 import type { Project } from "../model";
-import { SAVE_DESCRIPTION } from "../workspace/projectAutosave";
 import { ScriptParagraphEditor } from "./ScriptParagraphEditor";
 import { createScript, newParagraph } from "./script";
 import { shotsOf } from "./document";
@@ -18,7 +18,6 @@ export function ScriptWorkspace({
   onSelect,
   onChange,
   onReference,
-  saved,
   navigate,
   onContext,
 }: {
@@ -72,17 +71,20 @@ export function ScriptWorkspace({
         <div>
           <h1>{t("脚本")}</h1>
         </div>
+        {screenplay && (
+          <button
+            type="button"
+            className="script-reference icon-button"
+            aria-label={t("引用到对话")}
+            title={t("引用到对话")}
+            onClick={() => onReference(screenplay.id)}
+          >
+            <At size={20} />
+          </button>
+        )}
       </header>
       {screenplay ? (
         <>
-          <nav className="script-tools" aria-label={t("脚本工具")}>
-            <button type="button" onClick={() => onReference(screenplay.id)}>
-              {t("引用到对话")}
-            </button>
-            <span role="status" title={t(SAVE_DESCRIPTION)}>
-              {t(saved)}
-            </span>
-          </nav>
           <div
             className="script-paper"
             onFocusCapture={(e) => {

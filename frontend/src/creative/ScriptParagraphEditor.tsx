@@ -1,6 +1,6 @@
 import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
-import { Trash, FilmStrip, Sparkle } from "@phosphor-icons/react";
+import { Trash, FilmStrip, FrameCorners } from "@phosphor-icons/react";
 import { flushPendingEdits } from "../workspace/pendingEdits";
 import { writeScript } from "./scriptWrite";
 import { DurationInput } from "./ScriptTiming";
@@ -126,7 +126,7 @@ export function ScriptParagraphEditor({
           </ActionButton>
         )}
         <ActionButton
-          icon={Sparkle}
+          icon={FrameCorners}
           disabled={!s.action.trim() && !s.dialogue.trim()}
           onClick={() =>
             requestCreativeTask(

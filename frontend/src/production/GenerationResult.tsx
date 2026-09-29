@@ -41,26 +41,28 @@ export function GenerationResult({
         e.dataTransfer.effectAllowed = "copy";
       }}
     >
-      {locate && (
-        <button
-          className="result-reference result-locate"
-          aria-label={t("在画布查看此结果")}
-          title={t("在画布查看")}
-          onClick={locate}
-        >
-          <Crosshair size={16} />
-        </button>
-      )}
-      {reference && (
-        <button
-          className="result-reference"
-          aria-label={t("引用此结果")}
-          title={t("引用到输入框")}
-          onClick={() => reference(asset.id)}
-        >
-          <At size={16} />
-        </button>
-      )}
+      <div className="generation-result-tools">
+        {locate && (
+          <button
+            className="result-reference result-locate"
+            aria-label={t("在画布查看此结果")}
+            title={t("在画布查看")}
+            onClick={locate}
+          >
+            <Crosshair size={16} />
+          </button>
+        )}
+        {reference && (
+          <button
+            className="result-reference"
+            aria-label={t("引用此结果")}
+            title={t("引用到输入框")}
+            onClick={() => reference(asset.id)}
+          >
+            <At size={16} />
+          </button>
+        )}
+      </div>
       {asset.kind === "image" ? (
         <button
           type="button"

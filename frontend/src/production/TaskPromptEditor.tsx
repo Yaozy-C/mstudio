@@ -1,5 +1,7 @@
+import { FloppyDisk, ChatText, CaretDown, X } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
+import { ActionButton } from "../ui/ActionButton";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 
@@ -16,7 +18,10 @@ export function TaskPromptEditor({
   const [error, setError] = useState("");
   return (
     <details className="run-description task-prompt-editor">
-      <summary>{t("生成描述")}</summary>
+      <summary>
+        <CaretDown size={16} />
+        {t("生成描述")}
+      </summary>
       <label>
         <textarea
           aria-label={t("生成描述")}
@@ -30,7 +35,8 @@ export function TaskPromptEditor({
         />
       </label>
       <div className="run-actions">
-        <button
+        <ActionButton
+          icon={FloppyDisk}
           type="button"
           disabled={draft === null || !draft.trim()}
           onClick={() => {
@@ -43,9 +49,10 @@ export function TaskPromptEditor({
           }}
         >
           {t("保存描述")}
-        </button>
+        </ActionButton>
         {draft !== null && (
-          <button
+          <ActionButton
+            icon={X}
             type="button"
             onClick={() => {
               setDraft(null);
@@ -53,10 +60,11 @@ export function TaskPromptEditor({
             }}
           >
             {t("放弃修改")}
-          </button>
+          </ActionButton>
         )}
-        <button
+        <ActionButton
           type="button"
+          icon={ChatText}
           disabled={draft !== null && !draft.trim()}
           onClick={() => {
             try {
@@ -71,7 +79,7 @@ export function TaskPromptEditor({
           }}
         >
           {t("让 Agent 修改描述")}
-        </button>
+        </ActionButton>
       </div>
       {error && <p role="alert">{error}</p>}
     </details>

@@ -7,7 +7,7 @@ import {
   Check,
   Image,
   VideoCamera,
-  Robot,
+  ChatCircle,
   SlidersHorizontal,
 } from "@phosphor-icons/react";
 import type { Project } from "../model";
@@ -38,7 +38,7 @@ export function ComposerGeneration({
     (mode !== "agent" && task?.modelId) || canvas.modelPreferences[kind] || "";
   const selected = canvas.media.models.find((m) => m.id === modelId);
   const Icon =
-    mode === "image" ? Image : mode === "video" ? VideoCamera : Robot;
+    mode === "image" ? Image : mode === "video" ? VideoCamera : ChatCircle;
   const params = task?.parameters;
   const summary =
     mode === "video"
@@ -89,7 +89,7 @@ export function ComposerGeneration({
               }}
             >
               {value === "agent" ? (
-                <Robot />
+                <ChatCircle />
               ) : value === "image" ? (
                 <Image />
               ) : (

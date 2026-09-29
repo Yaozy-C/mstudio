@@ -1,6 +1,13 @@
 import { Dialog } from "@radix-ui/themes";
 import { t, useLanguage } from "../i18n";
-import { ListChecks, X, Image, VideoCamera } from "@phosphor-icons/react";
+import {
+  ListChecks,
+  X,
+  Image,
+  VideoCamera,
+  MinusCircle,
+  ArrowCounterClockwise,
+} from "@phosphor-icons/react";
 import type { Project } from "../model";
 import type { ProductionController } from "./useProduction";
 import { GenerationRun } from "./GenerationRun";
@@ -106,29 +113,40 @@ export function TaskPanel({
           </div>
           <div className="task-panel-detail">
             {selected ? (
-              <>
-                <div className="task-panel-record-actions">
+              <GenerationRun
+                key={selected.key}
+                task={selected}
+                project={project}
+                canvas={canvas}
+                settings={settings}
+                follow={() => canvas.referenceTask(selected)}
+                headerAction={
                   <button
                     type="button"
+                    className="task-record-action icon-button"
+                    title={
+                      selected.hiddenFromList
+                        ? t("恢复到列表")
+                        : t("从列表移除")
+                    }
+                    aria-label={
+                      selected.hiddenFromList
+                        ? t("恢复到列表")
+                        : t("从列表移除")
+                    }
                     onClick={() => {
                       canvas.hideTask(selected.key, !selected.hiddenFromList);
                       if (!selected.hiddenFromList) canvas.clearActiveTask();
                     }}
                   >
-                    {selected.hiddenFromList
-                      ? t("恢复到列表")
-                      : t("从列表移除")}
+                    {selected.hiddenFromList ? (
+                      <ArrowCounterClockwise size={18} />
+                    ) : (
+                      <MinusCircle size={18} />
+                    )}
                   </button>
-                </div>
-                <GenerationRun
-                  key={selected.key}
-                  task={selected}
-                  project={project}
-                  canvas={canvas}
-                  settings={settings}
-                  follow={() => canvas.referenceTask(selected)}
-                />
-              </>
+                }
+              />
             ) : (
               <p>
                 {t(

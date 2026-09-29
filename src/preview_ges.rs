@@ -44,9 +44,7 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
     // Shared validator also checks caption assets, tracks, times and effects.
     crate::preview_validate::validate(spec, assets, edge)?;
     std::fs::create_dir_all(root)?;
-    let ratio = edge as f64 / spec.width.max(spec.height) as f64;
-    let width = ((spec.width as f64 * ratio / 2.).round() as u32 * 2).max(2);
-    let height = ((spec.height as f64 * ratio / 2.).round() as u32 * 2).max(2);
+    let (width, height) = preview_dimensions(spec.width, spec.height, edge);
     let duration = spec
         .clips
         .iter()
@@ -211,4 +209,25 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
         plan.files.push(path);
     }
     Ok(plan)
+}
+
+/// Zero selects the project canvas without an intermediate downscale.
+fn preview_dimensions(width: u32, height: u32, edge: u32) -> (u32, u32) {
+    if edge == 0 {
+        return (width, height);
+    }
+    let ratio = edge as f64 / width.max(height) as f64;
+    (
+        ((width as f64 * ratio / 2.).round() as u32 * 2).max(2),
+        ((height as f64 * ratio / 2.).round() as u32 * 2).max(2),
+    )
+}
+
+#[test]
+fn full_resolution_preview_preserves_canvas_dimensions() {
+    assert_eq!(preview_dimensions(1080, 1920, 0), (1080, 1920));
+    assert_eq!(preview_dimensions(3840, 2160, 0), (3840, 2160));
+    assert_eq!(preview_dimensions(481, 853, 0), (481, 853));
+    assert_eq!(preview_dimensions(480, 854, 0), (480, 854));
+    assert_eq!(preview_dimensions(1080, 1920, 640), (360, 640));
 }

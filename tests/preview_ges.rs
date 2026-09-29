@@ -57,6 +57,9 @@ fn ges_preparation_preserves_timing_effects_and_cache_identity() -> anyhow::Resu
     assert_eq!(plan.layers[0].start, 0.5);
     assert_eq!(plan.layers[0].duration, 1.);
     assert!(plan.audio.is_none());
+    let original_size = preview_ges::prepare(&spec, &assets, &cache, 0)?;
+    assert_eq!((original_size.width, original_size.height), (640, 360));
+    assert_eq!(original_size.layers[0].path, plan.layers[0].path);
     let sharp = preview_ges::prepare(&spec, &assets, &cache, 1280)?;
     assert_eq!((sharp.width, sharp.height), (1280, 720));
     assert_eq!((sharp.layers[0].width, sharp.layers[0].height), (1280, 720));

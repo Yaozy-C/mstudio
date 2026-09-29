@@ -81,7 +81,7 @@ select:focus {
   box-shadow: 0 0 0 2px #b1c18b12;
 }
 textarea {
-  resize: vertical;
+  resize: none;
   line-height: 1.7;
 }
 select {

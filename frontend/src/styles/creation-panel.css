@@ -22,7 +22,7 @@
   border-radius: 3px;
   font-size: 14px;
   line-height: 1.6;
-  resize: vertical;
+  resize: none;
 }
 .speech-source {
   display: flex;

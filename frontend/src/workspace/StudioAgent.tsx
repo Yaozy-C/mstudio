@@ -44,7 +44,7 @@ export function StudioAgent({
   return (
     <DockPanel
       id="agent"
-      title={t("项目助手")}
+      title={t("Agent 工作台")}
       visible={visible}
       onClose={onClose}
     >

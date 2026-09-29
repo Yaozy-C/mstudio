@@ -1,0 +1,116 @@
+.script-onboarding {
+  width: 100%;
+  max-width: 880px;
+  margin: clamp(24px, 6vh, 72px) auto 48px;
+  color: var(--desk-text);
+}
+.script-onboarding-intro {
+  text-align: center;
+}
+.script-onboarding h2 {
+  margin: 0;
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.script-onboarding p {
+  color: var(--desk-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.script-onboarding-intro > p {
+  margin: 16px 0 24px;
+}
+.script-onboarding-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.script-onboarding-actions .primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+.script-onboarding-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  padding: 32px 0;
+  margin: 48px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--desk-rule);
+  border-bottom: 1px solid var(--desk-rule);
+}
+.script-step-number {
+  display: block;
+  color: var(--desk-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.script-onboarding h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.script-onboarding-steps p {
+  margin: 8px 0 0;
+}
+.script-onboarding-examples {
+  padding-top: 32px;
+}
+.script-example-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.script-example-heading > span {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.radix-themes .script-onboarding-examples > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+  min-height: 48px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.script-onboarding-examples > button svg {
+  flex-shrink: 0;
+}
+.radix-themes .script-onboarding-examples > button:hover {
+  color: var(--desk-accent);
+}
+.script-onboarding .script-onboarding-tip {
+  margin: 16px 0 0;
+  font-size: 12px;
+}
+@media (max-width: 1000px) {
+  .script-onboarding-steps {
+    gap: 16px;
+  }
+}
+@media (max-width: 650px) {
+  .script-onboarding-steps {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

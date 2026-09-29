@@ -1,10 +1,11 @@
 import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import { useEffect, useState, type ReactNode } from "react";
-import { CircleHalf, Sparkle, ArrowRight } from "@phosphor-icons/react";
+import { CircleHalf, Palette, ArrowRight } from "@phosphor-icons/react";
 import type { Clip } from "../model";
 import { requestCreativeTask } from "../creative/aiTasks";
 import "../styles/color-workflow.css";
+import "../styles/inspector-request.css";
 export function ColorRequest({
   clip,
   children,
@@ -33,7 +34,8 @@ export function ColorRequest({
   }, [comparing, clip.id]);
   return (
     <>
-      <div className="inspector-comparison">
+      <div className="inspector-comparison inspector-section-heading">
+        <h3>{t("调色")}</h3>
         <ActionButton
           icon={CircleHalf}
           aria-pressed={comparing}
@@ -46,7 +48,7 @@ export function ColorRequest({
       {children}
       <section className="inspector-section inspector-agent">
         <h3>
-          <Sparkle size={20} />
+          <Palette size={20} />
           {t("Agent 调色")}
         </h3>
         <form
@@ -65,19 +67,21 @@ export function ColorRequest({
         >
           <textarea
             aria-label={t("调色要求")}
-            rows={2}
+            rows={3}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={t("整体偏冷，保留产品原色")}
           />
-          <ActionButton
-            icon={ArrowRight}
-            className="inspector-send"
-            disabled={!text.trim()}
-            type="submit"
-          >
-            {t("发起调色")}
-          </ActionButton>
+          <div className="inspector-request-actions">
+            <ActionButton
+              icon={ArrowRight}
+              className="inspector-send"
+              disabled={!text.trim()}
+              type="submit"
+            >
+              {t("发起调色")}
+            </ActionButton>
+          </div>
         </form>
       </section>
     </>

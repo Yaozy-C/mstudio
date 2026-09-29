@@ -48,7 +48,7 @@
 .memory-entry textarea {
   width: 100%;
   box-sizing: border-box;
-  resize: vertical;
+  resize: none;
   margin-bottom: 12px;
 }
 .memory-entry input,

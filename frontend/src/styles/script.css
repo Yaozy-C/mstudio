@@ -19,21 +19,19 @@
   color: var(--desk-muted);
   line-height: 1.8;
 }
-.script-tools {
-  display: flex;
+.radix-themes .script-reference {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  border-block: 1px solid var(--desk-rule);
-  padding: 12px 0;
-}
-.script-tools span {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--desk-muted);
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .script-paper {
   max-width: 820px;
-  margin: 40px auto 0;
+  margin: 24px auto 0;
 }
 .script-title {
   width: 100%;
@@ -147,28 +145,6 @@
 }
 .script-workspace .creative-inline-field {
   margin-bottom: 16px;
-}
-.script-ai-start {
-  max-width: 820px;
-  margin: 38px auto;
-  padding-block: 24px;
-}
-.script-ai-start h2 {
-  font-size: 27px;
-  font-weight: 500;
-  margin: 0 0 24px;
-}
-.script-ai-start textarea {
-  width: 100%;
-  resize: vertical;
-  line-height: 1.8;
-  margin: 12px 0;
-}
-.script-ai-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 18px 0;
 }
 .script-paragraph > details {
   margin-top: 18px;

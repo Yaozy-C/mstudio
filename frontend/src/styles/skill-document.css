@@ -115,7 +115,7 @@
   background: var(--desk-surface);
   color: var(--desk-text);
   font: 13px/1.65 monospace;
-  resize: vertical;
+  resize: none;
 }
 
 .skill-document-actions {

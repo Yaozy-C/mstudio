@@ -8,8 +8,8 @@ export function decodePreviewFrame(buffer: ArrayBuffer) {
   if (
     !width ||
     !height ||
-    width > 1280 ||
-    height > 1280 ||
+    width > 3840 ||
+    height > 3840 ||
     buffer.byteLength !== 16 + width * height * 4
   )
     throw new Error("预览帧尺寸无效");

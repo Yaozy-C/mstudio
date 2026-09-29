@@ -37,7 +37,7 @@
 }
 .color-request textarea {
   width: 100%;
-  resize: vertical;
+  resize: none;
   min-height: 90px;
   padding: 10px;
   font: inherit;

@@ -185,7 +185,7 @@
   background: var(--desk-bg);
   border-bottom: 1px solid var(--desk-rule);
 }
-.agent-detail-navigation label {
+.radix-themes .agent-detail-navigation .agent-detail-selector {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -194,7 +194,7 @@
   font-size: 12px;
 }
 .agent-detail-navigation .studio-select-trigger {
-  width: 170px;
+  width: 220px;
 }
 .agent-detail-navigation button {
   white-space: nowrap;

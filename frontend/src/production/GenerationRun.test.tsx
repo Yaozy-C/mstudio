@@ -33,8 +33,8 @@ test("image and video tasks retain settings after cancellation and reset executi
       />,
     );
     expect(html).toContain("已取消");
-    expect(html).toContain(">设置</button>");
-    expect(html).toContain(">重试</button>");
+    expect(html).toMatch(/>设置(?:<\/span>)?<\/button>/);
+    expect(html).toMatch(/>重试(?:<\/span>)?<\/button>/);
     expect(html).not.toContain("重新查询状态");
     const draft = regenerationDraft(task);
     expect(draft.status).toBe("AWAITING_CONFIRMATION");

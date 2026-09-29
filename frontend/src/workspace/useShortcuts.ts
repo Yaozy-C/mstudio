@@ -4,6 +4,7 @@ export function useShortcuts(
   m: { undo: () => void; redo: () => void; flush: () => Promise<void> },
   setError: (s: string) => void,
   actions: {
+    film: boolean;
     clock: PlaybackClock;
     split: () => void;
     toggleTimeline: () => void;
@@ -12,6 +13,36 @@ export function useShortcuts(
   },
 ) {
   useEffect(() => {
+    const capturePlayback = (e: KeyboardEvent) => {
+      if (
+        !actions.film ||
+        e.code !== "Space" ||
+        e.isComposing ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        document.querySelector(
+          '.modal-backdrop, .settings-page, [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+        )
+      )
+        return;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      if (
+        target?.closest('textarea, [contenteditable="true"], [role="textbox"]')
+      )
+        return;
+      const input = target?.closest("input");
+      if (
+        input &&
+        !["range", "number", "checkbox", "radio", "button", "submit"].includes(
+          input.type,
+        )
+      )
+        return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (!e.repeat) actions.play();
+    };
     const handler = (e: KeyboardEvent) => {
       if (
         e.isComposing ||
@@ -62,9 +93,11 @@ export function useShortcuts(
     const hide = () => {
       if (document.hidden) actions.clock.pause();
     };
+    window.addEventListener("keydown", capturePlayback, true);
     window.addEventListener("keydown", handler);
     document.addEventListener("visibilitychange", hide);
     return () => {
+      window.removeEventListener("keydown", capturePlayback, true);
       window.removeEventListener("keydown", handler);
       document.removeEventListener("visibilitychange", hide);
     };

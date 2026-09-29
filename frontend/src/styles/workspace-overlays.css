@@ -55,7 +55,7 @@
 }
 .canvas-text-editor textarea {
   height: 240px;
-  resize: vertical;
+  resize: none;
   line-height: 1.7;
 }
 .canvas-text-editor footer {

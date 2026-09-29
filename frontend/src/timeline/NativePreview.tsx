@@ -8,7 +8,6 @@ import { prepareCaptions } from "../creation/prepareCaptions";
 import { ClockReadout } from "./ClockReadout";
 import { previewSpec } from "./previewSpec";
 import { startPreviewFrames } from "./previewFrames";
-import { StudioSelect } from "../ui/StudioSelect";
 import { PreviewCommands } from "./previewCommands";
 import { ActionButton } from "../ui/ActionButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -27,7 +26,6 @@ export function NativePreview({
 }) {
   useLanguage();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [edge, setEdge] = useState("640");
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
@@ -100,7 +98,7 @@ export function NativePreview({
         token,
         projectId: project.id,
         spec: doc,
-        edge: Number(edge),
+        edge: 0,
       });
       if (!alive) {
         await bridge("native_preview_control", { token, action: "close" });
@@ -163,23 +161,9 @@ export function NativePreview({
         () => {},
       );
     };
-  }, [spec, project.id, clock, edge, retry]);
+  }, [spec, project.id, clock, retry]);
   return (
     <div className="preview">
-      <header>
-        <span>{t("成片预览")}</span>
-        <div className="preview-selectors">
-          <StudioSelect
-            label={t("预览清晰度")}
-            value={edge}
-            onValueChange={setEdge}
-            options={[
-              { value: "640", label: t("流畅") },
-              { value: "1280", label: t("清晰") },
-            ]}
-          />
-        </div>
-      </header>
       <div className="preview-stage">
         <canvas
           ref={canvas}

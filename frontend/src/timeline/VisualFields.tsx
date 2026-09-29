@@ -6,7 +6,7 @@ import {
   CircleHalf,
   Drop,
   Thermometer,
-  Sparkle,
+  SlidersHorizontal,
 } from "@phosphor-icons/react";
 import type { Clip, Visual } from "../model";
 import { defaultVisual } from "./visualSettings";
@@ -64,7 +64,7 @@ export function VisualFields({
       <section className="inspector-section">
         <label className="inspector-select-row">
           <span>
-            <Sparkle size={20} />
+            <SlidersHorizontal size={20} />
             {t("效果")}
           </span>
           <select

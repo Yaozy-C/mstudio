@@ -28,8 +28,8 @@ pub async fn native_preview_open(
     spec: RenderSpec,
     edge: Option<u32>,
 ) -> Result<(), String> {
-    let edge = edge.unwrap_or(640);
-    if ![640, 1280].contains(&edge) {
+    let edge = edge.unwrap_or(0);
+    if ![0, 640, 1280].contains(&edge) {
         return Err("预览清晰度无效".into());
     }
     {

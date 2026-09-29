@@ -24,6 +24,7 @@ import "./styles/frame-timeline.css";
 import "./styles/timeline-states.css";
 import "./styles/frame-media.css";
 import "./styles/object-menu.css";
+import "./styles/text-inputs.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Theme appearance="light" accentColor="tomato" radius="small">
     <App />

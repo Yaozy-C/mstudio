@@ -216,6 +216,11 @@
 .inspector-duration small {
   font-size: 20px;
 }
+.inspector-comparison h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
 .inspector-comparison {
   padding: 18px 0;
   border-bottom: 1px solid var(--desk-rule);
@@ -234,7 +239,7 @@
   border-radius: 3px;
   font-size: 13px;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
 }
 .radix-themes .precision-panel .inspector-send {
   flex-shrink: 0;
@@ -275,4 +280,16 @@
 }
 .inspector-number input[aria-invalid="true"] {
   outline: 1px solid var(--desk-accent);
+}
+
+.radix-themes .precision-panel .inspector-grade-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.inspector-grade-toggle[aria-expanded="false"] svg {
+  transform: rotate(-90deg);
 }

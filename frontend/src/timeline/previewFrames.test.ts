@@ -102,3 +102,21 @@ test("preroll and stale seek replies never paint or reveal the canvas", async ()
     });
   }
 });
+
+test("original-resolution frames accept portrait HD and landscape 4K", () => {
+  for (const [width, height] of [
+    [1080, 1920],
+    [3840, 2160],
+  ]) {
+    const buffer = new ArrayBuffer(16 + width * height * 4);
+    const header = new DataView(buffer);
+    [1, width, height, 0].forEach((value, i) =>
+      header.setUint32(i * 4, value, true),
+    );
+    const frame = decodePreviewFrame(buffer)!;
+    expect([frame.width, frame.height]).toEqual([width, height]);
+    expect(frame.pixels.length).toBe(width * height * 4);
+    header.setUint32(4, 3841, true);
+    expect(() => decodePreviewFrame(buffer)).toThrow();
+  }
+});

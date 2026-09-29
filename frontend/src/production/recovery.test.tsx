@@ -69,14 +69,14 @@ const render = (status: string) =>
   );
 test("recovery actions match terminal, uncertain, cancelling and receiving states", () => {
   for (const status of ["FAILED", "CANCELLED"])
-    expect(render(status)).toContain("重试</button>");
+    expect(render(status)).toMatch(/>重试(?:<\/span>)?<\/button>/);
   for (const status of [
     "UNKNOWN",
     "CANCEL_REQUESTED",
     "IN_PROGRESS",
     "RECEIVING",
   ])
-    expect(render(status)).not.toContain("重试</button>");
+    expect(render(status)).not.toMatch(/>重试(?:<\/span>)?<\/button>/);
   expect(render("RECEIVING")).toContain("重试收取结果");
   expect(render("UNKNOWN")).toContain("核查后重新设置");
   expect(render("IN_PROGRESS")).toContain("进度暂时无法更新");

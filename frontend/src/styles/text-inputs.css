@@ -1,0 +1,15 @@
+/* All multiline fields have at most eight visible lines; content scrolls. */
+.radix-themes textarea {
+  --input-max-height: calc(8lh + 32px);
+  min-height: min(3lh, var(--input-max-height));
+  max-height: var(--input-max-height) !important;
+  resize: none !important;
+  overflow-y: auto !important;
+}
+.creative-inline-input > span {
+  max-height: calc(8lh + 16px) !important;
+  overflow: hidden;
+}
+.radix-themes .creative-inline-input > textarea {
+  min-height: 1lh;
+}

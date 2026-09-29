@@ -12,11 +12,9 @@ import {
   Plus,
   NotePencil,
   FilmSlate,
-  GearSix,
   Images,
   Graph,
   CaretDown,
-  DotsThree,
   SlidersHorizontal,
   Subtitles,
   Cube,
@@ -29,11 +27,11 @@ type Panel = "media" | "preview" | "inspector" | "agent";
 
 export function StudioChrome({
   view,
+  canInspect,
   onView,
   m,
   onBack,
   setError,
-  onSettings,
   onModels,
   onExport,
   togglePanel,
@@ -42,13 +40,13 @@ export function StudioChrome({
   onCreation,
   tasks,
 }: {
+  canInspect: boolean;
   tasks: ReactNode;
   view: StudioView;
   onView: (view: StudioView) => void;
   m: ReturnType<typeof useProject>;
   onBack: () => void;
   setError: (s: string) => void;
-  onSettings: () => void;
   onModels: () => void;
   onExport: () => void;
   togglePanel: (key: Panel) => void;
@@ -185,34 +183,16 @@ export function StudioChrome({
         <Graph />
         Agent
       </button>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <button
-            className="icon-button"
-            title={t("更多工具")}
-            aria-label={t("更多工具")}
-          >
-            <DotsThree weight="bold" />
-          </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content
-          className="studio-menu"
-          align="end"
-          sideOffset={12}
+      {view === "film" && canInspect && (
+        <button
+          className="chrome-action"
+          aria-pressed={panels.inspector}
+          onClick={() => togglePanel("inspector")}
         >
-          {view === "film" && (
-            <DropdownMenu.Item onSelect={() => togglePanel("inspector")}>
-              <SlidersHorizontal />
-              {t("编辑属性")}
-            </DropdownMenu.Item>
-          )}
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item onSelect={onSettings}>
-            <GearSix />
-            {t("设置")}
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
+          <SlidersHorizontal />
+          {t("编辑属性")}
+        </button>
+      )}
       <span className="top-divider" />
       <button
         className="primary chrome-export"
