@@ -1,11 +1,11 @@
-# 验收证据
+# Inspection evidence
 
-每项结论在现有交接或回复中记录：镜头 ID、素材 assetId、当前检查对象、时间段/画格区域、实际观察、通过/失败/未查。没有实际媒体输入就不能填通过；提示词、元数据和生成完成状态不是视觉证据。
+For each conclusion record shot ID, assetId, inspected object, time range/image region, actual observation and pass/fail/unchecked in the existing handoff or reply. Prompts, metadata and completion status are not visual evidence.
 
-- 静态：原始商品部件、画格状态、机位与表图一致性。
-- 动态：物体来源、初始支撑、路径、关键接触、去向，以及跨镜数量和位置。
-- 全片：观看变化、重复信息、信息辨认、动作速度和实际切点。
-- 声音：实际听取的范围、音画对齐、材质与响度；没有音频输入保持未查。
-- 技术：只报告工具返回或实际检查支持的规格，不把技术合格当内容合格。
+- Static: original product parts, frame state, camera and agreement with the plan.
+- Motion: source, initial support, path, decisive contact, destination, counts and positions.
+- Sequence: viewing changes, repetition, recognition time, speed and actual cuts.
+- Sound: actually listened range, sync, material and level; no audio input means unchecked.
+- Technical: only specifications returned by tools or actually inspected; technical validity is not content validity.
 
-新素材、修复或变速后复查受影响范围及接点，旧版通过状态不自动迁移。已知关键错误不能标未查以放行；能力不足时清楚列出缺口。Mstudio 的工程和消息承担记录，不要求生成 review.json 或运行外部检查脚本。
+Reinspect affected areas and joins after repairs, retiming or new versions. Do not relabel a known essential failure as unchecked to pass it. Report capability gaps precisely. In Mstudio, project fields and messages carry these records; do not require review.json or unavailable external scripts.

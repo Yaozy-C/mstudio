@@ -39,16 +39,27 @@ test("Agent starts an empty project with ordinary cards and revises one without 
     {
       op: "add_node",
       id: "script",
-      kind: "plan",
+      kind: "screenplay",
       title: "脚本",
-      text: "出发、沿途、抵达",
+      screenplay: {
+        script: [
+          {
+            id: "p1",
+            title: "出发",
+            action: "出发、沿途、抵达",
+            duration: 10,
+            dialogue: "",
+            sound: "",
+          },
+        ],
+      },
     },
     {
       op: "add_node",
       id: "shot-1",
       kind: "shot",
       title: "01 · 出发",
-      shot: { planId: "script", order: 1, duration: 5, dialogue: "" },
+      shot: { screenplayId: "script", order: 1, duration: 5, dialogue: "" },
       text: "清晨推门出发",
     },
     {
@@ -56,12 +67,16 @@ test("Agent starts an empty project with ordinary cards and revises one without 
       id: "shot-2",
       kind: "shot",
       title: "02 · 沿途",
-      shot: { planId: "script", order: 2, duration: 5, dialogue: "" },
+      shot: { screenplayId: "script", order: 2, duration: 5, dialogue: "" },
       text: "午后海边行走",
     },
   ]);
   expect(empty.nodes).toHaveLength(0);
-  expect(drafted.nodes.map((n) => n.kind)).toEqual(["plan", "shot", "shot"]);
+  expect(drafted.nodes.map((n) => n.kind)).toEqual([
+    "screenplay",
+    "shot",
+    "shot",
+  ]);
   expect(drafted.nodes.every((n) => !n.resultAssetId)).toBe(true);
   expect(drafted.creation?.intent).toBe("30 秒轻快旅行短片");
   const revised = applyOperations(
@@ -85,13 +100,13 @@ test("Agent starts an empty project with ordinary cards and revises one without 
 
 test("reorders and inserts shots atomically, validating only the final order", () => {
   const p = applyOperations(newProject("Reorder"), 0, [
-    { op: "add_node", id: "plan", kind: "plan", title: "Plan" },
+    { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 7 }, (_, i) => ({
       op: "add_node",
       id: `s${i + 1}`,
       kind: "shot",
       title: `Shot ${i + 1}`,
-      shot: { planId: "plan", order: i + 1, duration: 2 },
+      shot: { screenplayId: "screenplay", order: i + 1, duration: 2 },
     })),
   ]);
   const next = applyOperations(p, 0, [
@@ -100,7 +115,7 @@ test("reorders and inserts shots atomically, validating only the final order", (
       id: "cta",
       kind: "shot",
       title: "CTA",
-      shot: { planId: "plan", order: 7, duration: 1.5 },
+      shot: { screenplayId: "screenplay", order: 7, duration: 1.5 },
     },
     ...[4, 5, 6, 7].map((i) => ({
       op: "update_node",

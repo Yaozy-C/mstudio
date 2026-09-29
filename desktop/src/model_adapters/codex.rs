@@ -12,6 +12,7 @@ use std::{
 use tokio_util::sync::CancellationToken;
 pub struct Codex;
 pub static CODEX: Codex = Codex;
+static SLOTS: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(2);
 static ACTIVE: LazyLock<Mutex<HashMap<String, CancellationToken>>> =
     LazyLock::new(Default::default);
 fn update(status: &str, result: Option<Value>, error: Option<String>) -> ProviderUpdate {
@@ -61,7 +62,9 @@ fn read(job: &Value) -> Result<ProviderUpdate> {
     let id = job["requestId"].as_str().context("缺少 Codex 任务编号")?;
     let root = directory(&job["providerConfig"], id)?;
     let value: ProviderUpdate = serde_json::from_slice(&std::fs::read(root.join("state.json"))?)?;
-    if value.status == "IN_PROGRESS" && !ACTIVE.lock().unwrap().contains_key(id) {
+    if matches!(value.status.as_str(), "IN_QUEUE" | "IN_PROGRESS")
+        && !ACTIVE.lock().unwrap().contains_key(id)
+    {
         return Ok(update(
             "FAILED",
             value.result,
@@ -69,6 +72,29 @@ fn read(job: &Value) -> Result<ProviderUpdate> {
         ));
     }
     Ok(value)
+}
+async fn wait_for_slot<'a>(
+    slots: &'a tokio::sync::Semaphore,
+    cancel: &CancellationToken,
+) -> Result<tokio::sync::SemaphorePermit<'a>> {
+    tokio::select! {
+        biased;
+        _ = cancel.cancelled() => anyhow::bail!("任务已取消"),
+        permit = slots.acquire() => Ok(permit?),
+    }
+}
+fn observe_error(root: &std::path::Path, event: &Value) -> Result<()> {
+    if event["method"] == "error" {
+        let message = event["params"]["error"]["message"]
+            .as_str()
+            .unwrap_or("Codex 服务连接失败");
+        if event["params"]["willRetry"] == true {
+            phase(root, "reconnecting", &format!("连接重试：{message}"))?;
+        } else {
+            anyhow::bail!("Codex：{message}");
+        }
+    }
+    Ok(())
 }
 async fn generate(
     input: &Value,
@@ -98,6 +124,7 @@ async fn generate(
                 }
                 event = rpc.next() => event?
             };
+            observe_error(root, &event)?;
             if event["method"] == "item/started" && event["params"]["item"]["type"] == "imageGeneration" {
                 phase(root, "generating", &format!("已生成 {} 张，正在生成图片", images.len()))?;
             }
@@ -149,19 +176,25 @@ impl ProviderAdapter for Codex {
             let root = directory(config, &id)?;
             std::fs::create_dir_all(&root)?;
             let cancel = CancellationToken::new();
-            let mut initial = update("IN_PROGRESS", None, None);
+            let mut initial = update("IN_QUEUE", None, None);
+            initial.progress =
+                Some(json!({"stage":"queued","message":"排队中，最多同时执行 2 个本机生图任务"}));
             initial.request_id = Some(id.clone());
             persist(&root, &initial)?;
             ACTIVE.lock().unwrap().insert(id.clone(), cancel.clone());
             let input = input.clone();
             tokio::spawn(async move {
                 let _storage_lease = storage_lease;
-                let result = tokio::time::timeout(
-                    Duration::from_secs(600),
-                    generate(&input, &root, cancel.clone()),
-                )
-                .await
-                .unwrap_or_else(|_| Err(anyhow::anyhow!("Codex 生图超时，已完成的图片已保留")));
+                let result = async {
+                    // Queue time must not consume the generation deadline.
+                    let _permit = wait_for_slot(&SLOTS, &cancel).await?;
+                    tokio::select! {
+                        biased;
+                        _ = cancel.cancelled() => Err(anyhow::anyhow!("任务已取消")),
+                        result = tokio::time::timeout(Duration::from_secs(600), generate(&input, &root, cancel.clone())) =>
+                            result.unwrap_or_else(|_| Err(anyhow::anyhow!("Codex 请求超时，已完成的图片已保留"))),
+                    }
+                }.await;
                 let partial = std::fs::read(root.join("state.json"))
                     .ok()
                     .and_then(|s| serde_json::from_slice::<ProviderUpdate>(&s).ok())
@@ -188,7 +221,7 @@ impl ProviderAdapter for Codex {
     fn cancel<'a>(&'a self, _: &'a str, job: &'a Value) -> ProviderFuture<'a> {
         Box::pin(async move {
             let state = read(job)?;
-            if state.status == "IN_PROGRESS" {
+            if matches!(state.status.as_str(), "IN_QUEUE" | "IN_PROGRESS") {
                 if let Some(token) = ACTIVE
                     .lock()
                     .unwrap()

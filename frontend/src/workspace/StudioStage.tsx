@@ -1,5 +1,4 @@
 import { t, useLanguage } from "../i18n";
-import { TaskPanel } from "../production/TaskPanel";
 import type { ComponentProps } from "react";
 import { ScriptWorkspace } from "../creative/ScriptWorkspace";
 import { ProductionCanvas } from "../production/ProductionCanvas";
@@ -13,13 +12,11 @@ export function StudioStage({
   clock,
   navigate,
   canvas,
-  settings,
   onAdd,
   ...props
 }: Omit<ComponentProps<typeof ScriptWorkspace>, "navigate"> & {
   canvas: ProductionController;
   onAdd: ComponentProps<typeof ProductionCanvas>["onAdd"];
-  settings: () => void;
   view: StudioView;
   clock: PlaybackClock;
   navigate: (view: StudioView) => void;
@@ -47,13 +44,6 @@ export function StudioStage({
         />
       ) : (
         <Preview project={props.project} clock={clock} />
-      )}
-      {view !== "film" && (
-        <TaskPanel
-          project={props.project}
-          canvas={canvas}
-          settings={settings}
-        />
       )}
     </main>
   );

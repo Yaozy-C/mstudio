@@ -71,10 +71,13 @@ mod tests {
 /// A successful model response does not erase a failed media operation.
 pub fn outcome(store: &Store, project: &str, turn: &str) -> anyhow::Result<Value> {
     let db = store.db.lock().unwrap();
-    let mut stmt = db.prepare("SELECT kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind IN ('tool/call','tool/result') ORDER BY seq")?;
+    let mut stmt = db.prepare("SELECT kind,payload,seq FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind IN ('tool/call','tool/result') ORDER BY seq")?;
     let rows = stmt
         .query_map(params![project, turn], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+            let raw: String = r.get(1)?;
+            let value = crate::database::blobs::event(&db, r.get(2)?, &raw)
+                .map_err(|e| rusqlite::Error::ToSqlConversionFailure(e.into()))?;
+            Ok((r.get::<_, String>(0)?, value.to_string()))
         })?
         .collect::<Result<Vec<_>, _>>()?;
     summarize(rows)

@@ -1,3 +1,4 @@
+import { normalizeTaskPrompt } from "./taskPrompt";
 import { issue } from "../errors/catalog";
 import { materializeFrameCards } from "./frameCards";
 import { resultOrigin } from "./resultOrigin";
@@ -12,7 +13,10 @@ export function saveTask(p: Project, task: ProductionTask): Project {
     ...p,
     production: {
       ...p.production,
-      drafts: { ...p.production?.drafts, [task.key]: task },
+      drafts: {
+        ...p.production?.drafts,
+        [task.key]: normalizeTaskPrompt(task),
+      },
     },
   };
 }
@@ -29,7 +33,9 @@ export function recoverUploads(p: Project): Project {
                 ? JSON.stringify(issue("SUBMISSION_UNKNOWN"))
                 : "上次操作未提交，请确认后继续",
           })
-        : next,
+        : normalizeTaskPrompt(t) !== t
+          ? saveTask(next, normalizeTaskPrompt(t))
+          : next,
     p,
   );
 }
@@ -69,7 +75,13 @@ export function receiveProductionResult(
   asset: Asset,
   source: ProductionSource,
 ): Project {
-  asset = { ...asset, generated: true };
+  asset = {
+    ...asset,
+    generated: true,
+    ...(source.canvasGeneration?.task.generationPurpose === "asset"
+      ? { inLibrary: true }
+      : {}),
+  };
   const original = source.canvasGeneration!;
   const { ownerId } = resultOrigin(p, original.task);
   const data = { ...original, task: { ...original.task, ownerId } };
@@ -78,6 +90,8 @@ export function receiveProductionResult(
   const run = p.production?.drafts?.[data.task.key];
   if (
     run?.turnId &&
+    (run.jobId ?? run.submissionId) ===
+      (data.task.jobId ?? data.task.submissionId) &&
     (run.resultAssetId !== asset.id || run.ownerId !== ownerId)
   )
     p = saveTask(p, {

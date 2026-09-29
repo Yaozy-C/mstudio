@@ -134,7 +134,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
         project: props.project,
         sent,
         targets,
-
+        agents: agents.agents,
         canvas: props.canvas,
         settings: props.onSettings,
         follow: (task, text, kind) => {

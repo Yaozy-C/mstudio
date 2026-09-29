@@ -7,9 +7,7 @@ export type ScriptParagraph = {
   dialogue: string;
   sound: string;
 };
-export type VideoPlan = {
-  story: string;
-  sound: string;
+export type ScriptDocument = {
   script?: ScriptParagraph[];
 };
 export type ShotTake = {
@@ -21,7 +19,7 @@ export type ShotTake = {
 };
 export type PlannedShot = {
   frames?: import("../production/types").Frame[];
-  planId: string;
+  screenplayId: string;
   scriptId?: string;
   scriptBasis?: string;
   order: number;

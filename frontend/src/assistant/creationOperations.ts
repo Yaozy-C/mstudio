@@ -33,6 +33,12 @@ export function checkedReferences(p: Project, raw: unknown): Reference[] {
   return refs;
 }
 export function nodeExtras(p: Project, node: BoardNode, op: Op) {
+  if (op.assetId !== undefined) {
+    const id = text(op.assetId, 100);
+    if (node.kind !== "asset" || !p.assets.some((a) => a.id === id))
+      throw new Error("素材记录只能关联本项目已有素材");
+    node = { ...node, assetId: id };
+  }
   if (op.references !== undefined)
     node = { ...node, references: checkedReferences(p, op.references) };
   if (op.resultAssetId !== undefined) {

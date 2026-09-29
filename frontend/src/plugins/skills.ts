@@ -11,4 +11,6 @@ export type SkillPage = {
   path: string;
   text: string;
   nextOffset: number | null;
+  revision: number;
+  resources: string[];
 };

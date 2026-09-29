@@ -1,4 +1,4 @@
-import type { VideoPlan, PlannedShot } from "./creative/types";
+import type { ScriptDocument, PlannedShot } from "./creative/types";
 export type Asset = {
   generated?: boolean;
   missing?: boolean;
@@ -75,8 +75,8 @@ export type Creation = {
 };
 export type BoardNode = {
   id: string;
-  kind: "asset" | "note" | "shot" | "text" | "plan";
-  plan?: VideoPlan;
+  kind: "asset" | "note" | "shot" | "text" | "screenplay";
+  screenplay?: ScriptDocument;
   shot?: PlannedShot;
   assetId?: string;
   x: number;

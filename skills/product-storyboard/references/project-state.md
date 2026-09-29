@@ -1,11 +1,11 @@
-# 项目状态与接续
+# Project state and continuation
 
-使用 inspect 获取当前 creation、plan、shot、素材、时间线及 revision；长文本和分页按返回指引继续读取。历史和项目记忆是线索，不覆盖当前用户要求。写入成功后才称已保存。
+Use inspect for current creation, screenplay, shots, assets, timeline and revision. Follow returned pagination and text offsets. History and memory are clues, not overrides of current user intent. Report a save only after successful writing.
 
-先区分新创作、接续指定版本和局部修改。同商品、同工程、存在旧成片均不足以判为续作；新创作复用事实，不继承旧剧情或旧批准。明确续作时保留已有决定，无需重新征集方案。
+Distinguish a new commission, continuation of a named version and a local edit. The same product, project or existing film does not automatically imply continuation. New work can reuse facts without inheriting a previous story or approval. Explicit continuation preserves decisions without another concept selection.
 
-时长记录数值、性质与来源：用户上限、用户锁定、助手暂拟或明确倍速。上限不用凑满，暂拟不升级为硬约束；新反馈只更新对应范围。长期目标与偏好按已有记忆权限记录；不把临时修改或假设写成持久偏好。
+Record duration with its source and meaning: maximum, locked total, provisional estimate or explicit speed multiplier. Do not fill a maximum, upgrade an estimate into a constraint or turn a one-time speed change into a permanent preference. Store lasting preferences only within existing memory permissions.
 
-沿用现有对象 ID 与编辑操作，不为技能要求创建磁盘 PROJECT.md 或另一份工程。一个工程只有一份脚本，改写按实际 scriptMode 和范围保存，保留可复用资产，不擅自删除旧结果。编辑前 inspect，冲突时重新读取，不覆盖其他修改。
+Reuse object IDs and available editing operations. Do not create PROJECT.md or another shadow project solely for this skill. Maintain one current script using actual scriptMode and requested scope, retaining reusable assets and old outputs. Inspect before editing; reread on conflicts rather than overwriting concurrent changes.
 
-交接包含方案/镜头 ID、当前决定与依据、原始素材 ID、允许修改范围、现有任务及结果、检查盲区。已失败或取消任务先核实实际状态，避免重复生成。
+Hand off screenplay/shot IDs, decisions and evidence, original assets, editable scope, existing tasks/results and unverified areas. Verify failed or canceled task states before resubmitting.

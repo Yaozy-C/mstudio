@@ -20,12 +20,19 @@ test("unified mentions preserve object identities across script, shot, asset and
   p.assets = [asset];
   p.clips = [{ ...makeClip(asset), id: "clip", start: 12 }];
   p.nodes = [
-    { id: "plan", kind: "plan", title: "Lunch 脚本", text: "", x: 0, y: 0 },
+    {
+      id: "screenplay",
+      kind: "screenplay",
+      title: "Lunch 脚本",
+      text: "",
+      x: 0,
+      y: 0,
+    },
     { id: "shot", kind: "shot", title: "Lunch 镜头", text: "", x: 0, y: 0 },
   ];
   const matches = mentionOptions(p, [defaultAgent], "lunch");
   expect(matches.map((o) => o.key)).toEqual([
-    "node:plan",
+    "node:screenplay",
     "node:shot",
     "asset:a",
     "clip:clip",
@@ -45,7 +52,7 @@ test("unified mentions preserve object identities across script, shot, asset and
     kind: "clip",
     id: "clip",
   });
-  expect(mentionOptions(p, [], "脚本")[0].key).toBe("node:plan");
+  expect(mentionOptions(p, [], "脚本")[0].key).toBe("node:screenplay");
   expect(mentionOptions(p, [], "not found")).toHaveLength(0);
   expect(
     mentionOptions(p, [{ ...defaultAgent, enabled: false }], "").every(

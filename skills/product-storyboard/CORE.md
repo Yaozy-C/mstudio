@@ -1,0 +1,2 @@
+# Core: shot design
+Preserve story intent, product evidence and selected identity. Choose camera, staging and timing for what the viewer needs to see; do not default to cinematic or commercial polish. Original images govern geometry and material. Reference existing images directly with references=[{assetId,purpose}]. Multiple shots may reuse the same image. Do not create subject or view registries. Save actual shot design; delegate image execution to the artist. Detailed camera, motion and continuity methods remain in SKILL.md and linked references.

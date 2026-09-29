@@ -1,0 +1,26 @@
+[
+  {
+    "skill": "storyboard-art",
+    "path": "CORE.md",
+    "before": "Before writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements.",
+    "after": "Prompt authors use their assigned image-prompt Skill. This role Skill does not grant prompt-authoring duties to other agents."
+  },
+  {
+    "skill": "asset-preparation",
+    "path": "CORE.md",
+    "before": "Before writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements.",
+    "after": "Prompt authors use their assigned image-prompt Skill. This role Skill does not grant prompt-authoring duties to other agents."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "CORE.md",
+    "before": "Before writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements.",
+    "after": "Prompt authors use their assigned video-prompt Skill. This role Skill does not grant prompt-authoring duties to other agents."
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "SKILL.md",
+    "before": "Before writing or revising any image or video prompt, read the full [animation principles](references/animation-principles.md) and the applicable [image](references/image-prompt-writing.md) or [video](references/video-prompt-writing.md) guide. These are required, including for realistic products and simple shots. Already injected full current rules count as read; a summary or catalog does not. Apply only relevant principles: images express a readable pose, weight, support and selected moment; videos express causality, speed changes, contact, follow-through and timing. Do not paste principle names into the output. Model-specific syntax and limitations are supplied by the selected model, outside this Skill.\n\n",
+    "after": "Prompt writing belongs to agents assigned the image-prompt or video-prompt Skill. Direction defines the intended staging and performance; the assigned prompt author converts that design.\n\n"
+  }
+]

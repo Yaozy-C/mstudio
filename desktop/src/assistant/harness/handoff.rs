@@ -29,7 +29,7 @@ pub fn completed(
         let mut stmt = db.prepare(
             "SELECT e.turn_id,e.seq,json_extract(s.payload,'$.binding') FROM agent_events e JOIN agent_events s
              ON s.project_id=e.project_id AND s.turn_id=e.turn_id AND s.kind='session/start'
-             WHERE e.project_id=?1 AND e.turn_id!=?2 AND e.kind='turn/end' AND s.seq<e.seq
+             WHERE e.project_id=?1 AND e.turn_id!=?2 AND e.kind='turn/end' AND s.seq<e.seq AND COALESCE(json_extract(s.payload,'$.checkpointSeq'),s.seq)<=e.seq
              AND s.seq>COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0)
              ORDER BY e.seq DESC,s.seq DESC"
         ).map_err(|e| e.to_string())?;

@@ -39,19 +39,23 @@ export function savedValues(p: Project, operations: unknown) {
     .filter((o) => o.op === "update_node" || o.op === "add_node")
     .map((o) => {
       const node = p.nodes.find((n) => n.id === o.id);
-      const paragraphs = Array.isArray(o.plan?.script) ? o.plan.script : [];
+      const paragraphs = Array.isArray(o.screenplay?.script)
+        ? o.screenplay.script
+        : [];
       return {
         id: o.id,
         shot:
           node?.shot && o.shot
             ? Object.fromEntries(
-                ["order", "duration", "planId", "scriptId"]
+                ["order", "duration", "screenplayId", "scriptId"]
                   .filter((k) => k in o.shot)
                   .map((k) => [k, node.shot![k as keyof typeof node.shot]]),
               )
             : undefined,
         script: paragraphs.map((patch: { id: string; duration?: number }) => {
-          const saved = node?.plan?.script?.find((s) => s.id === patch.id);
+          const saved = node?.screenplay?.script?.find(
+            (s) => s.id === patch.id,
+          );
           return {
             id: patch.id,
             exists: !!saved,

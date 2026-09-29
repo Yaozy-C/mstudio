@@ -20,7 +20,7 @@ test("selected frames can generate video directly, including after script and pr
       (r) => r.assetId,
     ),
   ).toHaveLength(2);
-  p.nodes[0].plan!.script![0].action = "Close bag";
+  p.nodes[0].screenplay!.script![0].action = "Close bag";
   p.nodes[1].shot!.frames![0].prompt = "Closer";
   expect(() => canvasSnapshot(p, task, { x: 0, y: 0 })).not.toThrow();
   p.nodes[1].shot!.frames = [];

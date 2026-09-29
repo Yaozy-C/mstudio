@@ -29,7 +29,6 @@ export function useTaskPanel(
     showTask: (task: ProductionTask) => {
       setActiveTaskKey(task.key);
       setTaskPanelOpen(true);
-      window.dispatchEvent(new Event("studio-show-generation"));
     },
     referencedTask: runs.find((t) => t.key === referencedTaskKey),
     clearTaskReference: (key?: string) =>
@@ -37,6 +36,7 @@ export function useTaskPanel(
         !key || current === key ? null : current,
       ),
     referenceTask: (task: ProductionTask) => {
+      setTaskPanelOpen(false);
       setReferencedTaskKey(task.key);
       setComposerMode("agent");
       open();
@@ -58,14 +58,26 @@ export function useTaskPanel(
           ? saveTask(p, { ...current, hiddenFromList: hidden })
           : p;
       }, false),
+    retry: (task: ProductionTask) =>
+      change((p) => {
+        const current = p.production?.drafts?.[task.key];
+        if (
+          !current ||
+          !["FAILED", "CANCELLED", "COMPLETED"].includes(current.status ?? "")
+        )
+          return p;
+        const retry = regenerationDraft(current);
+        return saveTask(p, {
+          ...retry,
+          status: retry.modelId ? "READY" : "AWAITING_CONFIRMATION",
+        });
+      }, false),
     configuration,
     configure: (task: ProductionTask | null) => {
       if (!task) return configure(null);
       const current = get().production?.drafts?.[task.key] ?? task;
       configure(
-        canEditOriginal(current)
-          ? current
-          : regenerationDraft(current, crypto.randomUUID()),
+        canEditOriginal(current) ? current : regenerationDraft(current),
       );
     },
   };

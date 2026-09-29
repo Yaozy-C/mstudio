@@ -1,32 +1,40 @@
-# 单张图片提示词编写
+# Write one image at one visible moment
 
-用于分镜静帧、制作帧、商品场景图及其局部编辑。把已确认的分镜意图转成当前这一张图的可见状态；视频的时间变化另按视频提示规则处理。工具、模型及授权沿用当前环境，不因读取本规则切换服务。
+Required before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.
 
-## 产物与上下文边界
+Use for storyboard frames, production frames, product scenes and local image edits. Translate selected shot intent into a visible instant. Time evolution belongs in video prompting. Retain the current tool, model and authorization.
 
-先区分单张干净场景帧、带说明的分镜版面和有画内文案的设计图。用于后续视频的场景帧默认无镜头编号、图注、字幕或版式；分镜展示所需的编号、时间和说明放在图外或后期排版。用户明确要求模型绘制文字、标注或多格版面时照做，写清确切文字与布局，不一律禁止文字。
+## Output and context
 
-脚本、台词、声音、运镜过程和起止状态是推导依据，不逐栏拼接进图片正文。选定一个时刻，写当时能看见的主体、开合、接触、遮挡和位置；未来才发生的动作或效果不提前入画。声音仅在确有可见来源且本镜需要时转为可见对象。不得把整个故事、历史对话或审片说明作为补充后缀。
+Distinguish a clean scene frame, annotated storyboard layout and graphic design with onscreen copy. Clean video-input frames have no shot number, caption, subtitle or layout by default; put presentation labels outside the image. If the user requests text or panels, specify exact content and placement instead of banning all text.
 
-## 从意图到可见画面
+Script, dialogue, sound and camera trajectory are reasoning inputs, not fields to concatenate into the prompt. Select the state actually visible now: opening, contact, support, occlusion and position. Do not show future events early. Convert sound to a visible source only when needed. Do not append conversation history or review notes.
 
-保留用户明确的构图、风格和创意；详细 prompt 以消除歧义为主，不惯性扩写人物、道具、故事事件、口号或光效。概略请求只补足本图成立所需的信息。发现实质冲突先结合已确认意图取舍，不能静默改掉锁定要求；无法取舍才问用户。
+## Resolve visible ambiguity
 
-- **选定时刻：**明确动作前、动作中或动作后的哪一个状态，不让同一主体同时处于互斥状态。镜头过程描述不能代替静帧状态。
-- **构图与机位：**交代画幅、主体占比、可见范围和必要裁切。相机相对主体的高度、视线和可见表面须相容，避免只堆低角度、俯拍、微距等术语。
-- **光线与清晰度：**确定一致的时间、光源方向、色调和焦点。需辨认的背景线索保留足够细节；浅景深、强光晕不能同时抹掉该线索。不要自动以金色逆光、电影感或极致反差代替真实光照。
-- **效果与材质：**将情绪词转成具体可见机制，区分空气折射、颗粒、液体、烟汽与发光物。超现实效果仅改变创意明确指定的关系，其余商品结构、材质和光照仍按本次风格保持可信。针对实际歧义澄清，不为所有图片添加长串负面词。
+Preserve user composition, style and concept. Add only detail needed for this image; do not invent extra people, props, slogans or effects. Resolve conflicts using established intent; ask only when a material locked conflict cannot be resolved.
 
-## 参考图分工
+- Moment: before, during or after the action, without incompatible simultaneous states.
+- Camera/composition: aspect, subject scale, visible extent and crop; compatible camera height, direction and visible surfaces.
+- Light/focus: coherent time, source direction, palette and focus; required background cues must survive depth of field or bloom.
+- Effect/material: express mood through visible mechanisms, distinguishing refraction, particles, liquid, vapor and emission. Surreal effects change only selected relationships. Use targeted constraints for actual ambiguity rather than universal negative lists.
 
-按实际输入顺序标记每张图是商品身份、构图/光线参考还是编辑目标。商品图约束本镜可见的几何、部件、连接和材质；不是要求照搬商品图的机位、背景或完整陈列。指出与本次无关的尺寸线、包装文案、截图界面等不迁移；真实商品上需要保留的标识另行明确，不能全局抹除。
+## Reference roles
 
-带参考图的新生成仍是新场景。仅用户要求在某张既有图上局部修改时，才使用“只改 X、保留 Y”的编辑语义。同机位连续帧可用已验收母图保持连续性，但不能把母图作为商品事实来源。
+For a recurring real product, inspect original images before asserting geometry. Extract only the structural relationships relevant to this view: opening and closure path, part count and placement, attachment points, and which surfaces become visible when it opens or turns. A parts list or "same product" is insufficient. Keep these invariants in the existing frame description and carry them into each self-contained request. Distinguish verified structure from occlusion or unknown geometry; a new angle does not authorize inventing a seam, opening or connection.
 
-## 提交与检查
+Compare the proposed shot and prompt against those relationships before submission. Original product evidence governs identity; a director's proposed action or composition cannot redefine it. If they conflict, return the specific mismatch to direction and preserve the intended reveal while the shot is corrected. Do not submit contradictory geometry alongside "strictly preserve identity". Effects need a compatible physical source and state; an empty container cannot stand in for visible hot contents merely by adding vapor.
 
-正文只保留本次产物、可见状态、构图、光线、参考职责及必要约束，可用短段落，不强制填写无关栏目。模型规格使用服务实际支持的参数；仅在文字中描述的画幅或尺寸不能报告为已设置接口参数。
+Identify inputs in actual order as product identity, composition/light reference or edit target. Product photos constrain visible geometry, connections and material, not the entire original arrangement. Exclude irrelevant dimension annotations, packaging text or interface chrome while preserving required actual product markings.
 
-核对最终提交的正文、参考顺序和参数与任务预览一致。元数据、镜头标题、脚本与模板不得在提交时偷偷追加；若平台会追加参考用途，其文字也属于本次可审查输入。保存最终请求，无法查看服务内部改写时注明未知。
+A new scene with references is still a new generation. Use only-change-X/preserve-Y editing language for an actual existing-image edit. Reuse an inspected base frame for same-view continuity without treating it as factual product evidence.
 
-看实际输出核对状态、构图、物理效果、画内文字及应可见部件。纹理精细不代表实拍感通过；问题按可见偏差定向修复，不只增加“真实、高清”等形容词。遵循原有生成次数与授权边界，不因写完 prompt 自动提交生成。
+An independent request cannot see "the previous frame" unless that image is actually supplied. For dependent frames, use the inspected base for composition/state continuity alongside original product evidence, with distinct reference roles. If the selected model cannot accept the needed references, report that limitation rather than promising an identical frame through text alone.
+
+## Submission and inspection
+
+Keep the actual output, visible state, composition, light, reference roles and necessary constraints. Short paragraphs are sufficient. Set specifications through supported parameters; text mentioning dimensions is not proof that an API parameter was set.
+
+Check final text, reference order and parameters against the task preview. No hidden append of metadata, scripts or templates; reference-role text added by a platform is part of the inspectable request. Save the actual request and identify inaccessible provider rewriting as unknown.
+
+Inspect actual state, composition, physical appearance, text and expected components. Texture detail is not perceptual realism. Repair visible deviations rather than adding realistic or high-resolution. Follow existing retry and authorization limits; finishing a prompt does not authorize generation.

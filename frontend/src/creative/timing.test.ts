@@ -33,13 +33,13 @@ test("script retiming preserves exact total, positive durations and paragraph id
 });
 test("script time edits mark linked shots stale without retiming existing media", () => {
   let p = createScript(newProject("time"));
-  const plan = p.nodes[0],
-    id = plan.plan!.script![0].id;
-  p = updateParagraph(p, plan.id, id, { action: "Pack", duration: 8 });
-  p = splitParagraph(p, plan.id, id, 2);
+  const screenplay = p.nodes[0],
+    id = screenplay.screenplay!.script![0].id;
+  p = updateParagraph(p, screenplay.id, id, { action: "Pack", duration: 8 });
+  p = splitParagraph(p, screenplay.id, id, 2);
   expect(p.nodes[1].shot!.duration).toBe(4);
   const clips = p.clips;
-  p = updateParagraph(p, plan.id, id, { duration: 12 });
+  p = updateParagraph(p, screenplay.id, id, { duration: 12 });
   expect(scriptChanged(p, p.nodes[1])).toBe(true);
   expect(p.nodes[1].shot!.duration).toBe(4);
   expect(p.clips).toBe(clips);

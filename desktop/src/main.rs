@@ -11,6 +11,7 @@ mod imports;
 mod job_download;
 mod job_locks;
 mod job_recovery;
+mod job_worker;
 mod jobs;
 mod media_commands;
 mod model_adapters;
@@ -34,6 +35,9 @@ fn main() {
             let store = database::Store::open(app.path().app_data_dir()?)?;
             storage::allow(app.handle(), &store.media_root())?;
             app.manage(store);
+            assistant::skills::initialize(app.handle())?;
+            job_worker::start(app.handle().clone());
+            database::history_cleanup::start(app.handle().clone());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -70,6 +74,7 @@ fn main() {
             assistant::memory::commands::save_project_memory,
             assistant::skills::creative_skills,
             assistant::skills::read_creative_skill,
+            assistant::skills::save_creative_skill,
             assistant::journal::agent_events,
             assistant::journal::agent_turn_events,
             assistant::tools::agent_tool_result,

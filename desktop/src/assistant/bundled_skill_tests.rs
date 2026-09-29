@@ -20,18 +20,27 @@ fn shipped_rules_work_from_a_relocated_resource_directory() {
     let temp = std::env::temp_dir().join(format!("mstudio-bundled-{}", mstudio::media::id()));
     copy_tree(&repo, &temp.join("skills"));
     let root = skills::directory(&temp).unwrap();
-    let catalog = skills::catalog(&root, "").unwrap();
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
+        .unwrap();
+    skills::storage::seed(&db, &root).unwrap();
+    let catalog = skills::storage::catalog(&db, "").unwrap();
     assert_eq!(catalog.as_array().unwrap().len(), profiles::SKILL_IDS.len());
     for id in profiles::SKILL_IDS {
-        let page = skills::read(&root, "", id, "SKILL.md", 0, true).unwrap();
+        let page = skills::storage::read(&db, "", id, "SKILL.md", 0, true).unwrap();
         assert!(page["text"].as_str().unwrap().contains(id));
         assert!(page["totalCharacters"].as_u64().unwrap() > 0);
     }
     let path = "../creative-ad-director/references/video-prompt-writing.md";
     let enabled = "[\"skill-product-video-production\"]";
-    let page = skills::read(&root, enabled, "product-video-production", path, 0, true).unwrap();
+    let page =
+        skills::storage::read(&db, enabled, "product-video-production", path, 0, true).unwrap();
     assert_eq!(page["skill"], "creative-ad-director");
-    assert!(page["text"].as_str().unwrap().contains("动作"));
+    let source =
+        fs::read_to_string(root.join("creative-ad-director/references/video-prompt-writing.md"))
+            .unwrap();
+    let text = page["text"].as_str().unwrap();
+    assert!(!text.is_empty() && source.starts_with(text));
     // A packaged install must never fall back to a developer's repository or home directory.
     fs::remove_dir_all(root).unwrap();
     assert!(skills::directory(&temp).is_err());

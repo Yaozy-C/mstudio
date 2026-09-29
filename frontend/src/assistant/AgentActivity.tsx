@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { bridge, native } from "../bridge";
 import { activityRows, type ActivityEvent } from "./activityRows";
+import type { AgentProfile } from "../agents/catalog";
 type Event = ActivityEvent;
 type Progress = {
   projectId: string;
@@ -22,10 +23,12 @@ export function AgentActivity({
   projectId,
   turnId,
   running,
+  agents,
 }: {
   projectId: string;
   turnId: string;
   running: boolean;
+  agents: Pick<AgentProfile, "id" | "name">[];
 }) {
   useLanguage();
   const [events, setEvents] = useState<Event[]>([]);
@@ -157,10 +160,16 @@ export function AgentActivity({
         {rows.map((r) => (
           <div className="agent-activity-row" key={r.id}>
             <span>
-              {r.title
-                .split("、")
-                .map((part) => t(part))
-                .join(" · ")}
+              {r.agentId
+                ? t("委派给 {v0}", {
+                    v0:
+                      agents.find((agent) => agent.id === r.agentId)?.name ||
+                      r.agentId,
+                  })
+                : r.title
+                    .split("、")
+                    .map((part) => t(part))
+                    .join(" · ")}
             </span>
             <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
           </div>

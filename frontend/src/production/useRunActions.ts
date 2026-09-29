@@ -11,7 +11,7 @@ export const runStatuses: Record<string, string> = {
   UPLOADING: "正在准备素材",
   SUBMITTING: "正在提交",
   IN_QUEUE: "排队中",
-  IN_PROGRESS: "生成中",
+  IN_PROGRESS: "处理中",
   COMPLETED: "已完成",
   RECEIVING: "正在收取结果",
   CANCELLED: "已取消",
@@ -48,8 +48,8 @@ export function useRunActions(
       if (!job) throw new Error(JSON.stringify(issue("JOB_NOT_FOUND")));
       if (
         cancel ||
-        (job.requestId &&
-          !["COMPLETED", "FAILED", "CANCELLED"].includes(job.status))
+        job.requestId ||
+        ["COMPLETED", "FAILED", "CANCELLED"].includes(job.status)
       )
         job = await runtime.execute<Job>(
           cancel ? "cancel_job" : "refresh_job",

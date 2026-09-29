@@ -185,7 +185,7 @@ fn explicit_attachments_are_project_owned_bounded_and_persist_without_image_byte
 fn explicit_timeline_attachment_contains_exact_clip_and_linked_dialogue() {
     let (root, store, mut doc) = fixture();
     doc["nodes"][1]["shot"] =
-        json!({"planId":"plan","order":3,"duration":6,"dialogue":"keep this line"});
+        json!({"screenplayId":"screenplay","order":3,"duration":6,"dialogue":"keep this line"});
     doc["clips"] = json!([{"id":"cut","assetId":"video","shotId":"shot","start":11,"trimIn":2,"trimOut":8,"speed":1,"trackId":"v1"}]);
     let value = attachments::payload(
         &store,

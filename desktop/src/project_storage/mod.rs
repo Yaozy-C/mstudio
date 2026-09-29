@@ -1,4 +1,5 @@
 mod cleanup;
+pub mod direct_references;
 mod plan;
 #[cfg(test)]
 mod tests;
@@ -120,8 +121,10 @@ pub fn remove(store: &Store, id: &str) -> Result<()> {
     for asset in plan.assets {
         tx.execute("DELETE FROM assets WHERE id=?1", [asset])?;
     }
+    crate::database::blobs::collect(&tx)?;
     tx.commit()?;
-    cleanup::run(&db, &store.media_root(), Some(id))
+    cleanup::run(&db, &store.media_root(), Some(id))?;
+    cleanup::run(&db, &store.media_root(), Some("media-cache"))
 }
 
 pub fn resume_cleanup(db: &Connection, root: &Path) -> Result<()> {

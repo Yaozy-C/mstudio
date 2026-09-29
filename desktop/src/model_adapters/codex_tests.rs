@@ -59,6 +59,8 @@ fn restarted_job_becomes_failed_without_resubmission() {
     persist(&directory, &update("IN_PROGRESS", None, None)).unwrap();
     let job = json!({"providerConfig":config,"requestId":"test"});
     assert_eq!(read(&job).unwrap().status, "FAILED");
+    persist(&directory, &update("IN_QUEUE", None, None)).unwrap();
+    assert_eq!(read(&job).unwrap().status, "FAILED");
     persist(
         &directory,
         &update("COMPLETED", Some(json!({"data":[]})), None),
@@ -106,4 +108,51 @@ fn tool_failure_does_not_interrupt_later_image_results() {
         }
     }
     assert_eq!(CODEX.outputs(&json!({"data":images})).len(), 2);
+}
+
+#[tokio::test]
+async fn queued_requests_wait_for_capacity_and_can_be_cancelled() {
+    let slots = tokio::sync::Semaphore::new(2);
+    let cancel = CancellationToken::new();
+    let first = wait_for_slot(&slots, &cancel).await.unwrap();
+    let second = wait_for_slot(&slots, &cancel).await.unwrap();
+    assert!(
+        tokio::time::timeout(Duration::from_millis(20), wait_for_slot(&slots, &cancel))
+            .await
+            .is_err()
+    );
+    let cancelled = CancellationToken::new();
+    cancelled.cancel();
+    assert!(wait_for_slot(&slots, &cancelled).await.is_err());
+    drop(first);
+    let third = wait_for_slot(&slots, &cancel).await.unwrap();
+    assert_eq!(slots.available_permits(), 0);
+    drop((second, third));
+    assert_eq!(slots.available_permits(), 2);
+}
+
+#[test]
+fn retryable_connection_errors_are_visible_and_terminal_errors_fail() {
+    let root = std::env::temp_dir().join(format!("mstudio-error-{}", mstudio::media::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    observe_error(&root, &json!({"method":"error","params":{"willRetry":true,"error":{"message":"TLS handshake EOF"}}})).unwrap();
+    let state: Value =
+        serde_json::from_slice(&std::fs::read(root.join("state.json")).unwrap()).unwrap();
+    assert_eq!(state["progress"]["stage"], "reconnecting");
+    assert!(
+        state["progress"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("TLS")
+    );
+    assert!(
+        observe_error(
+            &root,
+            &json!({"method":"error","params":{"willRetry":false,"error":{"message":"offline"}}})
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("offline")
+    );
+    std::fs::remove_dir_all(root).unwrap();
 }

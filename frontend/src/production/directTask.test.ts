@@ -30,8 +30,6 @@ test("direct execution freezes only explicit prompt, parameters and media, exclu
     error: "旧错误",
     jobId: "旧任务",
   };
-  expect(() => directTask(p, draft, m, "one")).toThrow("文字资料");
-  draft.inputs = draft.inputs.filter((r) => r.role !== "script");
   const run = directTask(p, draft, m, "one");
   const request = inputFor(p, run, m, [
     { assetId: "a", kind: "image", url: "https://example.com/a" },
@@ -39,7 +37,7 @@ test("direct execution freezes only explicit prompt, parameters and media, exclu
   ]);
   expect(run.status).toBe("READY");
   expect(run.instruction).toBe("镜头推进");
-  expect(run.inputs).toHaveLength(2);
+  expect(run.inputs).toHaveLength(3);
   expect(run.jobId).toBeUndefined();
   expect(request.prompt).not.toContain("历史");
   expect(request.prompt).not.toContain("上一轮");
@@ -47,7 +45,7 @@ test("direct execution freezes only explicit prompt, parameters and media, exclu
   expect(request.image_url).toBe("https://example.com/a");
   expect(request.end_image_url).toBe("https://example.com/b");
   draft.inputs[0].assetId = "changed";
-  expect(run.inputs[0].assetId).toBe("b");
+  expect(run.inputs[0].assetId).toBe("");
   expect(runsOf(saveTask(p, run))).toEqual([run]);
 });
 test("image execution uses selected media model without an Agent model", () => {

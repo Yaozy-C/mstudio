@@ -1,47 +1,47 @@
 ---
 name: ad-team
-description: 在 Mstudio 中统筹创意、分镜导演、分镜画手、媒体制作与剪辑，维护任务范围和可验证交接。
+description: Coordinate Mstudio script, storyboard, image, media and editing roles with scoped assignments and verifiable handoffs.
 ---
 
-# 团队统筹
+# Production coordination
 
-主 Agent 维护当前目标、事实、决定、范围与交接，用户不需要在角色之间传话。角色与权限由应用配置决定，技能不增加工具，也不创建 Codex 任务或进程。
+The short [CORE.md](CORE.md) is automatically loaded from the database. Read this detailed document only when the current task needs its methods.
 
-## 派工
+The coordinator maintains the current goal, facts, decisions, scope and handoff. Users need not relay messages between roles. Application configuration determines role permissions; this skill does not add tools or create Codex chats/processes.
 
-需要专业工作时使用 mstudio_delegate(agentId, task)。委派只能细化本轮目标，不能新增目标。交接用户本轮原话、目标对象及可修改字段、必须保留的意图、已核实依据与来源、待解决问题及完成条件；将旧设计和候选诊断另作背景，不冒充用户决定。默认独立会话 spawn；需要接续已完成调查时传递已读结论与真实对象 ID，按需复用子会话或 fork，不让下游重新调查，也不把完整历史当作本轮指令。简单任务只调用所需角色，不为走流程创建额外交付项。没委派成功不能宣称专业角色已工作。
+## Assign scoped work
 
-局部修改不追加全片核对、其他镜头修订或下游制作。只有存在影响本任务的具体依赖时才补读背景；读取范围可以大于写入范围，但不能自动扩大交付范围。专业角色保存并核实指定修改后返回，统筹核对完成条件，按已有授权继续或交付，不因历史待办派生新任务。
+Use mstudio_delegate(agentId, task) when a specialist is needed. Pass the current request, actual target IDs and editable fields, preserved intent, verified evidence/source, concrete problem and completion conditions. Label old designs and diagnoses as background, not user decisions. Default to an independent spawn; reuse/fork a specialist context when continuing relevant completed investigation, passing findings and IDs rather than asking for rediscovery. A simple task calls only necessary roles. Do not claim delegation occurred before it succeeds.
 
-例如「修 01 的空间问题」应交导演修 shot_01 的空间设计，保留用户满意的观看效果；既有距离、角度和暂拟时序作为可修设计。先读本镜、所属段落及相关参考，发现具体衔接冲突才补读相邻镜头；保存本镜设计并返回未验证项，不默认检查整片或提交生成。
+Local edits do not add full-film review, other shots or downstream production. Read wider context only for a concrete dependency without expanding writes. After a specialist saves and verifies the requested change, check completion and continue only within authorization. Historical pending work is not a new assignment.
 
-专业决定归对应负责人：创意编剧负责故事与脚本，分镜导演负责机位、动作调度和连续性，画手负责静态画格及图片生成，媒体制作负责视频提示词、模型模式、参考角色与实际参数，剪辑负责素材取舍和成片声画。统筹不代填这些决定，也不替专业角色指定技术降级办法。各角色自行完成本职的常规判断；跨职责问题带具体依据交统筹转交，不增加审批层级。
+| Responsibility | Owner and rules |
+|---|---|
+| Story and script | Writer using [scriptwriting](../ad-script/SKILL.md) |
+| Camera, blocking and continuity | Director using [storyboard direction](../product-storyboard/SKILL.md) |
+| Shared white-background identity assets | Asset specialist using [asset preparation](../asset-preparation/SKILL.md) |
+| Static frames and image inputs | Artist using [storyboard art](../storyboard-art/SKILL.md) |
+| Video prompt, mode, reference roles and parameters | Media producer using [production](../product-video-production/SKILL.md) |
+| Footage selection, timeline and sound | Editor using production and rhythm references |
 
-已有分镜不自动等于用户锁定。空间或动作设计矛盾交导演解决，生成能力与输入冲突交制作解决。用户指定的规格不能因“无需反复确认”被默认值替代；确实需要改变用户要求时才说明冲突与选项。普通参考与首尾帧控制不是等效输入，统筹不能以提示词补充承诺替代能力。
+The coordinator does not fill in specialists' professional decisions or prescribe technical downgrades. Specialists resolve routine choices themselves; cross-role conflicts return with evidence, without another approval layer. Existing shot text is not automatically a user lock. Preserve accepted viewing effects while allowing assistant-proposed geometry/timing to change. Ordinary references and first/last-frame controls are not interchangeable.
 
-用户满意创意或镜头表现、要求修实现时，交接明确保留该观看效果，把助手自拟的拍法作为可修设计。不要把既有厘米、角度和秒数抄成“必须保留”，也不要因局部修图成功消除原有的机位或动作未知。各角色在原任务内完成修正，不另开创意评选、审批或固定验证轮次。
+## Continue and complete
 
-从当前技能目录选择适用主规则；只在任务需要时读取引用细则。整组镜头用 nodeIds + fields 批量读取，充分使用已有工具结果。子任务专注本次范围，共享记忆由统筹维护。失败时区分已经保存的操作与未完成内容，先查明具体原因，再修正参数、补资料或继续子会话；不要把同一任务原样反复派发。
+Use [project state](../product-storyboard/references/project-state.md) when needed. New work reuses facts, not old stories or approvals. Existing scripts go directly to direction. Frame generation follows the current image request; text-only edits do not generate media. Production owns each task ID and checks status before retrying. Do not expand dependent material while its critical relationship is known to fail.
 
+Read groups of needed nodes with nodeIds/fields and reuse available results. After failure, distinguish saved work from incomplete work, diagnose and fix the cause rather than dispatching the unchanged assignment repeatedly. Two diagnosed attempts without progress on the same defect require a route change or a concrete blocker report; budget/attempt limits still apply.
 
-1. 按需找回 [项目状态](../product-storyboard/references/project-state.md)。新创作不自动继承旧剧情，续作不重选已定方案。记录时长性质与来源。
-2. 新方向交创意编剧，采用 [声画脚本](../ad-script/SKILL.md)；已有脚本直接交分镜导演。
-3. 全片任务由分镜导演做观看与节奏设计；局部请求只修目标镜头及确有必要的衔接，再保存本次动作、机位、时间和脚本关联。分镜画手按 [画格制作](../storyboard-art/SKILL.md) 保存单一可见时刻的图片提示词，用户要求实际出图时再创建图片任务。只要文字不出图，局部修图不重开整片。
-4. 在当前用户授权内交媒体制作，采用 [视频制作](../product-video-production/SKILL.md)。关键动态关系未通过前不扩展依赖素材，任务 ID 归单一负责人，先查状态再重试。
-5. 剪辑按实际有效区间选材。独立审片角色暂不启用，不自动增加审核轮次；执行角色对真实产物自查并说明具体问题，最终效果交用户判断。
-6. 对照用户本轮要求和真实工具结果检查完成情况。已经完成的对象不重复写入。整合文件/素材真实状态、已保存操作及检查范围后交付。子 Agent 返回不代表最终完成；生成中、待确认和未查媒体均不得报通过。
+When an artist is waiting for a critical anchor, preserve that dependency in the handoff. Resume inspection when the real asset is ready before requesting dependent expansion; a queued task or child completion is not visual acceptance. Do not instruct the artist to finish the whole batch by bypassing its unresolved structural check.
 
-## 按本轮任务选择成果
+The independent review role is currently disabled in Mstudio; do not add an automatic review round. Executing roles inspect actual outputs within their capabilities. Child completion is not proof of media quality. Report pending, awaiting confirmation and unchecked states accurately.
 
-以下是对应工作的成果，不是每次都要完成的清单。只改提示词时交已保存的目标任务或草稿，不要求生成素材、审片或时间线。
+## Match the deliverable to the request
 
-- 创意：每段的可见事件、观看变化和价值依据。
-- 分镜导演：按 [逐镜执行依据](../product-storyboard/references/shots-and-continuity.md#逐镜的观看变化与执行依据) 交机位、主体/相机运动、来源到去向、时间与切口。
-- 分镜画手：真实画格 assetId、状态时刻、实际观察和偏差，不能用精美程度抵消机位错误。
-- 制作：真实结果 assetId、源区间、可用/弃用/补做结论；动作起点正确与结尾正确分别核实。
-- 剪辑：实际时间线、选用依据及声画变化；无作用的重复删并，不能拿素材凑长度。
-- 自查：带镜头/素材 ID、具体观察与未检查项；先用 mstudio_read_image(assetId) 读取当前项目真实图片，历史卸载引用才使用 mstudio_reopen_image(imageId)，禁止猜 ID 或用提示词推断实际结果。
+A prompt edit returns the saved task/draft, not compulsory generation or editing. Direction returns saved shot design, necessary frame moments, constraints and unknowns using the shared shot rules. Art returns real asset IDs and frame observations. Production returns real results, selected ranges and keep/discard/repair decisions. Editing returns the actual timeline, selection reasons and audiovisual changes. Self-checks identify shot/asset, observed evidence and unchecked scope.
 
-复用现有工程与消息，不建立多份相互矛盾的最新版。专业角色提出冲突，统筹按用户目标处理。只在新证据支持时修订；同一缺陷两轮无进展则换路线或报告具体阻塞，不相互转派无限重试。
+Use mstudio_read_image(assetId) for current images and mstudio_reopen_image(imageId) only for unloaded historical references. Never infer actual output from prompt text or guessed IDs. Maintain one current project representation, not competing copies. Only the coordinator writes shared memory for new explicit user decisions using the current user wording as evidence; scripts, shots and generation state remain in the project.
 
-共享记忆仅由统筹维护本轮用户明确决定，evidence 为当前用户原话。没有新决定则不写；项目脚本、镜头和生成进度直接从工程读取，不重复写成用户记忆。
+Before commissioning shared assets, have asset-designer read the scoped storyboard and audit current assets/records/tasks. Only elements repeated across distinct shots with a real consistency need qualify for automatic asset preparation. Match consumers to reusable, unchecked, pending and missing references; commission only concrete gaps, not every item in every shot. If no gap exists, continue with existing assets. Single-shot details and same-shot A/B continuity stay with the artist. Missing shared asset dependencies precede their consuming frames: inspect the real result before handing off asset IDs, roles and locks. Independent work can continue while waiting; queued jobs are not ready inputs.
+
+Detailed role scope and execution methods: [role methods](references/role-methods.md). Read only when relevant.

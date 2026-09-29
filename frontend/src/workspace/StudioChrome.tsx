@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { t, useLanguage } from "../i18n";
 import { DropdownMenu } from "@radix-ui/themes";
 import {
@@ -39,7 +40,9 @@ export function StudioChrome({
   panels,
   addNote,
   onCreation,
+  tasks,
 }: {
+  tasks: ReactNode;
   view: StudioView;
   onView: (view: StudioView) => void;
   m: ReturnType<typeof useProject>;
@@ -142,6 +145,7 @@ export function StudioChrome({
         <Images />
         {t("素材")}
       </button>
+      {tasks}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <button className="chrome-action">

@@ -1,27 +1,21 @@
-# 约束、商品事实与输入缺口
+# Constraints, product facts and input gaps
 
-先执行 [根本规则](../SKILL.md#最高优先级先忠实于用户意图再设计创意)。记录核心任务的原话/材料定位及性质（明确要求、观察、假设）；真实功能不等于已验证需求，场景不等于动机。
+Apply [user intent and factual basis](../SKILL.md#user-intent-and-factual-basis). Locate each core requirement in the user's words or source material and label it as request, observation or hypothesis. A real feature does not establish a consumer need; a scene name does not establish motivation.
 
-## 最小记录
+## Minimum useful record
 
-先查会话与已有交付，记录商品/型号、原图与规格、用途、观众任务、平台/画幅、语言、时长、风格、制作条件、交付范围。没有必要不发问卷。市场与语言默认值沿用主技能，用户指定优先；不由本文件另设默认值。没有视频工具不阻止设计和分镜，但不许将 MP4 静帧串接称作完整动作成片。
+Use existing conversation and deliverables to identify product/model, original images/specifications, use, audience task, platform/aspect ratio, language, duration, style, production capabilities and requested output. Avoid unnecessary questionnaires. Defaults come from the entrypoint and current user instructions, not this reference. Missing video tools need not block design, but a still-image MP4 is not a continuous-action film.
 
-记录哪些是用户明确要求、哪些是助手假设、哪些已经获得具体认可。被否定方向写“可定位的问题与原因”，不写成“用户永远不喜欢某技法”。继承的是方法与已确认设定，换商品须重建事实和受众任务。
+Separate explicit requests, assumptions and actual acceptance. Record why a direction failed without turning a local rejection into a permanent ban on a technique. Reuse methods and confirmed settings; rebuild product facts and audience assumptions for a new product.
 
-## 事实到演示
+## From fact to demonstration
 
-| ID | 特征或说法 | 状态与来源 | 可用画面 | 不能据此推出什么 |
-|---|---|---|---|---|
+Use a compact record: fact ID, feature/claim, status and source, possible visual evidence, and conclusions it does not support. Include important prop shapes, counts and fit evidence. Do not extrapolate one region's structure to another or treat appearance as performance proof. Distinguish actual feedback from imagined personas; do not invent firsthand testimonials.
 
-重要道具也登记形状、数量和适配依据。不得将某部位的观察外推到其他部位，也不能将外观或标称信息当作未验证性能的证据。真实用户反馈与创意人群假设分开，不能生成第一人称体验证言。
+A gap affecting essential structure, fit or performance blocks an evidential demonstration based on it. Research or ask only as needed; select a supported demonstration where possible. Explicitly label unverified planning images. Minor visual choices can be resolved through composition without blocking work.
 
-缺口分两类：
+Look for original attachments and task assets before requesting missing references. Generated images cannot replace original product evidence. Avoiding an unknown minor interior can be acceptable; hiding whether the core function exists is not.
 
-- **影响正确性或核心效果**：关键结构、适配或性能缺少依据时，不得据此安排证明性演示。先查资料，必要时询问。能不依赖它就改演示；仅作未验证的规划图时显式标注，不能交作性能证明。
-- **不改变主要判断**：次要视觉设定可按构图选择；目标受众缺调研可标明假设。不要让这些缺口阻塞制作。
+## Feasibility
 
-原图缺失先找用户附件和本任务资产，确实缺且需要精确还原才请用户补充。已生成图不能偷偷顶替原始商品依据。未知次要内部可以避开，但不能借遮挡隐藏核心功能是否存在。
-
-## 制作可行性在创意前约束，在试图后校准
-
-先知道可用的原始商品图、角色/场景参考、实拍片段、图像编辑和预演能力。不要先设计一个依赖不可用工具的方案再宣布只能做静帧；若用户明确要该效果，交代能完成的制作阶段并推进。也不要仅因生成困难就退回平铺直叙：可尝试切点、分层合成方案或机位调整，保留原本的观看理由。
+Know available product images, scene/character references, footage, editing and previs tools before choosing a dependent route. If the requested effect exceeds current capabilities, state the incomplete stage and progress on feasible work. Preserve the viewing relationship by considering staging, cuts or compositing rather than defaulting to a plain display because it is easier to generate.

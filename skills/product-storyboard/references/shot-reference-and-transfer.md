@@ -1,33 +1,22 @@
-# 单镜头参考与商品迁移
+# Transfer a real shot to a product
 
-用户要镜头、可替换片段或指定原视频时读本文件。原创设计不强制外部搜寻；找真实参考时必须实际检索和观看，不能用原创提案替代。广告集合网站、作者和片名只是入口；用户要网站本身时才以网站清单为交付。
+Read when the user asks for shot references, replacement segments or a specified source video. Original design does not require external search. A request for actual references requires search and observation, not an invented concept or a list of websites.
 
-## 镜头证据卡
+## Record the evidence
 
-| 项目 | 记录要求 |
-|---|---|
-| 来源 | 标题、作者（可核实才填）、可用链接、起止时间；约数标约。原片与改编时间分开。 |
-| 观看范围 | 连续短片段已看 / 关键帧已看 / 仅页面或简介；写清尚未看的内容。 |
-| 实际变化 | 起、中、末具体画面，主体动作与摄影机运动分开；剪辑处单独指出。 |
-| 借用机制 | 第一帧线索、期待/感受、变化/兑现；对应到具体可见关系。 |
-| 必要条件 | 形状、透光、尺度、空间纵深、接触、人物调度、背景等真正影响效果的因素。制作技法未证实则标推测。 |
+For each serious candidate record title, verifiable author, usable link and source time range; mark approximations and distinguish source from adaptation timing. State whether you watched continuous footage, inspected key frames or only read a page. Describe beginning/change/end, separating subject movement, camera movement and cuts. Identify the visible cue, expectation and payoff plus necessary shape, translucency, scale, depth, contact, staging and background conditions. Unverified production techniques remain inferences.
 
-优先核验强候选的目标几秒，再扩搜；不靠大量同质候选凑数。页面文字、缩略图、评论不能证明具体运动或节奏。播放失败时找同作品可访问来源或其他可验证候选；用户指定片段且确实无法读取，明确缺口，不编画面。不把工具返回成功等同于已经看过。
+Verify the decisive seconds of strong candidates before expanding the search. Thumbnails, comments and descriptions do not establish motion or rhythm. If playback fails, find an accessible version or another verifiable candidate; if the user specified an inaccessible source, report the exact limitation without inventing its content.
 
-## 迁移判定
+## Decide whether the mechanism transfers
 
-对选中片段做原片/改编并列的起中末描述，检查：
+Compare source and adaptation at beginning, key change and result:
 
-1. 哪个关系贡献观看价值？移除该关系后还剩什么？
-2. 商品原图/规格具备哪些对应条件，缺哪些？
-3. 换商品后该关系如何保留？改变的部分是否会使原机制消失？
-4. 改成目标画幅与时长后，第一眼、关键变化和结果能否同时读清？
-5. 哪些部分继承原动作，哪些须重拍/重构/合成？最小验证是什么？
+- Which relationship produces viewing value?
+- Which necessary conditions are supported by the new product's original evidence, and which are absent?
+- How will the relationship survive changes in product, aspect ratio and duration?
+- What must be restaged, regenerated or composited, and what is the minimum useful check?
 
-结论用“可进入设计 / 需关键关系试图 / 条件不满足”，并写理由。只替换名称、颜色或材质不算迁移。核心条件缺失就改创意或换参考，不靠更强推拉和声音遮掩。
+Conclude ready for design, needs a relationship test, or conditions not met, with reasons. Changing the name/color/material alone is not adaptation. Missing core conditions require a changed idea/reference, not stronger zooms or sound.
 
-## 交付粒度与边界
-
-只找镜头：交可定位短片段、观察和替换方法，未观看的部分标清；不自动生图。用户指定镜头：先评估该镜头的可迁移部分，不强制换一个新概念。可以舍弃与商品无关的结尾，但明确这是改编决定，不能写成原视频内容。
-
-参考适配不等于已执行视频替换。涉及商品互动时，说明接触点、受力、阴影与动作路径需随商品一起改。原片参考、规划分镜与真实制作分别命名。关键状态与去文字检查统一按 [镜头与状态](shots-and-continuity.md) 执行。
+A reference-only task returns the locatable segment, observation and adaptation method without generation. Evaluate a specified reference before replacing the concept. Clearly label discarded source endings as adaptation decisions, not descriptions of the original. Product interaction also changes contact, force, shadows and path. Keep source reference, planned storyboard and executed replacement distinct. Use [states and dependencies](shots-and-continuity.md) for continuity.

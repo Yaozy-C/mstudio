@@ -15,7 +15,7 @@ export function attachmentInput(
   if (
     node &&
     (node.kind === "shot" ||
-      node.kind === "plan" ||
+      node.kind === "screenplay" ||
       (!node.assetId && !node.resultAssetId))
   )
     return {
@@ -26,7 +26,7 @@ export function attachmentInput(
       purpose: [
         node.title,
         node.text,
-        ...(node.plan?.script?.map(
+        ...(node.screenplay?.script?.map(
           (s) =>
             `${s.title}\n${s.action}\n${s.onScreenText ? `画面文字：${s.onScreenText}\n` : ""}${s.dialogue}\n${s.sound}`,
         ) ?? []),

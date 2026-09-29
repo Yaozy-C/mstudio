@@ -1,3 +1,4 @@
+import { batchSummary } from "../production/batch";
 import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
 import type { Project } from "../model";
@@ -42,24 +43,30 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   if (args.section === "clips") page = p.clips;
   if (args.section === "tracks") page = tracksOf(p);
   if (args.section === "captions") page = captions;
+  const generation =
+    args.section === "generation"
+      ? runsOf(p).filter((t) => !args.turnId || t.turnId === args.turnId)
+      : [];
   if (args.section === "generation")
-    page = runsOf(p)
-      .filter((t) => !args.taskKey || args.taskKey === t.key)
+    page = generation
+      .filter(
+        (t) =>
+          (!args.taskKey || args.taskKey === t.key) &&
+          (!args.status || t.status === args.status),
+      )
       .map((t) => ({
         id: t.key,
         turnId: t.turnId,
         kind: t.kind,
+        generationPurpose: t.generationPurpose,
         ownerId: t.ownerId,
+        targetNodeId: t.targetNodeId,
+        trackingPaused: t.trackingPaused,
         status: t.status,
         resultAssetId: t.resultAssetId,
         resultAssetIds: t.resultAssetIds,
         modelId: t.modelId,
         prompt: snippet(t.prompt, detailLimit),
-        nextPrompt:
-          t.nextPrompt === undefined
-            ? undefined
-            : snippet(t.nextPrompt, detailLimit),
-        sourceTaskKey: t.sourceTaskKey,
         hiddenFromList: !!t.hiddenFromList,
         inputs: t.inputs,
         parameters: t.parameters,
@@ -85,7 +92,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     page = page.filter((item) =>
       objectIds.includes((item as { id?: string }).id),
     );
-  if (page && Array.isArray(args.fields) && args.section !== "generation") {
+  if (page && Array.isArray(args.fields)) {
     page = page.map((item) => {
       const source = item as Record<string, unknown>;
       const keep = new Set(["id", ...(args.fields as string[])]);
@@ -93,13 +100,16 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
         ...Object.fromEntries(
           Object.entries(source).filter(([key]) => keep.has(key)),
         ),
-        omittedFields: Object.keys(source).filter((key) => !keep.has(key)),
+        omittedFields:
+          args.section === "generation"
+            ? undefined
+            : Object.keys(source).filter((key) => !keep.has(key)),
       };
     });
   }
   if (page) {
     // Small editing groups fit one read; large records still have a byte budget.
-    const limit = args.section === "generation" ? 5 : 12;
+    const limit = args.section === "generation" ? (explicit ? 30 : 5) : 12;
     const items: unknown[] = [];
     let size = 0;
     for (const item of page.slice(offset, offset + limit)) {
@@ -111,6 +121,8 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     return {
       revision,
       section: args.section,
+      batch:
+        args.section === "generation" ? batchSummary(generation) : undefined,
       missingIds,
       total: page.length,
       items,
@@ -121,7 +133,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   return {
     revision,
     readDetails: ids.length
-      ? "用 fields 读取正文；script + paragraphIds/scriptFields 精确读取脚本段落，plan 返回完整方案（分页）。"
+      ? "用 fields 读取正文；script + paragraphIds/scriptFields 精确读取脚本段落，screenplay 返回完整方案（分页）。"
       : undefined,
     missingNodeIds: ids.filter((id) => !p.nodes.some((n) => n.id === id)),
     name: p.name.slice(0, 200),
@@ -136,7 +148,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       title: n.title.slice(0, 80),
       assetId: n.assetId,
       resultAssetId: n.resultAssetId,
-      planId: n.shot?.planId,
+      screenplayId: n.shot?.screenplayId,
       order: n.shot?.order,
     })),
     details: p.nodes
@@ -148,21 +160,27 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
         ...(wants("text") ? snippet(n.text, detailLimit) : {}),
         assetId: wants("assetId") ? n.assetId : undefined,
         resultAssetId: wants("resultAssetId") ? n.resultAssetId : undefined,
-        omittedFields: ["title", "text", "shot", "plan", "references"].filter(
-          (f) => !wants(f),
-        ),
-        plan:
-          n.plan && (wants("plan") || wants("script"))
+        omittedFields: [
+          "title",
+          "text",
+          "shot",
+          "screenplay",
+          "references",
+        ].filter((f) => !wants(f)),
+        screenplay:
+          n.screenplay && (wants("screenplay") || wants("script"))
             ? {
-                ...inspectScript(n.plan.script ?? [], args, wants("plan")),
-                story: wants("plan") ? snippet(n.plan.story) : undefined,
-                sound: wants("plan") ? snippet(n.plan.sound) : undefined,
+                ...inspectScript(
+                  n.screenplay.script ?? [],
+                  args,
+                  wants("screenplay"),
+                ),
               }
             : undefined,
         shot: n.shot && {
           ...(wants("shot")
             ? {
-                planId: n.shot.planId,
+                screenplayId: n.shot.screenplayId,
                 scriptId: n.shot.scriptId,
                 scriptChanged: scriptChanged(p, n),
               }
@@ -199,9 +217,9 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
             : undefined,
         },
         shots:
-          wants("shots") && n.kind === "plan"
+          wants("shots") && n.kind === "screenplay"
             ? p.nodes
-                .filter((s) => s.shot?.planId === n.id)
+                .filter((s) => s.shot?.screenplayId === n.id)
                 .sort((a, b) => a.shot!.order - b.shot!.order)
                 .slice(offset, offset + 10)
                 .map((s) => ({
@@ -213,8 +231,9 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
             : undefined,
         nextShotOffset:
           wants("shots") &&
-          n.kind === "plan" &&
-          p.nodes.filter((s) => s.shot?.planId === n.id).length > offset + 10
+          n.kind === "screenplay" &&
+          p.nodes.filter((s) => s.shot?.screenplayId === n.id).length >
+            offset + 10
             ? offset + 10
             : null,
         references: wants("references")

@@ -170,11 +170,7 @@ async fn execute(
             .map_err(|e| e.to_string())?;
         snapshot["memory"] = memory::context(&memory, prompt);
     }
-    snapshot["skills"] = skills::catalog(
-        &skills::root(app).map_err(|e| e.to_string())?,
-        &skill_setting,
-    )
-    .map_err(|e| e.to_string())?;
+    snapshot["skills"] = skills::runtime_catalog(app, &skill_setting).map_err(|e| e.to_string())?;
     if let Some(scope) = selection
         .clone()
         .filter(|_| profiles::allows(&agent_profile, "inspect"))
@@ -209,6 +205,14 @@ async fn execute(
         &request.message_context["work"],
         task_node_id.as_deref(),
     )?;
+    super::prompt_guidance::attach(
+        &mut snapshot,
+        &store.db.lock().unwrap(),
+        &agent_profile,
+        &request.message_context["production"],
+        &doc,
+    )
+    .map_err(|e| e.to_string())?;
     snapshot["agent"] = json!({"name":agent_profile.name,"instructions":agent_profile.instructions,"skills":agent_profile.skill_ids,"tools":agent_profile.tool_ids,"canEdit":profiles::allows(&agent_profile,"edit")});
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     let input = context::assemble_with_budget(

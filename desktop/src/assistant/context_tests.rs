@@ -71,7 +71,7 @@ fn journal_preserves_failed_attempts_and_submission_reservations_are_idempotent(
         .unwrap();
     journal::append(&store, "p", "turn", "turn/start", json!({})).unwrap();
     journal::append(&store, "p", "turn", "turn/end", json!({"status":"failed"})).unwrap();
-    assert_eq!(journal::page(&store, "p", None).unwrap().len(), 2);
+    assert_eq!(journal::page(&store, "p", None).unwrap().len(), 1);
     assert!(journal::page(&store, "other", None).unwrap().is_empty());
     let job = json!({"id":"run","projectId":"p","input":{"prompt":"test"},"endpoint":"fal-ai/test","status":"SUBMITTING","providerId":"fal"});
     assert!(jobs::reserve(&store, &job).unwrap());
@@ -99,11 +99,11 @@ fn snapshot_keeps_requirements_and_references() {
 #[test]
 fn creative_plan_and_linked_shot_context_are_bounded_and_readable() {
     let document = json!({"nodes":[
-        {"id":"p","kind":"plan","plan":{"story":"begin then end","sound":"natural"}},
-        {"id":"s","kind":"shot","text":"action","shot":{"planId":"p","order":1,"duration":6,"dialogue":"Let's pack"}}
+        {"id":"p","kind":"screenplay","screenplay":{"story":"begin then end","sound":"natural"}},
+        {"id":"s","kind":"shot","text":"action","shot":{"screenplayId":"p","order":1,"duration":6,"dialogue":"Let's pack"}}
     ]});
-    let plan = super::creative_context::node_context(&document, &document["nodes"][0]);
-    assert_eq!(plan["shots"][0]["id"], "s");
+    let screenplay = super::creative_context::node_context(&document, &document["nodes"][0]);
+    assert_eq!(screenplay["shots"][0]["id"], "s");
     let shot = context::project_snapshot(&document, Some("s"));
     assert_eq!(
         shot["relevantNodes"][0]["creative"]["dialogue"],
@@ -114,7 +114,7 @@ fn creative_plan_and_linked_shot_context_are_bounded_and_readable() {
         schema["properties"]["operations"]["items"]["properties"]["kind"]["enum"]
             .as_array()
             .unwrap()
-            .contains(&json!("plan"))
+            .contains(&json!("screenplay"))
     );
 }
 

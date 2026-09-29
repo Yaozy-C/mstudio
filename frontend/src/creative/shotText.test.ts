@@ -14,7 +14,7 @@ function fixture(text = "打开餐盒") {
     resultAssetId: "video",
     references: [{ assetId: "ref", purpose: "餐盒外观" }],
     shot: {
-      planId: "plan",
+      screenplayId: "screenplay",
       order: 1,
       duration: 4,
       dialogue: "Let's pack.",

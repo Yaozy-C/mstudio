@@ -2,6 +2,8 @@ import type { Project } from "../model";
 import type { ProductionSource, ProductionTask } from "../production/types";
 export type GeneratedJob = {
   id: string;
+  backgroundManaged?: boolean;
+  sync?: { stage: string; error?: string; paused?: boolean };
   status: string;
   requestId?: string;
   shot: ProductionSource;

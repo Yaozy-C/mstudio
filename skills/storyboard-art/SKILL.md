@@ -1,18 +1,34 @@
 ---
 name: storyboard-art
-description: 将 Mstudio 已设计镜头转成分镜画格，负责静态构图、图片提示词、生成和局部修图。
+description: Execute designed shots as storyboard frames in Mstudio, including static composition, image prompts, generation and local image repairs.
 ---
 
-# 分镜画格
+# Storyboard frames
 
-读取当前镜头及所属脚本、导演交接、原始参考。保留镜头意图、关键动作和空间关系；缺关键机位或时刻时指出具体缺口，次要布景自行落实。不重写故事、镜头时长或视频提示词。
+The short [CORE.md](CORE.md) is automatically loaded from the database. For every image/video prompt, the animation principles and applicable prompt guide are mandatory; other detailed methods are read when needed.
 
-按用途选粗稿、清稿或写实制作帧，不默认精修。复杂关系先验证少量关键画格，已合格图复用。单格表达一个可见时刻，同镜 A/B 格保留空间地标和状态差异，不把画格当成新增镜头或额外时长。
+Read the current shot, relevant script, director handoff and original references. Preserve shot purpose, action and spatial relationships. Resolve secondary set details; return a specific gap when the required viewpoint or moment is missing. Do not rewrite the story, duration or video prompt.
 
-写提示词时读取 [图片提示词](../creative-ad-director/references/image-prompt-writing.md)。编写镜头草稿时保存 shot.framePrompt；引用已有图片任务改提示词时按 referencedTask.taskKey 精确 inspect(section=generation, taskKey=该任务键)，仅用 update_generation(taskKey,text) 保存任务，除非用户要求同步，否则不覆盖分镜草稿。已有任务键时不翻查全项目任务列表；只补读当前镜头及必要依据，历史待办不作为本轮任务，回复不附带无关镜头清单。按用户授权创建图片任务，真实完成后用 assetId 关联 shot.frames。任务 ID 不能代替素材 ID；不重复提交进行中的任务。只要文字时不出图。
+Before translating a product shot, apply the structural-evidence and reference rules in [image prompts](../creative-ad-director/references/image-prompt-writing.md). A director's design is not product evidence. Resolve a conflict before generating dependent frames; do not satisfy a camera or action instruction by changing the product's opening, connections or parts.
 
-按 [预览与检查](../product-storyboard/references/preview-images.md) 检查实际机位、主体身份、透视、初始支撑、接触和跨格方向。只能看到元数据时明确未看图。画面执行偏差局部修图，设计本身冲突交分镜导演；不能修改镜头意图迁就图片。返回镜头 ID、真实素材、选定时刻和具体偏差；静态正确不证明动作速度与音频正确。
+Apply staging and handoff from [shot grammar](../creative-ad-director/references/cinematography.md): attention center, subject/target/obstacle relationship, direction, key pose and meaningful occlusion. A preparation frame must not show a completed result or disclose a planned surprise. A change to shot expression goes back to the director.
 
-从画面中实际可见的表面、边沿遮挡与透视判断视点，不能因标题或 prompt 写着“内部视角”就认定成立。局部修材质只解决材质问题，不把原先未查的机位一并升级为通过；用户指出一个缺陷也不代表认可其他方面。沿用已有画格时保留相关未知，明确它适合约束身份、材质还是构图；末态正确的图不自动适合作为另一个动作起点。无需为此增加画格或审核轮次。
+Choose rough, clean or realistic production frames by use, not automatic polish. Verify difficult static relationships before expanding; reuse accepted images. Each frame shows one moment. A/B frames retain landmarks and readable state changes without adding shots or duration.
 
-核对结果时用 mstudio_read_image(assetId) 读取当前工程里的真实图片；mstudio_reopen_image 仅用于历史卸载提示给出的 imageId。文件名、任务 ID 和素材 ID 不可互换。模型不支持图片输入时报告能力限制，不反复猜引用。
+For frames that depend on a shared unverified identity, viewpoint or interaction, generate the minimum useful anchor first, wait for its real asset, and inspect its pixels against the originals. Pending, queued or successful submission is not a passed anchor. Until it passes, continue independent design work but do not submit the dependent batch. Reuse a suitable already-inspected anchor; this is an execution dependency, not another user approval or a mandatory sample for unrelated images. If the run must end while waiting, return the task ID and exact continuation condition.
+
+## Prompts and tasks
+
+Read [image prompts](../creative-ad-director/references/image-prompt-writing.md). Save shot.framePrompt for shot-draft work. When a generation card is referenced, inspect(section=generation, taskKey=referencedTask.taskKey) and update only that task with update_generation(taskKey,text); do not also overwrite the shot draft unless requested. Do not browse all tasks when the exact key is known. Read only the target and necessary evidence; history does not add unrelated work.
+
+Generate images only within the requested scope. Completion yields a real assetId for shot.frames; task IDs are not asset IDs. Do not duplicate running tasks. Text-only work does not generate images.
+
+## Inspect and return
+
+Use [frame inspection](../product-storyboard/references/preview-images.md) for viewpoint, identity, perspective, support, contact and cross-frame state. Fix execution deviations locally; send design conflicts to the director. Return shot IDs, actual assets, selected moments and concrete deviations. Static correctness does not establish motion or audio.
+
+Use mstudio_read_image(assetId) for current project images. mstudio_reopen_image accepts only an imageId from a historical unloaded-image notice. Filenames, task IDs and asset IDs are not interchangeable. If image input is unavailable, report the limitation instead of guessing or claiming to have viewed metadata.
+
+Read relevant existing references and shared asset records/images before frame work. Missing identity references repeated across distinct shots go to asset-designer via coordination after an inventory check. Do not request public asset generation for each single-shot element or merely because a shot has A/B frames. Preserve selected identity, wardrobe and footwear; choosing an outfit does not mean reselecting it for every frame. Supply ready shared images as identity references and inspected A as composition/state reference for dependent B. White asset backgrounds do not dictate the scene background.
+
+Detailed role scope and execution methods: [role methods](references/role-methods.md). Read only when relevant.

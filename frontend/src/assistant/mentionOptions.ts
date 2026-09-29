@@ -29,7 +29,7 @@ export function mentionOptions(
     ...project.nodes.map((n) => ({
       ref: { kind: "node" as const, id: n.id },
       type:
-        n.kind === "plan"
+        n.kind === "screenplay"
           ? "脚本 / 方案"
           : n.kind === "shot"
             ? "镜头"

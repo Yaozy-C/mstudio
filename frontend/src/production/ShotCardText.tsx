@@ -12,8 +12,8 @@ export function ShotCardText({
   const node = project.nodes.find((n) => n.id === item.nodeId);
   const shot = node?.shot;
   const chapter = project.nodes
-    .find((n) => n.id === shot?.planId)
-    ?.plan?.script?.find((s) => s.id === shot?.scriptId);
+    .find((n) => n.id === shot?.screenplayId)
+    ?.screenplay?.script?.find((s) => s.id === shot?.scriptId);
   const action = node?.text || chapter?.action || t("尚未填写画面描述");
   const dialogue = shot?.dialogue || chapter?.dialogue;
   return (
@@ -34,6 +34,20 @@ export function ShotCardText({
         </div>
       )}
       <div className="shot-card-sections">
+        {!!node?.references?.length && (
+          <section>
+            <h3>{t("参考素材")}</h3>
+            <p>
+              {node.references
+                .map(
+                  (r) =>
+                    project.assets.find((a) => a.id === r.assetId)?.name ??
+                    r.assetId,
+                )
+                .join("；")}
+            </p>
+          </section>
+        )}
         {action
           .split(/(?=【[^】]+】)/u)
           .filter(Boolean)

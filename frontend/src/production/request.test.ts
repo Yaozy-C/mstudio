@@ -6,7 +6,7 @@ import type { ProductionTask } from "./types";
 test("submitted image and video prompts exclude script notes and future actions", () => {
   const p = fixture();
   p.nodes[1].text = "【摄影运镜】移焦；随后手伸入并冒出冰雾";
-  p.nodes[0].plan!.script![0].dialogue = "38℃的盛夏";
+  p.nodes[0].screenplay!.script![0].dialogue = "38℃的盛夏";
   for (const kind of ["image", "video"] as const) {
     const task: ProductionTask = {
       key: "clean",
@@ -61,6 +61,6 @@ test("displayed submission preserves explicit typography and reference order wit
   expect(first.prompt).toContain("Image 1: 内容参考 · 构图");
   expect(first.prompt).toContain("Image 2: 内容参考 · 产品身份");
   p.nodes[1].text = "Entirely changed direction";
-  p.nodes[0].plan!.script![0].action = "Unrelated new action";
+  p.nodes[0].screenplay!.script![0].action = "Unrelated new action";
   expect(inputFor(p, task, m)).toEqual(first);
 });

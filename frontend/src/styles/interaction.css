@@ -8,8 +8,6 @@
     input,
     textarea,
     [contenteditable]:not([contenteditable="false"]),
-    .plan-reading-scroll,
-    .plan-summary > p,
     .agent-messages,
     .agent-activity,
     .error
@@ -17,19 +15,7 @@
   -webkit-user-select: text;
   user-select: text;
 }
-.studio-shell
-  :is(
-    button,
-    summary,
-    label,
-    .plan-dragbar,
-    .plan-viewbar,
-    .plan-bottom,
-    .floating-handle,
-    .panel-resizer,
-    .plan-resizer,
-    .creative-inline-input > span
-  ) {
+.studio-shell :is(button, summary, label, .creative-inline-input > span) {
   -webkit-user-select: none;
   user-select: none;
 }

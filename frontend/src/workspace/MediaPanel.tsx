@@ -10,13 +10,12 @@ import {
 } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { MediaPreview } from "./MediaPreview";
-import { mediaUrl } from "../bridge";
+import { MediaTile } from "./MediaTile";
 import { useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
 import { isLibraryAsset } from "./assetLibrary";
 import { useAssetLibrary } from "./useAssetLibrary";
-import { MissingAsset } from "./MissingAsset";
-import { formatTime, type Project, type Asset } from "../model";
+import { type Project, type Asset } from "../model";
 export function MediaPanel({
   project,
   change,
@@ -183,69 +182,13 @@ export function MediaPanel({
               },
             ]}
           >
-            <article
-              className="media-item"
-              onContextMenu={() => setSelected(a.id)}
-            >
-              <button
-                className="media-thumbnail"
-                draggable={scope === "project" && !a.missing}
-                onDragStart={(e) => {
-                  if (scope !== "project" || a.missing) {
-                    e.preventDefault();
-                    return;
-                  }
-                  e.dataTransfer.setData(
-                    "application/x-mstudio-reference",
-                    JSON.stringify({ kind: "asset", id: a.id }),
-                  );
-                  e.dataTransfer.effectAllowed = "copy";
-                }}
-                onClick={() => setSelected(a.id)}
-                onDoubleClick={() => setPreview(a.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    setPreview(a.id);
-                  }
-                }}
-                aria-pressed={selected === a.id}
-                title={t("双击预览 · 右键更多操作")}
-              >
-                {a.missing ? (
-                  <MissingAsset asset={a} compact />
-                ) : a.preview ? (
-                  <img loading="lazy" src={mediaUrl(a.preview)} alt={a.name} />
-                ) : a.kind === "audio" ? (
-                  <MusicNotes size={28} />
-                ) : (
-                  <FileText size={28} />
-                )}
-                {!a.missing && (
-                  <span>
-                    {a.kind === "image"
-                      ? t("图片")
-                      : a.kind === "text"
-                        ? t("文本")
-                        : a.kind === "document"
-                          ? "PDF"
-                          : formatTime(a.duration)}
-                  </span>
-                )}
-              </button>
-              <div className="media-caption">
-                {a.kind === "video" ? (
-                  <FilmStrip />
-                ) : a.kind === "image" ? (
-                  <ImageSquare />
-                ) : a.kind === "audio" ? (
-                  <MusicNotes />
-                ) : (
-                  <FileText />
-                )}
-                <span title={a.name}>{a.name}</span>
-              </div>
-            </article>
+            <MediaTile
+              asset={a}
+              scope={scope}
+              selected={selected === a.id}
+              select={setSelected}
+              preview={setPreview}
+            />
           </ObjectMenu>
         ))}
         {!active.assets.length && (

@@ -1,19 +1,18 @@
 ---
 name: color-grading
-description: 对用户指定片段进行色彩校正、风格塑造和镜头匹配，使用实际可见素材与本地调色工具，保留原片和剪辑。
+description: Correct color, develop a look and match specified clips using actual visible footage and local grading tools while preserving source media and edits.
 ---
-# color-grading · 调色师
 
-把用户的观看目标翻译为可检验的色彩选择。先修正问题，再决定风格；不把固定滤镜称为专业调色。
+# Color grading
 
-读取本轮目标、引用视频及最新 clips/visual。只看过缩略图不能判断整段曝光、闪烁、肤色漂移；素材不可读取时说明缺口，不编造观察。对混合机位先找同场景参考镜头，在代表帧与前后镜头间比较主体亮度、中性物、饱和度和冷暖，避免逐镜独立套用同一数值。
+Translate the viewing goal into observable color choices. Correct problems before styling; a fixed filter is not a professional grade.
 
-用 `mstudio_read_image(assetId,time)` 抽源视频帧；加 `clipId` 时 time 是片段内秒数，工具自动换算 trimIn/speed 并应用当前调色。时间不能等于尾点。先取开头、中间、接近结尾，有曝光/主体变化再补帧；修改前后用相同片段时间复查并比较相邻镜头。返回真实像素后才能描述画面。片段抽帧不含转场、叠加轨和字幕，也不能证明声音或连续运动通过。多次工具调用可取不同时间，不上传整段视频来替代少量必要抽帧。
+Read the current target, referenced footage and latest clips/visual. Thumbnails cannot establish exposure behavior, flicker or changing skin color across a clip. For matching, select a scene reference and compare subject brightness, neutrals, saturation and temperature across representative frames and neighboring shots.
 
-使用 `update_clip.visual.grade` 编排曝光、明暗、八色 HSL、曲线和分区色轮，不按风格名称套固定数值；只覆盖本次需要改变的绝对参数，保留其余值、片段时长、位置、音频、字幕与转场。先取得最新 revision；更新后用 savedClips 核实实际保存的参数，回执不完整或存在疑问时再 inspect，然后抽同一时间的调色帧复查。实际应用可撤销，用户可以对比原片。工具成功只证明参数已保存，不证明你看过重新渲染后的全片。
+Use mstudio_read_image(assetId,time) for source frames; with clipId, time is clip-relative and applies trimIn/speed and current grading. Do not request the exact endpoint. Start with beginning, middle and near-end, then add samples where light or subjects change. Compare the same times after editing. Actual pixels are required before describing the image. Clip frames exclude transitions, overlays, subtitles and audio and do not prove continuous playback.
 
-整组片段用一次 inspect section=clips 读取，必要时按 nextOffset 补读；已知 ID 时用 ids 和 fields 精确读取。互不依赖的读资料、读取不同片段帧可同批调用；一组已确定的调色修改放在一个 operations 中。减少的是无必要的往返，不省略看帧。
+Use update_clip.visual.grade for exposure, tonal controls, eight-color HSL, curves and tonal wheels. Set only the required absolute parameters, preserving other values, timing, position, audio, captions and transitions. Read latest revision before editing. Verify savedClips; inspect again if the receipt is incomplete or unclear, then inspect the graded pixels at matching times. A saved parameter does not prove the full render was viewed.
 
-创作时选择一个主要意图，例如自然产品色、清冷疏离或暖调亲密。保持需要真实表达的肤色、商品色与高光细节。先小幅修正，再看对比；高饱和、高对比、偏色不是高级感的通用配方。不同镜头的数值允许不同，感知连续比数值一致重要。
+Read groups through inspect section=clips and returned nextOffset. Known IDs use ids/fields. Batch independent reads and confirmed edits without skipping visual evidence. Choose one principal intention, such as natural product color or cooler atmosphere. Preserve truthful product/skin color and highlight detail; perceived continuity matters more than identical numeric values.
 
-执行前读 [工具边界与参考课程](references/workflow.md)。遇到 Log/HDR、显示转换或跟踪蒙版需求，区分教程能力与当前应用实际能力，不用普通亮度滑块冒充曝光恢复或色彩空间转换。用户要更复杂的效果时给出具体缺失能力及可完成部分。
+Read [tool limits](references/workflow.md) before execution. Distinguish SDR grading from Log/HDR input transforms, RAW recovery, tracked masks and calibrated monitoring. Report concrete missing capabilities without pretending ordinary brightness adjustments supply them.

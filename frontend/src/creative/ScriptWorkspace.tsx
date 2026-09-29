@@ -6,7 +6,6 @@ import { ScriptAIStart } from "./ScriptAIStart";
 import { creativeTask, requestCreativeTask } from "./aiTasks";
 import { useEffect, useState } from "react";
 import type { Project } from "../model";
-import { InlineText } from "./InlineText";
 import { SAVE_DESCRIPTION } from "../workspace/projectAutosave";
 import { ScriptParagraphEditor } from "./ScriptParagraphEditor";
 import { createScript, newParagraph } from "./script";
@@ -33,37 +32,40 @@ export function ScriptWorkspace({
   navigate: (view: "script" | "storyboard") => void;
 }) {
   useLanguage();
-  const plans = project.nodes.filter((n) => n.kind === "plan");
+  const screenplays = project.nodes.filter((n) => n.kind === "screenplay");
   const selectedNode = project.nodes.find((n) => n.id === selected);
-  const linkedPlan =
-    selectedNode?.kind === "plan"
+  const linkedScreenplay =
+    selectedNode?.kind === "screenplay"
       ? selectedNode.id
-      : selectedNode?.shot?.planId;
+      : selectedNode?.shot?.screenplayId;
   const [paragraphId, setParagraphId] = useState<string | undefined>();
   const [manual, setManual] = useState(false);
-  const plan = plans.find((n) => n.id === linkedPlan) || plans[0];
+  const screenplay =
+    screenplays.find((n) => n.id === linkedScreenplay) || screenplays[0];
   useEffect(() => {
     const id = selectedNode?.shot?.scriptId;
     if (id)
       document
         .getElementById(`script-${id}`)
         ?.scrollIntoView({ block: "center" });
-  }, [selectedNode?.shot?.scriptId, plan?.id]);
+  }, [selectedNode?.shot?.scriptId, screenplay?.id]);
   useEffect(() => {
     setParagraphId(undefined);
-  }, [plan?.id]);
-  const focusedParagraph = plan?.plan?.script?.some((s) => s.id === paragraphId)
+  }, [screenplay?.id]);
+  const focusedParagraph = screenplay?.screenplay?.script?.some(
+    (s) => s.id === paragraphId,
+  )
     ? paragraphId
     : undefined;
   useEffect(() => {
     onContext?.({
       view: "script",
-      planId: plan?.id,
+      screenplayId: screenplay?.id,
       paragraphId: focusedParagraph,
     });
-  }, [plan?.id, focusedParagraph, onContext]);
-  const script = plan?.plan?.script ?? [];
-  const shots = plan ? shotsOf(project, plan.id) : [];
+  }, [screenplay?.id, focusedParagraph, onContext]);
+  const script = screenplay?.screenplay?.script ?? [];
+  const shots = screenplay ? shotsOf(project, screenplay.id) : [];
   return (
     <section className="script-workspace">
       <header className="script-heading">
@@ -71,10 +73,10 @@ export function ScriptWorkspace({
           <h1>{t("脚本")}</h1>
         </div>
       </header>
-      {plan ? (
+      {screenplay ? (
         <>
           <nav className="script-tools" aria-label={t("脚本工具")}>
-            <button type="button" onClick={() => onReference(plan.id)}>
+            <button type="button" onClick={() => onReference(screenplay.id)}>
               {t("引用到对话")}
             </button>
             <span role="status" title={t(SAVE_DESCRIPTION)}>
@@ -91,8 +93,8 @@ export function ScriptWorkspace({
             {!manual &&
             !script?.some((s) => s.action.trim() || s.dialogue.trim()) ? (
               <ScriptAIStart
-                key={plan.id}
-                planId={plan.id}
+                key={screenplay.id}
+                screenplayId={screenplay.id}
                 manual={() => setManual(true)}
               />
             ) : (
@@ -103,49 +105,30 @@ export function ScriptWorkspace({
                   }
                   count={shots.length}
                   next={() => {
-                    onSelect(plan.id);
+                    onSelect(screenplay.id);
                     navigate("storyboard");
-                    requestCreativeTask(creativeTask("split", plan.id));
+                    requestCreativeTask(creativeTask("split", screenplay.id));
                   }}
                 />
                 <input
                   className="script-title"
                   aria-label={t("脚本标题")}
-                  value={plan.title}
+                  value={screenplay.title}
                   onChange={(e) =>
                     onChange((p) => ({
                       ...p,
                       nodes: p.nodes.map((n) =>
-                        n.id === plan.id ? { ...n, title: e.target.value } : n,
+                        n.id === screenplay.id
+                          ? { ...n, title: e.target.value }
+                          : n,
                       ),
                     }))
                   }
                 />
-                <InlineText
-                  context={t("脚本")}
-                  label={t("创意概述")}
-                  value={plan.text}
-                  limit={6000}
-                  placeholder={t("想表达什么，为什么值得看？")}
-                  commit={(text) =>
-                    onChange((p) => ({
-                      ...p,
-                      nodes: p.nodes.map((n) =>
-                        n.id === plan.id ? { ...n, text } : n,
-                      ),
-                    }))
-                  }
-                />
-                {plan.plan?.story && (
-                  <p className="script-origin">
-                    {t("故事结构：")}
-                    {plan.plan.story}
-                  </p>
-                )}
                 {!!script?.length && (
                   <ScriptTiming
                     script={script}
-                    planId={plan.id}
+                    screenplayId={screenplay.id}
                     change={onChange}
                   />
                 )}
@@ -156,7 +139,7 @@ export function ScriptWorkspace({
                       paragraph={s}
                       select={() => setParagraphId(s.id)}
                       index={i}
-                      planId={plan.id}
+                      screenplayId={screenplay.id}
                       shots={shots.filter((n) => n.shot?.scriptId === s.id)}
                       change={onChange}
                       openShots={(id) => {
@@ -171,14 +154,14 @@ export function ScriptWorkspace({
                       onChange((p) => ({
                         ...p,
                         nodes: p.nodes.map((n) =>
-                          n.id !== plan.id
+                          n.id !== screenplay.id
                             ? n
                             : {
                                 ...n,
-                                plan: {
-                                  ...n.plan!,
+                                screenplay: {
+                                  ...n.screenplay!,
                                   script: [
-                                    ...(n.plan?.script ?? []),
+                                    ...(n.screenplay?.script ?? []),
                                     newParagraph(),
                                   ],
                                 },

@@ -107,3 +107,30 @@ test("a limited child run is shown as recovered only when its parent completes",
     ])[0].detail,
   ).toContain("待统筹处理");
 });
+
+test("nested validation errors show the cause and recovery instead of raw JSON", () => {
+  const rows = activityRows([
+    {
+      seq: 1,
+      created: 1,
+      kind: "tool/call",
+      payload: { callId: "a", name: "mstudio_delegate" },
+    },
+    {
+      seq: 2,
+      created: 2,
+      kind: "tool/result",
+      payload: {
+        callId: "a",
+        result: {
+          error:
+            '连续三次修改遇到相同错误：Error: {"code":"VALIDATION_FAILED","message":"请选择正确模型","recovery":"修改后重试","retryable":false}',
+        },
+      },
+    },
+  ]);
+  expect(rows[0].error).toBe(true);
+  expect(rows[0].detail).toContain("连续三次");
+  expect(rows[0].detail).toContain("请选择正确模型");
+  expect(rows[0].detail).not.toContain('"code"');
+});

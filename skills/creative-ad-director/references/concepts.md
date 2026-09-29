@@ -1,27 +1,15 @@
-# 从利益到广告事件
+# From supported benefit to advertising event
 
-先用一句话定清“用户希望观众理解什么”，并记录商品依据。真正的消费者洞察、委托目标与创作者假设分别标记；不能凭角色或场景名称制造洞察。
+State what the user wants viewers to understand and the product evidence supporting it. Separate consumer insight, commission objective and creative hypothesis. A character or scene name is not insight.
 
-从已确定利益寻找表达机会：能否让原本不可见的便利可见、让前后变化更鲜明、让商品功能成为一个事件的原因或解决方式、用幽默/节奏/隐喻让利益更容易记住？这些是发散问题，不要求逐类各写一个，也不固定套路。不要先选镜头技法再找商品理由。
+Explore how a benefit could become visible: a clearer before/after relationship, a product causing or resolving an event, or humor, rhythm and metaphor helping recall. These are questions, not mandatory categories or recipes. Do not choose a camera trick first and invent a product rationale afterward.
 
-每个候选用短卡：
-- 已确定的利益及来源。
-- 第一眼具体看见什么 → 什么变化 → 如何收尾。
-- 事件怎样帮助理解利益，正文如何回应开场期待。
-- 与其他候选的实质区别；仅换机位或配色不算不同概念。
-- 允许的创意夸张、必须保真的商品属性、可能误导的性能暗示。
-- 最难实现的关系、最小验证材料与淘汰条件。
+For a few substantively different candidates record benefit/source, opening/change/payoff, event-to-benefit relationship, permitted exaggeration versus factual properties, and the hardest relationship/minimum check. Reject invented core needs, unsupported claims, title-only meaning and an irrelevant spectacle with a product attached at the end. Category relevance is sufficient; product exclusivity is not required.
 
-淘汰：偏离用户目标；核心需求凭空编造；只有标题能解释；商品只是无关奇观的最后露面；前后变化没有利益联系；把虚构画面当性能证据。通过后再比较观看体验与实现依据，不要求商品具有独家功能，不把“换个商品也能用”单独当否决理由。
+Use [opening criteria](../../product-storyboard/references/creative-bar.md) to evaluate and [opening practice](../../product-storyboard/references/director-hook.md) to develop alternatives. Do not maintain another competing scoring workflow. If candidates fail, change the event/value relationship or resolve missing evidence rather than repeatedly replacing the theme.
 
-保持高创意门槛：单纯更近、更快、更美不足以成立；但不要为了“异常”硬塞奇观。写明镜头与事件共同创造了什么具体体验，感官编排也须能描述并看见，不强制戏剧反转或痛点叙事。
+## Connect the opening to the body
 
-通常两三个候选足够首轮比较。若全不成立，改变事件与利益的连接再试；不要连续换广告主题。关键依据缺失先解决依据，不能以缺灵感要求用户替你设计。
+Product components establish structure; benefits describe supported consequences for a user. Preserving every visible part does not require a dedicated feature shot for each one. Do not infer unverified convenience or performance from geometry alone.
 
-## 卖点表达与事件衔接
-
-部件事实用于确认商品结构；广告利益要说明它为使用者带来什么，并用有依据的使用动作或结果让人看见。结构完整性检查不等于每个部件都必须获得独立展示镜头。围绕本片主张选必要信息，不能凭结构推断未经证实的便利或性能。
-
-开场事件应在后续使用、结果或收尾中得到回应。优先让利益随着事件发展自然显现，避免为了补卖点突然接上一串无关特写；允许清楚的功能展示段，但应承接开场期待并服务同一主张，不强制每一卖点都变成奇观。
-
-修订时检查：删短动作是否也误删了理解时间；增加展示是否挤占主事件或变成部件清单；开场承诺是否有结果；新增秒数是否对应必要动作与观看时间。纸面节拍只作规划，动态节奏在获批制作后的粗剪中验证。
+Answer the opening promise through use, consequence or ending. A clear demonstration may serve the same main claim without turning every feature into spectacle. During revision, check whether shorter action removes reading time, extra features displace the event, or added seconds actually support necessary information. Written timing is a plan; dynamic pacing is checked in an authorized rough cut.

@@ -1,3 +1,4 @@
+import { ZoomableImage } from "../workspace/ZoomableImage";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
@@ -80,7 +81,7 @@ export function GenerationResult({
       )}
       <Dialog.Root open={preview} onOpenChange={setPreview}>
         <Dialog.Content
-          className="media-preview-dialog"
+          className={`media-preview-dialog${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
           aria-describedby={undefined}
         >
           <header>
@@ -93,7 +94,11 @@ export function GenerationResult({
           </header>
           <div className="media-preview-stage">
             {asset.kind === "image" ? (
-              <img src={mediaUrl(asset.path)} alt={asset.name} />
+              <ZoomableImage
+                key={asset.id}
+                src={mediaUrl(asset.path)}
+                alt={asset.name}
+              />
             ) : (
               <video src={mediaUrl(asset.path)} controls autoPlay />
             )}

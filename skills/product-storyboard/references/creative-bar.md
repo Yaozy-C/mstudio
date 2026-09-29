@@ -1,46 +1,23 @@
-# 创意广告的开场标准
+# Creative opening criteria
 
-新设计或重做商品视频 hook 时读取。用户要求创意广告时，靠事件与镜头语言形成明确观看理由；普通展示或教程按其用途设计。它控制候选选择，不保证留存或要求固定风格。局部修图沿用已选创意，不借此擅自重做。
+Read when creating or redesigning an advertising opening. Evaluate the visible event and camera language, not a guarantee of retention or a compulsory visual style. Tutorials, ordinary demonstrations and specified shots follow their requested purpose. Local repairs retain the selected concept.
 
-**前置淘汰：**按 [根本规则](../SKILL.md#最高优先级先忠实于用户意图再设计创意) 核对任务来源；凭空设定核心愿望、偏离用户已明确方向，或靠场景/转场名称补商品理由的方案，不进入视觉优劣比较。探索假设不能直接升级为选定方案。
+Apply [user intent](../SKILL.md#user-intent-and-factual-basis) first. Reject concepts built on invented core needs, a contradicted direction or a technique name used as a product rationale. An exploratory hypothesis is not an approved direction.
 
-## 什么能进入候选
+## Admission criteria
 
-镜头应使观众看见一个日常观看方式下不会直接得到的关系、事件或发现。写清**普通动作是什么，镜头设计具体改变了哪一层观看体验**：空间、尺度、因果、身份判断、时间顺序或运动编排；不是只改变景别、速度或滤镜。
+The shot should create a relationship, event or discovery that ordinary viewing would not directly provide. Identify the ordinary action and the change in spatial, scale, causal, identity, temporal or motion relationships. Closer, faster or prettier alone is insufficient. Camera and editing can create the concept; requiring it to remain identical with the camera removed would reject valid ideas.
 
-镜头语言本身可以创造关系，无需主体一定超现实。**不要把摄影机拿掉后还剩什么当唯一检验**，那会错杀由视角和剪辑产生的创意；应检查摄影机/剪辑究竟创造了什么，而非仅拍得更近、更快。
+A candidate must explain:
 
-## 怎样产生候选
+1. A readable opening cue or tension already visible, not only a promise of interest after all preparation.
+2. The camera's contribution: what framing, depth, movement, staging or cutting changes in understanding or experience.
+3. A meaningful change and payoff. Sensory or motion-based concepts need a specific observable pattern/completion, not a claim that they feel satisfying.
+4. A natural product relationship and body sequence that answers the opening promise. Appearing only as the final reveal is insufficient by itself. Category-level relevance is acceptable; exclusive functionality is unnecessary. Fantasy is not performance proof.
+5. Testable conditions: which frame or clip will test the idea, and what facts, geometry, contact, format and tools support it.
 
-从商品真实形状、边界、动作和人与物关系选择一个锚点，再改变一种关系，形成具体首拍与兑现。可从以下问题发散，不必每项一个，不把问题清单当作固定创意模板：
+The first four must be visible rather than explained only through copy. Correct facts, feasible production and clean geometry cannot compensate for a failed creative premise. A written pass means worth testing, not proven audience impact.
 
-- **空间如何重解？**哪些前后景能从特定机位形成一个清楚的整体，换视角后又被重新理解？第一拍必须提供形成判断的形态线索。
-- **尺度如何改变理解？**什么真实局部能在构图中像另一种尺度，揭示后观众能识别其与商品的关系？必须有可辨认的初始判断与后续理解变化。
-- **谁作用于谁？**主体之间的作用关系如何变化？创意夸张不能冒充真实功能。
-- **一个动作怎样改变场景关系？**切点前后有哪些位置、形状或动作匹配，能产生新的空间/时间连接？场景变化须带来新的可见关系。
-- **运动怎样形成独特的图形/秩序？**物体路径、队列、节奏与产品结构怎样共同形成清楚的变化？编排须产生明确观看价值，不能仅靠动作数量或技术复杂度。
+Reject candidates that violate explicit project exclusions, lack an initial readable cue, change technique without changing experience, fail to pay off, or require unrelated copy to connect the product. If all fail, revise the product anchor and viewing relationship. Do not lower the standard silently to a routine demonstration; respect a user-specified action or reference while improving its expression.
 
-优先考虑有实际依据、能局部试验的关系；遇到执行困难，调整调度、切点或合成方法，同时保留观看差异。不能先挑最好生成的普通动作，再补一句好奇问题包装它。
-
-## 候选进入制作前的门槛
-
-每个候选必须同时说清：
-
-1. **首拍抓点**：画面里已经出现的具体不寻常关系/视觉张力是什么；不能让前两秒都是准备，全部理由到最后才出现。
-2. **镜头贡献**：取景、景深、运动、调度或切接创造了哪一种理解变化/视觉体验，普通拍法为何没有它。只有近、快、美、顺不够。
-3. **变化与兑现**：下一拍发生什么可辨变化；答案不能只是大家已经预期的日常动作完成。感官/运动型方案需说明独特编排和完成过程，不能泛称舒服。
-4. **商品联系**：明确开场让观众期待什么、正文哪个动作或结果回答它，以及这种关系如何帮助理解本条主张。商品仅作为最后露面的揭示答案或动作落点不足以通过。创意可以用于同类商品，不要求独家功能，但须说明为什么适合本次价值；视觉夸张不充当性能证据。
-5. **可检验条件**：通过关键格或实际片段检查什么；事实、机位/接触、画幅、制作方式分别有什么依据和未知。
-
-前四项不能只靠文案解释，且创意检查不能被“事实正确、能拍、时间符合、没有穿模”抵消。通过文字门槛仅表示值得试图；实际吸引力仍要看画面。缺观众数据不应阻塞设计，但“待验证”也不能豁免已知的平淡。
-
-## 淘汰条件
-
-- 命中当前项目明确的禁用创意时淘汰；不得从其他项目继承个人黑名单。
-- 首拍缺少可辨线索，无法形成具体观看期待。
-- 技术或动作发生了变化，但观众理解没有变化。
-- 兑现没有新增信息或独特的感官体验。
-- 商品与观看事件的联系依赖额外文字解释。
-- 用制作可行性或功能价值抵消创意门槛未通过的问题。
-
-若候选均失败，回到商品锚点和观看关系重新构思；保留执行可行性检查，但不要降格选一个普通演示交差。用户明确指定某个动作/参考时在它的范围内设计镜头，不擅自替换创意。
+Candidate development and comparison belong in [opening practice](director-hook.md); do not duplicate that workflow here.

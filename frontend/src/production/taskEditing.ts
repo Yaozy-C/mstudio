@@ -1,38 +1,25 @@
 import type { Project } from "../model";
 import { saveTask } from "./document";
 import type { ProductionTask } from "./types";
+import { normalizeTaskPrompt } from "./taskPrompt";
 
 export const canEditOriginal = (task: ProductionTask) =>
   !task.jobId &&
   !task.submissionId &&
   (!task.status || task.status === "AWAITING_CONFIRMATION");
 export const canRegenerate = (task: ProductionTask) =>
-  ["COMPLETED", "FAILED", "CANCELLED", "IN_QUEUE", "IN_PROGRESS"].includes(
-    task.status ?? "",
-  );
+  ["COMPLETED", "FAILED", "CANCELLED"].includes(task.status ?? "");
 export function editTaskPrompt(p: Project, key: string, text: string): Project {
   const task = p.production?.drafts?.[key];
   if (!task) throw new Error("任务不存在，请重新查询");
   if (!text.trim() || text.length > 12000)
     throw new Error("请提供完整生成描述（最多 12000 字）");
-  return saveTask(
-    p,
-    canEditOriginal(task)
-      ? { ...task, prompt: text.trim(), error: undefined }
-      : { ...task, nextPrompt: text.trim() },
-  );
+  return saveTask(p, { ...normalizeTaskPrompt(task), prompt: text.trim() });
 }
-export function regenerationDraft(
-  task: ProductionTask,
-  id: string,
-): ProductionTask {
+export function regenerationDraft(task: ProductionTask): ProductionTask {
   if (!canRegenerate(task)) throw new Error("请先核查原任务状态，再重新生成");
   return {
-    ...structuredClone(task),
-    key: `retry:${id}`,
-    sourceTaskKey: task.key,
-    prompt: task.nextPrompt ?? task.prompt,
-    nextPrompt: undefined,
+    ...structuredClone(normalizeTaskPrompt(task)),
     hiddenFromList: false,
     status: "AWAITING_CONFIRMATION",
     jobId: undefined,
@@ -43,6 +30,5 @@ export function regenerationDraft(
     progress: undefined,
     resultAssetId: undefined,
     resultAssetIds: undefined,
-    createdAt: Date.now(),
   };
 }

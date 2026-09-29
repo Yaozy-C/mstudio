@@ -15,7 +15,6 @@
   font-weight: 500;
   margin: 0;
 }
-.script-origin,
 .script-start p {
   color: var(--desk-muted);
   line-height: 1.8;
@@ -148,9 +147,6 @@
 }
 .script-workspace .creative-inline-field {
   margin-bottom: 16px;
-}
-.plan-shot > .script-source {
-  grid-column: 1 / -1;
 }
 .script-ai-start {
   max-width: 820px;

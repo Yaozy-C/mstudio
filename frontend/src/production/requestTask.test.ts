@@ -202,3 +202,49 @@ test("a shot task does not implicitly add its images or own new generation resul
   expect(done.nodes[1]).toEqual(p.nodes[1]);
   expect(done.nodes.some((n) => n.assetId === "independent")).toBe(true);
 });
+
+test("100 generation tasks persist across tool batches without replaying the same call", () => {
+  const { p, context, op } = setup();
+  let next = p;
+  for (let i = 0; i < 100; i++) {
+    next = requestTask(
+      next,
+      { ...op, text: `Shot ${i}: move closer` },
+      { ...context, callId: `batch-${Math.floor(i / 10)}` },
+      i % 10,
+    );
+  }
+  const restored = JSON.parse(JSON.stringify(next));
+  expect(runsOf(restored)).toHaveLength(100);
+  expect(
+    requestTask(
+      restored,
+      { ...op, text: "Shot 99: move closer" },
+      { ...context, callId: "batch-9" },
+      9,
+    ),
+  ).toBe(restored);
+  expect(
+    runsOf(
+      requestTask(
+        restored,
+        { ...op, text: "Shot 99: move closer" },
+        { ...context, callId: "replayed" },
+      ),
+    ),
+  ).toHaveLength(100);
+});
+
+test("a catalog model selected in conversation creates a task without a dropdown selection", () => {
+  const { p, context, op } = setup();
+  context.turn.models.image = "";
+  const requested = { ...op, mediaModelId: "catalog-selected-image" };
+  const run = runsOf(requestTask(p, requested, context))[0];
+  expect(run.modelId).toBe("catalog-selected-image");
+  expect(run.status).toBe("AWAITING_CONFIRMATION");
+  context.turn.models.execution = "automatic";
+  expect(runsOf(requestTask(p, requested, context))[0].status).toBe("READY");
+  expect(() => requestTask(p, { ...op, mediaModelId: 42 }, context)).toThrow(
+    "模型 ID",
+  );
+});

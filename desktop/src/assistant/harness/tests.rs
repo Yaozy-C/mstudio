@@ -6,3 +6,6 @@ mod support;
 
 mod media_retention;
 mod outcomes;
+
+mod completion;
+mod metering;

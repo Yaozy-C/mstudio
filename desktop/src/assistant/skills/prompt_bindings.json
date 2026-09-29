@@ -1,0 +1,24 @@
+{
+  "skills": {
+    "image-prompt": {
+      "kind": "image",
+      "resources": [
+        "SKILL.md",
+        "../creative-ad-director/references/animation-principles.md",
+        "../creative-ad-director/references/image-prompt-writing.md"
+      ]
+    },
+    "video-prompt": {
+      "kind": "video",
+      "resources": [
+        "SKILL.md",
+        "../creative-ad-director/references/animation-principles.md",
+        "../creative-ad-director/references/video-prompt-writing.md"
+      ]
+    }
+  },
+  "quickAgents": {
+    "image": "storyboard-artist",
+    "video": "production"
+  }
+}

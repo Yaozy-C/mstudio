@@ -17,15 +17,15 @@ test("agent creates, edits, inserts, reorders, deletes and replaces structured s
   let p = applyOperations(newProject("Script"), 0, [
     {
       op: "add_node",
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "Script",
-      plan: { scriptMode: "replace", script: [a, b] },
+      screenplay: { scriptMode: "replace", script: [a, b] },
     },
   ]);
-  const edit = (plan: object) => {
+  const edit = (screenplay: object) => {
     p = applyOperations(p, p.revision || 0, [
-      { op: "update_node", id: "plan", plan },
+      { op: "update_node", id: "screenplay", screenplay },
     ]);
   };
   edit({
@@ -35,27 +35,33 @@ test("agent creates, edits, inserts, reorders, deletes and replaces structured s
     ],
     paragraphOrder: ["c", "a", "b"],
   });
-  expect(p.nodes[0].plan!.script!.map((s) => s.id)).toEqual(["c", "a", "b"]);
-  expect(p.nodes[0].plan!.script![1].duration).toBe(4);
-  p = splitParagraph(p, "plan", "a", 1);
+  expect(p.nodes[0].screenplay!.script!.map((s) => s.id)).toEqual([
+    "c",
+    "a",
+    "b",
+  ]);
+  expect(p.nodes[0].screenplay!.script![1].duration).toBe(4);
+  p = splitParagraph(p, "screenplay", "a", 1);
   p.nodes[1].resultAssetId = "video";
   p.nodes[1].shot!.frames = [{ assetId: "image", title: "Frame" }];
   const before = p;
   edit({ removeParagraphIds: ["a"] });
-  expect(p.nodes[0].plan!.script!.map((s) => s.id)).toEqual(["c", "b"]);
+  expect(p.nodes[0].screenplay!.script!.map((s) => s.id)).toEqual(["c", "b"]);
   expect(p.nodes[1].resultAssetId).toBe("video");
   expect(p.nodes[1].shot!.frames![0].assetId).toBe("image");
   expect(scriptChanged(p, p.nodes[1])).toBe(true);
-  expect(restoreProject(before, p).nodes[0].plan!.script).toEqual(
-    before.nodes[0].plan!.script,
+  expect(restoreProject(before, p).nodes[0].screenplay!.script).toEqual(
+    before.nodes[0].screenplay!.script,
   );
   edit({ scriptMode: "replace", script: [{ ...b, action: "Rewritten" }] });
-  expect(p.nodes[0].plan!.script).toEqual([{ ...b, action: "Rewritten" }]);
-  expect(JSON.stringify(inspectProject(p, { nodeIds: ["plan"] }))).toContain(
-    '"duration":6',
-  );
+  expect(p.nodes[0].screenplay!.script).toEqual([
+    { ...b, action: "Rewritten" },
+  ]);
+  expect(
+    JSON.stringify(inspectProject(p, { nodeIds: ["screenplay"] })),
+  ).toContain('"duration":6');
   edit({ scriptMode: "replace", script: [] });
-  expect(p.nodes[0].plan!.script).toEqual([]);
+  expect(p.nodes[0].screenplay!.script).toEqual([]);
   expect(p.nodes[1].resultAssetId).toBe("video");
 });
 test("invalid replacements and ambiguous deletions fail without partial mutation", () => {
@@ -79,30 +85,37 @@ test("screen text roundtrips separately, invalidates linked shots and preserves 
   let p = applyOperations(newProject("AV script"), 0, [
     {
       op: "add_node",
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "Script",
-      plan: { script: [a] },
+      screenplay: { script: [a] },
     },
   ]);
-  p = splitParagraph(p, "plan", "a", 1);
+  p = splitParagraph(p, "screenplay", "a", 1);
   expect(scriptChanged(p, p.nodes[1])).toBe(false);
   const edit = (paragraph: object) => {
     p = applyOperations(p, p.revision || 0, [
-      { op: "update_node", id: "plan", plan: { script: [paragraph] } },
+      {
+        op: "update_node",
+        id: "screenplay",
+        screenplay: { script: [paragraph] },
+      },
     ]);
   };
   edit({ id: "a", onScreenText: "Everything in place" });
-  expect(p.nodes[0].plan!.script![0].dialogue).toBe("Hello");
+  expect(p.nodes[0].screenplay!.script![0].dialogue).toBe("Hello");
   expect(scriptChanged(p, p.nodes[1])).toBe(true);
   edit({ id: "a", sound: "Click" });
   const restored = JSON.parse(JSON.stringify(p));
-  expect(restored.nodes[0].plan.script[0].onScreenText).toBe(
+  expect(restored.nodes[0].screenplay.script[0].onScreenText).toBe(
     "Everything in place",
   );
   expect(
     JSON.stringify(
-      inspectProject(restored, { nodeIds: ["plan"], fields: ["plan"] }),
+      inspectProject(restored, {
+        nodeIds: ["screenplay"],
+        fields: ["screenplay"],
+      }),
     ),
   ).toContain("Everything in place");
   expect(() =>

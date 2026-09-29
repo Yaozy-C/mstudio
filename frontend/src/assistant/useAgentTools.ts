@@ -77,12 +77,14 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
                     o.op === "add_node" &&
                     m
                       .get()
-                      .nodes.some((n) => n.id === o.id && n.kind === "plan"),
+                      .nodes.some(
+                        (n) => n.id === o.id && n.kind === "screenplay",
+                      ),
                 )
               )
-                window.dispatchEvent(new Event("studio-focus-plan"));
-              if (ops.some((o) => o.op === "assemble_plan"))
-                window.dispatchEvent(new Event("studio-plan-assembled"));
+                window.dispatchEvent(new Event("studio-focus-screenplay"));
+              if (ops.some((o) => o.op === "assemble_screenplay"))
+                window.dispatchEvent(new Event("studio-screenplay-assembled"));
               result = {
                 applied: true,
                 savedValues: savedValues(m.get(), payload.args.operations),
@@ -95,23 +97,23 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
                     return {
                       id: task?.key,
                       status: task?.status,
-                      savedForNextGeneration: task?.nextPrompt !== undefined,
+                      prompt: task?.prompt,
                     };
                   }),
-                generationTasks: runsOf(m.get(), generationTurnId)
+                generationTasks: runsOf(m.get())
                   .filter(
                     (t) =>
                       t.key.startsWith(`run:${payload.callId}:`) ||
-                      t.key.startsWith(`retry:${payload.callId}:`),
+                      t.lastRegenerationId?.startsWith(`${payload.callId}:`),
                   )
                   .map((t) => ({
                     id: t.key,
-                    targetId: ops[Number(t.key.split(":").at(-1))]?.id,
+                    targetId: t.targetNodeId ?? t.ownerId,
                     kind: t.kind,
                     status: t.status,
                     modelId: t.modelId,
                     message:
-                      "生成操作已显示在本轮对话中；以实际任务状态为准，不要声称已生成完成",
+                      "生成任务已保存；重新执行沿用原任务卡，以实际任务状态为准",
                   })),
                 revision: m.get().revision,
                 message: "修改已应用并保存，可撤销",

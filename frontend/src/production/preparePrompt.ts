@@ -13,9 +13,18 @@ export async function preparePrompt(
   }>("prepare_media_prompt", {
     request: {
       projectId,
+      mediaModelId: draft.modelId,
       kind: draft.kind,
       prompt: draft.prompt,
       parameters: draft.parameters ?? {},
+      contextReferences: draft.inputs
+        .filter((r) => r.role === "script")
+        .map((r) => {
+          if (r.nodeId) return { kind: "node", id: r.nodeId };
+          if (r.sourceRef) return r.sourceRef;
+          if (r.assetId) return { kind: "asset", id: r.assetId };
+          throw new Error("引用的文字资料已移除，请重新选择");
+        }),
       inputs: inputs.map(({ assetId, role, purpose, start, end }) => ({
         assetId,
         role,
@@ -36,9 +45,13 @@ export async function preparePrompt(
   return {
     ...draft,
     prompt: prepared.prompt,
-    inputs: inputs.map((r, i) => ({
-      ...r,
-      purpose: prepared.references[i].purpose,
-    })),
+    inputs: draft.inputs.map((r) =>
+      r.role === "script"
+        ? { ...r }
+        : {
+            ...r,
+            purpose: prepared.references[inputs.indexOf(r)].purpose,
+          },
+    ),
   };
 }

@@ -2,6 +2,8 @@
 //! See docs/architecture.md for the Rust integration boundary.
 mod binding;
 mod budget;
+#[cfg(test)]
+mod content_storage_tests;
 pub(crate) mod context_boundary;
 pub mod delegation;
 mod driver;
@@ -15,7 +17,9 @@ mod registry;
 mod scheduler;
 mod schema;
 pub mod session;
+mod session_events;
 pub(crate) mod session_selection;
+mod stored_image;
 #[cfg(test)]
 mod tests;
 mod tool_output;

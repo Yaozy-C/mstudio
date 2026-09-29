@@ -1,3 +1,4 @@
+import { TaskPanel } from "../production/TaskPanel";
 import { useTaskNavigation } from "./useTaskNavigation";
 import { initialPanels, toggleStudioPanel } from "./studioPanels";
 import { useSidebarWidths } from "../ui/useSidebarWidths";
@@ -5,7 +6,7 @@ import { GenerationTaskSettings } from "../production/GenerationTaskSettings";
 import type { WorkContext } from "../assistant/workContext";
 import { useProduction } from "../production/useProduction";
 import { useGeneratedJobs } from "./useGeneratedJobs";
-import { useCreativeEvents } from "../creative/useCreativeEvents";
+import { useStudioCreativeEvents } from "./useStudioCreativeEvents";
 import { useStudioPlayback } from "./useStudioPlayback";
 import { CreationPanel } from "../creation/CreationPanel";
 import { StudioNodeEditor } from "./StudioNodeEditor";
@@ -19,7 +20,7 @@ import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
 import { useEffect, useCallback, useState } from "react";
 import { StudioError } from "./StudioError";
-import { canvasAsset, canvasNote } from "./canvasAsset";
+import { useCanvasInsertion } from "./useCanvasInsertion";
 import { StudioChrome } from "./StudioChrome";
 import { type Project, type Asset } from "../model";
 import { useImportMedia } from "./useImportMedia";
@@ -83,23 +84,17 @@ export function Studio({ initial, onBack }: StudioProps) {
     change,
     m.get,
     m.flush,
-    () => setPanels((p) => ({ ...p, agent: true })),
+    () => setPanels((p) => ({ ...p, agent: true, inspector: false })),
     attachments,
   );
-  useCreativeEvents({
-    assist: () => {
-      setPanels((p) => ({ ...p, agent: true, inspector: false }));
-      setEditing(null);
-      setDialog(null);
-    },
-    reading: () => {
-      clock.pause();
-      setClipId(null);
-      setNodeId(null);
-      setPanels((p) => ({ ...p, preview: false, timeline: false }));
-    },
-    arranged: () => setPanels((p) => ({ ...p, timeline: true, preview: true })),
-  });
+  useStudioCreativeEvents(
+    clock,
+    setPanels,
+    setEditing,
+    setDialog,
+    setClipId,
+    setNodeId,
+  );
   const selectNode = useCallback((id: string | null) => {
     setNodeId(id);
     setClipId(null);
@@ -110,28 +105,22 @@ export function Studio({ initial, onBack }: StudioProps) {
     attachments.add([{ kind: "node", id }]);
     setPanels((p) => ({ ...p, agent: true }));
   };
-  const place = (asset: Asset) => {
-    setView("storyboard");
-    setPanels((p) => ({ ...p, preview: false }));
-    change((p) => ({
-      ...p,
-      nodes: [...p.nodes, canvasAsset(asset, p.nodes.length)],
-    }));
-  };
-  function addNote(kind: "text" | "shot", text = "") {
-    setView("storyboard");
-    setPanels((p) => ({ ...p, preview: false }));
-    const node = canvasNote(project, kind, text);
-    change((p) => ({ ...p, nodes: [...p.nodes, node] }));
-    selectNode(node.id);
-    if (!text) setEditing(node.id);
-  }
+  const { place, addNote } = useCanvasInsertion(
+    project,
+    change,
+    setView,
+    setPanels,
+    selectNode,
+    setEditing,
+  );
   useClipEditing(m, clipId, clock, activeView === "film", setClipId);
   const split = () => playback.split(clipId);
   useShortcuts(m, setError, {
     clock,
     split,
-    toggleTimeline: () => togglePanel("timeline"),
+    toggleTimeline: () => {
+      if (activeView === "film") togglePanel("timeline");
+    },
     play,
     remove: () =>
       activeView === "storyboard"
@@ -159,9 +148,20 @@ export function Studio({ initial, onBack }: StudioProps) {
         style={sidebarWidths.style}
         data-media={panels.media}
         data-agent={panels.agent || panels.inspector || !!creationTab}
+        data-view={activeView}
         className={`studio-shell ${panels.timeline && activeView === "film" ? "" : "timeline-hidden"}`}
       >
         <StudioChrome
+          tasks={
+            <TaskPanel
+              project={project}
+              canvas={canvas}
+              settings={() => {
+                canvas.setTaskPanelOpen(false);
+                setDialog("models");
+              }}
+            />
+          }
           view={activeView}
           onView={(next) => {
             clock.pause();
@@ -192,7 +192,6 @@ export function Studio({ initial, onBack }: StudioProps) {
         <StudioError message={error} close={() => setError("")} />
         <StudioStage
           onAdd={add}
-          settings={() => setDialog("models")}
           onContext={setScriptContext}
           canvas={canvas}
           view={activeView}
@@ -277,11 +276,11 @@ export function Studio({ initial, onBack }: StudioProps) {
               clock.pause();
               setClipId(id);
               setNodeId(null);
-              setPanels((p) => ({ ...p, inspector: !!id || inspect }));
+              if (inspect) setPanels((p) => ({ ...p, inspector: !!id }));
             }}
             reference={(id) => {
               attachments.add([{ kind: "clip", id }]);
-              setPanels((p) => ({ ...p, agent: true }));
+              setPanels((p) => ({ ...p, agent: true, inspector: false }));
             }}
           />
         )}

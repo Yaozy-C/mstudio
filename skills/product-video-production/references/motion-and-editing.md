@@ -1,29 +1,25 @@
-# 动作生成与确定性剪辑
+# Action generation and deterministic editing
 
-按交接的镜头与 [状态定义](../../product-storyboard/references/shots-and-continuity.md) 制作，不自行替换主张或故事。
+Follow the handed-off shots and [states](../../product-storyboard/references/shots-and-continuity.md); do not replace the story or claim.
 
-## 动作单元
+## Action units
 
-一个生成片段承载模型能清楚表达的动作链，按实际复杂度决定是否拆分。关键接触写清：物体从哪里来、哪只手抓哪里、由什么支撑、沿什么路径跨过哪条真实边界、何时松手、最后停在哪里。合理软性形变可以存在，但不能改变商品结构或功能。
+A generation segment carries an action chain the model can express; split according to real complexity. For important contact identify source, grasp, support, path, crossed boundary, release and destination. Material-appropriate soft deformation is allowed without changing product structure/function.
 
-高风险接触以可检查机位和正确起始状态解决，不能只堆否定词。对进入、扣合、拉动等动作重点检查接触前、中、后及必要连续帧；手遮挡不等于穿模，也不能靠遮挡隐藏本片需要证明的结果。
+Resolve risky contact through a readable view and compatible start, not a negative-word list. Inspect before, during and after contact plus necessary continuous footage. Occlusion is not automatically penetration, but cannot conceal required proof. A single long prompt is an input format, not continuity assurance. If a requested single generation fails with pauses/teleportation/penetration, revise staging or allowed cuts instead of appending fluent and realistic.
 
-单条完整 prompt 是一种输入形式，不是连续性保证。用户指定整条生成时先做动作/物品账；实际出现机械停顿、瞬移或穿模时调整调度或切接，不只追加“流畅、真实”。
+## Time and sound
 
-## 时间与声音
+Translate the selected timeline into output frames. Editing controls exact cuts, sequential reveals, masks, splits, subtitles and accents; generation supplies usable handles, not guaranteed frame precision. Select effective source ranges, remove purposeless waits and preserve reading time for contact/release/results. Speed must not hide errors.
 
-将已定镜头时间线换算成输出帧数，准确执行总时长。逐项出现、分栏保留、遮罩、字幕、明确切点和节拍由剪辑完成；生成片段保留必要前后余量，不要求模型精确到某一帧。
+Choose tempo from content and sound, not a fixed BPM. Arrange information, action and reveal accents, then create/use authorized sound. Temporary original beats are allowed with source records, not claims of real product-test recordings or testimony. Check onset, tails, levels, clipping and silence.
 
-按计划提取有效动作区间，删去没有信息的准备与等待，给关键接触、释放与结果足够辨认时间。加速限于动作仍自然可读；不能用极速跳切掩盖关键错误。前后画面必须保持道具数量和状态，允许省略的过程按交接执行。
+For duration compression, prioritize information and cut selection; for explicit whole-film speed, apply the requested multiplier and synchronize tracks as described in [duration feedback](../../creative-ad-director/references/rhythm.md#duration-and-speed-feedback). Follow established language and supported sales claims; do not invent offers.
 
-BPM及节奏来自本条内容和声音选择，不写死数值。先安排信息进入、动作落点和揭示的拍点，再选/制作已授权声音。可用原创临时节拍，记录来源；不得称为真实商品测试声音或用户证言。自然音随镜头剪辑与音画同步，检查音头、音尾、响度、削波及静音段。
+## Select only valid chains
 
-用户只要求压缩时长时优先重排信息、动作和切点；明确指定整体倍速时执行指定值并同步声画，具体区分见 [时长与速度反馈](../../creative-ad-director/references/rhythm.md#时长与速度反馈的处理)。字幕/CTA遵守已定语言、商品事实和可用销售路径；不擅自加优惠或承诺。
+Map [shot execution evidence](../../product-storyboard/references/shots-and-continuity.md#shot-execution-evidence) to shot ID, source, in/out, observed event, keep/trim/discard/repair and film range. Identify actual internal cuts, not one pass per task ID.
 
-## 先验收动作链，再选入剪辑
+Check from the object's first appearance, not only its final result. Any essential source/support/path/contact/destination contradiction makes that range unusable. Keep a valid tail only if it can join a correct start. If trimming still leaves missing causality, produce the minimum missing event within authorization; music and transitions cannot hide it.
 
-把 [逐镜执行依据](../../product-storyboard/references/shots-and-continuity.md#逐镜的观看变化与执行依据) 回填为实际素材选择记录：计划镜头 ID、源文件、源时间入/出点、实际可见事件、保留/裁切/弃用/需补做、成片区间。沿用现有 timeline/剪辑清单即可；源片多镜时按实际切镜识别，不按任务 ID 笼统通过。
-
-逐段从首次出现的位置开始检查，不能只看动作结尾。来源、支撑、路径、关键接触、去向中任何一项违背核心事件，该范围不可用；前半错误、后半合格时，只保留能与正确前段衔接的区间。删错帧后仍缺关键因果，就补最小缺失动作；不用音乐、转场或倍速掩盖。
-
-相邻选段再做一次观看变化检查：后一段是否增加危险、揭示、结果或有作用的表演？无作用的重复不能因为是不同生成镜头就保留。先选有效动作，再分配成片时间；保留必要辨认时间，不为凑长而保留起动等待。修改后复查前后接点以及全片。
+Compare adjacent selections for purposeful progression, revelation, result or performance. Different generation IDs do not justify redundant shots. Select action before allocating final time, then recheck joins and the sequence.

@@ -193,3 +193,43 @@
 .media-composer-fields:disabled {
   opacity: 0.65;
 }
+
+/* Composer controls own their states instead of inheriting page button styles. */
+.radix-themes
+  .agent-composer
+  .composer-tools
+  :is(
+    .composer-icon-button,
+    .composer-mode-chip,
+    .composer-setting-chip,
+    .conversation-model-trigger
+  ) {
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--desk-muted);
+  box-shadow: none;
+}
+.radix-themes
+  .agent-composer
+  .composer-tools
+  :is(
+    .composer-icon-button,
+    .composer-mode-chip,
+    .composer-setting-chip,
+    .conversation-model-trigger
+  ):is(:hover, [data-state="open"]):not(:disabled) {
+  background: var(--desk-sidebar);
+  color: var(--desk-text);
+}
+.radix-themes .agent-composer .composer-tools button:disabled {
+  background: transparent;
+  color: var(--desk-muted);
+  opacity: 0.35;
+  cursor: default;
+}
+.radix-themes .agent-composer .composer-submit button:hover:not(:disabled) {
+  background: #40403b;
+  color: var(--desk-surface);
+}

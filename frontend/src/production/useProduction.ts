@@ -1,3 +1,4 @@
+import { changeBatch } from "./batch";
 import { useTaskPanel } from "./useTaskPanel";
 import type { AttachmentDraft } from "../assistant/useAttachments";
 import { resultPlacement } from "./resultPlacement";
@@ -73,7 +74,7 @@ export function useProduction(
       false,
     );
   }
-  const { submit, submitting } = useProductionSubmit({
+  const { submit, submitting, available, slotVersion } = useProductionSubmit({
     projectId: project.id,
     media,
     get,
@@ -83,10 +84,12 @@ export function useProduction(
   const runs = runsOf(project);
   const taskPanel = useTaskPanel(runs, change, get, open, setComposerMode);
   useEffect(() => {
-    if (!native || submitting) return;
-    const next = runs.find((t) => t.status === "READY");
-    if (next) void submit(next);
-  }, [project.production?.drafts, submitting]);
+    if (!native) return;
+    for (const next of runs.filter((t) => t.status === "READY")) {
+      if (available() <= 0) break;
+      void submit(next);
+    }
+  }, [project.production?.drafts, slotVersion]);
   function preferences(patch: Partial<GenerationPreferences>) {
     change(
       (p) => ({
@@ -152,7 +155,7 @@ export function useProduction(
     );
     for (const ref of refs) {
       const input = attachmentInput(get(), ref);
-      if (input && !next.inputs.some((r) => r.assetId === input.assetId))
+      if (input && !next.inputs.some((r) => sameInput(r, input)))
         next.inputs.push(input);
     }
     next.key = key;
@@ -198,7 +201,10 @@ export function useProduction(
       // Validate before spending a prompt-preparation request.
       directTask(get(), current, model, "validation");
       await flush();
-      const prepared = await preparePrompt(bridge, project.id, current);
+      const prepared = await preparePrompt(bridge, project.id, {
+        ...current,
+        modelId: model.id,
+      });
       if (!active() || get().id !== project.id)
         throw new Error("已停止提示词整理，尚未提交生成任务");
       if (
@@ -233,6 +239,8 @@ export function useProduction(
     move,
     remove,
     submit,
+    batch: (turnId: string, action: "resume" | "stop" | "retry") =>
+      change((p) => changeBatch(p, turnId, action)),
     runs,
     preferences,
     modelPreferences: project.production?.models ?? {},

@@ -10,9 +10,6 @@
   font-size: 12px;
   color: var(--desk-ink);
 }
-.composer-mode-chip {
-  background: var(--desk-sidebar);
-}
 .composer-setting-chip > span {
   max-width: 138px;
   overflow: hidden;

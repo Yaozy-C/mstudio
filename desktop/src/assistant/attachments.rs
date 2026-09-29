@@ -66,7 +66,7 @@ pub fn payload(
         let asset_id = if let Some(c) = clip {
             c["assetId"].as_str()
         } else if let Some(n) = node {
-            if n["kind"] == "shot" || n["kind"] == "plan" {
+            if n["kind"] == "shot" || n["kind"] == "screenplay" {
                 None
             } else {
                 n["resultAssetId"].as_str().or(n["assetId"].as_str())

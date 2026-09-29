@@ -7,6 +7,38 @@ use tokio::{
     process::{Child, ChildStdin, ChildStdout},
 };
 
+fn resolve_binary(
+    override_path: Option<std::ffi::OsString>,
+    candidates: &[std::path::PathBuf],
+) -> std::path::PathBuf {
+    if let Some(path) = override_path {
+        return path.into();
+    }
+    candidates
+        .iter()
+        .find(|path| path.is_file())
+        .cloned()
+        .unwrap_or_else(|| "codex".into())
+}
+
+fn codex_binary() -> std::path::PathBuf {
+    let mut candidates = Vec::new();
+    let mut roots = vec![std::path::PathBuf::from("/Applications")];
+    if let Some(home) = std::env::var_os("HOME") {
+        roots.push(std::path::PathBuf::from(home).join("Applications"));
+    }
+    for root in roots {
+        for bundle in ["ChatGPT.app", "Codex.app"] {
+            let resources = root.join(bundle).join("Contents/Resources");
+            candidates.push(resources.join("codex-cli/CodexCLI.app/Contents/MacOS/codex"));
+            candidates.push(resources.join("codex"));
+        }
+    }
+    candidates
+        .extend(["/opt/homebrew/bin/codex", "/usr/local/bin/codex"].map(std::path::PathBuf::from));
+    resolve_binary(std::env::var_os("MSTUDIO_CODEX_BIN"), &candidates)
+}
+
 pub struct Rpc {
     child: Child,
     input: ChildStdin,
@@ -16,22 +48,17 @@ pub struct Rpc {
 }
 impl Rpc {
     pub async fn start() -> Result<Self> {
-        let binary = std::env::var_os("MSTUDIO_CODEX_BIN").unwrap_or_else(|| {
-            let bundled = "/Applications/ChatGPT.app/Contents/Resources/codex";
-            if std::path::Path::new(bundled).is_file() {
-                bundled.into()
-            } else {
-                "codex".into()
-            }
-        });
-        let mut child = tokio::process::Command::new(binary)
+        let binary = codex_binary();
+        let mut child = tokio::process::Command::new(&binary)
             .args(["app-server", "--stdio", "--enable", "image_generation"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .kill_on_drop(true)
             .spawn()
-            .context("无法启动本机 Codex，请安装 Codex 或设置 MSTUDIO_CODEX_BIN")?;
+            .map_err(|error| {
+                anyhow::anyhow!("无法启动本机 Codex（{}）：{}", binary.display(), error)
+            })?;
         let input = child.stdin.take().context("Codex stdin 不可用")?;
         let output = BufReader::new(child.stdout.take().context("Codex stdout 不可用")?);
         let mut rpc = Self {
@@ -119,4 +146,33 @@ pub async fn codex_image_status() -> Result<Value, String> {
     result
         .map_err(|_| "连接 Codex 超时".to_string())?
         .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn discovery_preserves_override_and_skips_missing_app_locations() {
+        let root = std::env::temp_dir().join(format!("codex-discovery-{}", mstudio::media::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let installed = root.join("codex");
+        std::fs::write(&installed, "fixture").unwrap();
+        let candidates = [root.join("missing"), installed.clone()];
+        assert_eq!(resolve_binary(None, &candidates), installed);
+        assert_eq!(
+            resolve_binary(Some("custom-codex".into()), &candidates),
+            std::path::PathBuf::from("custom-codex")
+        );
+        assert_eq!(resolve_binary(None, &[]), std::path::PathBuf::from("codex"));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[tokio::test]
+    #[ignore = "requires a locally installed Codex; handshake only, no generation"]
+    async fn installed_codex_initializes_without_generation() {
+        let mut rpc = tokio::time::timeout(std::time::Duration::from_secs(20), Rpc::start())
+            .await
+            .unwrap()
+            .unwrap();
+        rpc.stop().await;
+    }
 }

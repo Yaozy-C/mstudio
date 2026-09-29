@@ -25,7 +25,7 @@ pub fn project_snapshot(document: &Value, selected: Option<&str>) -> Value {
     let details:Vec<_>=nodes.iter().filter(|n|n["id"].as_str()==selected).take(4).map(|n|json!({"id":n["id"],"title":clipped(&n["title"],100),"text":clipped(&n["text"],1200),"kind":n["kind"],"creative":super::creative_context::node_context(document,n),"assetId":n["assetId"],"resultAssetId":n["resultAssetId"],"references":n["references"].as_array().map(|refs|refs.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":clipped(&r["purpose"],400),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>())})).collect();
     json!({"source":"current-project-reference","revision":document["revision"],"name":clipped(&document["name"],200),"requirements":clipped(&document["brief"],2000),
       "format":[document["width"],document["height"],document["fps"]],"nodeCount":nodes.len(),
-      "nodes":nodes.iter().take(30).map(|n|json!({"id":n["id"],"title":clipped(&n["title"],80),"kind":n["kind"],"planId":n["shot"]["planId"],"order":n["shot"]["order"]})).collect::<Vec<_>>(),
+      "nodes":nodes.iter().take(30).map(|n|json!({"id":n["id"],"title":clipped(&n["title"],80),"kind":n["kind"],"screenplayId":n["shot"]["screenplayId"],"order":n["shot"]["order"]})).collect::<Vec<_>>(),
       "creation": {"intent":clipped(&document["creation"]["intent"],2000),"essential":clipped(&document["creation"]["essential"],1500),"preserve":clipped(&document["creation"]["preserve"],1500),"stage":document["creation"]["stage"]},
       "tracks":document["tracks"].as_array().map(|v|v.iter().take(20).collect::<Vec<_>>()),"captionCount":document["captions"].as_array().map_or(0,Vec::len),
       "selected":selected,"relevantNodes":details,"assetCount":document["assets"].as_array().map_or(0,Vec::len),"clipCount":document["clips"].as_array().map_or(0,Vec::len)})
@@ -50,6 +50,7 @@ pub fn assemble_with_budget(
     if let Some(fields) = snapshot.as_object_mut() {
         fields.remove("agent");
         fields.remove("skills");
+        fields.remove("promptGuidance");
         fields.remove("specialists");
     }
     let cost = |snapshot: &Value| {

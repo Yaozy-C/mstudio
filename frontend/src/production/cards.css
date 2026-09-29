@@ -165,3 +165,25 @@
   overflow-wrap: anywhere;
   color: #343129;
 }
+
+.card-overview {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: #847f74;
+}
+
+/* Timeline membership is informational, not an approval action. */
+.canvas-card:has(.card-timeline-usage) .card-title {
+  padding-right: 28px;
+}
+.card-timeline-usage {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--desk-accent);
+}

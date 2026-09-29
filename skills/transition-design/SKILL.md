@@ -1,17 +1,18 @@
 ---
 name: transition-design
-description: 为相邻镜头选择并添加转场，依据动作、视线、构图、叙事与声音节奏判断，避免堆砌特效。
+description: Design and apply transitions between specified clips using action, eyelines, composition, narrative and sound rather than decorative effects.
 ---
-# transition-design · 转场设计
 
-先问切镜在讲什么，再决定是否需要效果。动作本身已经连续时，直接切换可能优于叠化。专业判断包含拒绝不合适的转场，而不是每个接缝都加动画。
+# Transition design
 
-读取用户指定两段素材与最新 clips/tracks，核实源区间、速度、接缝、已有调色和声音。实际查看前一镜结束与后一镜开始，判断主体运动方向、景别、视线位置、构图重心与明暗。没有可读取视频就不声称动作匹配、卡点或无缝衔接。
+Determine what the cut communicates before adding an effect. A direct cut may best preserve already continuous action. Choosing no effect is a valid professional decision.
 
-用 `mstudio_read_image(assetId,clipId,time)` 抽片段帧，time 为片段内秒数而非成片时间。前镜在尾点前取两帧，后镜在开头取两帧，判断运动方向和主体位置；尾点本身不可读取。片段帧含当前调色，不含转场合成。添加或修改后，用同一工具传后片段 assetId/clipId、transition:true，time 改为转场开始后的秒数，读取前/中/后实际合成帧；低清缓存与原生预览共用，参数变化自动失效。抽帧不含叠加轨、字幕和声音，不能据此声称完整连续播放通过。若需要重选动作阶段，用 slip_clip 改源区间；需要调整节奏，用 retime_clip；需要重新定位，用 move_clip。不要仅靠拉长叠化掩盖接错动作。
+Read the specified clips and current clips/tracks, source ranges, speed, join, grading and sound. Inspect the outgoing end and incoming start for motion direction, shot size, attention, composition and brightness. Without readable footage, do not claim matching action, beat alignment or a seamless join.
 
-需要应用时使用 `set_transition`：`fromClipId` 前片段、`id` 后片段、`kind` 类型、`duration` 总秒数。需要按素材设计时用 kind:custom 与 design 编排蒙版、进度曲线、两侧推进和位移；简单叠化或段落黑场也可以保留固定类型。移除使用 kind:null。参数只控制当前接缝，不自动改变其他片段、配音或字幕。读取 revision 后编辑，之后核对实际保存回执；名称不代表真实摄影机甩镜或光流变形。
+Use mstudio_read_image(assetId,clipId,time), where time is clip-relative. Sample two frames before the outgoing endpoint and two near the incoming start; the exact endpoint is unreadable. Clip frames include grading, not the composite transition. After an edit, use the incoming clip's assetId/clipId with transition:true; time then means seconds from transition start. Inspect actual beginning/middle/end composites. Preview cache invalidates on parameter changes. These frames omit overlays, captions and sound and do not establish full playback.
 
-同组片段优先一次 inspect section=clips 读取，按 nextOffset 补读；独立读取同批调用，已确定的多个接缝放入一个 operations。写入后用 savedClips 回执核对参数，回执不完整或有疑问再 inspect；随后仍须读取实际转场合成帧，参数回执不替代视觉检查。
+To change the action phase use slip_clip; for pace use retime_clip; for position use move_clip. A longer dissolve cannot repair an incorrect action match.
 
-执行前读 [选择方法、时长和引擎限制](references/workflow.md)。给出简短选择理由与需要复看的切点，不将“高级、电影感、大师级”当作验收证据。用户指定效果优先，明确指出素材不适配或当前工具无法实现的部分。
+Apply set_transition with fromClipId for outgoing, id for incoming, kind and total duration. Use kind:custom with design for masks, progress curves, zoom and offsets; simple supported types remain appropriate. kind:null removes it. Edits affect this join, not other clips, narration or captions. Read revision first, verify savedClips, and inspect again if the receipt is unclear before visual rechecking.
+
+Batch independent reads and confirmed edits for the same group. Read [selection and engine limits](references/workflow.md). Give a concise reason and the relevant cut to review. The name of an effect is not actual camera motion or optical flow, and saved parameters are not visual acceptance. Respect a specified effect while stating concrete source/tool limitations.

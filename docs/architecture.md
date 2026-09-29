@@ -29,7 +29,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 ## Agent 任务上下文
 
-所有内置和自定义角色共用 `assistant/task_context.rs`、`harness/session_selection.rs` 和工具执行管线。完整聊天与工具原文保存在 SQLite；模型读取任务范围内的投影。
+所有内置和自定义角色共用 `assistant/task_context.rs`、`harness/session_selection.rs` 和工具执行管线。聊天长期保留，工具明细保留七天，恢复依赖独立于日志保留；模型读取任务范围内的投影。
 
 - 消息 attribution 保存任务 ID、角色、引用对象、工作区及原始要求。同角色的后续消息继续任务；对象或工作区变化只更新当前操作上下文。对话顶部的“新任务”显式另起任务，不删除聊天或共享约束。程序不靠关键词猜话题变化。
 - 会话恢复按项目、角色、任务及模型路由匹配；重试沿用原任务和已提交操作。缺少任务上下文的记录不支持重试，需重新发起任务；重置会阻止恢复旧任务。
@@ -50,3 +50,55 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 `native_preview` 保留现有 IPC 命名，负责会话所有权与生命周期；`preview_validate` 校验输入，`preview_prepare` 将工程编译成 GES 播放计划。`ges_engine` 在独立线程持有 GES 管线，返回最新一帧的 RGBA 二进制数据；`previewFrames` 在一个在途请求内提交给 Canvas。无需 C++ 桥接或原生显示浮层。
 
 GES 首版按片段缓存 FFmpeg 调色/变速，复用转场与导出音频混音逻辑；GES 负责时间线层级、字幕、时钟和 seek。切换预览清晰度不会写入工程或改变导出路径。技术取舍是保持现有效果语义，代价是效果修改后的准备时间。未来可逐项引入 GES 原生效果，但必须先验证与现有导出的一致性。
+
+## SQLite content storage
+
+Project documents remain atomic editable aggregates. Job and event query metadata stay in
+`jobs.data` / `agent_events.payload`; large text strings are moved to compressed,
+SHA-256-addressed `content_blobs`, shared through `job_content` and `event_content`.
+Reference ownership and cascade deletion are enforced with foreign keys. Jobs also
+reference projects. Paths stay inline for relocation and ownership tracking.
+
+Use `jobs::{save,reserve,get}` and `journal::{append,insert}` for complete records.
+The parent and content references must be written in the same transaction. `insert`
+requires the caller's transaction. Full event readers use `database::blobs::event`;
+SQL projections may omit large fields and hydrate only retained properties. Never
+interpret user-provided JSON objects as stored-content references. Job list/worker
+queries intentionally omit input/result/output bodies. Replacing jobs and deleting
+projects collect unreferenced blobs while retaining content shared by other owners.
+
+`database/schema.rs` owns the versioned migration and indexes for turn replay, tool
+result lookup, message attribution, job ownership/connections, reverse media ownership,
+and pending inbox delivery. Migrations commit one parent per transaction and compact
+the database. They do not
+retain database backups. Restarting an interrupted migration retains committed
+references. The opt-in database audits verify records on disposable copies.
+
+Binary media are decoded into immutable files under the configured local storage's
+`reference-media/` folder. `stored_media` records their content hashes and sizes;
+`content_blobs` keeps only a media reference and the exact provider encoding prefix.
+Text content remains compressed in SQLite. Raw Base64 and data URLs for identical
+bytes share one file. Replay reads and verifies the file and creates Base64 only in
+memory for the provider. File writes complete before references commit; orphan cleanup
+and project deletion retain shared files. Storage relocation includes this folder.
+
+Agent history has three lifetimes, implemented by `database/history_cleanup.rs`:
+
+- Chat messages and generation tasks keep their durable content and media references.
+- Tool execution details and retry diagnostics expire seven days after the last activity
+  of an inactive turn. Results explicitly referenced by recovery snapshots remain readable.
+- `session/start` is reused as a recovery snapshot with a `checkpointSeq` watermark.
+  Settlement and startup fold internal messages, compaction and image rewrites into this
+  snapshot, transactionally replacing previous versions and duplicate result messages.
+  Replay starts after the watermark; original sequence IDs preserve reset boundaries.
+  Completed predecessor snapshots in the same scoped task are replaced; interrupted
+  tasks and current child continuations retain recovery state.
+
+`turn/usage` aggregates provider token counts and request/compaction counts per turn.
+Transient progress, skill-read notifications and startup notifications are live-only,
+classified in `event_retention.rs`; stream fragments still update the assistant-message
+crash checkpoint. Unknown event kinds remain durable. Active parent/child runs are
+excluded from cleanup. Cleanup runs at startup and hourly while the app remains open;
+settlement immediately folds recovery state. Referenced media use the existing blob
+ownership and post-commit file cleanup. Migration v4 compacts existing data without a
+retained backup. No cleanup path sends model requests or replays tool side effects.

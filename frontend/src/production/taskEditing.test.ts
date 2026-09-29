@@ -29,7 +29,7 @@ test("editing an unsubmitted task changes its prompt without submitting", () => 
   expect(p.production!.drafts![task.key].prompt).toBe("旧描述");
   expect(Object.keys(next.production!.drafts!)).toHaveLength(1);
 });
-test("editing every submitted state preserves original request, errors and results", () => {
+test("editing every submitted state updates the single prompt without changing job or results", () => {
   for (const status of [
     "READY",
     "UPLOADING",
@@ -57,11 +57,11 @@ test("editing every submitted state preserves original request, errors and resul
     );
     expect(next.production!.drafts![task.key]).toEqual({
       ...original,
-      nextPrompt: "新描述",
+      prompt: "新描述",
     });
   }
 });
-test("hidden records remain inspectable with the draft and original prompt", () => {
+test("hidden records expose one prompt after migrating a saved edit", () => {
   const original = {
     ...task,
     status: "COMPLETED",
@@ -77,12 +77,11 @@ test("hidden records remain inspectable with the draft and original prompt", () 
     {
       id: "original",
       hiddenFromList: true,
-      prompt: { text: "旧描述" },
-      nextPrompt: { text: "新描述" },
+      prompt: { text: "新描述" },
     },
   ]);
 });
-test("explicit regenerate creates one fresh task with new prompt and same inputs/model/settings", () => {
+test("explicit regenerate resets the existing task once with new prompt and the same settings", () => {
   const original = {
     ...task,
     status: "COMPLETED",
@@ -103,9 +102,9 @@ test("explicit regenerate creates one fresh task with new prompt and same inputs
   };
   const ops = [{ op: "regenerate_generation", taskKey: task.key }];
   const next = applyOperations(p, p.revision ?? 0, ops, context);
-  const run = next.production!.drafts!["retry:call:0"];
+  const run = next.production!.drafts![task.key];
   expect(run).toMatchObject({
-    sourceTaskKey: task.key,
+    key: task.key,
     prompt: "新描述",
     inputs: task.inputs,
     parameters: task.parameters,
@@ -115,12 +114,14 @@ test("explicit regenerate creates one fresh task with new prompt and same inputs
   });
   expect(run.jobId).toBeUndefined();
   expect(run.resultAssetIds).toBeUndefined();
-  expect(run.nextPrompt).toBeUndefined();
-  expect(next.production!.drafts![task.key]).toEqual(original);
+  expect("nextPrompt" in run).toBe(false);
+  expect(Object.keys(next.production!.drafts!)).toEqual(
+    Object.keys(p.production!.drafts!),
+  );
+  expect(run.turnId).toBe(original.turnId);
+  expect(run.createdAt).toBe(original.createdAt);
   expect(applyOperations(next, next.revision ?? 0, ops, context)).toEqual(next);
-  expect(() =>
-    regenerationDraft({ ...task, status: "UNKNOWN" }, "no"),
-  ).toThrow();
+  expect(() => regenerationDraft({ ...task, status: "UNKNOWN" })).toThrow();
 });
 test("invalid prompt and stale revisions do not change task records", () => {
   const p = saveTask(fixture(), task);
@@ -132,4 +133,22 @@ test("invalid prompt and stale revisions do not change task records", () => {
     ]),
   ).toThrow();
   expect(p.production!.drafts![task.key]).toEqual(task);
+});
+test("legacy prompt edits migrate once without losing text or touching job metadata", () => {
+  const legacy = {
+    ...task,
+    status: "COMPLETED",
+    prompt: "submitted",
+    nextPrompt: "edited",
+    jobId: "immutable-job",
+    resultAssetIds: ["image"],
+  };
+  const p = saveTask(fixture(), legacy);
+  const restored = p.production!.drafts!.original;
+  expect(restored.prompt).toBe("edited");
+  expect("nextPrompt" in restored).toBe(false);
+  expect(restored.jobId).toBe("immutable-job");
+  expect(restored.resultAssetIds).toEqual(["image"]);
+  expect(regenerationDraft(restored).prompt).toBe("edited");
+  expect(legacy.prompt).toBe("submitted");
 });

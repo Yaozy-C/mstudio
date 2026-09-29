@@ -1,3 +1,4 @@
+import { regenerationDraft } from "./taskEditing";
 import type { ProductionTask } from "./types";
 export const pendingStatuses = [
   "READY",
@@ -9,23 +10,10 @@ export const pendingStatuses = [
   "UNKNOWN",
   "CANCEL_REQUESTED",
 ];
-export function retryTask(task: ProductionTask, id: string): ProductionTask {
+export function retryTask(task: ProductionTask): ProductionTask {
   if (!["FAILED", "CANCELLED"].includes(task.status ?? ""))
     throw new Error("原任务状态尚未确认，请先核查结果");
-  return {
-    ...structuredClone(task),
-    key: `retry:${id}`,
-    status: "AWAITING_CONFIRMATION",
-    jobId: undefined,
-    submissionId: undefined,
-    requestId: undefined,
-    error: undefined,
-    trackingPaused: undefined,
-    progress: undefined,
-    resultAssetId: undefined,
-    resultAssetIds: undefined,
-    createdAt: Date.now(),
-  };
+  return regenerationDraft(task);
 }
 // Automatic retries only query/import the same job; never submit generation.
 export function retryDelay(attempt: number): number | undefined {

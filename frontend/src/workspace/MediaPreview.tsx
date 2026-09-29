@@ -1,3 +1,4 @@
+import { ZoomableImage } from "./ZoomableImage";
 import { t, useLanguage } from "../i18n";
 import { DocumentPreview } from "./DocumentPreview";
 import { ObjectActions } from "../ui/ObjectActions";
@@ -28,7 +29,7 @@ export function MediaPreview({
       }}
     >
       <Dialog.Content
-        className="media-preview-dialog"
+        className={`media-preview-dialog${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
         aria-describedby={undefined}
       >
         <header>
@@ -60,7 +61,11 @@ export function MediaPreview({
               ) : asset.kind === "text" || asset.kind === "document" ? (
                 <DocumentPreview asset={asset} />
               ) : asset.kind === "image" ? (
-                <img src={mediaUrl(asset.path)} alt={asset.name} />
+                <ZoomableImage
+                  key={asset.id}
+                  src={mediaUrl(asset.path)}
+                  alt={asset.name}
+                />
               ) : asset.kind === "video" ? (
                 <video src={mediaUrl(asset.path)} controls />
               ) : (

@@ -12,7 +12,7 @@ def slug(heading):
 
 def validate(root):
     errors = []
-    expected = {"color-grading", "transition-design", "ad-team", "ad-script", "storyboard-art", "creative-ad-director", "product-storyboard", "product-video-production"}
+    expected = {"image-prompt", "video-prompt", "asset-preparation", "color-grading", "transition-design", "ad-team", "ad-script", "storyboard-art", "creative-ad-director", "product-storyboard", "product-video-production"}
     folders = {p.name for p in root.iterdir() if p.is_dir()}
     if folders != expected:
         errors.append(f"skill folders differ: {folders ^ expected}")
@@ -37,6 +37,8 @@ def validate(root):
             errors.append(f"unexpected resource: {path}")
             continue
         text = path.read_text()
+        if re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", text):
+            errors.append(f"skill resources must be authored in English: {path}")
         for token in ("/Users/", "/home/", "CODEX_HOME", "~/.codex", "本用户"):
             if token in text:
                 errors.append(f"personal/external dependency {token}: {path}")
@@ -61,4 +63,4 @@ if __name__ == "__main__":
     if errors:
         print("\n".join(errors))
         sys.exit(1)
-    print(f"Skills: 8 packages, {len(list(root.rglob('*.md')))} portable Markdown resources; links valid")
+    print(f"Skills: 11 packages, {len(list(root.rglob('*.md')))} portable Markdown resources; links valid")

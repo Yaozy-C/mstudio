@@ -1,10 +1,11 @@
 import { CanvasControls } from "./CanvasControls";
+import { shotAreas, timelineAssetIds } from "./canvasIndex";
 import { t, useLanguage } from "../i18n";
 import { collectAsset } from "../workspace/assetLibrary";
 import { productionShots } from "./items";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { fitView } from "../canvas/fit";
-import { useViewport } from "../canvas/useViewport";
+import { useCallback, useMemo, useState } from "react";
+import { useProductionViewport } from "./useProductionViewport";
+import { visibleItems } from "./visibleItems";
 import { CanvasCard } from "./CanvasCard";
 import { CanvasPreview } from "./CanvasPreview";
 import type { Asset, Project } from "../model";
@@ -24,27 +25,23 @@ export function ProductionCanvas({
 }) {
   useLanguage();
   const { items, selected, choose: setSelection, focus } = canvas;
-  const shots = productionShots(project);
-  const root = useRef<HTMLDivElement>(null);
-  const storeView = useCallback(
-    (fn: (p: Project) => Project) =>
-      change(
-        (p) => ({
-          ...p,
-          production: { ...p.production, viewport: fn(p).viewport },
-        }),
-        false,
-      ),
+  const shots = useMemo(() => productionShots(project), [project.nodes]);
+  const assets = useMemo(
+    () => new Map(project.assets.map((a) => [a.id, a])),
+    [project.assets],
+  );
+  const timelineAssets = useMemo(
+    () => timelineAssetIds(project.clips),
+    [project.clips],
+  );
+  const { root, view, latest, setView, size, fit, zoom } =
+    useProductionViewport(project, change, items, focus, shots);
+  const visible = visibleItems(items, view, size);
+  const areas = useMemo(() => shotAreas(shots, items), [shots, items]);
+  const collect = useCallback(
+    (asset: Asset) => change((p) => collectAsset(p, asset)),
     [change],
   );
-  const { view, latest, update } = useViewport(
-    project.production?.viewport ?? project.viewport,
-    storeView,
-  );
-  const setView = (
-    value:
-      Project["viewport"] | ((v: Project["viewport"]) => Project["viewport"]),
-  ) => update(typeof value === "function" ? value(latest.current) : value);
   const [preview, setPreview] = useState<ProductionItem | null>(null);
   const [box, setBox] = useState<{
     x: number;
@@ -52,95 +49,6 @@ export function ProductionCanvas({
     width: number;
     height: number;
   } | null>(null);
-  function fit(all = false) {
-    const bounds = root.current?.getBoundingClientRect();
-    if (!bounds) return;
-    const nodes = items
-      .filter(
-        (n) =>
-          all ||
-          (focus.itemKey
-            ? n.key === focus.itemKey
-            : n.ownerId === (focus.id ?? shots[0]?.id)),
-      )
-      .map((n) => ({
-        id: n.key,
-        x: n.x,
-        y: n.y,
-        width: n.width,
-        height: n.height,
-        title: n.title,
-        kind: "asset" as const,
-        text: n.text ?? "",
-      }));
-    if (!all && focus.itemKey) {
-      if (!nodes.length) return;
-      const panel = root.current
-        ?.closest(".studio-stage")
-        ?.querySelector(".production-task-panel")
-        ?.getBoundingClientRect();
-      const height =
-        panel && panel.top < bounds.bottom && panel.bottom > bounds.top
-          ? Math.max(1, panel.top - bounds.top)
-          : bounds.height;
-      setView(fitView(nodes, { width: bounds.width, height }));
-      return;
-    }
-    const next = fitView(nodes, {
-      width: bounds.width,
-      height: bounds.height - 30,
-    });
-    if (!all && next.scale < 0.85) {
-      next.scale = 0.85;
-      next.x =
-        40 -
-        (nodes.length ? Math.min(...nodes.map((n) => n.x)) : 0) * next.scale;
-    }
-    setView({
-      ...next,
-      y: all
-        ? next.y
-        : 95 - Math.min(110, ...nodes.map((n) => n.y)) * next.scale,
-    });
-  }
-  useEffect(() => {
-    if (focus.tick || !project.production?.viewport) fit();
-  }, [focus]);
-  useEffect(() => {
-    const el = root.current!;
-    function wheel(e: WheelEvent) {
-      e.preventDefault();
-      const v = latest.current;
-      if (e.ctrlKey || e.metaKey) {
-        const rect = el.getBoundingClientRect(),
-          x = e.clientX - rect.left,
-          y = e.clientY - rect.top;
-        const scale = Math.min(
-          2,
-          Math.max(0.18, v.scale * Math.exp(-e.deltaY * 0.008)),
-        );
-        setView({
-          x: x - ((x - v.x) * scale) / v.scale,
-          y: y - ((y - v.y) * scale) / v.scale,
-          scale,
-        });
-      } else setView({ ...v, x: v.x - e.deltaX, y: v.y - e.deltaY });
-    }
-    el.addEventListener("wheel", wheel, { passive: false });
-    return () => el.removeEventListener("wheel", wheel);
-  }, []);
-  const zoom = (factor: number) =>
-    setView((v) => {
-      const rect = root.current!.getBoundingClientRect(),
-        x = rect.width / 2,
-        y = rect.height / 2;
-      const scale = Math.min(2, Math.max(0.18, v.scale * factor));
-      return {
-        x: x - ((x - v.x) * scale) / v.scale,
-        y: y - ((y - v.y) * scale) / v.scale,
-        scale,
-      };
-    });
   return (
     <div className="production-workspace">
       <div
@@ -222,36 +130,28 @@ export function ProductionCanvas({
             transform: `translate(${view.x}px,${view.y}px) scale(${view.scale})`,
           }}
         >
-          {shots.map((n, i) => (
+          {visibleItems(areas, view, size).map((n) => (
             <div
               className="shot-area"
               key={n.id}
-              style={{
-                left: i * 1600,
-                height: Math.max(
-                  680,
-                  ...items
-                    .filter((v) => v.ownerId === n.id)
-                    .map((v) => v.y + v.height + 30),
-                ),
-              }}
+              style={{ left: n.x, height: n.height }}
             >
-              <span>SHOT {String(i + 1).padStart(2, "0")}</span>
+              <span>SHOT {String(n.index + 1).padStart(2, "0")}</span>
               <h2>{n.title}</h2>
             </div>
           ))}
-          {items.map((item) => (
+          {visible.map((item) => (
             <CanvasCard
               onAdd={onAdd}
               key={item.key}
               item={item}
+              compact={view.scale < 0.35}
+              asset={assets.get(item.assetId ?? "")}
+              inTimeline={timelineAssets.has(item.assetId ?? "")}
               project={project}
               canvas={canvas}
               preview={setPreview}
-              collect={() => {
-                const asset = project.assets.find((a) => a.id === item.assetId);
-                if (asset) change((p) => collectAsset(p, asset));
-              }}
+              collect={collect}
             />
           ))}
         </div>

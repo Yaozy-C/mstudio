@@ -1,3 +1,27 @@
+#[cfg(test)]
+mod audit_tests;
+pub mod blobs;
+pub(crate) mod event_retention;
+#[cfg(test)]
+mod event_retention_tests;
+#[cfg(test)]
+mod history_audit_tests;
+pub(crate) mod history_cleanup;
+#[cfg(test)]
+mod history_cleanup_tests;
+#[cfg(test)]
+mod media_audit_tests;
+mod media_migration;
+pub(crate) mod media_store;
+#[cfg(test)]
+pub(crate) mod media_tests;
+mod schema;
+pub(crate) mod session_checkpoint;
+#[cfg(test)]
+mod session_checkpoint_tests;
+#[cfg(test)]
+mod tests;
+pub(crate) mod turn_usage;
 use anyhow::Result;
 use mstudio::model::Asset;
 use rusqlite::Connection;
@@ -22,16 +46,29 @@ impl Store {
         CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,name TEXT NOT NULL,document TEXT NOT NULL,updated INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY,data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL,data TEXT NOT NULL);")?;
+        CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,data TEXT NOT NULL);")?;
+        let location = crate::storage::load(&db, &root)?;
+        db.execute(
+            "INSERT OR IGNORE INTO settings(key,value) VALUES('file-storage',?1)",
+            [serde_json::to_string(&location)?],
+        )?;
         crate::assistant::history::init(&db)?;
         crate::assistant::history::interrupt_pending(&db)?;
         crate::assistant::journal::init(&db)?;
         crate::assistant::memory::init(&db)?;
         crate::models::init(&db)?;
+        crate::model_adapters::prompt_rules::init(&db)?;
         crate::project_storage::init(&db)?;
         crate::asset_library::init(&db)?;
+        crate::project_storage::direct_references::migrate(&db, &root)?;
         crate::job_recovery::recover_interrupted_submissions(&db)?;
-        let location = crate::storage::load(&db, &root)?;
+        schema::init(&db)?;
+        media_store::init(&db)?;
+        schema::migrate(&db)?;
+        event_retention::migrate(&db)?;
+        media_migration::migrate(&db)?;
+        history_cleanup::startup(&db)?;
+        media_store::sweep(&db)?;
         if let Err(error) = crate::project_storage::resume_cleanup(&db, &location.directory) {
             eprintln!("{error}");
         }

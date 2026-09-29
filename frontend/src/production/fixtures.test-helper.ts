@@ -16,15 +16,13 @@ export function fixture() {
   p.assets = [asset("a"), asset("b"), asset("reference"), asset("v", "video")];
   p.nodes = [
     {
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "Lunch",
       text: "Idea",
       x: 0,
       y: 0,
-      plan: {
-        story: "Lunch story",
-        sound: "",
+      screenplay: {
         script: [
           {
             id: "paragraph",
@@ -46,7 +44,7 @@ export function fixture() {
       y: 0,
       references: [{ assetId: "reference", purpose: "product" }],
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         scriptId: "paragraph",
         order: 1,
         duration: 5,

@@ -14,52 +14,70 @@ export type AgentProfile = {
 };
 export const skills = [
   {
+    id: "image-prompt",
+    name: "图片提示词",
+    description: "画面、姿态、支撑与参考转写",
+    kind: "可编辑规则",
+  },
+  {
+    id: "video-prompt",
+    name: "视频提示词",
+    description: "动作、节奏、接触与声音转写",
+    kind: "可编辑规则",
+  },
+  {
+    id: "asset-preparation",
+    name: "参考素材",
+    description: "白底人物、服装、商品与道具参考",
+    kind: "可编辑规则",
+  },
+  {
     id: "color-grading",
     name: "专业调色",
     description: "色彩校正、镜头匹配与工具边界",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "transition-design",
     name: "转场设计",
     description: "动作匹配、节奏与接缝转场",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "ad-script",
     name: "创意与声画脚本",
     description: "广告事件、画面文字与声画脚本",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "storyboard-art",
     name: "分镜画格",
     description: "静态构图、图片提示词与修图",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "ad-team",
     name: "团队统筹",
     description: "任务交接、专业角色协作与局部修订",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "product-storyboard",
     name: "脚本与分镜",
     description: "故事结构、叙事节奏和镜头拆解",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "creative-ad-director",
     name: "创意导演",
     description: "创意方向、摄影与视觉语言",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
   {
     id: "product-video-production",
     name: "视频制作",
     description: "生成描述、参考素材与制作检查",
-    kind: "内置规则",
+    kind: "可编辑规则",
   },
 ];
 export const defaultAgents: AgentProfile[] = builtins;

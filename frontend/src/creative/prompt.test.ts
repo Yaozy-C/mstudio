@@ -18,11 +18,21 @@ function fixture() {
   return applyOperations(newProject("film"), 0, [
     {
       op: "add_node",
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "午餐",
-      text: "自然讲解",
-      plan: { story: "装包再出门", sound: "现场声" },
+      text: "",
+      screenplay: {
+        script: [
+          {
+            id: "para",
+            title: "Pack",
+            action: "Pack",
+            dialogue: "",
+            sound: "Live",
+          },
+        ],
+      },
     },
     {
       op: "add_node",
@@ -30,7 +40,13 @@ function fixture() {
       kind: "shot",
       title: "装包",
       text: "打开包",
-      shot: { planId: "plan", order: 1, duration: 6, dialogue: "Let's pack." },
+      shot: {
+        screenplayId: "screenplay",
+        scriptId: "para",
+        order: 1,
+        duration: 6,
+        dialogue: "Let's pack.",
+      },
     },
   ]);
 }
@@ -54,13 +70,17 @@ test("prompt persists independently, is readable by Agent and survives save/relo
   ).toBe(q.nodes[1].shot?.prompt);
   expect(shotBasis(q.nodes[1])).not.toBe(shotBasis(p.nodes[1]));
 });
-test("script and plan edits flag a saved prompt without overwriting it; canvas movement does not", () => {
+test("script and screenplay edits flag a saved prompt without overwriting it; canvas movement does not", () => {
   const p = saveShotPrompt(fixture(), "shot", "Keep the chosen camera.");
   const q = editShotText(p, "shot", "action", "慢慢打开包");
   expect(promptStale(q, q.nodes[1])).toBe(true);
   expect(q.nodes[1].shot?.prompt).toBe(p.nodes[1].shot?.prompt);
   const r = applyOperations(p, 0, [
-    { op: "update_node", id: "plan", plan: { sound: "配乐节拍" } },
+    {
+      op: "update_node",
+      id: "screenplay",
+      screenplay: { script: [{ id: "para", sound: "Music" }] },
+    },
   ]);
   expect(promptStale(r, r.nodes[1])).toBe(true);
   const moved = applyOperations(p, 0, [

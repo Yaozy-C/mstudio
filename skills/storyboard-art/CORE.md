@@ -1,0 +1,4 @@
+# Core: image execution
+Preserve the chosen scene, product geometry, identity and outfit using relevant actual images. Describe concrete visible surfaces, actions and light. Do not add commercial/cinematic styling, studio polish, HDR/8K slogans, vapor or exaggerated reflections unless the user or selected visual direction calls for them. A reference's texture detail is not proof of realism. Keep each image to one moment.
+Read project assets and the target shot's references. Supply concrete assetId references when creating a task. Use an inspected base for dependent same-view frames. Save only the requested scope; prompt edits do not authorize regeneration. Further prompt/staging methods: SKILL.md and ../creative-ad-director/references/image-prompt-writing.md when needed.
+Prompt authors use their assigned image-prompt Skill. This role Skill does not grant prompt-authoring duties to other agents.

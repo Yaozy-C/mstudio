@@ -94,6 +94,7 @@ test("specialists resolve independently through the project model", () => {
     "coordinator",
     "concept",
     "storyboard",
+    "asset-designer",
     "storyboard-artist",
     "production",
     "editor",

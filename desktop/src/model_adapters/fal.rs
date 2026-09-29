@@ -88,7 +88,7 @@ impl ProviderAdapter for Fal {
                 Err(error)
                     if error
                         .downcast_ref::<crate::app_error::AppError>()
-                        .is_some_and(|e| e.outcome.as_deref() == Some("cancelled")) =>
+                        .is_some_and(is_cancelled_error) =>
                 {
                     return completed_error(
                         error.downcast::<crate::app_error::AppError>().unwrap(),
@@ -110,7 +110,11 @@ impl ProviderAdapter for Fal {
                         &crate::app_error::provider_details(&response),
                     );
                     error.outcome = Some(if cancelled { "cancelled" } else { "failed" }.into());
-                    update = json!({"status":if cancelled { "CANCELLED" } else { "FAILED" },"error":error.to_string()});
+                    update = if cancelled {
+                        json!({"status":"CANCELLED"})
+                    } else {
+                        json!({"status":"FAILED","error":error.to_string()})
+                    };
                 } else {
                     let url = queue_url(job["responseUrl"].as_str().context("缺少结果 URL")?)?;
                     let response = client()?
@@ -176,9 +180,47 @@ fn normalize_outputs(value: &Value) -> Vec<super::ModelOutput> {
     outputs
 }
 
+fn is_cancelled_error(error: &crate::app_error::AppError) -> bool {
+    error.outcome.as_deref() == Some("cancelled")
+        || (error.http_status == Some(499)
+            && matches!(error.stage.as_str(), "status" | "result")
+            && error
+                .details
+                .trim()
+                .trim_end_matches('.')
+                .eq_ignore_ascii_case("Request was cancelled"))
+}
+
+// Older versions persisted Fal's cancellation result as a paused polling error.
+// Recover only explicit provider evidence, never infer success from the cancel click.
+pub(crate) fn recover_cancelled(job: &mut Value) -> bool {
+    if job["providerId"] != "fal"
+        || !matches!(
+            job["status"].as_str(),
+            Some("CANCEL_REQUESTED" | "IN_QUEUE" | "IN_PROGRESS")
+        )
+    {
+        return false;
+    }
+    let confirmed = [job["sync"]["error"].as_str(), job["error"].as_str()]
+        .into_iter()
+        .flatten()
+        .filter_map(|raw| serde_json::from_str::<crate::app_error::AppError>(raw).ok())
+        .any(|error| is_cancelled_error(&error));
+    if !confirmed {
+        return false;
+    }
+    job["status"] = json!("CANCELLED");
+    let fields = job.as_object_mut().unwrap();
+    fields.remove("error");
+    fields.remove("sync");
+    fields.remove("progress");
+    true
+}
+
 fn completed_error(mut error: crate::app_error::AppError) -> Result<super::ProviderUpdate> {
-    let status = if error.outcome.as_deref() == Some("cancelled") {
-        "CANCELLED"
+    let status = if is_cancelled_error(&error) {
+        return Ok(serde_json::from_value(json!({"status":"CANCELLED"}))?);
     } else if matches!(error.http_status, Some(400 | 422)) {
         error.outcome = Some("failed".into());
         "FAILED"
@@ -193,6 +235,30 @@ fn completed_error(mut error: crate::app_error::AppError) -> Result<super::Provi
 mod recovery_tests {
     use super::*;
     use crate::app_error::AppError;
+    #[test]
+    fn plain_fal_499_is_terminal_and_legacy_paused_jobs_recover() {
+        let error = AppError::http(499, "result", "Request was cancelled");
+        let update = completed_error(error.clone()).unwrap();
+        assert_eq!(update.status, "CANCELLED");
+        assert!(update.error.is_none());
+        let mut job = json!({"providerId":"fal","status":"CANCEL_REQUESTED","requestId":"r","input":{"prompt":"keep"},"outputs":[{"url":"partial"}],"sync":{"paused":true,"error":error.to_string()}});
+        assert!(recover_cancelled(&mut job));
+        assert_eq!(job["status"], "CANCELLED");
+        assert_eq!(job["requestId"], "r");
+        assert_eq!(job["input"]["prompt"], "keep");
+        assert_eq!(job["outputs"].as_array().unwrap().len(), 1);
+        assert!(job.get("sync").is_none());
+        assert!(!recover_cancelled(&mut job));
+        for (provider, status, details) in [
+            ("other", 499, "Request was cancelled"),
+            ("fal", 499, "Connection closed"),
+            ("fal", 503, "Request was cancelled"),
+        ] {
+            let mut job = json!({"providerId":provider,"status":"CANCEL_REQUESTED","sync":{"error":AppError::http(status,"result",details).to_string()}});
+            assert!(!recover_cancelled(&mut job));
+        }
+        assert!(completed_error(AppError::http(499, "result", "Connection closed")).is_err());
+    }
     #[test]
     fn completed_validation_failure_becomes_terminal_but_auth_and_network_do_not() {
         let update =

@@ -1,0 +1,162 @@
+.reference-picker {
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+}
+.reference-picker header,
+.reference-picker footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.reference-picker header strong {
+  font-size: 14px;
+}
+.reference-picker header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+}
+.reference-picker-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin: 12px 0;
+  background: transparent;
+}
+.reference-picker-tabs button {
+  flex: 1;
+  border: 0;
+  padding: 6px;
+  font-size: 12px;
+  background: transparent;
+}
+.reference-picker-tabs button[aria-pressed="true"] {
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
+}
+.reference-picker input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 12px;
+}
+.reference-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+  margin-top: 12px;
+}
+.reference-picker-grid > button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.reference-picker-grid > button:disabled {
+  opacity: 0.6;
+}
+.reference-picker-grid > button > div {
+  position: relative;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--desk-sidebar);
+}
+.reference-picker-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.reference-picker-grid > button > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  margin-top: 5px;
+}
+.reference-kind,
+.reference-added {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border-radius: 4px;
+  background: var(--desk-surface);
+}
+.reference-added {
+  top: 3px;
+  bottom: auto;
+}
+.reference-picker footer {
+  margin-top: 14px;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.reference-picker footer button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.reference-picker-empty {
+  padding: 20px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.composer-frame-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.composer-frame-input {
+  position: relative;
+}
+.composer-reference-tile img {
+  width: 54px;
+  height: 42px;
+  object-fit: contain;
+}
+.composer-frame-input .composer-reference-tile {
+  min-height: 76px;
+}
+.composer-frame-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--desk-surface);
+}
+.composer-frame-swap {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+}

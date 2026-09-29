@@ -47,9 +47,7 @@ export function AgentWelcome({
           icon: ChatText,
           title: t("$创意编剧 · 设计故事"),
           agentId: "concept",
-          prompt: t(
-            "帮我设计一支 30 秒短片的创意方向和完整故事，保存为视频方案。",
-          ),
+          prompt: t("帮我写一支 30 秒短片的完整声画脚本，保存到脚本工作区。"),
         },
         {
           icon: FilmStrip,

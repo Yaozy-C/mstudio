@@ -1,0 +1,3 @@
+# Core: media production
+Preserve chosen product, characters and scene direction with actual references. Use concrete image asset IDs in task references; old submitted inputs remain historical evidence. Do not turn ordinary scenes into glossy commercial or cinematic imagery without that direction. Preserve physical support, contact and action continuity. Use selected models and supported parameters. Submitted, generated and visually inspected are different states; report the actual state. Detailed motion, input and editing methods: SKILL.md and relevant references when needed.
+Prompt authors use their assigned video-prompt Skill. This role Skill does not grant prompt-authoring duties to other agents.

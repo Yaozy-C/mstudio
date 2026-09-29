@@ -1,24 +1,29 @@
-# 内容分镜预览图
+# Storyboard previews and frame inspection
 
-本阶段的图片用于看构图、商品关系、人物造型和故事关键状态。它们是内容预览，不自动作为视频生成首帧。
+Preview frames communicate composition, product relationships, character design and key story states. They are not automatically video starting frames.
 
-新方案按 SKILL.md 的关键画面关先试关键关系，通过后再扩图；默认交付不得只有文字分镜、图片提示词或“可以继续画图”的提议。先列范围内必要的少量代表格；一格只表达一个瞬间，过程写入说明。先用一张兼顾关键关系、人物和场景的样稿检查方向，再扩图。已有合格母图则复用；同机位优先编辑，不逐格从零生成。局部修订锁定已确认内容。
+## Prepare the requested frames
 
-编写单格图片 prompt 前读取 [单张图片提示词](../../creative-ad-director/references/image-prompt-writing.md)，明确选定时刻、机位与可见范围、光线和参考职责。分镜编号、时间与图注默认在图外展示或后期排版；仅用户明确要求带说明版面时交给图像模型绘制。
+For a complete visual storyboard, select representative frames covering the opening, key change, value evidence and result. Text-only requests, prompt edits and skill maintenance do not trigger generation. Test the hardest static relationship before expanding dependent frames; reuse suitable accepted images and prefer edits for the same viewpoint. Local revisions do not restart the entire sample process.
 
-通过 request_generation 提交 image 任务并检查实际状态与结果；任务创建不等于图像完成。需要具体参考组织、差异提示词及修复方法时，读取执行 skill 的 [受控生成](../../product-video-production/references/generation.md)，只执行本次已授权的图片范围，不因此调用视频模型。
+Read [image prompting](../../creative-ad-director/references/image-prompt-writing.md) before writing a frame prompt. Select one moment, compatible viewpoint and visible extent, lighting and reference roles. Keep shot IDs, timecodes, arrows and captions outside clean scene images unless the user requests an annotated design.
 
-每格检查商品结构/颜色、关键状态、手与物连接、数量、人物造型、项目要求的人物裁切及背景反射。对数量和边界敏感的商品，先从原图列出可见结构不变量（例如开口数量、分隔位置、连接方式），逐项对照实际输出；不能为了安排道具添加结构，不能把前次生成图当作商品事实。修复局部后放大检查问题区域，再检查整图和依赖格，确认后才报告已修复。人物或场景方向被否定时先修相关样稿，不扩散依赖图。去掉说明后仍应看懂关键关系；严重已知错误先修复。
+In Mstudio, request_generation with image creates the task; inspect its actual state and result. Creation is not completion. For reference organization and repairs use [controlled generation](../../product-video-production/references/generation.md) only within the authorized image scope.
 
-交付选用预览图和简短时间/动作说明，保存实际提示词及参考来源。明确哪些是预览、哪些已通过单帧检查、哪些动作尚未验证。执行端应按动作开始前的状态另行准备制作帧，不直接把分镜中段画面当成起点。
+## Inspect actual pixels
 
-## 让用户直接看懂视频走向
+Compare output with original product evidence: structure, color, visible parts, count, state, hand/object attachment, support, perspective, framing restrictions and reflections. For count/boundary-sensitive objects, record relevant invariants such as opening count, divider placement and connections. Do not add structure to accommodate props or use a generated image as product fact.
 
-- 分镜图按播放顺序排列，标镜头/画格 ID 和对应时间，编号与分镜表一一对应。一格只展示一个时刻；不要用多动作叠影冒充动作过程。
-- 必须覆盖开场、关键变化、主要价值证据和结果，不能用一张漂亮商品图代替故事。关键变化难以由单格读出时补起止格，同镜时长只计算一次。
-- 在正文内实际展示选用图片。拼版字太小或关键结构看不清时，补相关单格大图；文件链接可补充下载，不能替代可见预览。不强制固定格数或拼版形状。
-- 只保留与理解有关的短图注。静帧中看不出的运动方向、切点和声音写进分镜表；字幕和箭头不能补救缺失的关键画面关系。
+Check the path and connectivity of parts, not only whether they exist: a closure on the wrong surface or handles attached to the wrong part fail identity even when color and texture match. Compare dependent frames side by side for these invariants, landmarks and the intended state change. A new viewpoint can change visibility, not the underlying construction. Record the anchor asset and observed relationships in the existing handoff; no new approval artifact is needed.
 
-用户要求真实感时，样稿和修后图均按 [感知真实感独立验收](../../product-video-production/references/generation.md#重要感知真实感独立验收) 检查，记录整体观感及可见依据。不要以精细纹理替代真实物理表现。
+After a repair inspect the affected region, the full image and dependent frames. Reject known major defects before expansion. If the character or visual direction has been rejected, fix that sample before propagating it. Hide explanatory labels when judging whether the relationship reads; arrows cannot replace missing contact, a wrong viewpoint or an absent state.
 
-**【重要｜部件保留】**按 [真实商品部件不可遗漏](../../product-video-production/references/generation.md#重要真实商品部件不可遗漏) 在样稿和逐格检查中对照原始资料，核实本镜应可见的部件。不能仅凭轮廓、颜色和质感相似判定商品还原通过。
+Infer viewpoint from visible surfaces, occluding edges and perspective, not the title or prompt. A material repair does not establish an unchecked camera position. A user pointing out one defect does not approve everything else. Retain relevant unknowns without expanding into unrelated review.
+
+For realism requests use [perceptual realism](../../product-video-production/references/generation.md#perceptual-realism). Always apply [visible component preservation](../../product-video-production/references/generation.md#visible-product-components); similar color and silhouette are insufficient.
+
+## Present and hand off
+
+Arrange selected frames in playback order, with IDs and times matching the shot plan. Add start/end frames only when one moment cannot explain a required change; count the shot duration once. Show readable images, using larger individual views when a contact sheet obscures detail. A download link alone does not replace a requested visible preview.
+
+Keep captions brief; record unobservable motion, cuts and sound in the shot description. Preserve final prompts and reference roles. Distinguish previews, inspected static frames and unverified motion. Choose production frames for the actual control mode; reuse a valid start, but do not pass a middle-state image off as one.

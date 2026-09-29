@@ -3,7 +3,7 @@ pub fn schema() -> Value {
     let mut operation = json!({"type":"object","properties":{
         "op":{"type":"string","enum":["add_node","update_node","remove_node","set_brief","append_clip","update_clip"]},
         "id":{"type":"string","description":"节点/片段 ID；add_node 用唯一英文 ID"},
-        "kind":{"type":"string","enum":["text","shot","note","asset","plan"]},
+        "kind":{"type":"string","enum":["text","shot","note","asset","screenplay"]},
         "title":{"type":"string"},"text":{"type":"string"},"assetId":{"type":"string"},
         "x":{"type":"number"},"y":{"type":"number"},
         "trimIn":{"type":"number"},"trimOut":{"type":"number"},"speed":{"type":"number"},"volume":{"type":"number"}
@@ -14,7 +14,7 @@ pub fn schema() -> Value {
         "slip_clip",
         "set_transition",
         "choose_take",
-        "assemble_plan",
+        "assemble_screenplay",
         "request_generation",
         "update_generation",
         "regenerate_generation",
@@ -33,6 +33,8 @@ pub fn schema() -> Value {
             .push(json!(name));
     }
     let properties = operation["properties"].as_object_mut().unwrap();
+    properties.insert("name".into(), json!({"type":"string"}));
+    properties.insert("description".into(), json!({"type":"string"}));
     properties.insert("sourceOffset".into(), json!({"type":"number","description":"slip_clip：源素材偏移秒数，可正可负，同时移动 trimIn/trimOut，保持时间线位置和时长；源余量不足报错"}));
     properties.insert("ripple".into(), json!({"type":"boolean","description":"retime_clip：保持源区间与起点，按 speed 改变时长；true 顺移同轨原尾点及之后的片段，其他轨道和字幕不动。默认 false"}));
     properties.insert("allowOverlap".into(), json!({"type":"boolean","description":"move_clip/retime_clip 默认拒绝同轨重叠；仅用户明确需要叠加时设 true"}));
@@ -47,7 +49,7 @@ pub fn schema() -> Value {
     properties["visual"]["properties"]["grade"] = grade_schema();
     properties.insert("fromClipId".into(), json!({"type":"string","description":"set_transition 的前一片段ID，id 为后一片段ID；必须底层画面轨相邻全幅片段"}));
     properties.insert("duration".into(), json!({"type":"number","minimum":0.05,"maximum":3,"description":"转场总时长，不超过任一相邻片段时长，不移动剪辑、音频或字幕"}));
-    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","plan","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve","custom",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
+    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","screenplay","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve","custom",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
     properties.insert("design".into(), transition_schema());
     for name in ["start", "end", "scale", "opacity", "fadeIn", "fadeOut"] {
         properties.insert(name.into(), json!({"type":"number"}));
@@ -64,6 +66,8 @@ pub fn schema() -> Value {
     ] {
         properties.insert(name.into(), json!({"type":"string"}));
     }
+    properties.insert("generationPurpose".into(), json!({"type":"string","enum":["asset"],"description":"request_generation: asset 创建独立参考图片任务，不关联镜头，不继承当前画格。必须显式提供 references，可为 []。"}));
+    properties.insert("mediaModelId".into(), json!({"type":"string","description":"用户在聊天中指定模型时，先读 mstudio_models，将用户选择解析为目录中的准确 ID；名称有多个匹配时澄清，不猜测服务商。省略则沿用本轮选择；与已有选择冲突时不可覆盖。"}));
     for name in ["muted", "hidden"] {
         properties.insert(name.into(), json!({"type":"boolean"}));
     }
@@ -84,10 +88,10 @@ pub fn schema() -> Value {
         json!({"type":"string","enum":["planning","production","editing"]}),
     );
     properties.insert(
-        "plan".into(),
-        json!({"type":"object","properties":{"scriptMode":{"type":"string","enum":["merge","replace"],"description":"默认 merge 按 ID 局部合并；整篇改写必须 replace，script 提供完整段落与顺序，省略的旧段落删除，镜头素材保留"},"removeParagraphIds":{"type":"array","items":{"type":"string"},"description":"merge 模式删除指定段落，保留镜头素材"},"paragraphOrder":{"type":"array","items":{"type":"string"},"description":"merge 模式调整顺序，必须列出操作后的全部段落 ID"},"story":{"type":"string"},"sound":{"type":"string"},"script":{"type":"array","maxItems":200,"description":"merge 按 id 合并，省略内容保留；replace 全篇替换，必须提供完整段落 id/title/action/onScreenText/dialogue/sound/duration；保留对应段落 ID 可维持镜头关联","items":{"type":"object","required":["id"],"properties":{"id":{"type":"string"},"duration":{"type":"number","minimum":0.01,"maximum":3600},"title":{"type":"string"},"action":{"type":"string"},"onScreenText":{"type":"string","description":"画面上实际显示的文字，与台词分开；无则空字符串"},"dialogue":{"type":"string"},"sound":{"type":"string"}}}}}}),
+        "screenplay".into(),
+        json!({"type":"object","additionalProperties":false,"properties":{"scriptMode":{"type":"string","enum":["merge","replace"],"description":"默认 merge 按 ID 局部合并；整篇改写必须 replace，script 提供完整段落与顺序，省略的旧段落删除，镜头素材保留"},"removeParagraphIds":{"type":"array","items":{"type":"string"},"description":"merge 模式删除指定段落，保留镜头素材"},"paragraphOrder":{"type":"array","items":{"type":"string"},"description":"merge 模式调整顺序，必须列出操作后的全部段落 ID"},"script":{"type":"array","maxItems":200,"description":"merge 按 id 合并，省略内容保留；replace 全篇替换，必须提供完整段落 id/title/action/onScreenText/dialogue/sound/duration；保留对应段落 ID 可维持镜头关联","items":{"type":"object","required":["id"],"properties":{"id":{"type":"string"},"duration":{"type":"number","minimum":0.01,"maximum":3600},"title":{"type":"string"},"action":{"type":"string"},"onScreenText":{"type":"string","description":"画面上实际显示的文字，与台词分开；无则空字符串"},"dialogue":{"type":"string"},"sound":{"type":"string"}}}}}}),
     );
-    properties.insert("shot".into(),json!({"type":"object","properties":{"planId":{"type":"string"},"scriptId":{"type":"string","description":"所属脚本段落 ID"},"order":{"type":"integer","minimum":1},"duration":{"type":"number","exclusiveMinimum":0},"dialogue":{"type":"string"},"frames":{"type":"array","maxItems":50,"items":{"type":"object","required":["assetId","title"],"additionalProperties":false,"properties":{"assetId":{"type":"string"},"title":{"type":"string"},"prompt":{"type":"string","maxLength":12000}}}},"framePrompt":{"type":"string","maxLength":12000},"prompt":{"type":"string","maxLength":12000}}}));
+    properties.insert("shot".into(),json!({"type":"object","properties":{"screenplayId":{"type":"string"},"scriptId":{"type":"string","description":"所属脚本段落 ID"},"order":{"type":"integer","minimum":1},"duration":{"type":"number","exclusiveMinimum":0},"dialogue":{"type":"string"},"frames":{"type":"array","maxItems":50,"items":{"type":"object","required":["assetId","title"],"additionalProperties":false,"properties":{"assetId":{"type":"string"},"title":{"type":"string"},"prompt":{"type":"string","maxLength":12000}}}},"framePrompt":{"type":"string","maxLength":12000},"prompt":{"type":"string","maxLength":12000}}}));
     properties.insert("references".into(),json!({"type":"array","maxItems":12,"items":{"type":"object","properties":{"assetId":{"type":"string"},"purpose":{"type":"string"},"role":{"type":"string","enum":["edit","reference","first-frame","last-frame","video-reference"]},"start":{"type":"number"},"end":{"type":"number"}},"required":["assetId","purpose"]}}));
     json!({"type":"object","properties":{
       "action":{"type":"string","enum":["inspect","edit","history","skills","read_skill","models"]},
@@ -95,15 +99,18 @@ pub fn schema() -> Value {
       "path":{"type":"string","description":"相对 skill 根目录的 Markdown 路径，默认 SKILL.md；支持链接到其他已启用技能"},
       "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect 按需读取的内容区，省略为精简工程摘要"},
       "revision":{"type":"integer","description":"inspect 返回的最新工程 revision；edit 必填"},
-      "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","plan","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden"]},"description":"nodeIds：fields 只返回选定字段，id/kind 始终返回。shot 为基础结构，shot.order/shot.duration 仅取顺序/时长；shots 为方案镜头目录，text 为动作。省略 fields 只返回摘要；text 读取动作正文，script 读取脚本段落摘要；plan 读取完整方案（分页），可用 paragraphIds/scriptFields 限定脚本范围"},
+      "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","screenplay","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden","status","targetNodeId","resultAssetIds","error","trackingPaused","turnId","modelId","ownerId","inputs","parameters","generationPurpose"]},"description":"nodeIds：fields 只返回选定字段，id/kind 始终返回。shot 为基础结构，shot.order/shot.duration 仅取顺序/时长；shots 为脚本镜头目录，text 为动作。省略 fields 只返回摘要；text 读取动作正文，script 读取脚本段落摘要；screenplay 读取完整脚本文档（分页），可用 paragraphIds/scriptFields 限定脚本范围"},
       "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions：按精确 ID 读取；fields 选择返回字段"},
       "nodeIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect: 批量读取最多 12 个节点；建议配合 fields 选择字段，文字按 textOffset 分页"},
-      "paragraphIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect fields=script/plan：只读这些脚本段落；不存在的 ID 明确返回"},
-      "scriptFields":{"type":"array","items":{"type":"string","enum":["title","duration","action","onScreenText","dialogue","sound"]},"description":"脚本段落字段，id 始终返回。script 默认 title/duration；plan 默认全部。文字使用 textOffset 分页"},
+      "paragraphIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect fields=script/screenplay：只读这些脚本段落；不存在的 ID 明确返回"},
+      "scriptFields":{"type":"array","items":{"type":"string","enum":["title","duration","action","onScreenText","dialogue","sound"]},"description":"脚本段落字段，id 始终返回。script 默认 title/duration；screenplay 默认全部。文字使用 textOffset 分页"},
       "taskId":{"type":"string","description":"history：按 taskScope.taskId 筛选任务历史"},
+      "turnId":{"type":"string","description":"inspect section=generation：按持久化批次（会话轮次）筛选任务"},
+      "status":{"type":"string","description":"inspect section=generation：按状态筛选，如 FAILED、READY、COMPLETED；batch 返回整批统计"},
       "taskKey":{"type":"string","description":"inspect section=generation 按任务 ID 查询，包含已隐藏记录"},
       "messageId":{"type":"integer","description":"history: 读取指定历史消息"},
       "textOffset":{"type":"integer","description":"inspect/history 的文字偏移；使用返回的 nextTextOffset"},
+      "mediaModelId":{"type":"string","description":"models：所选生成模型 ID；返回该模型专属提示词规则"},
       "offset":{"type":"integer","description":"inspect/history 分页偏移，默认 0"},
       "operations":{"type":"array","maxItems":30,"items":operation}
     },"required":["action"]})

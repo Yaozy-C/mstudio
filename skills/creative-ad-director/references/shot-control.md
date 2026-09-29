@@ -1,24 +1,18 @@
-# 把创意变成可控镜头
+# Choose a controllable production route
 
-一镜先明确要传达的变化、必须保留什么，再决定制作方式。路线可以混用，无默认厂商。图像/视频参考只是约束，不是像素或几何锁定；能否保留细节必须实际验证。
+Start from shot purpose and what must remain fixed. Routes may be combined; no vendor is the default. References constrain generation but do not lock pixels or geometry. Verify preservation in actual results.
 
-| 主要控制问题 | 可选输入与路线 | 局限 |
+| Control need | Possible route | Limit |
 |---|---|---|
-| 位置、比例、画面关系 | 布局草图、标注参考、静态合成后再生图 | 草图是约束而非最终商品还原 |
-| 清楚首帧与有限变化 | 已检查制作帧＋图生视频 | 运动中仍可能改部件 |
-| 已有动作、需要视觉变化 | 动作原片＋视频修改 | 可能连带改商品，需查保护区域 |
-| 商品细节必须精确保留 | 原商品图/原片保留层＋环境或效果独立生成＋合成 | 原图只支持已有视角；新视角、遮挡、软体动作不能靠平贴解决 |
-| 精确位置路径或视差 | 简易3D/代理物预演、相机与深度参考，再合成/生成 | 须有可用工具与资产，不能虚构建模已完成 |
-| 精确时间、分栏、图形运动 | 确定性剪辑、遮罩与图层动画 | 不能靠剪辑隐藏需要证明的错误 |
+| Position, scale and composition | Layout sketch, annotated reference or static composite before generation | Layout is not final product restoration |
+| Clear start with limited change | Inspected production frame plus image-to-video | Motion can still alter parts |
+| Existing action with visual changes | Source action clip plus video editing | Product regions can change too |
+| Exact visible product details | Retained original product layer with separately generated environment/effects and compositing | A flat original does not solve new views, occlusion or soft-body motion |
+| Precise path or parallax | Available 3D/proxy previs and camera/depth references | Requires actual tools/assets; do not invent completed modeling |
+| Exact timing, splits or graphics | Deterministic editing, masks and layer animation | Editing cannot hide missing required proof |
 
-逐镜记录：镜头 ID、利益/作用、固定与变化、商品应可见部件、[摄影设计](cinematography.md)中的起落构图、机位、主体/相机运动、速度、对焦与切点、输入资产角色、选用路线及理由、风险与备用路线。用已有分镜表增列即可，不另造冗余表。
+Reference the [saved shot design](cinematography.md#shot-constraints-and-handoff); add input roles, chosen route, reason, risk and fallback in the existing handoff, not another full camera table. Separate product fact, scene/camera baseline, composition, motion and actual control frames. Use the minimum relevant set and resolve conflicts before submission.
 
-产品事实图、场景/摄影基准、构图控制图、动作参考、制作帧分别标用途；只提供与本镜有关的最小参考集合。先解决冲突，不让一张实物照片同时决定整个布景、机位和动作。
+Test the hardest relationship within existing authorization. Unclear static relationships require layout/design repair; motion unknowns require an authorized useful test. Diagnose concept, input, route or execution failures rather than appending adjectives. Under an all-generated requirement, use allowed reference-driven or segmented approaches; if essential output remains infeasible, report the gap without secretly filming or changing the idea.
 
-先试最难成立的关系。静态关系不清先改布局或事件；动态未知在获批后测试最短必要片段。失败应定位：概念、控制输入、工具路线或执行质量。保持内容成立时换方法，避免仅追加形容词。受限于全生成时探索参考驱动或分段等允许路线；仍无法达到核心要求则如实报告缺口，不暗用实拍或悄悄改创意。
-
-粗剪用于决定镜头去留与节奏，已知严重商品错误不因此升级为可交付。局部修复和升级画质优先给最终保留镜头。不得根据官方“保留一致性”等描述向用户保证细节无漂移。
-
-运动的执行检查须对照摄影设计：计划位移却只得到裁切缩放、计划相机绕行却变成商品旋转，都不能按原设计记为成功。复杂路径先评估可用运动参考或预演；部件保留仍查原始商品依据。
-
-采用 H3 时，制作路线须附 [专用提示转换](h3-prompts.md)：先确认输入模式和参考分工，再转换动作、相机与声音，不能直接提交分镜表。
+Rough cuts select material and pacing; serious product errors remain errors. Spend local repair and quality upgrades on retained shots. Vendor consistency claims do not guarantee preservation. Compare actual camera behavior: cropping is not a planned translation, and rotating the product is not a camera orbit. Apply the selected model’s injected input-mode and control guidance.

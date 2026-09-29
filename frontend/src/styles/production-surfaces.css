@@ -92,26 +92,6 @@
   border-color: var(--desk-rule);
   font-weight: 600;
 }
-.radix-themes .floating-panel {
-  background: var(--desk-bg);
-  border-color: var(--desk-control);
-  box-shadow: 0 14px 44px #0005;
-  border-radius: 10px;
-}
-.radix-themes .floating-handle {
-  background: var(--desk-bg);
-  color: var(--desk-text);
-  border-bottom: 1px solid var(--desk-rule);
-}
-.radix-themes .floating-handle strong {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 13px;
-}
-.radix-themes .floating-handle strong svg {
-  color: var(--desk-accent);
-}
 .radix-themes .agent-thread {
   color: var(--desk-text);
 }

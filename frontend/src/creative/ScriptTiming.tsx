@@ -49,11 +49,11 @@ export function DurationInput({
 }
 export function ScriptTiming({
   script,
-  planId,
+  screenplayId,
   change,
 }: {
   script: ScriptParagraph[];
-  planId: string;
+  screenplayId: string;
   change: (f: (p: Project) => Project) => void;
 }) {
   useLanguage();
@@ -69,12 +69,15 @@ export function ScriptTiming({
             change((p) => ({
               ...p,
               nodes: p.nodes.map((n) =>
-                n.id === planId
+                n.id === screenplayId
                   ? {
                       ...n,
-                      plan: {
-                        ...n.plan!,
-                        script: retimeScript(n.plan?.script ?? [], seconds),
+                      screenplay: {
+                        ...n.screenplay!,
+                        script: retimeScript(
+                          n.screenplay?.script ?? [],
+                          seconds,
+                        ),
                       },
                     }
                   : n,

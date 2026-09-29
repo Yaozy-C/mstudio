@@ -26,7 +26,10 @@ pub async fn run_until(
     key: &str,
     deadline: tokio::time::Instant,
 ) -> Result<String, String> {
-    for index in 1..=16 {
+    for index in 1..=64 {
+        if index > session.edit_progress.step_limit() {
+            break;
+        }
         if host.token().is_cancelled() {
             return Err("已停止回答；已输出内容和已完成操作保留".into());
         }

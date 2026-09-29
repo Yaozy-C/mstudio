@@ -1,4 +1,4 @@
-import { Minus, Plus, CornersOut } from "@phosphor-icons/react";
+import { ZoomControls } from "../ui/ZoomControls";
 import { t, useLanguage } from "../i18n";
 export function CanvasControls({
   scale,
@@ -18,19 +18,7 @@ export function CanvasControls({
   useLanguage();
   return (
     <>
-      <div className="canvas-controls">
-        <button onClick={() => zoom(0.8)} aria-label={t("缩小画布")}>
-          <Minus />
-        </button>
-        <span>{Math.round(scale * 100)}%</span>
-        <button onClick={() => zoom(1.25)} aria-label={t("放大画布")}>
-          <Plus />
-        </button>
-        <button onClick={() => fit()} title={t("适应全部内容")}>
-          <CornersOut />
-          {t("全部适应")}
-        </button>
-      </div>
+      <ZoomControls scale={scale} zoom={zoom} fit={fit} />
       <div className="canvas-help">
         {t(
           "拖空白移动 · 滚轮平移 · ⌘/Ctrl + 滚轮缩放 · Shift 多选 / 框选 · 双击预览",
@@ -41,7 +29,7 @@ export function CanvasControls({
           <span>
             {t("已选")} {count} {t("项")}
           </span>
-          <button onClick={reference}>{t("引用到输入框")}</button>
+          <button onClick={reference}>{t("引用到对话")}</button>
         </div>
       )}
       {empty && (

@@ -16,6 +16,7 @@ import { AttachmentChips } from "./AttachmentChips";
 import { GenerationMessages } from "../production/GenerationMessages";
 import type { ProductionTask } from "../production/types";
 import type { ProductionController } from "../production/useProduction";
+import type { AgentProfile } from "../agents/catalog";
 // Stable component identity preserves Markdown nodes while streaming text grows.
 function MessageText() {
   useLanguage();
@@ -24,6 +25,7 @@ function MessageText() {
 const contentComponents = { Text: MessageText };
 export const MessageContext = createContext<{
   project: Project;
+  agents: Pick<AgentProfile, "id" | "name">[];
   sent: Record<string, Attachment[]>;
   targets: Record<
     string,
@@ -61,6 +63,7 @@ export function AgentMessage() {
       {message.role === "assistant" && turnId && (
         <AgentActivity
           projectId={context.project.id}
+          agents={context.agents}
           turnId={turnId}
           running={message.status?.type === "running"}
         />

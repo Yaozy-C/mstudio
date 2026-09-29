@@ -34,8 +34,8 @@ export function SkillLibrary({ openAgents }: { openAgents: () => void }) {
             {hub.agents.filter((a) => a.skillIds.includes(s.id)).length}{" "}
             {t("个 Agent 已装配 ·")}{" "}
             {installed.find((v) => v.id === s.id)?.available
-              ? t("内置规则可用")
-              : t("内置规则待检查")}
+              ? t("规则可用")
+              : t("规则待检查")}
           </p>
           <SkillRules
             id={s.id}

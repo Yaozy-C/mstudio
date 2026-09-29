@@ -15,11 +15,13 @@ pub struct ProjectHost {
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
         "inspect",
-        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询，镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。列表每页最多12项并受大小限制；8镜等小组可一次读取，优先指定必要 fields，按 nextOffset 补读。互不依赖的读取同批调用。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
+        "读取当前任务所需工程内容；生成任务用 section=generation 与 taskKey 精确查询；批量任务按 turnId/status 筛选，先用 fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] 获取每页最多30项的进度与整批 batch 统计，按 nextOffset 继续；镜头用 nodeIds/fields；脚本用 fields=[script]、paragraphIds 和 scriptFields 精确读取。省略 fields 只返回摘要。列表每页最多12项并受大小限制；8镜等小组可一次读取，优先指定必要 fields，按 nextOffset 补读。互不依赖的读取同批调用。revision 是返回值，不是查询参数；修改前核实目标最新状态。",
         &[
             "section",
             "ids",
             "taskKey",
+            "turnId",
+            "status",
             "nodeIds",
             "fields",
             "paragraphIds",
@@ -39,7 +41,11 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
         "分页检索项目历史对话；taskId 可限定当前或已知任务，完整原文按 textOffset 继续读取。",
         &["offset", "messageId", "textOffset", "taskId"],
     ),
-    ("models", "分页查看已启用的媒体模型。", &["offset"]),
+    (
+        "models",
+        "分页查看已启用媒体模型；指定 mediaModelId 读取该模型专属提示词规则。",
+        &["offset", "mediaModelId"],
+    ),
     ("edit", "", &["revision", "operations"]),
 ];
 
@@ -150,7 +156,7 @@ impl Host for ProjectHost {
                 .filter(|p| ids.contains(&p.id))
                 .map(|p| json!({"id":p.id,"tools":p.tool_ids}))
                 .collect();
-            definition.description.push_str(&format!("可用角色与权限：{}。交付 script 用 project-plan，shots 用 project-shots，image-prompts/images 用 project-frames，video-prompts/videos 用 project-production，timeline 用 project-timeline；生成还需 media-generation。",json!(roster)));
+            definition.description.push_str(&format!("可用角色与权限：{}。交付公共白底资产用 project-assets，script 用 project-script，shots 用 project-shots，image-prompts/images 用 project-frames，video-prompts/videos 用 project-production，timeline 用 project-timeline；生成还需 media-generation。",json!(roster)));
 
             definitions.push(definition);
             definitions.extend(super::delegation::control_definitions());
@@ -200,7 +206,7 @@ impl Host for ProjectHost {
 }
 
 fn edit_description() -> String {
-    "按当前角色权限批量修改工程；revision 使用 inspect 返回值，操作原子保存且可撤销。只修改本轮目标，已有对象沿用 ID；add_node 必填 id/kind/title，shot 关联 planId；省略字段保留原值。update_node 更新卡片：plan.script 为脚本，镜头 text 为动作与摄影设计，shot.prompt 为视频草稿，shot.framePrompt/frames 为画格草稿与图片。修改已有生成任务用 update_generation(taskKey,text)，不顺带覆盖镜头草稿；已提交任务仅保存 nextPrompt，保留原请求和结果。仅改提示词不生成；明确要求重生成才用 regenerate_generation(taskKey)，沿用模型、输入与参数。request_generation 创建媒体任务，text 必须是完整模型提示词，程序不会追加脚本；references 明确素材 ID、用途与 role，省略时仅沿用本轮输入框引用，不自动补入工程素材。模型按用户选择，任务状态不等于生成完成或视觉通过。choose_take 选择素材，assemble_plan 编排镜头；时间线 start 为成片起点，trimIn/trimOut 为源区间，speed 为绝对倍速。savedClips 返回实际保存的时间线变化，complete=true 时可用于参数核对，不必立即再读同一批片段；complete=false 时按需 inspect。参数回执不能代替抽帧或播放验收。失败按返回原因修正；状态不确定时先查目标，避免重复提交。创作方法与角色交接按适用 skill 执行。".into()
+    "按当前角色权限批量修改工程；revision 使用 inspect 返回值，操作原子保存且可撤销。只修改本轮目标，已有对象沿用 ID；add_node 必填 id/kind/title，shot 关联 screenplayId；省略字段保留原值。update_node 更新卡片：screenplay.script 为脚本，镜头 text 为动作与摄影设计，shot.prompt 为视频草稿，shot.framePrompt/frames 为画格草稿与图片。修改已有生成任务用 update_generation(taskKey,text)，不顺带覆盖镜头草稿；统一更新任务 prompt，保留已有结果；已发出的请求不会被追写。仅改提示词不生成；明确要求重生成才用 regenerate_generation(taskKey)，沿用模型、输入与参数。request_generation 创建媒体任务，text 必须是完整模型提示词，程序不会追加脚本；references 明确素材 ID、用途与 role，省略时仅沿用本轮输入框引用，不自动补入工程素材。模型按用户选择，任务状态不等于生成完成或视觉通过。choose_take 选择素材，assemble_screenplay 编排镜头；时间线 start 为成片起点，trimIn/trimOut 为源区间，speed 为绝对倍速。savedClips 返回实际保存的时间线变化，complete=true 时可用于参数核对，不必立即再读同一批片段；complete=false 时按需 inspect。参数回执不能代替抽帧或播放验收。失败按返回原因修正；状态不确定时先查目标，避免重复提交。创作方法与角色交接按适用 skill 执行。".into()
 }
 
 pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Value {
@@ -216,20 +222,8 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
             return json!({"error":"此工具只接受历史卸载提示中的 imageId。读取生成图片请用 mstudio_read_image(assetId)，素材 ID 从 inspect 获取，不要传文件名或任务 ID。","code":"INVALID_ARGS"});
         };
         let store = t.app.state::<crate::database::Store>();
-        let raw=store.db.lock().unwrap().query_row(
-            "SELECT json_extract(j.value,'$.image') FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id=?1 AND e.kind='image/offload' AND json_extract(j.value,'$.id')=?2 ORDER BY e.seq DESC LIMIT 1",
-            rusqlite::params![t.project,id],|r|r.get::<_,String>(0),
-        );
-        return match raw {
-            Ok(image) => match serde_json::from_str::<Value>(&image) {
-                Ok(image) => json!({"ok":true,"imageId":id,"__offloadedImage":image}),
-                Err(_) => json!({"error":"图片记录已损坏","code":"IMAGE_CORRUPT"}),
-            },
-            Err(rusqlite::Error::QueryReturnedNoRows) => {
-                json!({"error":"找不到当前工程中的图片引用","code":"IMAGE_NOT_FOUND"})
-            }
-            Err(error) => json!({"error":error.to_string(),"code":"IMAGE_READ_FAILED"}),
-        };
+        let db = store.db.lock().unwrap();
+        return super::stored_image::read(&db, &t.project, id);
     }
     if call.function.name == "mstudio_read_result" {
         return super::tool_output::read(t, &args);
@@ -254,43 +248,5 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn inspect_accepts_exact_task_lookup_but_not_edit_revision() {
-        let schema = tool_schema::for_profile(&profiles::defaults(""));
-        let fields = ACTIONS
-            .iter()
-            .find(|(name, _, _)| *name == "inspect")
-            .unwrap()
-            .2;
-        let properties: serde_json::Map<_, _> = fields
-            .iter()
-            .map(|field| ((*field).to_owned(), schema["properties"][*field].clone()))
-            .collect();
-        let exposed = json!({"type":"object","properties":properties,"additionalProperties":false});
-        assert!(super::super::schema::validate(&exposed, &json!({"nodeIds":["plan"],"fields":["script"],"paragraphIds":["p4"],"scriptFields":["duration"]})).is_ok());
-        assert!(
-            super::super::schema::validate(
-                &exposed,
-                &json!({"section":"generation","taskKey":"retry:target"})
-            )
-            .is_ok()
-        );
-        assert!(
-            super::super::schema::validate(
-                &exposed,
-                &json!({"section":"generation","taskKey":123})
-            )
-            .is_err()
-        );
-        assert!(
-            super::super::schema::validate(
-                &exposed,
-                &json!({"nodeIds":["shot_01_hook"],"revision":680})
-            )
-            .is_err()
-        );
-    }
-}
+#[path = "registry_tests.rs"]
+mod tests;

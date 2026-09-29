@@ -1,0 +1,78 @@
+[
+  [
+    "Use upsert_shared_asset(id,name,description,views) for one shared subject. Each view has id/name and an optional existing assetId; omit assetId only for a missing view. Keep identity/material facts in description, and save consuming shot references through set_shared_references(id=shotId,sharedReferences=[{sharedAssetId,viewId,purpose}]). Usage is computed from those shot references; never copy shot lists into descriptions. To fill a missing view, include assetTarget={sharedAssetId,viewId} on its white-background asset request. The first completed result binds to the intended view automatically; later outputs stay available media. Inspect result pixels separately. Replacing the selected view image changes future references, never the actual inputs of old tasks. Do not change shot design, frames or timeline.",
+    "Use existing project image IDs directly. Save consuming shot references through set_references(id=shotId,references=[{assetId,purpose}]), preserving unrelated existing references. Use names and reference purposes to explain front, side or identity roles; do not create subject/view records. New reference image results are collected into project media. Inspect result pixels before assigning references. Changing shot references affects future requests, never the actual inputs of old tasks. Do not change shot design, frames or timeline."
+  ],
+  [
+    "Persist one subject with upsert_shared_asset(id,name,description,views), using stable named view IDs. Reuse real images through each view's assetId. Save usage only with set_shared_references on the consuming shot; inspect(shared_assets) derives reverse usage. Keep identity and inspection facts in description, not duplicate shot lists. Include assetTarget={sharedAssetId,viewId} for missing-view generation so the first result binds automatically. Replacement views affect future tasks, not historical inputs. Return real subject/view/asset IDs and relevant inspection findings.",
+    "Reuse real project images by assetId. Set consuming shot references with set_references, preserving existing unrelated references. Generate only missing reference images; inspect the results and then attach their IDs directly to shots. Return actual image IDs, reference purposes and inspection findings. Do not maintain a subject/view registry or rewrite historical task inputs."
+  ],
+  [
+    "Read the relevant shots and shared_assets inventory. Only recurring cross-shot identities need shared records; reuse suitable images. One subject has multiple named views, not one new subject per view. Save records with upsert_shared_asset and shot usage with set_shared_references. Keep facts in the record and usage in shot references, never duplicate usage lists in descriptions.",
+    "Read the relevant shots and project assets. Reuse suitable images by assetId. Save shot references with set_references(id=shotId,references=[{assetId,purpose}]), preserving unrelated existing references. Images are ordinary project media; do not create subject records, view registries or placeholder nodes."
+  ],
+  [
+    "Inventory shared subjects through inspect(section=shared_assets), project images through inspect(section=assets), and relevant tasks through inspect(section=generation). Legacy kind=asset nodes are ordinary media cards, not a second shared registry.",
+    "Inventory project images through inspect(section=assets) and relevant tasks through inspect(section=generation). Images and kind=asset media cards are ordinary project materials."
+  ],
+  [
+    "You manage reusable cross-shot subjects and their image views. Read relevant storyboards and shared_assets; reuse suitable references, fill only real gaps. Store one subject with upsert_shared_asset and shot usage with set_shared_references.",
+    "You prepare ordinary reference images in project media. Read relevant storyboards and project assets; reuse suitable images and fill only real gaps. Save shot references with set_references using concrete asset IDs, preserving unrelated existing references. Do not create separate subject or view registries."
+  ],
+  [
+    "Use shared_assets and the target shot's sharedReferences for existing subjects. Supply sharedReferences with chosen views when creating a task; these resolve to fixed image IDs.",
+    "Read project assets and the target shot's references. Supply concrete assetId references when creating a task."
+  ],
+  [
+    "Reference repeated subjects through sharedReferences; shared_assets exposes current views and derived shot usage. Single-shot details do not need public assets.",
+    "Reference existing images directly with references=[{assetId,purpose}]. Multiple shots may reuse the same image. Do not create subject or view registries."
+  ],
+  [
+    "Create missing views with generationPurpose=asset and assetTarget={sharedAssetId,viewId}; completed images bind automatically.",
+    "Generate only missing reference images with generationPurpose=asset. Completed images are collected into project media; after inspection, assign their real asset IDs to the relevant shots using set_references."
+  ],
+  [
+    "Resolve sharedReferences to the chosen image views when creating new tasks; old submitted inputs remain historical evidence.",
+    "Use concrete image asset IDs in task references; old submitted inputs remain historical evidence."
+  ],
+  [
+    "Before generating anything, inventory shared_assets, current project images and relevant generation tasks.",
+    "Before generating anything, inventory current project images and relevant generation tasks."
+  ],
+  [
+    "Derive usage from shot sharedReferences; never maintain a second shot list in prose.",
+    "Read shot references for usage; do not create separate asset registries."
+  ],
+  [
+    "Use assetTarget on asset image tasks so results bind to the intended view.",
+    "After generation and inspection, attach the actual result image IDs to the relevant shots."
+  ],
+  [
+    "Use appropriate shared views and an inspected base for dependent frames.",
+    "Use appropriate project images and an inspected base for dependent frames."
+  ],
+  [
+    "Use shared_assets to inventory recurring subjects and their views.",
+    "Inspect project assets and reuse their concrete image IDs across shots."
+  ],
+  [
+    "Shared subjects and views are referenced through sharedReferences.",
+    "Shots reference project images directly through references=[{assetId,purpose}]."
+  ],
+  [
+    "Return actual asset IDs and shared subject/view IDs,",
+    "Return actual image asset IDs,"
+  ],
+  [
+    "Resolve shared views into concrete task inputs.",
+    "Use concrete project image IDs as task inputs."
+  ],
+  [
+    "白底公共资产",
+    "白底参考图片"
+  ],
+  [
+    "existing images, shared records and pending tasks",
+    "existing project images and pending tasks"
+  ]
+]

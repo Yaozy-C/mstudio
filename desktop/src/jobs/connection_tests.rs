@@ -17,6 +17,11 @@ fn queued_job_keeps_its_connection_when_model_switches() {
             [model.to_string()],
         )
         .unwrap();
+        db.execute(
+            "INSERT INTO projects VALUES('project','project','{}',0)",
+            [],
+        )
+        .unwrap();
         let job = serde_json::json!({"id":"job","mediaModelId":"image","providerId":"fal","endpoint":"fal-ai/test","status":"IN_QUEUE"});
         db.execute(
             "INSERT INTO jobs VALUES('job','project',?1)",

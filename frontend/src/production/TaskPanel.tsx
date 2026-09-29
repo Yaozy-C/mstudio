@@ -1,5 +1,6 @@
+import { Dialog } from "@radix-ui/themes";
 import { t, useLanguage } from "../i18n";
-import { CaretDown, CaretUp, Image, VideoCamera } from "@phosphor-icons/react";
+import { ListChecks, X, Image, VideoCamera } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import type { ProductionController } from "./useProduction";
 import { GenerationRun } from "./GenerationRun";
@@ -17,7 +18,6 @@ export function TaskPanel({
 }) {
   useLanguage();
   const runs = [...canvas.runs].reverse();
-  if (!runs.length) return null;
   const visible = runs.filter(
     (t) => !t.hiddenFromList || t.key === canvas.activeTaskKey,
   );
@@ -26,37 +26,48 @@ export function TaskPanel({
   const active = visible.filter(pendingRun).length;
   const failed = visible.filter((t) => t.status === "FAILED").length;
   return (
-    <section
-      className={`production-task-panel ${canvas.taskPanelOpen ? "is-open" : ""}`}
-      aria-label={t("生成任务栏")}
+    <Dialog.Root
+      open={canvas.taskPanelOpen}
+      onOpenChange={canvas.setTaskPanelOpen}
     >
-      <header className="task-panel-heading">
-        <button
-          type="button"
-          aria-expanded={canvas.taskPanelOpen}
-          aria-controls="production-task-panel-body"
-          onClick={() => canvas.setTaskPanelOpen(!canvas.taskPanelOpen)}
-        >
-          <strong>{t("生成任务")}</strong>
-          <span>{visible.length}</span>
+      <Dialog.Trigger>
+        <button type="button" className="chrome-action task-dialog-trigger">
+          <ListChecks />
+          {t("生成任务")} <span>{visible.length}</span>
           {!!active && (
-            <span className="task-active">
+            <small className="task-active">
               {active} {t("个进行中")}
-            </span>
+            </small>
           )}
           {!!failed && (
-            <span className="task-failed">
+            <small className="task-failed">
               {failed} {t("个失败")}
-            </span>
+            </small>
           )}
-          {canvas.taskPanelOpen ? <CaretDown /> : <CaretUp />}
         </button>
-      </header>
-      {canvas.taskPanelOpen && (
-        <div id="production-task-panel-body" className="task-panel-body">
+      </Dialog.Trigger>
+      <Dialog.Content
+        className="generation-tasks-dialog"
+        aria-describedby={undefined}
+      >
+        <header className="task-panel-heading">
+          <Dialog.Title>{t("生成任务")}</Dialog.Title>
+          <Dialog.Close>
+            <button type="button" aria-label={t("关闭生成任务")}>
+              <X />
+            </button>
+          </Dialog.Close>
+        </header>
+        <div className="task-panel-body">
           <div className="task-panel-list" aria-label={t("任务列表")}>
             {!visible.length && (
-              <p>{t("列表已清空，任务记录和素材仍保留。")}</p>
+              <p>
+                {t(
+                  runs.length
+                    ? "列表已清空，任务记录和素材仍保留。"
+                    : "暂无生成任务；创建后会显示在这里。",
+                )}
+              </p>
             )}
             {visible.map((task) => {
               const Icon = task.kind === "image" ? Image : VideoCamera;
@@ -119,11 +130,17 @@ export function TaskPanel({
                 />
               </>
             ) : (
-              <p>{t("任务记录与生成素材均已保留。")}</p>
+              <p>
+                {t(
+                  runs.length
+                    ? "任务记录与生成素材均已保留。"
+                    : "尚未创建生成任务。Agent 提交失败时不会产生任务记录。",
+                )}
+              </p>
             )}
           </div>
         </div>
-      )}
-    </section>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

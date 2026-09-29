@@ -26,11 +26,14 @@ const task: ProductionTask = {
   error: "HTTP 422",
   createdAt: 1,
 };
-test("new attempts preserve settings and the original record, never reuse job identities", () => {
-  const next = retryTask(task, "fresh");
+test("retry preserves task identity and settings but renews job identities", () => {
+  const next = retryTask(task);
   const p = saveTask(saveTask(fixture(), task), next);
-  expect(Object.values(p.production!.drafts!)).toHaveLength(2);
-  expect(p.production!.drafts![task.key]).toBe(task);
+  expect(Object.values(p.production!.drafts!)).toHaveLength(1);
+  expect(p.production!.drafts![task.key]).toBe(next);
+  expect(next.key).toBe(task.key);
+  expect(next.createdAt).toBe(task.createdAt);
+  expect(next.turnId).toBe(task.turnId);
   expect(next.prompt).toBe(task.prompt);
   expect(next.parameters).toEqual(task.parameters);
   expect(next.inputs).not.toBe(task.inputs);
@@ -44,7 +47,7 @@ test("new attempts preserve settings and the original record, never reuse job id
     "CANCEL_REQUESTED",
     "RECEIVING",
   ])
-    expect(() => retryTask({ ...task, status }, "no")).toThrow();
+    expect(() => retryTask({ ...task, status })).toThrow();
 });
 test("temporary polling errors back off and eventually pause", () => {
   expect([1, 2, 3, 4].map(retryDelay)).toEqual([8000, 16000, 30000, undefined]);
@@ -66,14 +69,14 @@ const render = (status: string) =>
   );
 test("recovery actions match terminal, uncertain, cancelling and receiving states", () => {
   for (const status of ["FAILED", "CANCELLED"])
-    expect(render(status)).toContain("重新设置并生成");
+    expect(render(status)).toContain("重试</button>");
   for (const status of [
     "UNKNOWN",
     "CANCEL_REQUESTED",
     "IN_PROGRESS",
     "RECEIVING",
   ])
-    expect(render(status)).not.toContain("重新设置并生成");
+    expect(render(status)).not.toContain("重试</button>");
   expect(render("RECEIVING")).toContain("重试收取结果");
   expect(render("UNKNOWN")).toContain("核查后重新设置");
   expect(render("IN_PROGRESS")).toContain("进度暂时无法更新");

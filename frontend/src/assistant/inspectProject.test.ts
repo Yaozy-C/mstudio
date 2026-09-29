@@ -5,7 +5,7 @@ import { applyOperations, inspectProject } from "./projectCommands";
 test("a six-shot handoff is read once without unrelated video prompts", () => {
   const initial = newProject("Task handoff");
   const p = applyOperations(initial, 0, [
-    { op: "add_node", id: "plan", kind: "plan", title: "Plan" },
+    { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 6 }, (_, i) => ({
       op: "add_node",
       id: `shot${i}`,
@@ -13,7 +13,7 @@ test("a six-shot handoff is read once without unrelated video prompts", () => {
       title: `Shot ${i}`,
       text: "lift",
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         order: i + 1,
         duration: 2,
         dialogue: "",
@@ -34,7 +34,7 @@ test("a six-shot handoff is read once without unrelated video prompts", () => {
 
 test("default batch details omit long prompts and can include creation", () => {
   const p = applyOperations(newProject("Compact"), 0, [
-    { op: "add_node", id: "plan", kind: "plan", title: "Plan" },
+    { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 6 }, (_, i) => ({
       op: "add_node",
       id: `s${i}`,
@@ -42,7 +42,7 @@ test("default batch details omit long prompts and can include creation", () => {
       title: "Shot",
       text: "lift bag",
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         order: i + 1,
         duration: 2,
         dialogue: "",
@@ -65,7 +65,7 @@ test("targeted reads keep local context without unrelated pagination and can fin
   const text = "镜头动作".repeat(1250);
   const p = applyOperations(newProject("Local edit"), 0, [
     { op: "set_brief", text: "Unrelated project brief" },
-    { op: "add_node", id: "plan", kind: "plan", title: "Plan" },
+    { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 12 }, (_, i) => ({
       op: "add_node",
       id: `s${i}`,
@@ -73,7 +73,7 @@ test("targeted reads keep local context without unrelated pagination and can fin
       title: "Shot",
       text,
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         order: i + 1,
         duration: 2,
         dialogue: "",
@@ -89,7 +89,7 @@ test("targeted reads keep local context without unrelated pagination and can fin
   expect(first.brief).toBeUndefined();
   expect(first.tracks).toEqual([]);
   expect(first.nextOffset).toBeNull();
-  expect(first.details?.[0].shot?.planId).toBe("plan");
+  expect(first.details?.[0].shot?.screenplayId).toBe("screenplay");
   expect(first.details?.[0].shot?.prompt?.nextTextOffset).toBeNull();
   const next = first.details?.[0].nextTextOffset;
   expect(next).toBe(4000);
@@ -141,10 +141,21 @@ test("shot ordering reads exclude long text and scripts, with explicit fields", 
   const p = applyOperations(newProject("Fields"), 0, [
     {
       op: "add_node",
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "Plan",
-      text: "unrelated".repeat(1000),
+      screenplay: {
+        script: [
+          {
+            id: "p1",
+            title: "Script",
+            action: "unrelated".repeat(600),
+            duration: 2,
+            dialogue: "",
+            sound: "",
+          },
+        ],
+      },
     },
     {
       op: "add_node",
@@ -153,7 +164,7 @@ test("shot ordering reads exclude long text and scripts, with explicit fields", 
       title: "Thermal",
       text: "long action".repeat(1000),
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         order: 1,
         duration: 2,
         dialogue: "long speech".repeat(400),
@@ -170,11 +181,14 @@ test("shot ordering reads exclude long text and scripts, with explicit fields", 
   expect(result.details?.[0].text).toBeUndefined();
   expect(result.details?.[0].shot?.dialogue).toBeUndefined();
   expect(JSON.stringify(result).length).toBeLessThan(1000);
-  const plan = inspectProject(p, { nodeIds: ["plan"], fields: ["shots"] });
-  expect(plan.details?.[0].shots).toEqual([
+  const screenplay = inspectProject(p, {
+    nodeIds: ["screenplay"],
+    fields: ["shots"],
+  });
+  expect(screenplay.details?.[0].shots).toEqual([
     { id: "shot", title: "Thermal", order: 1, duration: 2 },
   ]);
-  expect(plan.details?.[0].plan).toBeUndefined();
+  expect(screenplay.details?.[0].screenplay).toBeUndefined();
   expect(
     inspectProject(p, { nodeIds: ["shot"] }).details?.[0].text,
   ).toBeUndefined();
@@ -185,10 +199,10 @@ test("duration edit reads only its paragraph, reports saved values, and preserve
   let p = applyOperations(newProject("Eight shots"), 0, [
     {
       op: "add_node",
-      id: "plan",
-      kind: "plan",
+      id: "screenplay",
+      kind: "screenplay",
       title: "Script",
-      plan: {
+      screenplay: {
         script: Array.from({ length: 8 }, (_, i) => ({
           id: `p${i + 1}`,
           title: `Paragraph ${i + 1}`,
@@ -206,7 +220,7 @@ test("duration edit reads only its paragraph, reports saved values, and preserve
       title: "Shot",
       text: "Preserve action",
       shot: {
-        planId: "plan",
+        screenplayId: "screenplay",
         scriptId: `p${i + 1}`,
         order: i + 1,
         duration: 2,
@@ -216,49 +230,51 @@ test("duration edit reads only its paragraph, reports saved values, and preserve
   ]);
   const before = structuredClone(p);
   const read = {
-    nodeIds: ["plan"],
+    nodeIds: ["screenplay"],
     fields: ["script"],
     paragraphIds: ["p4"],
     scriptFields: ["duration"],
   };
-  const detail = inspectProject(p, read).details![0].plan!;
+  const detail = inspectProject(p, read).details![0].screenplay!;
   expect(detail.script).toEqual([{ id: "p4", duration: 2 }]);
   expect(detail.omittedScriptFields).toContain("action");
   expect(detail.missingParagraphIds).toEqual([]);
   expect(
-    inspectProject(p, { ...read, paragraphIds: ["absent"] }).details![0].plan!
-      .missingParagraphIds,
+    inspectProject(p, { ...read, paragraphIds: ["absent"] }).details![0]
+      .screenplay!.missingParagraphIds,
   ).toEqual(["absent"]);
   const ops = [
     {
       op: "update_node",
-      id: "plan",
-      plan: { script: [{ id: "p4", duration: 1.5 }] },
+      id: "screenplay",
+      screenplay: { script: [{ id: "p4", duration: 1.5 }] },
     },
     { op: "update_node", id: "s4", shot: { duration: 1.5 } },
   ];
   p = applyOperations(p, p.revision ?? 0, ops);
   expect(savedValues(p, ops)).toEqual([
     {
-      id: "plan",
+      id: "screenplay",
       shot: undefined,
       script: [{ id: "p4", exists: true, duration: 1.5 }],
     },
     { id: "s4", shot: { duration: 1.5 }, script: [] },
   ]);
-  expect(inspectProject(p, read).details![0].plan!.script).toEqual([
+  expect(inspectProject(p, read).details![0].screenplay!.script).toEqual([
     { id: "p4", duration: 1.5 },
   ]);
-  p.nodes[0].plan!.script![3].duration = 2;
+  p.nodes[0].screenplay!.script![3].duration = 2;
   p.nodes.find((n) => n.id === "s4")!.shot!.duration = 2;
   expect(p.nodes.find((n) => n.id === "s4")!.shot!.visualChanged).toBe(true);
   delete p.nodes.find((n) => n.id === "s4")!.shot!.visualChanged;
   expect(p).toEqual(before);
-  const summary = JSON.stringify(inspectProject(p, { nodeIds: ["plan"] }));
+  const summary = JSON.stringify(
+    inspectProject(p, { nodeIds: ["screenplay"] }),
+  );
   expect(summary).not.toContain("Long action");
   const full = inspectProject(p, {
-    nodeIds: ["plan"],
-    fields: ["plan"],
+    nodeIds: ["screenplay"],
+    fields: ["screenplay"],
     paragraphIds: ["p4"],
   });
   expect(JSON.stringify(full)).toContain("Long action");

@@ -1,0 +1,74 @@
+[
+  {
+    "skill": "creative-ad-director",
+    "path": "SKILL.md",
+    "before": "# Creative and shot-design rules\n",
+    "after": "# Creative and shot-design rules\n\nBefore writing or revising any image or video prompt, read the full [animation principles](references/animation-principles.md) and the applicable [image](references/image-prompt-writing.md) or [video](references/video-prompt-writing.md) guide. These are required, including for realistic products and simple shots. Already injected full current rules count as read; a summary or catalog does not. Apply only relevant principles: images express a readable pose, weight, support and selected moment; videos express causality, speed changes, contact, follow-through and timing. Do not paste principle names into the output. Model-specific syntax and limitations are supplied by the selected model, outside this Skill.\n\n"
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "SKILL.md",
+    "before": "[H3 adapter](references/h3-prompts.md) only when H3 is selected",
+    "after": "Use the selected model’s injected guidance"
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "references/shot-control.md",
+    "before": "When H3 is selected, use its [adapter](h3-prompts.md) after choosing the actual input mode.",
+    "after": "Apply the selected model’s injected input-mode and control guidance."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "conversion; read H3 rules only for H3.",
+    "after": "conversion and the full [animation principles](../creative-ad-director/references/animation-principles.md) before writing any image/video prompt. Apply the selected model’s injected guidance separately."
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "CORE.md",
+    "before": "# Core: image execution\nPreserve the chosen scene, product geometry, identity and outfit using relevant actual images. Describe concrete visible surfaces, actions and light. Do not add commercial/cinematic styling, studio polish, HDR/8K slogans, vapor or exaggerated reflections unless the user or selected visual direction calls for them. A reference's texture detail is not proof of realism. Keep each image to one moment.\nRead project assets and the target shot's references. Supply concrete assetId references when creating a task. Use an inspected base for dependent same-view frames. Save only the requested scope; prompt edits do not authorize regeneration. Further prompt/staging methods: SKILL.md and ../creative-ad-director/references/image-prompt-writing.md when needed.",
+    "after": "# Core: image execution\nPreserve the chosen scene, product geometry, identity and outfit using relevant actual images. Describe concrete visible surfaces, actions and light. Do not add commercial/cinematic styling, studio polish, HDR/8K slogans, vapor or exaggerated reflections unless the user or selected visual direction calls for them. A reference's texture detail is not proof of realism. Keep each image to one moment.\nRead project assets and the target shot's references. Supply concrete assetId references when creating a task. Use an inspected base for dependent same-view frames. Save only the requested scope; prompt edits do not authorize regeneration. Further prompt/staging methods: SKILL.md and ../creative-ad-director/references/image-prompt-writing.md when needed.\nBefore writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "CORE.md",
+    "before": "# Core: media production\nPreserve chosen product, characters and scene direction with actual references. Use concrete image asset IDs in task references; old submitted inputs remain historical evidence. Do not turn ordinary scenes into glossy commercial or cinematic imagery without that direction. Preserve physical support, contact and action continuity. Use selected models and supported parameters. Submitted, generated and visually inspected are different states; report the actual state. Detailed motion, input and editing methods: SKILL.md and relevant references when needed.",
+    "after": "# Core: media production\nPreserve chosen product, characters and scene direction with actual references. Use concrete image asset IDs in task references; old submitted inputs remain historical evidence. Do not turn ordinary scenes into glossy commercial or cinematic imagery without that direction. Preserve physical support, contact and action continuity. Use selected models and supported parameters. Submitted, generated and visually inspected are different states; report the actual state. Detailed motion, input and editing methods: SKILL.md and relevant references when needed.\nBefore writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements."
+  },
+  {
+    "skill": "asset-preparation",
+    "path": "CORE.md",
+    "before": "# Core: shared assets\nRead the relevant shots and project assets. Reuse suitable images by assetId. Save shot references with set_references(id=shotId,references=[{assetId,purpose}]), preserving unrelated existing references. Images are ordinary project media; do not create subject records, view registries or placeholder nodes.\nAll newly generated asset images have a plain white background. Preserve identity, outfit and product construction; white background does not imply glossy advertising polish. Generate only missing reference images with generationPurpose=asset. Completed images are collected into project media; after inspection, assign their real asset IDs to the relevant shots using set_references. Availability is not visual approval. Do not regenerate existing usable views or claim uninspected images passed. Detailed methods: SKILL.md when needed.",
+    "after": "# Core: shared assets\nRead the relevant shots and project assets. Reuse suitable images by assetId. Save shot references with set_references(id=shotId,references=[{assetId,purpose}]), preserving unrelated existing references. Images are ordinary project media; do not create subject records, view registries or placeholder nodes.\nAll newly generated asset images have a plain white background. Preserve identity, outfit and product construction; white background does not imply glossy advertising polish. Generate only missing reference images with generationPurpose=asset. Completed images are collected into project media; after inspection, assign their real asset IDs to the relevant shots using set_references. Availability is not visual approval. Do not regenerate existing usable views or claim uninspected images passed. Detailed methods: SKILL.md when needed.\nBefore writing or revising any image/video prompt, read the full creative-ad-director/references/animation-principles.md and the corresponding image-prompt-writing.md or video-prompt-writing.md. Full current rules already injected by the app satisfy this requirement; core summaries do not. Use the selected model’s separately injected guidance for model-specific requirements."
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "references/image-prompt-writing.md",
+    "before": "# Write one image at one visible moment\n",
+    "after": "# Write one image at one visible moment\n\nRequired before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.\n"
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "references/video-prompt-writing.md",
+    "before": "# Convert shot design into a video prompt\n",
+    "after": "# Convert shot design into a video prompt\n\nRequired before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.\n"
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "SKILL.md",
+    "before": "Read this detailed document only when the current task needs its methods.",
+    "after": "For every image/video prompt, the animation principles and applicable prompt guide are mandatory; other detailed methods are read when needed."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "Read this detailed document only when the current task needs its methods.",
+    "after": "For every image/video prompt, the animation principles and applicable prompt guide are mandatory; other detailed methods are read when needed."
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "references/animation-principles.md",
+    "before": "Read for action design, prompt conversion and motion review.",
+    "after": "Required reading before every image/video prompt, as well as action design and motion review. Full current text already injected by the app counts as read; a core summary does not."
+  }
+]

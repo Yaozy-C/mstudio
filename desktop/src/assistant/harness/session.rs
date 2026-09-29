@@ -179,23 +179,9 @@ pub(super) fn restore_through(
     binding: &Value,
     through: i64,
 ) -> Result<Option<Vec<Message>>, String> {
-    let events = {
-        let db = store.db.lock().unwrap();
-        let reset: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM agent_events WHERE project_id=?1 AND kind='session/reset' AND seq > COALESCE((SELECT MIN(seq) FROM agent_events WHERE project_id=?1 AND turn_id=?2),9223372036854775807))", rusqlite::params![project,turn], |r|r.get(0)).map_err(|e|e.to_string())?;
-        if reset {
-            return Err("原会话已重置，请重新发送消息".into());
-        }
-        let mut stmt = db.prepare("SELECT kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('session/start','session/message','session/compaction','image/offload','tool/result') ORDER BY seq").map_err(|e|e.to_string())?;
-        stmt.query_map(rusqlite::params![project, turn, through], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
-        })
-        .map_err(|e| e.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| e.to_string())?
-    };
+    let events = super::session_events::read(store, project, turn, through)?;
     let mut messages = None;
-    for (kind, payload) in events {
-        let value: Value = serde_json::from_str(&payload).map_err(|e| e.to_string())?;
+    for (kind, value) in events {
         if kind == "session/start" {
             if !super::binding::compatible(&value["binding"], binding) {
                 return Err("原任务的模型或 Agent 已变化，请重新发送消息".into());

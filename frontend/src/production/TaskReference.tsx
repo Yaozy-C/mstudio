@@ -12,10 +12,7 @@ export function TaskReference({ canvas }: { canvas: ProductionController }) {
           >
             {t("已引用")}
             {canvas.referencedTask.kind === "image" ? t("图片") : t("视频")}
-            {t("任务 ·")}{" "}
-            {(
-              canvas.referencedTask.nextPrompt ?? canvas.referencedTask.prompt
-            ).slice(0, 32)}
+            {t("任务 ·")} {canvas.referencedTask.prompt.slice(0, 32)}
           </button>
           <button
             type="button"

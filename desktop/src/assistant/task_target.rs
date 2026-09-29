@@ -10,7 +10,7 @@ pub fn attach(payload: &mut Value, doc: &Value, id: Option<&str>) -> Result<()> 
         .and_then(|nodes| nodes.iter().find(|n| n["id"] == id))
         .context("当前任务对象已移除，请重新选择脚本或镜头")?;
     ensure!(
-        node["kind"] == "plan" || node["kind"] == "shot",
+        node["kind"] == "screenplay" || node["kind"] == "shot",
         "任务对象必须是脚本或镜头"
     );
     let title: String = node["title"]
@@ -38,7 +38,7 @@ mod tests {
     use super::*;
     #[test]
     fn task_scope_is_independent_of_four_media_slots_and_project_owned() {
-        let doc = json!({"nodes":[{"id":"p","kind":"plan","title":"Script","plan":{"script":[{"id":"para","action":"Open the bag"}]}},{"id":"n","kind":"note"}]});
+        let doc = json!({"nodes":[{"id":"p","kind":"screenplay","title":"Script","screenplay":{"script":[{"id":"para","action":"Open the bag"}]}},{"id":"n","kind":"note"}]});
         let mut payload = json!([{"type":"text","text":"split","attachments":[1,2,3,4]}]);
         attach(&mut payload, &doc, Some("p")).unwrap();
         assert_eq!(payload[0]["attachments"].as_array().unwrap().len(), 4);

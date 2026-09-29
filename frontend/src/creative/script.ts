@@ -22,8 +22,8 @@ export const newParagraph = (): ScriptParagraph => ({
 });
 export function scriptSource(p: Project, n: BoardNode) {
   return p.nodes
-    .find((v) => v.id === n.shot?.planId)
-    ?.plan?.script?.find((s) => s.id === n.shot?.scriptId);
+    .find((v) => v.id === n.shot?.screenplayId)
+    ?.screenplay?.script?.find((s) => s.id === n.shot?.scriptId);
 }
 export function scriptChanged(p: Project, n: BoardNode) {
   const source = scriptSource(p, n);
@@ -32,39 +32,39 @@ export function scriptChanged(p: Project, n: BoardNode) {
     : !!n.shot?.scriptId;
 }
 export function createScript(p: Project): Project {
-  if (p.nodes.some((n) => n.kind === "plan")) return p;
+  if (p.nodes.some((n) => n.kind === "screenplay")) return p;
   return {
     ...p,
     nodes: [
       ...p.nodes,
       {
         id: uid(),
-        kind: "plan",
+        kind: "screenplay",
         title: "新脚本",
         text: "",
         x: 80,
         y: 80,
-        plan: { story: "", sound: "", script: [newParagraph()] },
+        screenplay: { script: [newParagraph()] },
       },
     ],
   };
 }
 export function updateParagraph(
   p: Project,
-  planId: string,
+  screenplayId: string,
   id: string,
   patch: Partial<ScriptParagraph>,
 ): Project {
   return {
     ...p,
     nodes: p.nodes.map((n) =>
-      n.id !== planId
+      n.id !== screenplayId
         ? n
         : {
             ...n,
-            plan: {
-              ...n.plan!,
-              script: n.plan!.script!.map((s) =>
+            screenplay: {
+              ...n.screenplay!,
+              script: n.screenplay!.script!.map((s) =>
                 s.id === id ? { ...s, ...patch, id: s.id } : s,
               ),
             },
@@ -74,13 +74,13 @@ export function updateParagraph(
 }
 export function splitParagraph(
   p: Project,
-  planId: string,
+  screenplayId: string,
   id: string,
   count: number,
 ): Project {
   const source = p.nodes
-    .find((n) => n.id === planId)
-    ?.plan?.script?.find((s) => s.id === id);
+    .find((n) => n.id === screenplayId)
+    ?.screenplay?.script?.find((s) => s.id === id);
   if (
     !source ||
     !(source.action.trim() || source.dialogue.trim()) ||
@@ -89,7 +89,10 @@ export function splitParagraph(
     count > 8
   )
     return p;
-  const order = Math.max(0, ...shotsOf(p, planId).map((n) => n.shot!.order));
+  const order = Math.max(
+    0,
+    ...shotsOf(p, screenplayId).map((n) => n.shot!.order),
+  );
   const nodes: BoardNode[] = Array.from({ length: count }, (_, i) => ({
     id: uid(),
     kind: "shot",
@@ -98,7 +101,7 @@ export function splitParagraph(
     title: `${source.title || "段落"} · 镜头 ${i + 1}`,
     text: source.action,
     shot: {
-      planId,
+      screenplayId,
       order: order + i + 1,
       duration: paragraphDuration(source) / count,
       dialogue: count === 1 ? source.dialogue : "",

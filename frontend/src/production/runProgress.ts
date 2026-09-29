@@ -1,6 +1,9 @@
 import type { ProductionTask } from "./types";
 export function runProgress(task: ProductionTask): string {
-  if (task.status === "CANCEL_REQUESTED") return "已请求取消，正在核实最终状态";
+  if (task.status === "CANCEL_REQUESTED")
+    return task.trackingPaused
+      ? "取消结果核查已暂停"
+      : "已请求取消，正在核实最终状态";
   if (task.error && task.status === "RECEIVING")
     return "生成已完成，结果尚未导入项目";
   if (task.error && ["IN_QUEUE", "IN_PROGRESS"].includes(task.status ?? ""))

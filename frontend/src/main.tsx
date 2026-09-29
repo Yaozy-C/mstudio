@@ -7,7 +7,7 @@ import "./styles/timeline.css";
 import "./styles/dialogs.css";
 import "./styles/studio.css";
 import "./styles/preview.css";
-import "./styles/floating.css";
+import "./styles/workspace-overlays.css";
 import "./styles/agent.css";
 import "./styles/editing.css";
 import "./styles/attachments.css";

@@ -1,3 +1,5 @@
+#[cfg(test)]
+mod media_reference_tests;
 mod migration;
 #[cfg(test)]
 mod tests;
@@ -23,6 +25,7 @@ pub const FOLDERS: &[&str] = &[
     "render-work",
     "voice-work",
     "reference-work",
+    "reference-media",
     "downloads",
     "imports",
 ];

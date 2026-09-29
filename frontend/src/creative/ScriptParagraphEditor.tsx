@@ -16,7 +16,7 @@ export function ScriptParagraphEditor({
   paragraph: s,
   select,
   index,
-  planId,
+  screenplayId,
   shots,
   change,
   openShots,
@@ -24,7 +24,7 @@ export function ScriptParagraphEditor({
   select?: () => void;
   paragraph: ScriptParagraph;
   index: number;
-  planId: string;
+  screenplayId: string;
   shots: BoardNode[];
   change: (f: (p: Project) => Project) => void;
   openShots: (id?: string) => void;
@@ -48,7 +48,7 @@ export function ScriptParagraphEditor({
           placeholder={t("段落标题")}
           onChange={(e) =>
             change((p) =>
-              updateParagraph(p, planId, s.id, { title: e.target.value }),
+              updateParagraph(p, screenplayId, s.id, { title: e.target.value }),
             )
           }
         />
@@ -63,7 +63,7 @@ export function ScriptParagraphEditor({
           label={t("{v0} · 时长", { v0: context })}
           value={paragraphDuration(s)}
           commit={(duration) =>
-            change((p) => updateParagraph(p, planId, s.id, { duration }))
+            change((p) => updateParagraph(p, screenplayId, s.id, { duration }))
           }
         />
       </div>
@@ -87,7 +87,9 @@ export function ScriptParagraphEditor({
           placeholder={placeholder}
           limit={6000}
           commit={(value) =>
-            change((p) => updateParagraph(p, planId, s.id, { [key]: value }))
+            change((p) =>
+              updateParagraph(p, screenplayId, s.id, { [key]: value }),
+            )
           }
         />
       ))}
@@ -101,13 +103,13 @@ export function ScriptParagraphEditor({
             change((p) => ({
               ...p,
               nodes: p.nodes.map((n) =>
-                n.id !== planId
+                n.id !== screenplayId
                   ? n
                   : {
                       ...n,
-                      plan: {
-                        ...n.plan!,
-                        script: writeScript(n.plan?.script, {
+                      screenplay: {
+                        ...n.screenplay!,
+                        script: writeScript(n.screenplay?.script, {
                           removeParagraphIds: [s.id],
                         }),
                       },
@@ -116,11 +118,11 @@ export function ScriptParagraphEditor({
             }));
           }}
         >
-          {t("删除段落")}
+          {t("删除")}
         </ActionButton>
         {shots.length > 0 && (
           <ActionButton icon={FilmStrip} onClick={() => openShots(shots[0].id)}>
-            {t("查看这段的")} {shots.length} {t("个镜头")}
+            {t("镜头")} {shots.length}
           </ActionButton>
         )}
         <ActionButton
@@ -130,7 +132,7 @@ export function ScriptParagraphEditor({
             requestCreativeTask(
               creativeTask(
                 "split",
-                planId,
+                screenplayId,
                 t("第 {v0} 段「{v1}」", {
                   v0: index + 1,
                   v1: s.title || t("未命名"),
@@ -139,7 +141,7 @@ export function ScriptParagraphEditor({
             )
           }
         >
-          {shots.length ? t("用 AI 调整这段镜头") : t("用 AI 设计这段镜头")}
+          {shots.length ? t("调整镜头") : t("设计镜头")}
         </ActionButton>
       </footer>
       <details onToggle={(e) => setSplitting(e.currentTarget.open)}>
@@ -166,7 +168,7 @@ export function ScriptParagraphEditor({
             <button
               className="primary"
               onClick={() => {
-                change((p) => splitParagraph(p, planId, s.id, count));
+                change((p) => splitParagraph(p, screenplayId, s.id, count));
                 setSplitting(false);
               }}
             >

@@ -3,6 +3,8 @@ mod codex;
 mod codex_request;
 pub mod codex_rpc;
 mod fal;
+pub mod prompt_rules;
+pub(crate) use fal::recover_cancelled;
 pub mod gemini;
 pub mod http_json;
 pub mod image_data;

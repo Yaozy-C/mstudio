@@ -14,7 +14,7 @@ pub async fn import_job_result(
         .await
         .map_err(|e| crate::app_error::wire(e, "RESULT_IMPORT_FAILED", "import"))
 }
-async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> Result<Asset> {
+pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> Result<Asset> {
     let _job_guard = crate::job_locks::acquire(id).await;
     let store = app.state::<Store>();
     let mut job = jobs::get(&store, id)?;

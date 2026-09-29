@@ -1,3 +1,4 @@
+import { ArrowUpRight, Image, VideoCamera } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
@@ -6,23 +7,34 @@ import "./task-panel.css";
 export function TaskEntry({
   task,
   canvas,
+  title,
 }: {
   task: ProductionTask;
+  title?: string;
   canvas: ProductionController;
 }) {
   useLanguage();
+  const Icon = task.kind === "image" ? Image : VideoCamera;
   return (
     <button
       type="button"
       className="generation-task-entry"
       onClick={() => canvas.showTask(task)}
     >
-      <span>
-        {t("生成")}
-        {task.kind === "image" ? t("图片") : t("视频")}
+      <Icon size={20} aria-hidden="true" />
+      <span className="task-entry-copy">
+        <strong>
+          {title || (task.kind === "image" ? t("图片生成") : t("视频生成"))}
+        </strong>
+        <span className="task-entry-prompt">{task.prompt}</span>
+        <span className="task-entry-status" data-status={task.status}>
+          {t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
+        </span>
       </span>
-      <span>{t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}</span>
-      <span>{t("查看任务 ↗")}</span>
+      <span className="task-entry-open">
+        {t("查看任务")}
+        <ArrowUpRight size={14} aria-hidden="true" />
+      </span>
     </button>
   );
 }

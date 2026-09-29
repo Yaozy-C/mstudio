@@ -1,61 +1,34 @@
-# 镜头、状态与资产依赖
+# State continuity and asset dependencies
 
-## 镜头表
+Use for state checks, frame preparation and asset-change tracking after shot design. [Shot grammar](../../creative-ad-director/references/cinematography.md) owns camera and cutting rules; do not maintain a second photography checklist here.
 
-在已选概念上写镜头表，不先铺开所有未筛候选。简短任务可与项目记录合并。
+## Shots, frames and generated clips
 
-| 镜头/画格 ID | 时间 | 目的与可见证据 | 起始 → 动作 → 结束 | 主体/机位 | 下一镜切点 | 制作方式/未验证项 |
-|---|---|---|---|---|---|---|
+A shot is a continuous viewpoint; a frame is one selected moment, such as S02-A/S02-B; a generated clip is a tool output. Count them separately. Multiple frames do not multiply shot duration. Identify extra cuts inside a source clip from actual footage.
 
-镜头是连续视角的单元；画格是关键状态（S02-A/S02-B）；模型片段是工具产物。分别计数，同镜多格不重复整镜时长。文字脚本只描述计划，不写成已经检查过的实际画面。
+For important action, track source/initial support, path, necessary contact or boundary, and destination/final support. Record only the states required to understand the action; do not generate every state by default. A frame shows one readable instant, not mutually exclusive states at once. Necessary start/end frames retain shared landmarks. Actual frame checks belong in [preview inspection](preview-images.md).
 
-## 状态变化要能画出
+## State and dependency record
 
-先按故事事件选少量代表格，同一镜头里的开盖、装物、闭合等步骤写进动作说明，不各自默认出图。一张格只画一个可读瞬间，说明可以交代前后动作，不能画成同时发生的多个状态。默认分镜不要求把下列状态逐一生成。
+Assign simple IDs to the product, people, scene and important props. Record only facts that affect continuity.
 
-详细动作制作时再依动作选择必要状态，不固定四格或每秒一格。接触复杂的动作可覆盖接触前、接触/遮挡、结束；也可用剪辑省略，但必须标明。
-
-关键动作须表达可辨的起止状态、必要边界、接触与支撑关系；多个不同时间状态不能混画成一个同时发生的瞬间。
-
-分镜完成后隐藏标题、说明和箭头检查：主体和关键状态差异是否读得出？箭头用于表达路径和方向，不能替代缺失的接触/结束状态。静帧不可能证明全部中间运动；对省略段标计划剪辑，不为了通过检查把所有中间动作画满。
-
-## 切接与注意位置
-
-关键切点说明前镜观众看哪里、后镜从哪里接住，物体运动如何延续/停止，哪处遮挡或动作形状允许剪辑。主体运动与摄影机运动分开。景别变化需要服务信息、揭示或节奏，不为每张不同而换机位。
-
-相邻格看屏幕位置、尺度、方向和接触；大的视角变化可合理切镜，不能把跳变称作连续运镜。预演暂停在切点前后检查是否反复需要寻找主体；有意改变注意位置可保留，但要有辨认时间。不把始终居中当通则。
-
-## 状态账与素材依赖
-
-为商品、人物、场景、重要道具分配简单 ID；记录真正影响连续性的固定项。
-
-| 资产/状态 | 锁定内容 | 每格允许变化 |
+| Asset | Stable properties | Permitted state changes |
 |---|---|---|
-| 商品 | 原图结构、颜色、口袋/配件、比例依据 | 本镜开合、朝向、合理形变 |
-| 人物 | 身份、全套服装、手/饰品及项目要求的裁切边界 | 保持角色一致的姿态与动作 |
-| 场景 | 空间地标、光向、固定机位 | 有原因的时间/地点切换 |
-| 道具 | 外形、数量、包装/食物状态 | 装入、取出、转移；需起止位置 |
+| Product | Original structure, color, accessories, connections and supported proportions | Opening, orientation and material-appropriate deformation |
+| Person | Identity, outfit, hands/accessories and project framing restrictions | Poses and actions consistent with the character |
+| Scene | Landmarks, lighting direction and fixed-camera references | Motivated time/place changes |
+| Props | Shape, count, packaging and contents | Insertion, removal or transfer with known start/end positions |
 
-逐格记录商品开合、道具位置/数量、手和支撑、空间时间、允许变化。物品转移前后数量守恒，外观和状态变化须有故事原因。背景或身体可按构图省去，但不能遮住待证明的关键功能。
+Track openings, counts, positions, support and relevant time/space changes. Transfers conserve item count unless the story explains a change. Framing may omit background or body regions, but not evidence the shot must prove.
 
-每个生产文件注明：商品事实参考、选中母图、角色/场景参考及各自用途；冲突参考先清理。生成的角色/场景母图可复用，商品隐藏结构仍必须回查原始依据。
+Identify original product evidence, selected base frame, character/scene references and each input's role. Resolve conflicting references before generation. Generated base frames help continuity; hidden product structure still requires original evidence. When a base frame changes, revisit only affected dependent assets and keep version relationships clear.
 
-母图修正后，查看所有依赖该图的后续格；只重做受影响部分。依据修改范围判断依赖，不重做无关画格。保留版本关系，不让过时状态进入最终整包。
+## Production handoff
 
-## 制作交接
+A no-face project must control framing throughout action, camera movement and reflections, not only at the start. Live action needs appropriate handles; stop motion needs explicit state cuts; image-to-video needs a distinction between previews and actual control frames. A middle/end-state image is not automatically a valid action start. Production verifies available input controls.
 
-项目要求不露脸时，人物镜头须标明构图边界，并检查起始、过程、结束及运镜范围；背影转头或反射露出面部也不允许。
+## Shot execution evidence
 
-实拍写机位、动作和前后余量；定格/图片写状态跳切；图生视频写首帧/尾态、动作边界与连续性要求。分镜中段状态未必适合作视频首帧，需留出动作空间。不得按模型单次时长反推全片必须几镜。
+Design handoff follows [shot constraints and handoff](../../creative-ad-director/references/cinematography.md#shot-constraints-and-handoff) in the existing shot text, without another camera/action/timing table.
 
-## 逐镜的观看变化与执行依据
-
-在现有镜头表中补足下面三类信息，简单镜头一句话即可，不新增一套平行表：
-
-- **观看变化：**入镜时观众已知什么，出镜时新看懂什么、期待或情绪如何改变；指出产生变化的可见线索。只写“紧张”“高级”不构成设计。相邻镜同样在移动时，检查距离、风险、障碍、揭示或表演是否真正变化；只换机位、没有观看作用的重复段删掉或合并。呼应与有目的的重复可保留，但须有区别。
-- **动作与摄影：**物体来源/初始支撑→启动→关键边界或接触→去向/结束支撑；主体与相机分别写路径、快慢变化和触发点。用可见地标说明位移；跟拍保持主体相对静止时，背景变化仍须让运动读得出。
-- **时间与切口：**目标使用时长及依据、入点/出点的动作状态、必须看见的因果、可省略的过程、声音落点。分镜秒数是设计估计，模型素材长度和最终选用区间另记，不能用素材填满预定秒数。
-
-动作或运镜决定创意时，必要的起止画格使用同一空间地标表达变化；若视角跳变，应标为切镜而非连续运动。主体箭头、相机路径和时间说明放格外或单独标注；箭头不能补救错误机位、缺失起点或接触关系。先确认关键格实际呈现上述关系，再扩展完整图；已知机位不符不得以“制作时修”视为分镜完成。
-
-获批制作后，沿用镜头 ID，将计划映射到实际源片时间区间；一个源片中的额外切镜也要识别。没有实现的计划镜头标缺失，不能把整个生成任务当作一个合格镜头。该映射供剪辑与审片共用。
+During production map planned shot IDs to actual source ranges, observed events and keep/trim/discard/repair decisions. Mark missing planned shots instead of accepting an entire generation task as one successful shot. Editors and reviewers share this mapping. Keep intended use duration, generated duration and selected source range distinct.

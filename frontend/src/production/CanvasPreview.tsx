@@ -1,3 +1,4 @@
+import { ZoomableImage } from "../workspace/ZoomableImage";
 import { t, useLanguage } from "../i18n";
 import { actionText, editShotText } from "../creative/shotText";
 import { useState } from "react";
@@ -49,7 +50,7 @@ export function CanvasPreview({
       }}
     >
       <Dialog.Content
-        className="media-preview-dialog canvas-preview"
+        className={`media-preview-dialog canvas-preview${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
         aria-describedby={undefined}
       >
         <header>
@@ -65,7 +66,11 @@ export function CanvasPreview({
             {asset.missing ? (
               <MissingAsset asset={asset} />
             ) : asset.kind === "image" ? (
-              <img src={mediaUrl(asset.path)} alt={asset.name} />
+              <ZoomableImage
+                key={asset.id}
+                src={mediaUrl(asset.path)}
+                alt={asset.name}
+              />
             ) : asset.kind === "video" ? (
               <video src={mediaUrl(asset.path)} controls autoPlay />
             ) : (

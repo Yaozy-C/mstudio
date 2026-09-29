@@ -112,10 +112,13 @@ export function chooseTake(
     ),
   };
 }
-export function assemblePlan(project: Project, planId: string): Project {
+export function assembleScreenplay(
+  project: Project,
+  screenplayId: string,
+): Project {
   let p = project;
-  const shots = shotsOf(p, planId);
-  if (!shots.length) throw new Error("方案还没有镜头");
+  const shots = shotsOf(p, screenplayId);
+  if (!shots.length) throw new Error("脚本还没有镜头");
   if (shots.some((s) => !s.resultAssetId))
     throw new Error("先为每个镜头选用画面，再编排到时间线");
   const visualTracks = new Set(
@@ -131,7 +134,7 @@ export function assemblePlan(project: Project, planId: string): Project {
   const trackId = uid();
   p = {
     ...p,
-    tracks: [...tracksOf(p), { id: trackId, kind: "video", name: "方案画面" }],
+    tracks: [...tracksOf(p), { id: trackId, kind: "video", name: "分镜画面" }],
   };
   let start = 0;
   for (const n of shots) {

@@ -25,17 +25,21 @@ export function ComposerContext({
     (a) =>
       a.kind === "node" &&
       project.nodes.some(
-        (n) => n.id === a.id && (n.kind === "plan" || n.kind === "shot"),
+        (n) => n.id === a.id && (n.kind === "screenplay" || n.kind === "shot"),
       ),
   );
   const id =
     draft.targetNodeId ??
-    (refs.length === 1 ? refs[0].id : draft.omitWork ? null : work?.planId);
+    (refs.length === 1
+      ? refs[0].id
+      : draft.omitWork
+        ? null
+        : work?.screenplayId);
   const paragraph =
-    !draft.omitWork && id === work?.planId && work?.paragraphId
+    !draft.omitWork && id === work?.screenplayId && work?.paragraphId
       ? project.nodes
           .find((n) => n.id === id)
-          ?.plan?.script?.find((s) => s.id === work.paragraphId)?.title
+          ?.screenplay?.script?.find((s) => s.id === work.paragraphId)?.title
       : undefined;
   return (
     <>

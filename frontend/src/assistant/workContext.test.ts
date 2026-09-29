@@ -11,15 +11,19 @@ test("workspace never implicitly selects a specialist", () => {
 test("script focus carries exact object and rejects deleted paragraphs", () => {
   const project = createScript(newProject("Scripts"));
   const id = project.nodes.at(-1)!.id;
-  expect(workTarget(project, { view: "script", planId: id })).toBe(id);
+  expect(workTarget(project, { view: "script", screenplayId: id })).toBe(id);
   expect(() =>
-    workTarget(project, { view: "script", planId: "missing" }),
+    workTarget(project, { view: "script", screenplayId: "missing" }),
   ).toThrow("移除");
   expect(() =>
-    workTarget(project, { view: "script", planId: id, paragraphId: "missing" }),
+    workTarget(project, {
+      view: "script",
+      screenplayId: id,
+      paragraphId: "missing",
+    }),
   ).toThrow("段落");
   expect(workTarget(project, { view: "script" })).toBeNull();
-  expect(workTarget(project, { view: "film", planId: id })).toBeNull();
+  expect(workTarget(project, { view: "film", screenplayId: id })).toBeNull();
 });
 
 test("an explicitly referenced script overrides the visible script", () => {
@@ -31,7 +35,7 @@ test("an explicitly referenced script overrides the visible script", () => {
   expect(
     taskFocus(
       project,
-      { view: "script", planId: first },
+      { view: "script", screenplayId: first },
       null,
       [{ kind: "node", id: second }],
       false,
@@ -40,14 +44,14 @@ test("an explicitly referenced script overrides the visible script", () => {
   expect(
     taskFocus(
       project,
-      { view: "script", planId: first },
+      { view: "script", screenplayId: first },
       first,
       [{ kind: "node", id: second }],
       false,
     ).target,
   ).toBe(first);
   expect(
-    taskFocus(project, { view: "script", planId: first }, first, [], true)
+    taskFocus(project, { view: "script", screenplayId: first }, first, [], true)
       .agent,
   ).toBe("coordinator");
 });

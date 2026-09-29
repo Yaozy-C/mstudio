@@ -3,7 +3,13 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import type { FrameRole } from "../production/frameInputs";
 import { useEffect, useState } from "react";
 import { Popover } from "@radix-ui/themes";
-import { UploadSimple, Image, VideoCamera, Check } from "@phosphor-icons/react";
+import {
+  UploadSimple,
+  Image,
+  VideoCamera,
+  Check,
+  FileText,
+} from "@phosphor-icons/react";
 import { bridge, mediaUrl } from "../bridge";
 import type { Asset, Project } from "../model";
 import type { ProductionController } from "../production/useProduction";
@@ -34,9 +40,7 @@ export function ComposerReference({
       ? t("首帧")
       : role === "last-frame"
         ? t("尾帧")
-        : video
-          ? t("图片 / 视频")
-          : t("参考图");
+        : t("参考素材");
   const current = project.assets.find(
     (a) => a.id === canvas.task?.inputs.find((r) => r.role === role)?.assetId,
   );
@@ -64,11 +68,22 @@ export function ComposerReference({
   const assets = (scope === "project" ? project.assets : globalAssets).filter(
     (a) =>
       !a.missing &&
-      (canvas.composerMode === "agent" ||
-        a.kind === "image" ||
-        (video && a.kind === "video")) &&
+      (a.kind === "image" ||
+        (!role &&
+          (canvas.composerMode === "agent" ||
+            a.kind === "text" ||
+            a.kind === "document" ||
+            (video && a.kind === "video")))) &&
       a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
+  const nodes =
+    !role && scope === "project"
+      ? project.nodes.filter(
+          (n) =>
+            ["note", "text", "shot", "screenplay"].includes(n.kind) &&
+            n.title.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+        )
+      : [];
   const selected = new Set(
     canvas.task?.inputs.filter((r) => r.assetId).map((r) => r.assetId),
   );
@@ -108,11 +123,7 @@ export function ComposerReference({
       <Popover.Content side="top" align="start" className="reference-picker">
         <header>
           <strong>
-            {role
-              ? t("选择{v0}", { v0: label })
-              : video
-                ? t("引用图片 / 视频")
-                : t("引用参考图")}
+            {role ? t("选择{v0}", { v0: label }) : t("引用参考素材")}
           </strong>
           <button
             type="button"
@@ -158,6 +169,31 @@ export function ComposerReference({
         />
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
         <div className="reference-picker-grid">
+          {nodes.map((node) => {
+            const added = canvas.task?.inputs.some((r) => r.nodeId === node.id);
+            return (
+              <button
+                type="button"
+                key={`node:${node.id}`}
+                title={node.title}
+                aria-label={`${added ? t("已引用") : t("引用")} ${node.title}`}
+                disabled={
+                  busy || added || (canvas.task?.inputs.length ?? 0) >= 12
+                }
+                onClick={() => canvas.attach({ kind: "node", id: node.id })}
+              >
+                <div>
+                  <FileText size={28} />
+                  {added && (
+                    <span className="reference-added">
+                      <Check size={15} />
+                    </span>
+                  )}
+                </div>
+                <span>{node.title}</span>
+              </button>
+            );
+          })}
           {!loading &&
             assets.map((asset) => {
               const added = role
@@ -169,14 +205,20 @@ export function ComposerReference({
                   key={asset.id}
                   title={asset.name}
                   aria-label={`${added ? t("已引用") : t("引用")} ${asset.name}`}
-                  disabled={busy || added || (!role && selected.size >= 12)}
+                  disabled={
+                    busy ||
+                    added ||
+                    (!role && (canvas.task?.inputs.length ?? 0) >= 12)
+                  }
                   onClick={() => void reference(asset)}
                 >
                   <div>
                     {asset.preview || asset.kind === "image" ? (
                       <img src={mediaUrl(asset.preview || asset.path)} alt="" />
-                    ) : (
+                    ) : asset.kind === "video" ? (
                       <VideoCamera size={28} />
+                    ) : (
+                      <FileText size={28} />
                     )}
                     <span className="reference-kind">
                       {asset.kind === "video" ? (
@@ -199,7 +241,8 @@ export function ComposerReference({
         {loading ? (
           <p className="reference-picker-empty">{t("正在加载素材…")}</p>
         ) : (
-          !assets.length && (
+          !assets.length &&
+          !nodes.length && (
             <p className="reference-picker-empty">
               {query ? t("没有匹配的素材") : t("暂无可引用素材，可从电脑上传")}
             </p>

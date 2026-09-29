@@ -8,32 +8,53 @@ pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
     }
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
     if op == "update_generation" {
-        return has("project-production") || has("project-frames") || has("project-edit");
+        return has("project-production")
+            || has("project-frames")
+            || has("project-assets")
+            || has("project-edit");
     }
     if op == "request_generation" || op == "regenerate_generation" {
         return has("media-generation")
-            && (has("project-production") || has("project-frames") || has("project-edit"));
+            && (has("project-production")
+                || has("project-frames")
+                || has("project-assets")
+                || has("project-edit"));
     }
     if has("project-edit") {
         return true;
     }
     match op {
         "set_creation" | "set_brief" => has("project-brief"),
-        "add_node" | "remove_node" => has("project-plan") || has("project-shots"),
+        "add_node" | "remove_node" => {
+            has("project-script") || has("project-shots") || has("project-assets")
+        }
         "update_node" => {
-            has("project-plan")
+            has("project-script")
                 || has("project-shots")
                 || has("project-production")
                 || has("project-frames")
+                || has("project-assets")
         }
         "set_references" => {
-            has("project-shots") || has("project-production") || has("project-frames")
+            has("project-shots")
+                || has("project-production")
+                || has("project-frames")
+                || has("project-assets")
         }
-        "move_clip" | "retime_clip" | "slip_clip" | "set_transition" | "choose_take"
-        | "assemble_plan" | "append_clip" | "update_clip" | "remove_clip" | "add_track"
-        | "update_track" | "add_caption" | "update_caption" | "remove_caption" => {
-            has("project-timeline")
-        }
+        "move_clip"
+        | "retime_clip"
+        | "slip_clip"
+        | "set_transition"
+        | "choose_take"
+        | "assemble_screenplay"
+        | "append_clip"
+        | "update_clip"
+        | "remove_clip"
+        | "add_track"
+        | "update_track"
+        | "add_caption"
+        | "update_caption"
+        | "remove_caption" => has("project-timeline"),
         _ => false,
     }
 }
@@ -42,7 +63,12 @@ pub fn allows_shot_field(p: &AgentProfile, key: &str) -> bool {
     has("project-edit")
         || (has("project-shots")
             && [
-                "planId", "scriptId", "order", "duration", "dialogue", "frames",
+                "screenplayId",
+                "scriptId",
+                "order",
+                "duration",
+                "dialogue",
+                "frames",
             ]
             .contains(&key))
         || (has("project-production") && key == "prompt")
@@ -62,14 +88,32 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
         .collect();
     for op in ops {
         let name = op["op"].as_str().unwrap_or("");
+        let asset_only = has("project-assets")
+            && !has("project-frames")
+            && !has("project-production")
+            && !has("project-edit");
+        if asset_only && name == "request_generation" {
+            ensure!(
+                op["generationPurpose"] == "asset"
+                    && op.get("id").is_none()
+                    && op.get("canvasTaskKey").is_none(),
+                "资产 Agent 只能创建独立资产任务"
+            );
+        }
         if matches!(name, "update_generation" | "regenerate_generation") {
             let key = op["taskKey"]
                 .as_str()
                 .ok_or_else(|| anyhow::anyhow!("缺少任务 ID"))?;
             let task = &doc["production"]["drafts"][key];
             ensure!(task.is_object(), "任务不存在");
+            if asset_only {
+                ensure!(
+                    task["generationPurpose"] == "asset",
+                    "资产 Agent 只能修改资产任务"
+                );
+            }
             if !has("project-production") && !has("project-edit") {
-                ensure!(task["kind"] == "image", "分镜画手只能修改图片任务");
+                ensure!(task["kind"] == "image", "当前 Agent 只能修改图片任务");
             }
         }
         ensure!(
@@ -80,7 +124,7 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
             continue;
         }
         if name == "request_generation" && !has("project-production") {
-            ensure!(op["mediaKind"] == "image", "分镜画手只能生成图片");
+            ensure!(op["mediaKind"] == "image", "当前 Agent 只能生成图片");
         }
         if matches!(
             name,
@@ -94,12 +138,14 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
             } else {
                 kinds.get(id).map(String::as_str).unwrap_or("")
             };
-            let plan = kind == "plan" && has("project-plan");
+            let screenplay = kind == "screenplay" && has("project-script");
             let shot = kind == "shot" && has("project-shots");
             let production = kind == "shot" && has("project-production");
             let frames = kind == "shot" && has("project-frames");
+            let asset = has("project-assets")
+                && (kind == "asset" || (kind == "shot" && name == "set_references"));
             ensure!(
-                plan || shot || production || frames,
+                screenplay || shot || production || frames || asset,
                 "此节点不属于当前 Agent 的编辑范围"
             );
             if name == "add_node" || name == "update_node" {
@@ -108,7 +154,8 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                     .ok_or_else(|| anyhow::anyhow!("操作格式无效"))?;
                 for key in fields.keys().map(String::as_str) {
                     let allowed = matches!(key, "op" | "id")
-                        || (plan && ["kind", "title", "text", "plan", "x", "y"].contains(&key))
+                        || (asset && ["kind", "title", "text", "assetId", "x", "y"].contains(&key))
+                        || (screenplay && ["kind", "title", "screenplay"].contains(&key))
                         || (shot
                             && ["kind", "title", "text", "shot", "references", "x", "y"]
                                 .contains(&key))
@@ -137,133 +184,5 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
     Ok(())
 }
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::json;
-    #[test]
-    fn task_edits_use_existing_media_roles_and_actual_task_kind() {
-        let agents = super::super::profiles::builtins();
-        let doc = json!({"nodes":[],"production":{"drafts":{"image":{"kind":"image"},"video":{"kind":"video"}}}});
-        for operation in ["update_generation", "regenerate_generation"] {
-            for (agent, key, allowed) in [
-                ("production", "video", true),
-                ("storyboard-artist", "image", true),
-                ("storyboard-artist", "video", false),
-                ("reviewer", "image", false),
-                ("production", "missing", false),
-            ] {
-                let result = validate(
-                    agents.iter().find(|a| a.id == agent).unwrap(),
-                    &json!({"operations":[{"op":operation,"taskKey":key,"text":"new"}]}),
-                    &doc,
-                );
-                assert_eq!(result.is_ok(), allowed, "{agent}: {operation} {key}");
-            }
-        }
-    }
-    #[test]
-    fn specialists_cannot_cross_edit_boundaries() {
-        let agents = super::super::profiles::builtins();
-        let doc = json!({"nodes":[{"id":"p","kind":"plan"},{"id":"s","kind":"shot"}]});
-        let check = |id: &str, op: Value| {
-            validate(
-                agents.iter().find(|a| a.id == id).unwrap(),
-                &json!({"operations":[op]}),
-                &doc,
-            )
-            .is_ok()
-        };
-        assert!(check(
-            "concept",
-            json!({"op":"update_node","id":"p","text":"concept"})
-        ));
-        assert!(check(
-            "concept",
-            json!({"op":"update_node","id":"p","plan":{"script":[{"id":"para","action":"Story"}]}})
-        ));
-        assert!(check(
-            "storyboard",
-            json!({"op":"update_node","id":"s","shot":{"scriptId":"para"}})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"update_node","id":"s","shot":{"framePrompt":"Image description"}})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"update_node","id":"s","shot":{"frames":[]}})
-        ));
-        assert!(check(
-            "storyboard-artist",
-            json!({"op":"update_node","id":"s","shot":{"framePrompt":"Image description","frames":[]}})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"update_node","id":"s","shot":{"scriptId":"other"}})
-        ));
-        assert!(!check(
-            "concept",
-            json!({"op":"update_node","id":"s","text":"rewrite"})
-        ));
-        assert!(check(
-            "storyboard",
-            json!({"op":"update_node","id":"s","shot":{"dialogue":"hello"}})
-        ));
-        assert!(!check(
-            "storyboard",
-            json!({"op":"request_generation","id":"s"})
-        ));
-        assert!(!check(
-            "storyboard",
-            json!({"op":"request_generation","id":"s"})
-        ));
-        assert!(check(
-            "production",
-            json!({"op":"request_generation","id":"s","text":"Close-up","mediaKind":"image"})
-        ));
-        assert!(check(
-            "production",
-            json!({"op":"update_node","id":"s","shot":{"prompt":"generate"}})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"update_node","id":"s","text":"remove main action"})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"update_node","id":"s","shot":{"duration":1}})
-        ));
-        assert!(!check(
-            "production",
-            json!({"op":"append_clip","assetId":"a"})
-        ));
-        assert!(check(
-            "transition-designer",
-            json!({"op":"set_transition","fromClipId":"a","id":"b","kind":"fade","duration":0.5})
-        ));
-        assert!(check(
-            "colorist",
-            json!({"op":"update_clip","id":"b","visual":{"temperature":-0.2}})
-        ));
-        assert!(!check(
-            "reviewer",
-            json!({"op":"set_transition","fromClipId":"a","id":"b","kind":"fade","duration":0.5})
-        ));
-        assert!(check(
-            "editor",
-            json!({"op":"update_clip","id":"c","speed":1.5})
-        ));
-        assert!(!check(
-            "reviewer",
-            json!({"op":"update_clip","id":"c","speed":1.5})
-        ));
-        assert!(check(
-            "coordinator",
-            json!({"op":"set_creation","essential":"must see entry"})
-        ));
-        assert!(!check(
-            "coordinator",
-            json!({"op":"update_node","id":"p","text":"rewrite"})
-        ));
-    }
-}
+#[path = "permissions_tests.rs"]
+mod tests;

@@ -57,7 +57,7 @@ test("partial failure retains its output without rewriting a retry request", () 
   expect(needsTracking(job, p)).toBe(true);
   p = receiveProductionResult(p, asset("front"), source);
   expect(needsTracking(job, p)).toBe(false);
-  const retry = retryTask(runsOf(p)[0], "retry");
+  const retry = retryTask(runsOf(p)[0]);
   expect(retry.prompt).toBe(task.prompt);
   expect(retry.resultAssetIds).toBeUndefined();
   expect(retry.jobId).toBeUndefined();
@@ -104,4 +104,17 @@ test("multiple outputs sharing a source position do not move earlier cards or ov
           a.y + a.height > b.y,
       ).toBe(false);
     }
+});
+
+test("late output from a previous attempt cannot overwrite a retried task", () => {
+  let { p, task, source } = setup();
+  const retry = retryTask({ ...task, status: "FAILED" });
+  p = saveTask(p, { ...retry, jobId: "new-job", status: "IN_PROGRESS" });
+  const received = receiveProductionResult(p, asset("old-output"), source);
+  expect(received.production!.drafts![task.key].jobId).toBe("new-job");
+  expect(received.production!.drafts![task.key].resultAssetIds).toBeUndefined();
+  expect(received.assets.some((a) => a.id === "old-output")).toBe(true);
+  expect(Object.keys(received.production!.drafts!)).toEqual(
+    Object.keys(p.production!.drafts!),
+  );
 });

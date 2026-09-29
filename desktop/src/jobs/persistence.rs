@@ -1,14 +1,7 @@
 use super::*;
 // Reserve before network I/O. Repeating one submission never submits another paid request.
 pub fn reserve(store: &Store, job: &Value) -> Result<bool> {
-    let inserted = store.db.lock().unwrap().execute(
-        "INSERT OR IGNORE INTO jobs SELECT ?1,?2,?3 WHERE EXISTS(SELECT 1 FROM projects WHERE id=?2)",
-        rusqlite::params![
-            job["id"].as_str(),
-            job["projectId"].as_str(),
-            job.to_string()
-        ],
-    )?;
+    let inserted = write(store, job, true)?;
     if inserted == 0 {
         let previous = get(store, job["id"].as_str().context("缺少任务 ID")?)?;
         ensure!(
@@ -58,4 +51,44 @@ pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
         "服务地址已变更，不向旧地址发送新凭据"
     );
     crate::models::connections::media_key(&store.db.lock().unwrap(), model)
+}
+
+pub fn save(store: &Store, job: &Value) -> Result<()> {
+    ensure!(write(store, job, false)? == 1, "项目已删除");
+    Ok(())
+}
+fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
+    let mut db = store.db.lock().unwrap();
+    let tx = db.transaction()?;
+    let mut value = job.clone();
+    store.normalize_paths(&mut value);
+    let id = job["id"].as_str().context("缺少任务 ID")?;
+    let sql = if reserve {
+        "INSERT OR IGNORE INTO jobs SELECT ?1,?2,'{}' WHERE EXISTS(SELECT 1 FROM projects WHERE id=?2)"
+    } else {
+        "INSERT INTO jobs SELECT ?1,?2,'{}' WHERE EXISTS(SELECT 1 FROM projects WHERE id=?2) ON CONFLICT(id) DO UPDATE SET data=excluded.data"
+    };
+    let inserted = tx.execute(sql, rusqlite::params![id, job["projectId"].as_str()])?;
+    if inserted == 1 {
+        crate::database::blobs::pack(&tx, crate::database::blobs::Owner::Job(id), &mut value)?;
+        tx.execute(
+            "UPDATE jobs SET data=?1 WHERE id=?2",
+            rusqlite::params![value.to_string(), id],
+        )?;
+        crate::database::blobs::collect(&tx)?;
+    }
+    tx.commit()?;
+    if let Err(error) = crate::project_storage::resume_cleanup(&db, &store.media_root()) {
+        eprintln!("{error}");
+    }
+    Ok(inserted)
+}
+pub fn get(store: &Store, id: &str) -> Result<Value> {
+    let db = store.db.lock().unwrap();
+    let raw: String = db.query_row("SELECT data FROM jobs WHERE id=?1", [id], |r| r.get(0))?;
+    crate::database::blobs::hydrate(
+        &db,
+        crate::database::blobs::Owner::Job(id),
+        serde_json::from_str(&raw)?,
+    )
 }

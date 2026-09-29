@@ -158,7 +158,11 @@ test("reopened failed history retries its saved request and preserves the curren
 });
 test("unselected agent uses coordinator and dismissed context stays absent", async () => {
   const f = fixture(false, null);
-  f.context.work = { view: "script", planId: "old-plan", paragraphId: "p1" };
+  f.context.work = {
+    view: "script",
+    screenplayId: "old-screenplay",
+    paragraphId: "p1",
+  };
   f.draft.targetNodeId = null;
   f.draft.omitWork = true;
   f.thread.composer.setText("聊聊新的想法");

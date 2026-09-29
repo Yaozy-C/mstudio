@@ -21,7 +21,19 @@ function sameExcept<T extends object>(a: T, b: T, ignored: string[]) {
   );
 }
 
-// Layout is saved normally, but must not invalidate an Agent's content edit.
+// Execution telemetry is persisted, but does not change the creative brief.
+// Operations still validate the current task's execution state when applied.
+const taskRuntimeFields = [
+  "status",
+  "progress",
+  "error",
+  "trackingPaused",
+  "jobId",
+  "submissionId",
+  "requestId",
+];
+
+// Layout and task telemetry must not invalidate an Agent's content edit.
 export function contentChanged(before: Project, after: Project): boolean {
   if (
     !sameExcept(before, after, [
@@ -37,9 +49,24 @@ export function contentChanged(before: Project, after: Project): boolean {
     !sameExcept(before.production ?? {}, after.production ?? {}, [
       "positions",
       "viewport",
+      "drafts",
     ])
   )
     return true;
+  const beforeTasks = before.production?.drafts ?? {};
+  const afterTasks = after.production?.drafts ?? {};
+  const taskKeys = new Set([
+    ...Object.keys(beforeTasks),
+    ...Object.keys(afterTasks),
+  ]);
+  for (const key of taskKeys) {
+    if (
+      !beforeTasks[key] ||
+      !afterTasks[key] ||
+      !sameExcept(beforeTasks[key], afterTasks[key], taskRuntimeFields)
+    )
+      return true;
+  }
   if (before.nodes === after.nodes) return false;
   if (before.nodes.length !== after.nodes.length) return true;
   const nodes = new Map(before.nodes.map((node) => [node.id, node]));

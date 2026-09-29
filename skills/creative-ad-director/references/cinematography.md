@@ -1,54 +1,78 @@
-# 摄影指导：设计相机如何观看事件
+# Shot grammar: choose the shot from its purpose
 
-在事件已确定后、选生成路线前读取。先设计希望观众经历的观看过程，再选择能实现它的输入和工具。不能因工具容易做慢推，就把所有镜头都写成慢推。
+Read when designing or revising shots. Decide how viewers understand, anticipate and feel an event before choosing framing, staging, camera behavior and cuts. Filling camera fields is not design. Apply only relevant rules and necessary connections during local work.
 
-## 保留观看效果，修正实现
+## Shot purpose and viewpoint
 
-先辨认本镜真正要保留的体验，例如受限视点、由暗到亮的揭示、尺度反转或动作冲击。用户满意这种表达时，修复围绕它展开；既有描述中的助手自拟数字与调度不是创意本身。创意明确采用的超现实摄影、虚拟微型机位可以保留，但画面仍需有一致的视点、遮挡和商品结构，不能靠无意的穿透或复制部件完成动作。
+Define each shot through an observable change: what viewers know on entry, what they discover, misread, anticipate or feel, and which visible event or spatial relationship causes it. Emotional labels such as cinematic or premium are insufficient. Purposeful echoes, pauses and repetition need not introduce another selling point.
 
-写机位时，在同一空间关系中判断开头、关键变化与结尾：镜头相对哪个固定部件、朝向哪里，哪些区域在画内、被前景遮住或在相机背后；运动部件转动或主体移动后，可见范围如何变化。固定机位不能同时借用另一个机位才能看见的表面。高度、距离和角度分别使用明确基准及单位；只有能解释构图或运动时才给数值，不补无依据的厘米、角度、精确秒数来显得专业。
+Decide whether viewers know before the subject, discover alongside it, or learn the cause after the result. Reveal targets, obstacles and outcomes accordingly; do not accidentally expose a planned surprise. Choose an observing, participating or restricted viewpoint for a reason. Generation convenience alone does not justify replacing a selected viewing experience.
 
-现实中发生的全部操作不必全部入画。选择能让观众理解因果的可见动作、局部运动、光线与声音；被遮挡的准备动作可在画外发生。若某个完整过程本身是用户要求、卖点证据或创意核心，则保留，改取景、调度、时间或制作路线。需要切镜时先判断是否破坏原本的沉浸或揭晓，不能默认靠切镜解决所有冲突。
+## Grammar within a shot
 
-例如“从容器内部看开启，光进入并揭示内部”可以保留内部视点，让外侧开启动作通过缝隙变化和声音被感知，不必同时看清外侧全部操作。具体看到什么取决于真实结构；这个例子不规定所有开盖镜头都隐藏拉链或使用固定机位。
-
-上述判断在现有镜头描述中落实即可，不新增检查表或强制预演。把内部取舍收敛为一套相容的拍法，交接保留观看效果与最终实现，不把互相冲突的候选全部交给生成模型。
-
-## 【重要】每镜给出可执行的摄影描述
-
-在既有分镜表内填写；简单镜头可用短句，不另造重复表格。
-
-| 字段 | 要明确的选择 |
+| Choice | Decision criteria |
 |---|---|
-| 作用与起落构图 | 开始看见什么，结束落在哪里；主体大小、位置、前后景关系及景别变化。作用可为信息、空间、情绪、节奏或视觉趣味 |
-| 机位与镜头 | 相机高度、朝向、与主体距离；广角/正常/长焦视角及景深意图。焦距数字仅作拍摄规划，须说明画幅或等效，不能当作生成模型的精确控制保证 |
-| 相机路径 | 固定、平移、升降、推进/后退、摇摄/俯仰或弧线；写方向、经过的空间参照及终点。区分相机位移、机身旋转、光学变焦和后期裁切 |
-| 速度与触发 | 何时启动、匀速或加减速、何时停；用动作节点或片内时间定位，避免只写“流畅” |
-| 主体调度 | 主体移动方向、进出画时机；相机跟随、领先、迎向或保持不动。主体动作与相机运动分别写清 |
-| 对焦与切点 | 焦点保持在哪一层，是否移焦、何时移；在哪个动作或构图切出，下一镜如何承接方向、视线或节奏 |
+| Shot size | Retain environment for geography or scale; show participants and contact for interaction; move closer for decisive detail. Close-ups lose context, so establish necessary relationships. Do not force a wide opening or alternate wide, medium and close mechanically. |
+| Angle and viewpoint | Height and orientation serve the intended relationship, not fixed emotional labels. Check visible surfaces and occlusion at the beginning, key change and end. A fixed viewpoint cannot also see surfaces available only from another side. |
+| Staging | Give each important beat a clear attention center. Use silhouette, position, depth, contrast, motion and negative space. Relationships viewers must understand together need readable evidence; secondary activity must not obscure decisive contact. |
+| Depth and perspective | Use depth for distance, approach, scale and trajectory. Foreground occlusion and shallow focus must not erase required evidence. Specify compatible field of view and camera distance rather than conflicting lens jargon. |
+| Static or moving camera | A hold can emphasize subject change; motion can follow action, reveal relationships or alter participation. State the trigger, relationship to the subject and destination. Not every shot must move. |
+| Onscreen and offscreen space | Sound or a visible consequence can explain offscreen preparation. A process explicitly required as continuous proof must remain visible; sound or a cut cannot substitute for it. |
 
-固定镜头也是完整选择：注明固定构图、主体进出和切点；不为填字段强加运镜。运动镜头优先一个主导运动，必要的跟随摇摄可配合；复杂复合运动需明确路径与执行办法，不机械禁止。
+Distinguish camera translation, pan/tilt, optical zoom and post crop. Translation usually changes perspective and foreground/background relationships; cropping does not. Product rotation cannot substitute for a planned camera orbit. For tracking, specify whether the camera is fixed relative to, ahead of or behind the subject, and whether it keeps moving when the subject stops. New product views require structural evidence.
 
-## 先组织全片，再修单镜
+When the action depends on a real product opening, closing, carrying or containing something, inspect its original structure before choosing the action path. Anchor the path to verified edges, openings and attachments, not a generic category shape. Preserve those relationships through changes of viewpoint and deformation. If a proposed action requires an unverified or contradictory mechanism, revise the staging while preserving the shot's purpose; do not pass an invented mechanism to the artist as a hard constraint.
 
-- 检查景别、机位和空间关系是否有变化，是否需要建立空间、靠近细节或留出揭晓。不要按固定比例凑远中近，也不固定六镜套路。
-- 决定哪些段落静、哪些段落动，运动如何起承转落。避免整片同速度漂移；连续运动也可以成立，但需设计主体调度和剪辑接力。
-- 运动须有具体观看效果：侧移借前后景视差建立深度，跟拍带观众参与动作，后退揭示关系等。效果是设计判断，不是强制技法清单。
-- 检查相邻镜头的屏幕运动方向、主体落点和动作切口；故意打破方向时应让空间仍可理解。不要靠随机换机位制造所谓镜头感。
+## Grammar between shots
 
-## 正确描述运动
+- **Geography:** establish participants, targets and obstacles through a shared frame, landmarks, eyelines or continuous movement. A wide shot is optional. Give viewers new orientation cues after important spatial changes.
+- **Axis and screen direction:** establish the interaction or motion axis and preserve meaningful left/right, eyeline and entrance/exit relationships. A chase must not accidentally become opposing movement. Deliberate axis crossings need a readable crossing move, an on-axis shot, re-establishment or an intentional disorientation effect. The 180-degree convention is not a ban on invention.
+- **Eyelines and subjectivity:** a look and its target must support the intended spatial relationship. Reaction shots change how the preceding image is read. Under a no-face constraint, use body orientation, a hand pause or subjective view instead of facial close-ups.
+- **Angle and size changes:** small angle and size changes on the same subject can create unintended jump cuts. Roughly 30 degrees or a substantial size change is a common remedy, not a measured threshold. Preserve deliberate jump cuts and graphic matches when their effect is intentional.
+- **Action matching:** carry pose, direction, speed phase, held objects and contact across a cut. Avoid accidental repeated effort or missing causality. Intentional time compression or expansion must remain understandable.
+- **Attention continuity:** know where attention leaves one shot and where the next receives it. Large shifts require reading time or visual/audio guidance; permanent centering is not a rule.
+- **Motivated cuts:** cut when information, reaction, subject, space or rhythm needs to change. Hold when continuity better proves a relationship or sustains immersion. Motion, occlusion and graphic matches can organize a transition, but effects cannot hide missing causality.
 
-推进是相机接近主体，通常改变透视与前后景关系；变焦改变视角，后期缩放只是裁切，不能冒充位移。侧移不同于原地水平摇摄；升降不同于原地俯仰。弧线移动应描述围绕谁、向哪侧、露出什么，不能让商品自行旋转代替相机绕行。
+Assess the sequence before polishing isolated shots. Repetition without progression, purposeful emphasis or an echo should be merged or removed, not rescued by another angle.
 
-对焦变化是另一维度，不能将背景变糊当作运镜。需要视差时先在画面中建立有深度的前后景；需要绕行或新视角时，先检查对应商品结构参考是否足够，不让模型补造部件。
+## Coordinate action and camera
 
-弱描述：“电影感，平滑跟拍。”
-可执行描述：“镜头与移动主体保持近似距离，从桌边向右侧移；前景固定物从画面左侧掠过，主体保持右侧三分线；主体停下后相机减速停稳，焦点始终跟随主体，在手接触前切出。”这是描述粒度示例，不是所有广告的镜头配方。
+Use [animation principles](animation-principles.md) for performance and [rhythm](rhythm.md) for time and sound. Align effort, contact, result and reaction with camera starts/stops, revelations, cuts and accents. Complex interaction needs readable beats; simple shots do not need every possible phase.
 
-## 从设计到执行
+## Preserve the viewing experience while repairing execution
 
-将最终提示分成主体动作、相机运动、环境变化，使用当前工具支持的表达；不堆叠相互冲突的摄影术语。需要强路径控制时优先评估相机参考、代理物预演、视频修改或合成等可用路线，而非不断增加形容词。
+Identify the experience to preserve: restricted viewpoint, darkness-to-light reveal, scale reversal or impact. User acceptance of that experience does not lock every assistant-proposed measurement or operation. Surreal or virtual miniature viewpoints are valid when their internal perspective, occlusion and product structure remain consistent; accidental penetration or duplicated parts are not a solution.
 
-静态分镜表达关键构图；运动决定创意可读性时，补起止画格和简短路径示意。它们不证明运动已实现。视频测试沿用主技能的方案批准约定，不因补运镜自动提交生成。
+Locate the camera relative to stable parts and specify its viewing direction. Check what is onscreen, occluded or behind the camera as parts move. Give numbers only when they explain geometry or motion, with a reference and unit; unsupported centimeters or exact timings create false precision.
 
-获批后观看实际片段，核对：相机是否按计划移动、视差是否成立、主体是否被误转动、速度与焦点是否准确、商品应可见部件是否全程保留，以及切入下一镜是否顺畅。发现模型只做缩放、漂移或未执行指令，要标记偏差并修路线；不能把提示词当执行证据，也不能把单镜漂亮当全片节奏成立。
+Not every real-world operation must be fully visible. For a view from inside an opening container, changes in the opening, light and sound may convey outside preparation. Actual visibility still depends on the real structure. If an entire operation is essential evidence or explicitly requested, preserve it and revise framing, staging, timing or implementation. Do not default to a cut that destroys the selected reveal.
+
+Resolve alternatives into one compatible design in the existing shot text. No additional checklist or mandatory previsualization is required.
+
+## Shot constraints and handoff
+
+Use the existing shot text or table; simple shots can use short sentences. Do not create unsupported tool fields or parallel documents.
+
+1. **Purpose and evidence:** the viewer's change in understanding or feeling, and its visible cause.
+2. **Camera and staging:** opening/closing composition, viewpoint reference, attention center, subject/target/obstacle positions, camera path, trigger, speed and focus. Measurements require spatial justification.
+3. **Action beats:** necessary anticipation, main action, contact, outcome and reaction; ordering of primary and secondary movement, speed changes, sound accents and permissible omissions.
+4. **Cut relationship:** why to cut or hold, the outgoing/incoming action states, direction and attention location.
+5. **Locks and freedom:** preserve continuity, camera relationships, action order, required evidence and identity/parts that determine the effect. Identify secondary freedom. Separate user constraints from revisable director decisions. Shot count, slow motion, sound and animation style follow the current design, not another film's recipe.
+6. **Frames and verification:** the necessary frame moments, visible relationships and what static evidence cannot verify. Multiple frames do not multiply shot duration.
+
+Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. [Prompt conversion](video-prompt-writing.md) adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
+
+Design review checks expression, compatible geometry and causal cuts. Actual frames check execution. Speed, performance pauses and synchronization require motion/audio evidence. Unexpected good results may be adopted only when they preserve the core task and user constraints.
+
+## Sources and limits
+
+The Higgsfield tutorial around 17:10–19:10 demonstrates shot purpose, shot structure, constraints, animation principles and a shared skill. This is an adaptation for this workflow, not its full internal skill. The tutorial's vehicles, fixed durations, no-music choice and animation on twos are project decisions, not universal laws. Exact frames and perfect consistency in prompts express intent, not model guarantees.
+
+## Further reading
+
+- [Source 1](https://www.khanacademy.org/humanities/hass-storytelling/storytelling-pixar-in-a-box/ah-piab-film-grammar/v/film-grammar-overview)
+- [Source 2](https://www.khanacademy.org/v/dynamicshots)
+- [Source 3](https://filmglossary.ccnmtl.columbia.edu/term/180-degree-rule/)
+- [Source 4](https://www.columbia.edu/itc/film/engel/3001/continuity.html)
+- [Source 5](https://www.studiobinder.com/blog/30-degree-rule/)
+- [Source 6](https://xhslink.cn/o/rLnNxFkjbL)

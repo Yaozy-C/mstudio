@@ -8,14 +8,12 @@ export function useTaskNavigation(
   useEffect(() => {
     const script = (event: Event) =>
       navigate("script", (event as CustomEvent<string>).detail);
-    const task = () => {
-      if (view === "film") navigate("storyboard");
-    };
+    const canvas = () => navigate("storyboard");
     window.addEventListener("studio-show-script", script);
-    window.addEventListener("studio-show-generation", task);
+    window.addEventListener("studio-show-canvas", canvas);
     return () => {
       window.removeEventListener("studio-show-script", script);
-      window.removeEventListener("studio-show-generation", task);
+      window.removeEventListener("studio-show-canvas", canvas);
     };
   }, [navigate, view]);
 }

@@ -1,8 +1,8 @@
 import { type Asset, type BoardNode, type Project } from "../model";
 import type { ShotTake } from "./types";
-export const shotsOf = (p: Project, planId: string) =>
+export const shotsOf = (p: Project, screenplayId: string) =>
   p.nodes
-    .filter((n) => n.kind === "shot" && n.shot?.planId === planId)
+    .filter((n) => n.kind === "shot" && n.shot?.screenplayId === screenplayId)
     .sort((a, b) => a.shot!.order - b.shot!.order);
 export const shotBasis = (n: BoardNode) =>
   JSON.stringify([

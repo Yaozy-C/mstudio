@@ -5,25 +5,28 @@ import { framesOf } from "./frames";
 import { itemKey, type ProductionItem } from "./types";
 import type { Project } from "../model";
 export function productionShots(p: Project) {
+  const indices = new Map(p.nodes.map((node, i) => [node.id, i]));
   return p.nodes
     .filter((n) => n.shot)
     .sort((a, b) => {
       const group =
-        p.nodes.findIndex((n) => n.id === a.shot!.planId) -
-        p.nodes.findIndex((n) => n.id === b.shot!.planId);
+        (indices.get(a.shot!.screenplayId) ?? -1) -
+        (indices.get(b.shot!.screenplayId) ?? -1);
       return group || a.shot!.order - b.shot!.order;
     });
 }
 export function productionItems(p: Project): ProductionItem[] {
   p = materializeFrameCards(p);
   const items: ProductionItem[] = [];
+  const assets = new Map(p.assets.map((asset) => [asset.id, asset]));
+  const nodes = new Map(p.nodes.map((node) => [node.id, node]));
   const shots = productionShots(p);
   shots.forEach((n, i) => {
     const x = i * 1600,
       ownerId = n.id;
-    const script = p.nodes
-      .find((v) => v.id === n.shot!.planId)
-      ?.plan?.script?.find((s) => s.id === n.shot!.scriptId);
+    const script = nodes
+      .get(n.shot!.screenplayId)
+      ?.screenplay?.script?.find((s) => s.id === n.shot!.scriptId);
     items.push({
       key: itemKey("script", n.id),
       kind: "script",
@@ -42,7 +45,7 @@ export function productionItems(p: Project): ProductionItem[] {
       height: 300,
     });
     (n.references ?? []).forEach((ref, j) => {
-      const a = p.assets.find((a) => a.id === ref.assetId);
+      const a = assets.get(ref.assetId);
       if (!a) return;
       items.push({
         key: itemKey("reference", n.id, a.id),
@@ -63,9 +66,9 @@ export function productionItems(p: Project): ProductionItem[] {
       });
     });
     takesOf(n)
-      .filter((t) => p.assets.find((a) => a.id === t.assetId)?.kind === "video")
+      .filter((t) => assets.get(t.assetId)?.kind === "video")
       .forEach((t, j) => {
-        const a = p.assets.find((a) => a.id === t.assetId)!;
+        const a = assets.get(t.assetId)!;
         items.push({
           key: itemKey("take", n.id, a.id),
           kind: "video",
@@ -82,11 +85,9 @@ export function productionItems(p: Project): ProductionItem[] {
       });
   });
   p.nodes
-    .filter((n) => !n.shot)
+    .filter((n) => !n.shot && n.kind !== "screenplay")
     .forEach((n, i) => {
-      const a = p.assets.find((a) => a.id === n.assetId);
-      if (n.kind === "plan" && shots.some((s) => s.shot!.planId === n.id))
-        return;
+      const a = assets.get(n.assetId ?? "");
       items.push({
         key: itemKey("node", n.id),
         usages: shots.flatMap((shot) =>
@@ -107,9 +108,7 @@ export function productionItems(p: Project): ProductionItem[] {
               ? "video"
               : "note",
         title: n.title,
-        text:
-          n.plan?.script?.map((s) => `${s.title}\n${s.action}`).join("\n\n") ||
-          n.text,
+        text: n.text,
         x: shots.length ? (i % 4) * 300 : n.x,
         y: shots.length ? 1050 + Math.floor(i / 4) * 360 : n.y,
         width: a?.kind === "image" ? 250 : (n.width ?? 260),

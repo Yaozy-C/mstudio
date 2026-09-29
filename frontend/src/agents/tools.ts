@@ -1,5 +1,11 @@
 export const tools = [
   {
+    id: "project-assets",
+    name: "整理项目素材",
+    description: "维护素材参考记录；配合媒体生成准备独立图片资产",
+    kind: "项目工具",
+  },
+  {
     id: "agent-delegate",
     name: "委派专业 Agent",
     description:
@@ -25,9 +31,9 @@ export const tools = [
     kind: "项目工具",
   },
   {
-    id: "project-plan",
+    id: "project-script",
     name: "编辑脚本与创意",
-    description: "创建和修改结构化脚本、段落和创意方案，保留镜头关联",
+    description: "创建和修改结构化声画脚本与段落，保留镜头关联",
     kind: "项目工具",
   },
   {

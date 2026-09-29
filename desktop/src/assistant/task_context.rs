@@ -20,7 +20,7 @@ pub fn resolve(store: &Store, request: &Request, agent: &str) -> Result<Scope, S
     let prior: Option<String> = if let Some(turn) = &request.resume_turn_id {
         db.query_row("SELECT json_extract(attribution,'$.taskScope') FROM agent_messages WHERE project_id=?1 AND role='user' AND json_extract(attribution,'$.turnId')=?2", params![request.project_id,turn], |r| r.get(0)).optional()
     } else {
-        db.query_row("SELECT json_extract(attribution,'$.taskScope') FROM agent_messages WHERE project_id=?1 AND role='user' AND json_extract(attribution,'$.agentId')=?2 AND json_type(attribution,'$.taskScope')='object' AND EXISTS(SELECT 1 FROM agent_events e WHERE e.project_id=?1 AND e.turn_id=json_extract(agent_messages.attribution,'$.turnId') AND e.seq>COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0)) ORDER BY id DESC LIMIT 1", params![request.project_id,agent], |r| r.get(0)).optional()
+        db.query_row("SELECT json_extract(attribution,'$.taskScope') FROM agent_messages WHERE project_id=?1 AND role='user' AND json_extract(attribution,'$.agentId')=?2 AND json_type(attribution,'$.taskScope')='object' AND EXISTS(SELECT 1 FROM agent_events e WHERE e.project_id=?1 AND e.turn_id=json_extract(agent_messages.attribution,'$.turnId') AND e.kind IN ('session/start','turn/end') AND e.seq>COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0)) ORDER BY id DESC LIMIT 1", params![request.project_id,agent], |r| r.get(0)).optional()
     }.map_err(|e| e.to_string())?.flatten();
     let prior = prior
         .map(|s| serde_json::from_str::<Scope>(&s))
@@ -228,6 +228,7 @@ pub fn reference_snapshot(mut snapshot: Value) -> Value {
     if let Some(fields) = snapshot.as_object_mut() {
         fields.remove("agent");
         fields.remove("skills");
+        fields.remove("promptGuidance");
         fields.remove("specialists");
     }
     snapshot

@@ -100,7 +100,10 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
     let store = t.app.state::<Store>();
     let turn = args["turnId"].as_str().unwrap_or(&t.turn);
     if turn != t.turn && !crate::assistant::profiles::allows(&t.profile, "inspect") {
-        let owner:Option<String>=store.db.lock().unwrap().query_row("SELECT json_extract(payload,'$.binding.agentId') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='session/start' ORDER BY seq LIMIT 1",rusqlite::params![t.project,turn],|r|r.get(0)).ok();
+        let owner =
+            crate::database::session_checkpoint::owner(&store.db.lock().unwrap(), &t.project, turn)
+                .ok()
+                .flatten();
         if owner.as_deref() != Some(&t.profile.id) {
             return json!({"error":"不能读取其他角色的结果","code":"FORBIDDEN"});
         }
@@ -115,14 +118,14 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
 }
 
 pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: usize) -> Value {
-    let raw:Result<String,_>=store.db.lock().unwrap().query_row("SELECT json_extract(payload,'$.value') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1",rusqlite::params![project,turn,call],|r|r.get(0));
+    let raw = (|| -> anyhow::Result<Value> {
+        let db = store.db.lock().unwrap();
+        let (seq,raw): (i64,String) = db.query_row("SELECT seq,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1", rusqlite::params![project,turn,call],|r|Ok((r.get(0)?,r.get(1)?)))?;
+        Ok(crate::database::blobs::event(&db, seq, &raw)?["value"].take())
+    })();
     match raw {
-        Ok(raw) => {
-            // Image bytes are read through the media tools, never as base64 text.
-            let mut value: Value = match serde_json::from_str(&raw) {
-                Ok(v) => v,
-                Err(e) => return json!({"error":e.to_string()}),
-            };
+        Ok(mut value) => {
+            // Image bytes are read through media tools, never as base64 text.
             if let Some(object) = value.as_object_mut() {
                 object.remove("__offloadedImage");
             }

@@ -16,7 +16,7 @@ export const definitions = [
   {
     id: "storyboard",
     name: "脚本与分镜",
-    description: "视频方案、对应分镜与可编辑的生成 Prompt",
+    description: "声画脚本、对应分镜与可编辑的生成 Prompt",
     commands: [],
   },
   {

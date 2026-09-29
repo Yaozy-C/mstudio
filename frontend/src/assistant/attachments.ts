@@ -32,7 +32,7 @@ export function describeAttachment(
     ref.kind === "asset"
       ? ref.id
       : clip?.assetId ||
-        (node?.kind === "shot" || node?.kind === "plan"
+        (node?.kind === "shot" || node?.kind === "screenplay"
           ? undefined
           : node?.resultAssetId || node?.assetId);
   const asset = project.assets.find((a) => a.id === assetId);

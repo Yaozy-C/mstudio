@@ -1,5 +1,5 @@
 import { errorText, normalizeError } from "../errors/catalog";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { uid, type Project } from "../model";
 import { native } from "../bridge";
 import { runtime } from "../plugins/runtime";
@@ -21,10 +21,18 @@ export function useProductionSubmit({
   flush: () => Promise<void>;
   update: (patch: Partial<ProductionTask>, key?: string) => void;
 }) {
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const submittingRef = useRef(new Set<string>());
+  const [slotVersion, setSlotVersion] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   async function submit(requested: ProductionTask) {
-    if (submittingRef.current.has(requested.key)) return;
+    if (!active.current || submittingRef.current.has(requested.key)) return;
     const current = get().production?.drafts?.[requested.key] ?? requested;
     if (
       [
@@ -40,6 +48,10 @@ export function useProductionSubmit({
       ].includes(current.status ?? "")
     )
       return;
+    if (submittingRef.current.size >= 2) {
+      update({ status: "READY", error: undefined }, requested.key);
+      return;
+    }
     submittingRef.current.add(requested.key);
     const draft = structuredClone(current),
       targetKey = draft.key;
@@ -52,6 +64,7 @@ export function useProductionSubmit({
         throw new Error("请在设置中连接生成服务，并在这里选择模型");
       setSubmitting(true);
       await flush();
+      if (!active.current) return;
       const p = structuredClone(get());
       const { x, y } = draft.position ?? resultPlacement(p, draft);
       const snapshot = canvasSnapshot(p, draft, { x, y });
@@ -66,6 +79,8 @@ export function useProductionSubmit({
             approved: true,
           })
         : [];
+      if (!active.current) return;
+      if (get().production?.drafts?.[targetKey]?.status === "CANCELLED") return;
       // Check that the selected shot and images still exist after uploading.
       canvasSnapshot(get(), draft, { x, y });
       const input = inputFor(p, draft, model, uploaded);
@@ -79,6 +94,7 @@ export function useProductionSubmit({
       };
       update({ submissionId: id, jobId: id, status: "SUBMITTING" }, targetKey);
       await flush();
+      if (!active.current) return;
       started = true;
       const source = p.nodes.find((n) => n.id === draft.ownerId);
       const job = await runtime.execute<{
@@ -102,6 +118,7 @@ export function useProductionSubmit({
           projectRevision: p.revision,
         },
       });
+      if (!active.current) return;
       update(
         {
           jobId: job.id,
@@ -117,6 +134,7 @@ export function useProductionSubmit({
         }),
       );
     } catch (error) {
+      if (!active.current) return;
       update(
         {
           status:
@@ -141,8 +159,16 @@ export function useProductionSubmit({
         );
     } finally {
       submittingRef.current.delete(requested.key);
-      setSubmitting(submittingRef.current.size > 0);
+      if (active.current) {
+        setSubmitting(submittingRef.current.size > 0);
+        setSlotVersion((v) => v + 1);
+      }
     }
   }
-  return { submit, submitting };
+  return {
+    submit,
+    submitting,
+    slotVersion,
+    available: () => 2 - submittingRef.current.size,
+  };
 }

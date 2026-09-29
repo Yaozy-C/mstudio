@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { newProject, duration, type Asset } from "../model";
 import { applyOperations, inspectProject } from "../assistant/projectCommands";
 import { addShotResult, shotBasis } from "./document";
-import { assemblePlan, chooseTake } from "./timeline";
+import { assembleScreenplay, chooseTake } from "./timeline";
 import { removeNodes } from "../canvas/removeNodes";
 import { describeAttachment } from "../assistant/attachments";
 const asset = (id: string, seconds = 6): Asset => ({
@@ -26,11 +26,11 @@ function fixture() {
     [
       {
         op: "add_node",
-        id: "plan",
-        kind: "plan",
+        id: "screenplay",
+        kind: "screenplay",
         title: "Film",
-        text: "Concept",
-        plan: { story: "Beginning, middle, end", sound: "natural" },
+        text: "",
+        screenplay: { script: [] },
       },
       {
         op: "add_node",
@@ -38,7 +38,12 @@ function fixture() {
         kind: "shot",
         title: "Open",
         text: "Open the bag",
-        shot: { planId: "plan", order: 1, duration: 6, dialogue: "Let's pack" },
+        shot: {
+          screenplayId: "screenplay",
+          order: 1,
+          duration: 6,
+          dialogue: "Let's pack",
+        },
         resultAssetId: "a",
       },
       {
@@ -47,13 +52,18 @@ function fixture() {
         kind: "shot",
         title: "Close",
         text: "Close the bag",
-        shot: { planId: "plan", order: 2, duration: 3, dialogue: "Ready" },
+        shot: {
+          screenplayId: "screenplay",
+          order: 2,
+          duration: 3,
+          dialogue: "Ready",
+        },
         resultAssetId: "b",
       },
     ],
   );
 }
-test("one plan owns paired shots; partial edits keep dialogue, identity and mark existing visuals stale", () => {
+test("one screenplay owns paired shots; partial edits keep dialogue, identity and mark existing visuals stale", () => {
   const p = fixture();
   const q = applyOperations(p, 0, [
     { op: "update_node", id: "s1", text: "Open faster" },
@@ -66,13 +76,13 @@ test("one plan owns paired shots; partial edits keep dialogue, identity and mark
     fields: ["shot", "dialogue"],
   });
   expect(JSON.stringify(info)).toContain("Let's pack");
-  expect(removeNodes(q, ["plan"]).nodes).toHaveLength(0);
+  expect(removeNodes(q, ["screenplay"]).nodes).toHaveLength(0);
 });
 test("reject invalid associations and duplicate shot order atomically", () => {
   const p = fixture(),
     original = JSON.stringify(p);
   for (const shot of [
-    { planId: "missing" },
+    { screenplayId: "missing" },
     { order: 2 },
     { duration: -1 },
     { frames: [{ assetId: "a", title: "frame" }] },
@@ -89,11 +99,11 @@ test("reject invalid associations and duplicate shot order atomically", () => {
   ).toThrow();
 });
 test("assembly matches planned durations and does not duplicate already edited shots", () => {
-  const p = assemblePlan(fixture(), "plan");
+  const p = assembleScreenplay(fixture(), "screenplay");
   expect(p.clips.map((c) => duration(c))).toEqual([6, 3]);
   expect(p.clips.map((c) => c.shotId)).toEqual(["s1", "s2"]);
   expect(p.clips[1].start).toBe(6);
-  expect(assemblePlan(p, "plan")).toBe(p);
+  expect(assembleScreenplay(p, "screenplay")).toBe(p);
 });
 test("generation results stay under their shot and never silently replace chosen media", () => {
   const p = fixture(),
@@ -110,7 +120,7 @@ test("generation results stay under their shot and never silently replace chosen
   );
 });
 test("replace a split shot without changing timings, captions, other shots or original audio", () => {
-  let p = assemblePlan(fixture(), "plan");
+  let p = assembleScreenplay(fixture(), "screenplay");
   const c = p.clips[0],
     untouched = p.clips[1];
   p = {

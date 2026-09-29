@@ -1,3 +1,4 @@
+import { normalizeError, errorCatalog, redactDetails } from "../errors/catalog";
 export type ActivityEvent = {
   seq: number;
   kind: string;
@@ -23,15 +24,20 @@ const operations: Record<string, string> = {
   update_node: "修改内容",
   remove_node: "删除内容",
   choose_take: "选用镜头",
-  assemble_plan: "编排时间线",
+  assemble_screenplay: "编排时间线",
   set_references: "整理参考素材",
 };
 export function activityRows(events: ActivityEvent[]) {
   type Payload = {
     callId?: string;
     name?: string;
-    arguments?: { action?: string; operations?: { op: string }[] };
+    arguments?: {
+      action?: string;
+      agentId?: string;
+      operations?: { op: string }[];
+    };
     result?: {
+      agentId?: string;
       error?: string;
       status?: string;
       stopReason?: string;
@@ -72,6 +78,10 @@ export function activityRows(events: ActivityEvent[]) {
       return {
         id: e.seq,
         title,
+        agentId:
+          action === "delegate"
+            ? p.arguments?.agentId || result?.result?.agentId
+            : undefined,
         error: !!result?.result?.error && !limited,
         detail:
           (limited
@@ -79,7 +89,9 @@ export function activityRows(events: ActivityEvent[]) {
               ? "此次委派达到步数上限；统筹后续已完成本轮任务"
               : "专业 Agent 达到步数上限，已完成的修改保留，待统筹处理"
             : undefined) ??
-          result?.result?.error ??
+          (result?.result?.error
+            ? activityError(result.result.error)
+            : undefined) ??
           (!result
             ? "执行中"
             : result.result?.status === "running"
@@ -91,4 +103,22 @@ export function activityRows(events: ActivityEvent[]) {
                   : "已完成"),
       };
     });
+}
+
+function activityError(raw: string): string {
+  const start = raw.indexOf("{");
+  if (start < 0) return redactDetails(raw);
+  try {
+    const data = JSON.parse(raw.slice(start));
+    if (!data || !Object.hasOwn(errorCatalog, data.code))
+      return redactDetails(raw);
+    const issue = normalizeError(data);
+    const prefix = raw
+      .slice(0, start)
+      .replace(/Error:\s*$/, "")
+      .trim();
+    return [prefix, issue.message, issue.recovery].filter(Boolean).join("\n");
+  } catch {
+    return redactDetails(raw);
+  }
 }

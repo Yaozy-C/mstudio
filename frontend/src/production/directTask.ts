@@ -12,8 +12,6 @@ export function directTask(
   model: MediaModel,
   id: string,
 ): ProductionTask {
-  if (draft.inputs.some((r) => r.role === "script"))
-    throw new Error("文字资料请在 Agent 模式使用，或移除后生成");
   const task: ProductionTask = {
     key: `run:direct:${id}`,
     turnId: `direct:${id}`,

@@ -75,10 +75,6 @@
 .shot-dialogue .creative-inline-input > textarea {
   color: var(--desk-text);
 }
-.plan-grid .creative-inline-input > span,
-.plan-grid .creative-inline-input > textarea {
-  font-size: 11px;
-}
 .shot-detail-copy .creative-inline-input > span,
 .shot-detail-copy .creative-inline-input > textarea {
   font-size: 13px;

@@ -1,43 +1,25 @@
-# 成片检查与交付
+# Review actual output and deliver
 
-先找回交接中用户要求、失败条件和锁定内容。按实际素材判断，不复述提示词作为证据。检查由助手完成，不变为逐镜审批。
+Recover the current requirements, failure conditions and locked content. The assistant inspects actual media; this is not per-shot user approval. Use [evidence records](evidence-contract.md), not a restatement of the prompt.
 
-## 画面与动作
+## Image, action and sequence
 
-- 单帧：商品身份/结构/颜色/部件、人物连接、物品数量、背景反射及项目人物要求。人物造型和构图同样按用户选定方向核对。
-- 连续动作：手与物的接触/松手、真实开口、运动路径、支撑、遮挡、形变、工具/部件轨迹；关键位置查看连续片段，必要时高频抽帧辅助。
-- 跨镜：道具数量和位置、商品开合、人物服装、空间光向、注意位置与切点；不能把瞬移解释成运镜。
-- 价值兑现：必须可辨的动作和结果确实出现在成片；生成图不增加商品事实可信度。有意创意夸张按方案判断，其余结构和物理关系仍须可信。
+Check identity, structure, color, visible components, anatomy, counts, reflection and project framing restrictions against original sources. Check contact/release, openings, paths, support, occlusion and deformation across actual motion. Check cross-shot props, openings, outfit, geography, light, attention and cuts. Creative exaggeration follows the selected plan; unexempted physical/product relationships still need coherence.
 
-违反项目无脸要求、错商品、虚构功能、人体断连、关键穿模、物品复制或核心事件缺失均为阻断问题，先修受影响段。重复失败按受控生成规则换路线。轻微非关键差异可记录，不夸称完全一致。
+Wrong product, fabricated function, forbidden face, disconnected anatomy, decisive penetration, duplicated items or a missing essential event block acceptance. Repair affected material under current retry limits. Minor irrelevant deviations may be recorded without claiming perfection.
 
-## 全片与技术
+For transfers, grasps, opening/closing, occlusion or loss of support, inspect before/contact/after continuously where possible, using slow playback or dense frames as aids. Sparse overview frames cannot establish brief contact. Verify planned cuts and matching views actually appear. A correct destination cannot cancel a wrong origin: trace first appearance/support backward, then inspect the full chain forward. Compare actual shots to the plan for omitted events and extra repetition.
 
-播放实际导出，检查信息顺序、指定出现时间、切点、动作速度和停留；有声音时听取音画配合、截断和响度。抽帧只能支持所覆盖的视觉检查；不能据 ffprobe 或接触表宣称节奏和声音都已通过。无法播放/听取时记录已查与未查范围，不捏造审片。
+## Playback and technical checks
 
-检查实际导出可打开、总时长、像素尺寸、帧率、帧数、音轨与编码；比例转换不得无意拉伸商品或裁掉证据。只在需要时核实当前平台安全区。检查最终文件而非只检查编辑脚本。
+Play the actual new export for information order, required reveal times, cuts, speed and holds; listen for sync, clipping and level. Stills and metadata only support their own observation scope. Record unavailable playback/audio as unchecked, not passed. A new export or retimed version needs fresh checks of affected content.
 
-## 可追溯交付
+Verify the actual file opens, duration, dimensions, frame rate/count, audio and codec when tools allow. Aspect conversion must not distort the product or remove evidence. Check platform safe areas only when relevant. Inspect the final file, not only the editing script.
 
-任务专属版本目录保存素材角色、参考顺序、实际提示词/参数、任务ID、片段、选用区间、时间线与修复记录，不存密钥。输入、输出和依赖关系可定位；母图改变只复查受影响资产。
+For realistic work assess [perceptual realism](generation.md#perceptual-realism) separately from structure. For [visible components](generation.md#visible-product-components), record original region, expected visibility and actual observation. Missing expected parts fail; unreadable evidence remains unchecked.
 
-直接展示可用视频及简短规格和关键修正，文件使用实际可访问路径。区分连续动作成片、静帧预演和未完成资产。严重已知错误不能改名为“未验证”放行；未发布或缺观众数据不阻塞已授权制作的交付。不只给ZIP、提示词或接口成功状态。
+## Traceable delivery
 
-## 验收记录
+Keep actual prompts/parameters, input roles/order, task IDs, assets, selected ranges, timeline and repair history in task-specific records without secrets. Track dependencies and inspect only affected assets after base changes.
 
-使用 [验收证据](evidence-contract.md) 将每项结论定位到镜头、时间区间、实际素材和观察。交付前核对记录完整；缺项、失败项或未检查项不能被报告为整体通过。记录完整不代表实际媒体正确。
-
-用户要求真实感时，按 [感知真实感独立验收](generation.md#重要感知真实感独立验收) 分别检查整体观感、材质与光线、布景动作和受力。每镜分别记录真实感观察，定位实际图或片段，不以结构正确代替感知真实感。
-
-**【阻断项｜遗漏真实部件】**按 [部件保留规则](generation.md#重要真实商品部件不可遗漏)，在 structure 检查中记录原始部件及来源区域、当前镜头应有的可见状态和实际观察。应可见部件被省略或替换时判 fail；材料不足无法确认时记 unchecked，不用整体真实感覆盖结构问题。
-
-
-## 关键动态区间
-
-交接、抓握、开合、遮挡和脱离支撑时，对照动作前、接触中、释放后检查连续变化；必要时慢放或密集抽帧。每秒抽帧只能用于总览，不能证明短暂接触正确。核对计划中的切镜和对应视角是否实际出现、持物人与手指归属是否连续、商品是否变形。只有预览图时标动态未验证；没有播放或采帧能力时报告工具缺口，不补写通过。低清试片的动作错误不归因于分辨率。
-
-## 从结果倒查来源，再正向看全片
-
-物体已被拿到、装入或移走时，倒查其首次出现的位置、支撑和移动，再正向核对完整链条。每个关键转移分别在 continuity/motion 观察中记录来源与去向，不能以“接住、装入都完成”概括整段。相邻镜头同时检查观看变化和重复信息；把实际源片与计划镜头对齐，找出额外重复镜头及漏掉的事件。
-
-导出或变速后检查的是新文件，旧版播放结论不能直接沿用。尚未播放/试听只能交付明确标注检查范围的试片；已知核心动作错误须修复，不能混入“低清试片局限”。抽帧、脚本校验、独立审片三者各有边界，独立角色也不能把未观看记为通过。
+Show a usable video and concise specifications/changes with real accessible paths. Distinguish continuous-action film, still animatic and unfinished assets. Do not deliver only a ZIP, prompt or API-success status. Known essential errors cannot be renamed low-resolution limitations or unverified status. Missing publication or audience metrics does not block authorized production delivery. Complete records do not themselves prove correct media.

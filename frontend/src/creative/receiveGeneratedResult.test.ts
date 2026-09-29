@@ -13,7 +13,7 @@ test("results target the submitted shot and a generated image can immediately be
     text: "",
     x: 0,
     y: 0,
-    shot: { planId: "p", order: 0, duration: 5, dialogue: "" },
+    shot: { screenplayId: "p", order: 0, duration: 5, dialogue: "" },
   };
   p.nodes = [shot];
   const image: Asset = {

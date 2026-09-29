@@ -1,51 +1,54 @@
-# 镜头设计到视频提示词
+# Convert shot design into a video prompt
 
-写视频提示词、制作交接或排查动作混乱时读取。方法适用于不同视频模型；模式、字段和语法另按当前模型规则适配。以下示例是设计示例，未作为生成效果证明。
+Required before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.
 
-## 三种粒度
+Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Examples are design illustrations, not tested generation evidence.
 
-故事段描述戏剧变化；摄影镜头描述一次取景与观看关系；生成片段是一次模型调用。三者不必一一对应。一个生成片段可包含多个摄影镜头；依据模型能力、参考关联和动作风险选择组合或拆分，不将每个切镜变成一次生成，也不强迫复杂事件一镜完成。项目 shot 沿用现有数据结构，在正文与交接中说明段内镜头及生成范围，不创建工具不支持的字段。
+## Three different units
 
-## 导演先设计，制作再取舍
+A script section describes a dramatic change; a shot describes one viewpoint; a generation segment describes a model call. They need not map one-to-one. Combine or split according to capabilities, references and interaction risk. Do not force one call per cut or every complex event into one take. Explain internal shots and generation scope in existing project fields.
 
-内部设计明确：本段开始和结束的变化、观众必须看懂的事件、人物与物体的空间关系、关键持物状态、切镜理由。起止状态用于检查连续性，不意味着必须生成首尾帧；没有首帧输入时不假称有首帧。
+## Design before conversion
 
-用户满意镜头意图而实现有错时，保留观看效果和关键事件，修正生成表达与输入。制作对照所选素材实际呈现的机位、开合和初始支撑，不把导演正文当作图片内容。发现空间设计冲突时把具体冲突及保留原意图的候选拍法交导演处理；模型输入与措辞问题自行修正，不重开创意或机械复述错误参数。
+Read the selected [shot constraints](cinematography.md#shot-constraints-and-handoff) and concrete [action principles](animation-principles.md). Preserve the viewing experience and essential events while repairing execution. Compare actual reference geometry and starting support with the design; director text does not prove image content. Return spatial design conflicts to the director with specific evidence. Resolve input/wording issues within production without reopening the concept.
 
-模型正文只保留对当前片段有效的内容：场景与主体关系、本段关键变化、呈现变化的景别/视角/相机行为和切镜、必要的声音与身份约束。不是把分镜表所有栏目顺次拼接。动作与相机分开描述，细节应解决具体歧义；少写不是目的，观众能看懂且模型能执行才是目的。
+The model text carries the current scene relationships, key change, framing/camera/cuts that show it, necessary sound and identity constraints. Do not concatenate all storyboard columns. Separate subject movement from camera movement. Detail should remove ambiguity; brevity is not the goal if it deletes essential relationships.
 
-同一事件可能含多次抓握、释放、换手和遮挡；“一镜一个事件”不能替代动作可行性判断。优先选择清晰调度、相应视角和动作中切镜，省略不影响叙事的准备过程。用户锁定的关键过程或功能证明必须实际呈现，不可用切镜掩盖。允许模型选择未锁定的表演与节奏，不同时给出自由发挥和冲突的逐秒操作要求。
+A single event can contain multiple risky grasps, releases and occlusions. Choose readable staging, matching viewpoints and motivated cuts. Omit only nonessential preparation; user-required continuous proof remains visible. Leave unlocked performance freedom without simultaneously demanding a conflicting second-by-second schedule.
 
-## 参考与输入模式
+## Compile the current segment
 
-逐段选最小相关参考集合，记录实际输入顺序及其作用：
-- 商品身份图：外形、材质和部件；不能单独承担人物调度与场景布局。
-- 场景图：人物位置、尺度、环境、摄影方向；不得覆盖原始商品事实。
-- 动作状态图：关键动作前后姿态；说明是状态参考还是实际首尾帧。
-- 实际首尾帧：只在接口确实按此角色接收时使用对齐要求。
+Organize according to model capability; simple shots can be one paragraph:
 
-参考身份编号应对应实际上传顺序，且各段独立核对。无关商品图、整张多格分镜不要惯性传入。缺少关键空间依据时，可在授权内准备少量场景参考；不默认要求每镜出图或重开审核。场景图须检查商品和手部关系，生成图不能反证商品事实。
+- Scene, purpose and style, with the decisive event and camera relationship easy to identify.
+- Actual references and their identity, layout, motion and camera roles; resolve appearance/motion conflicts.
+- Single/multiple-shot structure, necessary cuts, viewpoint, camera-to-subject relationship, starting composition and action/result beats. A continuous take cannot secretly require a new viewpoint.
+- Locks and permitted variation: camera relationships, direction, event order, identity/parts and required sound. Distinguish user constraints from director decisions without casually deleting the latter.
+- Material-specific anticipation, speed curve, contact response, follow-through and reaction rather than a slogan about cinematic motion or all twelve principles.
 
-普通参考图可以描述目标末态，但不承诺尾帧控制。“不是首帧”不能消除图片中已完成动作与期望起点的冲突。针对当前支持的输入方式选相容参考；仍选择普通参考探索该变化时，准确保留其不确定性，不能把它写成与首尾帧模式等效。参考新增或更换后重新核对实际每张图的用途，不能只沿用最初一张图的说明。
+Exact times/frames express targets; editorial cuts establish precise final timing. A successful request does not establish compliance. Inspect shot rules and performance separately afterward.
 
-## 写法示例与边界
+## Inputs and modes
 
-过载写法：“四秒内递工具、换手、拿饮料、对方同时接工具和罐、摆放工具、开罐再碰杯；跟拍并固定镜头，严格保持全部手指位置。”问题在于动作和摄影关系冲突，不能靠追加禁止词修复。
+Use the minimum relevant set, with roles matching actual upload order:
 
-可选表达：“桌边两位朋友分享饮料。主角向朋友递出饮料，在递出动作中切到朋友一侧的对应视角，朋友接过。回到桌面稍宽画面，两人各持一罐轻碰，退开后露出中央的商品。交接清楚，气氛轻松。”
+- Product identity: shape, material and parts; not all character blocking or scene layout.
+- Scene: positions, scale, environment and camera direction without overriding original product facts.
+- Action state: relevant poses before/after the event, identified as references or actual control frames.
+- Actual first/last frames: use alignment language only when submitted through supported frame-control inputs.
 
-内部另外检查视线与运动方向、接收后的持物状态及相邻段的衔接。正文按实际参考补主体标识、必要机位与声音；是否采用这种切镜取决于任务，不能把交接例子写成所有商品的配方。若用户需要连续证明交接，则保留连续动作并选更简单的调度或其他已授权控制路线。
+Do not automatically attach unrelated product photos or full storyboard sheets. Add necessary scene references only within existing authorization; not every shot needs new images. Inspect product/hand relationships. Ordinary references can express an end state but do not guarantee last-frame control. Calling an image not the first frame does not remove a conflicting completed action. Recheck every role after adding/replacing inputs.
 
-## 最终请求检查与试片
+## Action-source failures
 
-核对实际提交的完整 prompt、追加模板、素材用途和顺序、模式、时长：是否重复已完成动作，是否单镜与多镜冲突，切镜时间是否容纳动作，通用后缀是否重新加回已删除要求。只检查草稿不算检查最终请求；无法查看服务改写结果时注明未知。
+For transfers, pursuit and catches, compare actual reference position/support with the intended start. Prefer compatible references, a crop excluding the conflicting object, or a clear source insert joined to an accepted result, when consistent with the selected expression and authorization. Do not repeatedly add negations to the same contradictory image. If no suitable input exists, report the limitation and choose a feasible route.
 
-只写 prompt 时保存，不自动生成。已有同范围授权继续有效。低清单段试片先列本次待验证的具体问题，如对应视角是否出现、两个人的空间关系是否成立、接触与释放是否连续；不默认固定分辨率或片长。结果按实际观察保留、修复或换路线，不把参考更完整、提示更合规当成成功。
+Check the test from the source: initial location, path/contact, then destination. A correct second half does not cancel a wrong beginning. Permitted anthropomorphism is not unlimited floating or teleportation.
 
-交接保留：镜头/片段 ID、叙事变化、必现事件、素材角色与顺序、实际模式、最终提示词及本次验收点。沿用已有项目记录，内部推理不用全部提交给视频模型。
+## Final request and testing
 
-## 让动作起点不被参考带偏
+Inspect submitted prompt, appended templates, reference roles/order, mode and duration. Check repeated already-completed actions, single/multiple-shot conflicts and impossible timing. Draft review alone is insufficient; inaccessible service rewriting remains unknown.
 
-对物体转移、追赶或接取，比较实际参考中的位置/支撑状态与本段起点。参考展示的是上一事件中段或结果时，单写“不是首帧”不能保证模型忽略它。优先在已有授权内选状态相容的参考、缩小取景排除冲突对象，或将高风险动作拆成来源清楚的插入镜头，再接已通过的结果段。没有可用参考时记录限制并选择可执行路线，不反复给同一冲突图追加否定词。
+A prompt-only request ends with saving. Existing same-scope authorization remains valid. An authorized test specifies concrete questions such as whether the matching angle appears or contact/release remains continuous, without a universal resolution/duration. Retain, repair or change route based on actual output, not prompt completeness.
 
-首个试片验收从动作来源开始：是否先看见计划的初始位置，再有路径/接触，最后到正确去向。后半段成功不抵消起点错误；计划中的拟人化允许范围不能被扩大为任意漂浮、瞬移。
+Hand off shot/segment ID, intended change, essential event, inputs/order, actual mode, final prompt and acceptance points in existing records.

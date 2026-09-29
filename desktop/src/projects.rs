@@ -8,6 +8,7 @@ pub fn list_projects(store: State<Store>) -> Result<Vec<Value>, String> {
 }
 pub fn write_document(store: &Store, mut document: Value, create: bool) -> Result<(), String> {
     store.normalize_paths(&mut document);
+    crate::project_storage::direct_references::document(&mut document);
     let id = document["id"].as_str().ok_or("项目缺少 ID")?;
     let name = document["name"].as_str().ok_or("项目缺少名称")?;
     if name.trim().is_empty() {

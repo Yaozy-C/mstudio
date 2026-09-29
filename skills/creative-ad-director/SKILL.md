@@ -1,33 +1,27 @@
 ---
 name: creative-ad-director
-description: 为 Mstudio 创意广告设计有依据的价值表达、广告事件、摄影、动作节奏和模型提示转换。
+description: Shared creative, cinematography, animation and prompt-conversion rules for Mstudio advertising roles.
 ---
 
-# 创意导演
+# Creative and shot-design rules
 
-从当前项目与用户目标出发；商品事实、消费者洞察和创作者假设分开。可以设计幽默、视觉夸张或剪辑错觉，但不能将虚构事件当性能证据。个人偏好和禁用内容仅在项目明确要求时适用。
+Prompt writing belongs to agents assigned the image-prompt or video-prompt Skill. Direction defines the intended staging and performance; the assigned prompt author converts that design.
 
-## 按角色读取
 
-这是按需参考入口。创意编剧使用 ad-script，不执行下面的完整制作流程；分镜导演按需读摄影与节奏；画手只读图片提示词；媒体制作读控制路线与视频提示词。角色的任务范围和权限决定本次终点，不因读取此 Skill 扩大工作范围。
+This is a professional reference library, not a second production workflow. Read the rules required by the current role and task. Loading this skill does not expand scope or permissions. Separate product facts, user objectives and creative hypotheses; invented events must not masquerade as performance evidence.
 
-## 设计流程
+## Read by responsibility
 
-1. 按 [项目状态](../product-storyboard/references/project-state.md) 区分新委托、续作和局部修改，保留锁定内容。按 [概念设计](references/concepts.md) 形成必要的候选；已有选定创意不重选。
-2. 把选中事件写入 plan 和独立 plan.script；各段标明观众进入时知道什么、离开时发生什么变化，以及支撑情绪的可见线索。没有权限则交统筹安排对应角色。
-3. 按 [摄影指导](references/cinematography.md) 与 [节奏设计](references/rhythm.md) 设计景别、机位、起落构图、主体/相机各自路径与速度、对焦、声音和切点。落实 [逐镜执行依据](../product-storyboard/references/shots-and-continuity.md#逐镜的观看变化与执行依据)，保存到现有镜头字段，不新造表或字段。
-4. 按 [控制路线](references/shot-control.md) 选择参考和实现办法。先检验最难的静态关系，实际机位或初始状态错误先修；动态未知不能为已知静态错误开脱。
-5. 在用户范围内完成实际分镜；文字、静态、动态、声音分别记录检查范围。完整图文任务不能只交术语或任务卡。
-6. 制作遵守 [生成授权](../product-storyboard/SKILL.md#视频生成前的用户审核)。交给 [视频制作](../product-video-production/SKILL.md) 时保留方案、镜头、原始依据、允许调整范围和待验证关系，不让执行端重新选故事。
+| Responsibility | Main reference | Conditional reference |
+|---|---|---|
+| Writer: new concept or event revision | [Concepts](references/concepts.md) | [Opening criteria](../product-storyboard/references/creative-bar.md), [development practice](../product-storyboard/references/director-hook.md) |
+| Director: shot design or revision | [Shot grammar](references/cinematography.md) | [Animation principles](references/animation-principles.md), [rhythm](references/rhythm.md), [state dependencies](../product-storyboard/references/shots-and-continuity.md) |
+| Artist: frames and image prompts | [Image prompts](references/image-prompt-writing.md) | Staging and handoff in shot grammar; [frame inspection](../product-storyboard/references/preview-images.md) |
+| Media producer: implementation | [Control routes](references/shot-control.md), [video prompt conversion](references/video-prompt-writing.md) | Use the selected model’s injected guidance |
+| Editor: pacing changes | [Rhythm](references/rhythm.md) | [Editing execution](../product-video-production/references/motion-and-editing.md) |
 
-## 提示词
+## Execute in Mstudio
 
-图片先读 [单张图片提示词](references/image-prompt-writing.md)，描述一个选定时刻，保存 shot.framePrompt。视频先读 [镜头提示词](references/video-prompt-writing.md)，提炼关键变化、摄影和声音，保存 shot.prompt；两者不能互相覆盖。生成任务的 text 必须是本次完整模型正文，不依赖程序隐式追加脚本。
+[Scriptwriting](../ad-script/SKILL.md) owns script fields, [storyboard direction](../product-storyboard/SKILL.md) owns shot fields and design handoff, [the artist](../storyboard-art/SKILL.md) owns images, and [production](../product-video-production/SKILL.md) owns model tasks and footage selection.
 
-仅当选用 H3 时读 [H3 适配](references/h3-prompts.md)，以 mstudio_models 返回的当前模型/模式能力为准；没有查询或浏览能力时不声称已核实最新官方规范，不编造参数。不默认换模型或外部服务。
-
-## 修改与检查
-
-动作速度、相机速度、切镜节奏、信息停留和总时长分开处理。新要求只改变对应约束；局部提速不自动缩短整片，明确整体倍速则按用户要求调整声画。重复移动须有可见推进，不能靠随机换机位制造镜头感。
-
-获准的粗剪使用实际有效区间，关键声音尽早参与；没有播放/试听能力就保留节奏与音频未验收。实际结果违背核心事件时先修最小缺失段，不用倍速或音乐掩盖。
+Use mstudio_models for available model capabilities. Do not invent parameters or switch services by default. Distinguish written design, actual frames, motion and sound checks; submission success does not establish output quality. Generation follows [current authorization](../product-storyboard/SKILL.md#video-generation-authorization).

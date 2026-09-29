@@ -1,3 +1,4 @@
+import { canEditOriginal, canRegenerate } from "./taskEditing";
 import type { Project } from "../model";
 import type { ProductionController } from "./useProduction";
 import { GenerationSettings } from "./GenerationSettings";
@@ -18,6 +19,9 @@ export function GenerationTaskSettings({
       models={canvas.media.models}
       close={() => canvas.configure(null)}
       save={(configured, start) => {
+        const current = project.production?.drafts?.[configured.key];
+        if (current && !canEditOriginal(current) && !canRegenerate(current))
+          throw new Error("任务正在执行，请等待完成后再修改");
         const task = configured;
         canvas.update(task, task.key);
         canvas.showTask(task);

@@ -20,15 +20,16 @@ export type ProductionInput = Reference & {
   role: InputRole;
 };
 export type ProductionTask = {
+  generationPurpose?: "asset";
   key: string;
   ownerId?: string;
+  targetNodeId?: string;
   position?: { x: number; y: number };
   kind: "image" | "video";
   mode: "single" | "ends" | "multi" | "mixed";
   inputs: ProductionInput[];
   prompt: string;
-  nextPrompt?: string;
-  sourceTaskKey?: string;
+  lastRegenerationId?: string;
   hiddenFromList?: boolean;
   modelId: string;
   parameters?: import("./parameters").GenerationParameters;

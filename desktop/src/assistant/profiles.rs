@@ -3,13 +3,14 @@ use anyhow::{Result, ensure};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, State};
 
-pub const TOOL_IDS: [&str; 12] = [
+pub const TOOL_IDS: [&str; 13] = [
     "agent-delegate",
     "project-read",
     "project-brief",
-    "project-plan",
+    "project-script",
     "project-shots",
     "project-frames",
+    "project-assets",
     "project-production",
     "project-timeline",
     "project-edit",
@@ -17,12 +18,15 @@ pub const TOOL_IDS: [&str; 12] = [
     "memory-read",
     "memory-write",
 ];
-pub const SKILL_IDS: [&str; 8] = [
+pub const SKILL_IDS: [&str; 11] = [
+    "image-prompt",
+    "video-prompt",
     "color-grading",
     "transition-design",
     "ad-team",
     "ad-script",
     "storyboard-art",
+    "asset-preparation",
     "product-storyboard",
     "creative-ad-director",
     "product-video-production",
@@ -51,21 +55,36 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
     match crate::models::setting(db, "agents")? {
         Some(raw) => {
             let mut saved: Vec<AgentProfile> = serde_json::from_str(&raw)?;
+            let original_len = saved.len();
             for builtin in builtins() {
-                if let Some(existing) = saved.iter_mut().find(|p| p.id == builtin.id) {
-                    // A saved edit increments revision. Only refresh untouched defaults.
-                    if existing.revision == 1 && builtin.revision > 1 {
-                        *existing = builtin;
-                    }
-                } else if ["storyboard-artist", "colorist", "transition-designer"]
+                if !saved.iter().any(|p| p.id == builtin.id)
+                    && [
+                        "storyboard-artist",
+                        "colorist",
+                        "transition-designer",
+                        "asset-designer",
+                    ]
                     .contains(&builtin.id.as_str())
                 {
                     saved.push(builtin);
                 }
             }
+            if saved.len() != original_len {
+                db.execute(
+                    "UPDATE settings SET value=?1 WHERE key='agents'",
+                    [serde_json::to_string(&saved)?],
+                )?;
+            }
             Ok(saved)
         }
-        None => Ok(builtins()),
+        None => {
+            let defaults = builtins();
+            db.execute(
+                "INSERT INTO settings(key,value) VALUES('agents',?1)",
+                [serde_json::to_string(&defaults)?],
+            )?;
+            Ok(defaults)
+        }
     }
 }
 pub fn resolve(db: &rusqlite::Connection, id: Option<&str>) -> Result<AgentProfile> {
@@ -217,7 +236,7 @@ mod tests {
             serde_json::json!(["skills", "read_skill"])
         );
         p.skill_ids.clear();
-        p.tool_ids = vec!["project-read".into(), "project-plan".into()];
+        p.tool_ids = vec!["project-read".into(), "project-script".into()];
         assert!(allows(&p, "edit"));
         assert!(!allows(&p, "read_skill"));
         assert!(!allows(&p, "memory-write"));
@@ -241,7 +260,7 @@ mod tests {
         other.id = "other".into();
         other.skill_ids.clear();
         save(&db, other).unwrap();
-        assert_eq!(read(&db).unwrap().len(), 10);
+        assert_eq!(read(&db).unwrap().len(), builtins().len() + 1);
         assert_eq!(resolve(&db, None).unwrap().revision, first.revision + 1);
         assert!(resolve(&db, Some("other")).is_ok());
         first.enabled = false;

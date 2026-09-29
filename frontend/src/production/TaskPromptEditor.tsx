@@ -2,7 +2,6 @@ import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
-import { canEditOriginal } from "./taskEditing";
 
 export function TaskPromptEditor({
   task,
@@ -12,26 +11,15 @@ export function TaskPromptEditor({
   canvas: ProductionController;
 }) {
   useLanguage();
-  const original = canEditOriginal(task);
-  const saved = task.nextPrompt ?? task.prompt;
+  const saved = task.prompt;
   const [draft, setDraft] = useState<string | null>(null);
   const [error, setError] = useState("");
   return (
     <details className="run-description task-prompt-editor">
-      <summary>
-        {t("生成描述")}
-        {task.nextPrompt !== undefined ? t(" · 已有修改") : ""}
-      </summary>
-      {!original && (
-        <details>
-          <summary>{t("查看本次原始描述")}</summary>
-          <p>{task.prompt}</p>
-        </details>
-      )}
+      <summary>{t("生成描述")}</summary>
       <label>
-        {original ? t("生成描述") : t("下次生成描述")}
         <textarea
-          aria-label={original ? t("生成描述") : t("下次生成描述")}
+          aria-label={t("生成描述")}
           rows={5}
           maxLength={12000}
           value={draft ?? saved}
@@ -86,9 +74,6 @@ export function TaskPromptEditor({
         </button>
       </div>
       {error && <p role="alert">{error}</p>}
-      {!original && (
-        <small>{t("保存后不会改变当前请求；重新生成会创建新任务。")}</small>
-      )}
     </details>
   );
 }

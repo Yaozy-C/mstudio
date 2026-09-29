@@ -1,10 +1,10 @@
 import { t, useLanguage } from "../i18n";
 import { requestCreativeTask } from "./aiTasks";
 export function ScriptAIStart({
-  planId,
+  screenplayId,
   manual,
 }: {
-  planId?: string;
+  screenplayId?: string;
   manual: () => void;
 }) {
   useLanguage();
@@ -18,7 +18,7 @@ export function ScriptAIStart({
             requestCreativeTask({
               text: "",
               agentId: "concept",
-              targetNodeId: planId,
+              targetNodeId: screenplayId,
             })
           }
         >

@@ -1,0 +1,113 @@
+.studio-shell {
+  --rail: 240px;
+  --assistant: 420px;
+  --timeline: 252px;
+  min-width: 1000px;
+}
+.studio-shell[data-media="false"] {
+  --rail: 0px;
+}
+.studio-shell[data-agent="false"] {
+  --assistant: 0px;
+}
+.studio-shell.timeline-hidden {
+  --timeline: 44px;
+}
+.studio-shell:not([data-view="film"]) {
+  --timeline: 0px;
+}
+.radix-themes .studio-top {
+  inset: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  height: 64px;
+  border: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 18px;
+  gap: 8px;
+  background: var(--desk-bg);
+}
+.studio-wordmark {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  white-space: nowrap;
+  margin-right: 12px;
+}
+.studio-project {
+  border-left: 1px solid var(--desk-rule);
+  padding-left: 16px;
+  min-width: 0;
+}
+.studio-project .project-title {
+  max-width: 170px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.studio-modes {
+  display: flex;
+  align-self: stretch;
+  align-items: stretch;
+  gap: 14px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.radix-themes .studio-modes button {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 5px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.studio-modes button[aria-pressed="true"] {
+  font-weight: 600;
+}
+.studio-modes button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 9px;
+  left: 5px;
+  right: 5px;
+  height: 3px;
+  background: var(--desk-accent);
+}
+.radix-themes .studio-top .icon-button {
+  background: transparent;
+  border-color: transparent;
+}
+.radix-themes .chrome-action[aria-pressed="true"] {
+  background: transparent;
+  color: var(--desk-accent);
+  border-color: transparent;
+  font-weight: 600;
+}
+.studio-stage {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 64px;
+  left: var(--rail);
+  right: var(--assistant);
+  bottom: var(--timeline);
+  min-width: 0;
+  overflow: hidden;
+}
+.studio-stage > .board {
+  position: absolute;
+  inset: 0;
+}
+.radix-themes .board {
+  background: var(--desk-bg);
+}
+.radix-themes .studio-stage .board-controls {
+  top: auto;
+  box-shadow: none;
+  border-radius: 4px;
+  bottom: 16px;
+  left: 20px;
+  right: auto;
+}

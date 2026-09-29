@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import ts from "typescript";
 import { setLanguage, getLanguage, resolveLanguage, t, LANGUAGE_KEY } from ".";
-import messages from "./en.json";
+import messages from "./en";
 import { LanguageSettings } from "../workspace/LanguageSettings";
 import { StudioSidebar } from "../workspace/StudioSidebar";
 import { ScriptNextStep } from "../creative/ScriptNextStep";

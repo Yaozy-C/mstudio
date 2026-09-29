@@ -13,15 +13,22 @@ const draft: ProductionTask = {
   instruction: "旧要求",
   parameters: { duration: 8 },
   inputs: [
-    { key: "s", assetId: "", role: "script", purpose: "历史脚本" },
+    {
+      key: "s",
+      nodeId: "script-node",
+      assetId: "",
+      role: "script",
+      purpose: "历史脚本",
+    },
     { key: "a", assetId: "a", role: "first-frame", purpose: "首帧" },
     { key: "b", assetId: "b", role: "last-frame", purpose: "尾帧" },
   ],
 };
-test("preparation sends only current prompt, parameters and media; preserves exact frame roles", async () => {
+test("preparation sends only current prompt, parameters and explicit text references; preserves exact frame roles", async () => {
   let args: unknown;
   const invoke = (async (command: string, input: unknown) => {
     expect(command).toBe("prepare_media_prompt");
+    expect((input as any).request.mediaModelId).toBe("media");
     args = input;
     return {
       prompt: "保留布面织纹，修正上盖网兜",
@@ -36,7 +43,11 @@ test("preparation sends only current prompt, parameters and media; preserves exa
   expect(serialized).not.toContain("历史脚本");
   expect(serialized).not.toContain("旧要求");
   expect(serialized).not.toContain("old-shot");
+  expect(serialized).toContain(
+    '"contextReferences":[{"kind":"node","id":"script-node"}]',
+  );
   expect(result.inputs.map((r) => r.role)).toEqual([
+    "script",
     "first-frame",
     "last-frame",
   ]);
@@ -60,3 +71,24 @@ test("failed or reordered preparation never yields an executable task", async ()
     "尚未提交",
   );
 });
+
+for (const kind of ["image", "video"] as const) {
+  test(`${kind} preparation reads explicit documents while keeping them out of media uploads`, async () => {
+    const invoke = (async (_: string, args: any) => {
+      expect(args.request.contextReferences).toEqual([
+        { kind: "asset", id: "brief" },
+      ]);
+      expect(args.request.inputs).toEqual([]);
+      return { prompt: "依据文档整理后的画面描述", references: [] };
+    }) as typeof bridge;
+    const result = await preparePrompt(invoke, "project", {
+      ...draft,
+      kind,
+      inputs: [
+        { key: "brief", assetId: "brief", role: "script", purpose: "产品说明" },
+      ],
+    });
+    expect(result.prompt).toBe("依据文档整理后的画面描述");
+    expect(result.inputs[0].assetId).toBe("brief");
+  });
+}

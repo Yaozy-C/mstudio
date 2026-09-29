@@ -39,10 +39,14 @@ pub fn take_inbox(
         .map_err(|e| e.to_string())?
     };
     for (seq, text, source) in &rows {
-        tx.execute(
-            "INSERT INTO agent_events(project_id,turn_id,kind,payload) VALUES(?1,?2,'session/message',?3)",
-            rusqlite::params![project, turn, json!({"message":agent_message(text, source),"source":source}).to_string()],
-        ).map_err(|e| e.to_string())?;
+        crate::assistant::journal::insert(
+            &tx,
+            project,
+            turn,
+            "session/message",
+            json!({"message":agent_message(text, source),"source":source}),
+        )
+        .map_err(|e| e.to_string())?;
         tx.execute("UPDATE subagent_inbox SET consumed=1 WHERE seq=?1", [seq])
             .map_err(|e| e.to_string())?;
     }
@@ -76,10 +80,7 @@ pub fn notices(
     };
     for (seq, id, status, output) in &rows {
         let message = notice_message(id, status, output);
-        tx.execute(
-            "INSERT INTO agent_events(project_id,turn_id,kind,payload) VALUES(?1,?2,'session/message',?3)",
-            rusqlite::params![project, turn, json!({"message":message,"source":{"kind":"subagent-settled","form":"notice","senderAgentId":id,"status":status}}).to_string()],
-        ).map_err(|e| e.to_string())?;
+        crate::assistant::journal::insert(&tx, project, turn, "session/message", json!({"message":message,"source":{"kind":"subagent-settled","form":"notice","senderAgentId":id,"status":status}})).map_err(|e|e.to_string())?;
         tx.execute(
             "UPDATE subagent_notices SET delivered=1 WHERE seq=?1",
             [seq],

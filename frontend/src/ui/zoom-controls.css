@@ -1,0 +1,22 @@
+.canvas-controls {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  background: #faf9f5;
+  border: 1px solid var(--desk-rule);
+  border-radius: 4px;
+  padding: 4px;
+  gap: 2px;
+}
+.canvas-controls button {
+  border: 0;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+.canvas-controls > span {
+  font-size: 11px;
+  min-width: 38px;
+  text-align: center;
+}

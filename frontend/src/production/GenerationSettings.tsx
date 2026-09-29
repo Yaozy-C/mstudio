@@ -253,16 +253,9 @@ export function GenerationSettings({
         <button onClick={close}>{t("取消")}</button>
         <button onClick={() => commit(false)}>{t("保存设置")}</button>
         {task.turnId && (
-          <button className="primary" onClick={() => commit(true)}>
-            {t("开始生成")}
-          </button>
+          <button onClick={() => commit(true)}>{t("生成")}</button>
         )}
       </footer>
-      {task.turnId && (
-        <small className="generation-setting-note">
-          {t("开始后使用所选服务生成，按服务计费。")}
-        </small>
-      )}
     </>
   );
   if (inline)

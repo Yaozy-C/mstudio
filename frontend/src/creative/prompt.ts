@@ -1,18 +1,17 @@
 import type { BoardNode, Project } from "../model";
 
 export function promptBasis(p: Project, node: BoardNode) {
-  const plan = p.nodes.find((n) => n.id === node.shot?.planId);
-  const source = plan?.plan?.script?.find((s) => s.id === node.shot?.scriptId);
+  const screenplay = p.nodes.find((n) => n.id === node.shot?.screenplayId);
+  const source = screenplay?.screenplay?.script?.find(
+    (s) => s.id === node.shot?.scriptId,
+  );
   return JSON.stringify([
     node.text,
     node.shot?.dialogue,
     node.shot?.duration,
     node.shot?.frames?.map((f) => [f.assetId, f.prompt]),
     node.references,
-    plan?.title,
-    plan?.text,
-    plan?.plan?.story,
-    plan?.plan?.sound,
+    screenplay?.title,
     p.creation?.intent,
     p.creation?.essential,
     p.creation?.preserve,

@@ -8,43 +8,27 @@ use serde_json::{Value, json};
 use tauri::Manager;
 
 pub fn client() -> Result<Client> {
-    Ok(Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .timeout(std::time::Duration::from_secs(90))
-        .build()?)
-}
-pub fn save(store: &Store, job: &Value) -> Result<()> {
-    let db = store.db.lock().unwrap();
-    let mut job = job.clone();
-    store.normalize_paths(&mut job);
-    let written = db.execute(
-        "INSERT INTO jobs SELECT ?1,?2,?3 WHERE EXISTS(SELECT 1 FROM projects WHERE id=?2) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
-        rusqlite::params![
-            job["id"].as_str(),
-            job["projectId"].as_str(),
-            job.to_string()
-        ],
-    )?;
-    ensure!(written == 1, "项目已删除");
-    Ok(())
-}
-pub fn get(store: &Store, id: &str) -> Result<Value> {
-    let s: String =
-        store
-            .db
-            .lock()
-            .unwrap()
-            .query_row("SELECT data FROM jobs WHERE id=?1", [id], |r| r.get(0))?;
-    Ok(serde_json::from_str(&s)?)
+    static CLIENT: std::sync::LazyLock<std::result::Result<Client, reqwest::Error>> =
+        std::sync::LazyLock::new(|| {
+            Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .timeout(std::time::Duration::from_secs(90))
+                .build()
+        });
+    CLIENT
+        .as_ref()
+        .cloned()
+        .map_err(|e| anyhow::anyhow!("HTTP client: {e}"))
 }
 #[cfg(test)]
 pub use crate::model_adapters::queue_url;
+pub use persistence::{get, save};
 #[tauri::command]
 pub fn list_jobs(app: tauri::AppHandle, project_id: String) -> Result<Vec<Value>, String> {
     let store = app.state::<Store>();
     let db = store.db.lock().unwrap();
     let mut stmt = db
-        .prepare("SELECT json_remove(data,'$.input','$.result','$.outputs') FROM jobs WHERE project_id=?1 ORDER BY rowid DESC")
+        .prepare("SELECT json_set(json_remove(data,'$.input','$.result','$.outputs'),'$.backgroundManaged',json('true')) FROM jobs WHERE project_id=?1 ORDER BY rowid DESC")
         .map_err(|e| e.to_string())?;
     let rows = stmt
         .query_map([project_id], |r| r.get::<_, String>(0))
@@ -221,11 +205,14 @@ async fn submit(
 }
 #[tauri::command]
 pub async fn refresh_job(app: tauri::AppHandle, id: String) -> Result<Value, String> {
+    crate::job_worker::reset(&app, &id)
+        .await
+        .map_err(|e| crate::app_error::wire(e, "JOB_SYNC_FAILED", "status"))?;
     refresh(&app, &id)
         .await
         .map_err(|e| crate::app_error::wire(e, "JOB_SYNC_FAILED", "status"))
 }
-async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
+pub(crate) async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
     let _job_guard = crate::job_locks::acquire(id).await;
     let store = app.state::<Store>();
     let mut job = get(&store, id)?;
@@ -233,6 +220,10 @@ async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
         job["status"].as_str(),
         Some("COMPLETED" | "FAILED" | "CANCELLED")
     ) {
+        return Ok(job);
+    }
+    if crate::model_adapters::recover_cancelled(&mut job) {
+        save(&store, &job)?;
         return Ok(job);
     }
     let provider = crate::model_adapters::for_job(&job)?;

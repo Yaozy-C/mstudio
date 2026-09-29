@@ -1,3 +1,4 @@
+import { ZoomableImage } from "../workspace/ZoomableImage";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog, Popover } from "@radix-ui/themes";
@@ -15,6 +16,8 @@ import type { ProductionInput } from "../production/types";
 import { roleLabels } from "../production/request";
 import type { AttachmentDraft } from "./useAttachments";
 import { ComposerReference } from "./ComposerReference";
+import { describeAttachment } from "./attachments";
+import "../styles/composer-reference-labels.css";
 
 export function MediaReferenceStrip(props: {
   canvas: ProductionController;
@@ -67,16 +70,21 @@ export function MediaReferenceStrip(props: {
   }
   return (
     <>
-      <div className="composer-media-strip" aria-label={t("本次引用")}>
+      <div
+        className={`composer-media-strip${canvas.composerMode === "agent" ? " composer-agent-references" : ""}`}
+        aria-label={t("本次引用")}
+      >
         {inputs.map((ref) => {
           const a = project.assets.find((a) => a.id === ref.assetId);
           const node = project.nodes.find((n) => n.id === ref.nodeId);
-          const title = a?.name ?? node?.title ?? t("素材已移除");
+          const title =
+            (ref.sourceRef &&
+              describeAttachment(project, ref.sourceRef)?.title) ??
+            a?.name ??
+            node?.title ??
+            t("素材已移除");
           const src = a && (a.preview || (a.kind === "image" ? a.path : ""));
-          const invalid =
-            (!a && !node) ||
-            a?.missing ||
-            (canvas.composerMode !== "agent" && ref.role === "script");
+          const invalid = (!a && !node) || a?.missing;
           return (
             <div
               className={`composer-media-thumb${invalid ? " invalid" : ""}`}
@@ -124,7 +132,15 @@ export function MediaReferenceStrip(props: {
                   <Image size={22} />
                 )}
               </button>
-              {ref.role !== "reference" && (
+              {canvas.composerMode === "agent" && (
+                <span className="reference-object-label">
+                  <span>{title}</span>
+                  {ref.sourceRef?.kind === "clip" && (
+                    <small>{t("时间线片段")}</small>
+                  )}
+                </span>
+              )}
+              {canvas.composerMode !== "agent" && ref.role !== "reference" && (
                 <span className="reference-role">
                   {ref.role === "edit"
                     ? t("修改这张")
@@ -189,9 +205,9 @@ export function MediaReferenceStrip(props: {
             </div>
           );
         })}
-        {!props.extrasOnly && inputs.length < 12 && (
-          <ComposerReference {...props} />
-        )}
+        {canvas.composerMode !== "agent" &&
+          !props.extrasOnly &&
+          inputs.length < 12 && <ComposerReference {...props} />}
       </div>
       <Dialog.Root
         open={!!preview}
@@ -200,7 +216,7 @@ export function MediaReferenceStrip(props: {
         }}
       >
         <Dialog.Content
-          className="media-preview-dialog"
+          className={`media-preview-dialog${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
           aria-describedby={undefined}
         >
           <header>
@@ -217,7 +233,11 @@ export function MediaReferenceStrip(props: {
           </header>
           <div className="media-preview-stage">
             {asset?.kind === "image" ? (
-              <img src={mediaUrl(asset.path)} alt={asset.name} />
+              <ZoomableImage
+                key={asset.id}
+                src={mediaUrl(asset.path)}
+                alt={asset.name}
+              />
             ) : asset?.kind === "video" ? (
               <video src={mediaUrl(asset.path)} controls />
             ) : (

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import english from "./en.json";
+import english from "./en";
 
 export type Language = "zh-CN" | "en";
 export const LANGUAGE_KEY = "mstudio-language";

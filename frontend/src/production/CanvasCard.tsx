@@ -1,7 +1,13 @@
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
-import { useLayoutEffect, useRef } from "react";
-import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
+import { memo, useLayoutEffect, useRef } from "react";
+import {
+  Play,
+  Image,
+  VideoCamera,
+  FileText,
+  CheckCircle,
+} from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { mediaUrl } from "../bridge";
 import { isLibraryAsset } from "../workspace/assetLibrary";
@@ -17,8 +23,11 @@ export const labels = {
   video: "视频",
   note: "文字资料",
 };
-export function CanvasCard({
+export const CanvasCard = memo(function CanvasCard({
   item,
+  asset,
+  compact,
+  inTimeline = false,
   project,
   canvas,
   preview,
@@ -26,14 +35,16 @@ export function CanvasCard({
   onAdd,
 }: {
   item: ProductionItem;
+  asset?: Asset;
+  compact: boolean;
+  inTimeline?: boolean;
   project: Project;
   canvas: ProductionController;
   preview: (item: ProductionItem) => void;
-  collect: () => void;
+  collect: (asset: Asset) => void;
   onAdd: (asset: Asset) => void;
 }) {
   useLanguage();
-  const asset = project.assets.find((a) => a.id === item.assetId);
   const mediaTitle =
     asset &&
     (/^画面\s*\d+$/.test(item.title) ||
@@ -50,54 +61,46 @@ export function CanvasCard({
         : FileText;
   const cardRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
-    if (item.kind !== "script" || !cardRef.current) return;
+    if (compact || item.kind !== "script" || !cardRef.current) return;
     const element = cardRef.current;
     const report = () => canvas.measure?.(item.key, element.offsetHeight);
     const observer = new ResizeObserver(report);
     observer.observe(element);
     report();
     return () => observer.disconnect();
-  }, [item.key, item.kind, canvas.measure]);
+  }, [item.key, item.kind, compact, canvas.measure]);
   const dragging = useRef(false);
   const selected = canvas.selected.includes(item.key);
   const referenced = canvas.referenced.has(item.key);
+  const actions = [
+    { label: t("预览 / 编辑"), run: () => preview(item) },
+    { label: t("引用到对话"), run: () => canvas.reference([item.key]) },
+    ...(asset &&
+    (asset.kind === "image" || asset.kind === "video" || asset.kind === "audio")
+      ? [
+          {
+            label: t("加入时间线"),
+            run: () => onAdd(asset),
+            disabled: !!asset.missing,
+          },
+        ]
+      : []),
+    ...(asset
+      ? [
+          {
+            label: isLibraryAsset(asset)
+              ? t("已在项目素材中")
+              : t("保存为项目素材"),
+            run: () => collect(asset),
+            disabled: isLibraryAsset(asset),
+          },
+        ]
+      : []),
+    { label: t("制作视频"), run: () => canvas.act("video", [item.key]) },
+    { label: t("从画布移除"), run: () => canvas.remove(item) },
+  ];
   return (
-    <ObjectMenu
-      actions={[
-        { label: t("引用到输入框"), run: () => canvas.reference([item.key]) },
-        { label: t("预览 / 编辑"), run: () => preview(item) },
-        ...(asset &&
-        (asset.kind === "image" ||
-          asset.kind === "video" ||
-          asset.kind === "audio")
-          ? [
-              {
-                label: t("加入时间线"),
-                run: () => onAdd(asset),
-                disabled: !!asset.missing,
-              },
-            ]
-          : []),
-        ...(asset
-          ? [
-              {
-                label: isLibraryAsset(asset)
-                  ? t("已在项目素材中")
-                  : t("保存为项目素材"),
-                run: collect,
-                disabled: isLibraryAsset(asset),
-              },
-            ]
-          : []),
-        {
-          label: t("用 AI 修改图片"),
-          run: () => canvas.act("image", [item.key]),
-          disabled: !asset || asset.kind !== "image",
-        },
-        { label: t("制作视频"), run: () => canvas.act("video", [item.key]) },
-        { label: t("从画布移除"), run: () => canvas.remove(item) },
-      ]}
-    >
+    <ObjectMenu actions={actions}>
       <article
         ref={cardRef}
         className={`canvas-card ${selected ? "selected" : ""} ${referenced ? "referenced" : ""} ${item.kind}`}
@@ -105,7 +108,7 @@ export function CanvasCard({
           left: item.x,
           top: item.y,
           width: item.width,
-          height: item.kind === "script" ? "auto" : item.height,
+          height: item.kind === "script" && !compact ? "auto" : item.height,
         }}
         data-card={item.key}
         draggable
@@ -122,7 +125,11 @@ export function CanvasCard({
         tabIndex={0}
         aria-label={`${labels[item.kind]}：${mediaTitle}`}
         aria-description={
-          [selected && t("已选中"), referenced && t("已引用到聊天")]
+          [
+            selected && t("已选中"),
+            referenced && t("已引用到聊天"),
+            inTimeline && t("已加入时间线"),
+          ]
             .filter(Boolean)
             .join("，") || undefined
         }
@@ -131,6 +138,7 @@ export function CanvasCard({
             canvas.select(item.key, e.shiftKey || e.metaKey || e.ctrlKey);
         }}
         onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return;
           if (e.key === "Enter") {
             e.preventDefault();
             canvas.select(item.key, e.shiftKey);
@@ -187,13 +195,17 @@ export function CanvasCard({
           {item.kind !== "script" && <Icon size={16} />}
           <span>{item.kind === "script" ? item.title : mediaTitle}</span>
         </strong>
-        {!!item.usages?.length && (
+        {!compact && !!item.usages?.length && (
           <small className="card-usage">
             {t("用于：")}
             {item.usages.map((u) => u.title).join(" · ")}
           </small>
         )}
-        {item.kind === "script" ? (
+        {compact ? (
+          <div className="card-overview">
+            <Icon size={44} />
+          </div>
+        ) : item.kind === "script" ? (
           <ShotCardText item={item} project={project} />
         ) : !asset ? (
           <p className="card-copy">{item.text || t("双击补充镜头内容")}</p>
@@ -201,7 +213,13 @@ export function CanvasCard({
           <MissingAsset asset={asset} />
         ) : asset.kind === "video" ? (
           <div className="card-video">
-            <img src={mediaUrl(asset.preview)} alt="" draggable={false} />
+            <img
+              src={mediaUrl(asset.preview)}
+              alt=""
+              draggable={false}
+              loading="lazy"
+              decoding="async"
+            />
             <button
               aria-label={t("播放 {v0}", { v0: item.title })}
               onClick={(e) => {
@@ -214,6 +232,8 @@ export function CanvasCard({
           </div>
         ) : asset.kind === "image" ? (
           <img
+            loading="lazy"
+            decoding="async"
             src={mediaUrl(asset.preview || asset.path)}
             alt={item.title}
             draggable={false}
@@ -221,7 +241,17 @@ export function CanvasCard({
         ) : (
           <p className="card-copy">{item.text || asset.name}</p>
         )}
+        {asset && inTimeline && (
+          <span
+            className="card-timeline-usage"
+            role="img"
+            aria-label={t("已加入时间线")}
+            title={t("已加入时间线")}
+          >
+            <CheckCircle size={20} weight="fill" aria-hidden="true" />
+          </span>
+        )}
       </article>
     </ObjectMenu>
   );
-}
+});

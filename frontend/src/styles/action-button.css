@@ -1,4 +1,4 @@
-/* Shared bare icon-and-label actions; navigation and primary buttons are separate. */
+/* Shared outlined icon-and-label actions; navigation and primary buttons are separate. */
 .radix-themes button.action-button {
   display: inline-flex;
   align-items: center;
@@ -8,9 +8,9 @@
   gap: 8px;
   min-height: 36px;
   padding: 6px 8px;
-  border: 0;
+  border: 1px solid var(--desk-rule);
   border-radius: 4px;
-  background: transparent;
+  background: var(--desk-surface);
   box-shadow: none;
   color: var(--desk-text);
   font-size: 14px;

@@ -75,28 +75,6 @@
   place-content: center;
   font-size: 14px;
 }
-.canvas-controls {
-  position: absolute;
-  left: 20px;
-  bottom: 20px;
-  display: flex;
-  align-items: center;
-  background: #faf9f5;
-  border: 1px solid var(--desk-rule);
-  border-radius: 4px;
-  padding: 4px;
-  gap: 2px;
-}
-.canvas-controls button {
-  border: 0;
-  padding: 6px 8px;
-  font-size: 11px;
-}
-.canvas-controls > span {
-  font-size: 11px;
-  min-width: 38px;
-  text-align: center;
-}
 .canvas-help {
   position: absolute;
   bottom: 75px;
@@ -139,4 +117,19 @@
   background: #d6452d15;
   border: 1px solid var(--desk-accent);
   pointer-events: none;
+}
+
+.studio-shell[data-view="storyboard"] :is(.dock-agent, .dock-media) {
+  bottom: 0;
+}
+.radix-themes .studio-shell[data-view="storyboard"] .floating-timeline {
+  left: var(--rail);
+  right: var(--assistant);
+}
+.studio-shell[data-view="storyboard"] .timeline-header {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.studio-shell[data-view="storyboard"] .timeline-header > * {
+  flex-shrink: 0;
 }

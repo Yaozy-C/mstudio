@@ -1,48 +1,42 @@
-.production-task-panel {
-  position: absolute;
-  z-index: 12;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  border: 1px solid var(--desk-rule);
-  border-radius: 14px;
-  background: var(--desk-surface, #fffdf8);
-  color: var(--desk-text);
-  box-shadow: 0 8px 32px #29251c1f;
+.generation-tasks-dialog {
+  width: min(1120px, calc(100vw - 48px));
+  max-width: calc(100vw - 48px);
+  height: min(820px, calc(100dvh - 64px));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
   overflow: hidden;
+  background: var(--desk-surface);
+  color: var(--desk-text);
   font-size: 12px;
 }
-.task-panel-heading,
-.task-panel-heading > button,
-.generation-task-entry {
+.task-panel-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-.task-panel-heading {
-  padding: 10px 14px;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 16px;
   border-bottom: 1px solid var(--desk-rule);
+  flex-shrink: 0;
 }
-.task-panel-heading > button:first-child {
-  flex: 1;
-  text-align: left;
+.task-panel-heading :is(h1, h2) {
+  margin: 0;
 }
-.task-panel-heading button {
-  background: transparent;
-  border: 0;
-  color: inherit;
-}
-.task-panel-heading svg {
-  margin-left: auto;
-}
-.task-panel-heading span,
 .task-panel-list small {
   color: var(--desk-muted);
+}
+.task-dialog-trigger {
+  white-space: nowrap;
+}
+.task-dialog-trigger > span {
+  font-variant-numeric: tabular-nums;
 }
 .task-panel-body {
   display: grid;
   grid-template-columns: minmax(160px, 30%) minmax(0, 1fr);
-  height: min(390px, 52vh);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .task-panel-list,
 .task-panel-detail {
@@ -131,19 +125,71 @@
   line-height: 1.6;
   padding: 10px;
 }
-.generation-task-entry {
+.radix-themes .generation-task-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   border: 1px solid var(--desk-rule);
-  background: transparent;
+  background: var(--desk-surface);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px;
   margin: 10px 0;
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
+  color: var(--desk-text);
+}
+.radix-themes .generation-task-entry:hover:not(:disabled) {
+  background: var(--desk-bg);
+  border-color: var(--desk-muted);
+}
+.generation-task-entry > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.task-entry-copy {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.task-entry-prompt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--desk-muted);
 }
-.generation-task-entry > span:last-child {
+.task-entry-status {
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.task-entry-status[data-status="FAILED"] {
+  color: #a64830;
+}
+.task-entry-status[data-status="IN_PROGRESS"],
+.task-entry-status[data-status="READY"] {
+  color: var(--desk-accent);
+}
+.task-entry-status[data-status="COMPLETED"] {
+  color: #3c6651;
+}
+.task-entry-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
   margin-left: auto;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.generation-batch {
+  margin: 12px 0;
+}
+.generation-batch p {
+  color: var(--desk-muted);
+  font-size: 12px;
 }
 .composer-task-reference {
   display: flex;
@@ -161,11 +207,6 @@
   text-align: left;
 }
 @media (max-width: 900px) {
-  .production-task-panel {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-  }
   .task-panel-body {
     grid-template-columns: 135px minmax(0, 1fr);
   }
@@ -176,4 +217,41 @@
     padding: 8px;
     gap: 5px;
   }
+}
+
+.radix-themes .generation-batch button,
+.radix-themes .generation-pagination button,
+.radix-themes .run-actions button,
+.radix-themes .generation-settings footer button,
+.radix-themes .script-paragraph footer .action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 4px;
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.radix-themes .script-paragraph footer .action-button > svg {
+  width: 16px;
+  height: 16px;
+}
+.generation-batch button + button {
+  margin-left: 6px;
+}
+.generation-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.generation-pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }

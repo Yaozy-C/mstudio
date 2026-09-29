@@ -67,17 +67,8 @@ input[type="range"] {
 .radix-themes :is(.hub-status.ready, .online-dot) {
   color: #3c6651;
 }
-.radix-themes :is(.modal, .floating-panel, .plan-canvas) {
+.radix-themes .modal {
   border-radius: 6px;
-}
-.radix-themes .plan-canvas {
-  box-shadow: 0 4px 16px #22221f0a;
-}
-.radix-themes .plan-canvas.selected {
-  border-color: var(--desk-accent);
-}
-.radix-themes :is(.floating-handle, .plan-dragbar) {
-  background: var(--desk-sidebar);
 }
 .radix-themes .quote-button {
   background: transparent;
@@ -193,11 +184,6 @@ input[type="range"] {
   font-size: 18px;
   font-weight: 600;
   padding: 0;
-}
-.radix-themes .plan-grid .plan-shot {
-  border-radius: 0;
-  border: 0;
-  background: transparent;
 }
 .radix-themes .shot-picture {
   border-radius: 0;

@@ -1,0 +1,167 @@
+.settings-heading,
+.settings-tabs,
+.model-section-heading,
+.model-default,
+.model-row,
+.model-row-actions,
+.model-remove {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.settings-heading,
+.model-section-heading,
+.model-default {
+  justify-content: space-between;
+}
+.settings-heading .eyebrow {
+  margin-bottom: 6px;
+}
+.settings-heading h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.settings-tabs {
+  margin: 22px 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.settings-tabs button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--desk-muted);
+}
+.settings-tabs button[aria-pressed="true"] {
+  background: transparent;
+  color: var(--desk-accent);
+  font-weight: 600;
+}
+.model-default {
+  padding: 16px 18px;
+  background: var(--desk-bg);
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.model-default strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.model-default p,
+.model-hint,
+.model-section-heading > span {
+  font-size: 12px;
+  color: var(--desk-muted);
+  line-height: 1.75;
+  margin: 4px 0 0;
+}
+.model-default .studio-select-trigger {
+  max-width: 280px;
+  min-width: 190px;
+}
+.model-section-heading {
+  margin: 0 0 12px;
+}
+.model-section-heading h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 550;
+}
+.model-section-heading h3 span {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--desk-muted);
+}
+.model-search {
+  margin-bottom: 12px;
+  width: 100%;
+}
+.model-list {
+  border: 1px solid var(--desk-rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.model-row {
+  padding: 18px 16px;
+  flex-wrap: wrap;
+}
+.model-row + .model-row {
+  border-top: 1px solid var(--desk-rule);
+}
+.model-logo {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--desk-bg);
+  border-radius: 10px;
+  color: var(--desk-muted);
+}
+.model-row-copy {
+  min-width: 0;
+  flex: 1;
+}
+.model-row-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.model-badge {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--desk-text);
+  background: var(--desk-sidebar);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.model-row-copy p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: var(--desk-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.model-row-copy p span {
+  color: var(--desk-muted);
+  padding-inline: 5px;
+}
+.model-row-copy small {
+  font-size: 11px;
+  color: var(--desk-muted);
+}
+.model-row-actions {
+  gap: 6px;
+}
+.model-row-actions button {
+  padding: 5px 8px;
+  font-size: 11px;
+  background: transparent;
+}
+.model-row-actions svg {
+  width: 15px;
+  height: 15px;
+}
+.model-remove {
+  flex-basis: 100%;
+  background: var(--desk-bg);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.model-remove span {
+  flex: 1;
+}
+.model-empty {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  color: var(--desk-muted);
+}

@@ -151,8 +151,13 @@ export function GenerationRun({
           key={resultId}
           task={{ ...task, resultAssetId: resultId }}
           project={project}
-          reference={(id) => canvas.attach({ kind: "asset", id })}
+          reference={(id) => {
+            canvas.setTaskPanelOpen(false);
+            canvas.attach({ kind: "asset", id });
+          }}
           locate={() => {
+            canvas.setTaskPanelOpen(false);
+            window.dispatchEvent(new Event("studio-show-canvas"));
             const item = canvas.items.find((n) => n.assetId === resultId);
             if (item) canvas.focusItem(item.key);
           }}
@@ -191,12 +196,26 @@ export function GenerationRun({
         <div className="run-actions">
           <button
             type="button"
-            className="primary"
             disabled={!native || busy}
-            onClick={() => canvas.configure(task)}
+            onClick={() =>
+              canRegenerate(task) ? canvas.retry(task) : canvas.configure(task)
+            }
           >
-            {canRegenerate(task) ? t("重新设置并生成") : t("设置并生成")}
+            {canRegenerate(task)
+              ? task.status === "COMPLETED"
+                ? t("重新生成")
+                : t("重试")
+              : t("生成")}
           </button>
+          {editable && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => canvas.configure(task)}
+            >
+              {t("设置")}
+            </button>
+          )}
           {canEditOriginal(task) && (
             <button
               type="button"
@@ -244,22 +263,6 @@ export function GenerationRun({
             </button>
           )}
         </div>
-      )}
-      {pending && task.nextPrompt !== undefined && canRegenerate(task) && (
-        <button
-          type="button"
-          disabled={!native || busy}
-          onClick={() => canvas.configure(task)}
-        >
-          {t("使用修改后的描述重新生成")}
-        </button>
-      )}
-      {editable && (
-        <small className="run-cost">
-          {native
-            ? t("使用所选服务生成，按服务计费。")
-            : t("浏览器仅预览；请在桌面应用中生成。")}
-        </small>
       )}
     </section>
   );

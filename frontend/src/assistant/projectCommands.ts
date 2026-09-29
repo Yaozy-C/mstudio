@@ -4,7 +4,7 @@ import { patchVisual } from "../timeline/visualSettings";
 import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
 import { saveTask } from "../production/document";
 import { creativeExtras, validateShotOrder } from "../creative/operations";
-import { assemblePlan, chooseTake } from "../creative/timeline";
+import { assembleScreenplay, chooseTake } from "../creative/timeline";
 import { appendAsset, tracksOf, validateClip } from "../timeline/document";
 import { creationOperation, nodeExtras } from "./creationOperations";
 import { type BoardNode, type Clip, type Project } from "../model";
@@ -92,9 +92,12 @@ export function applyOperations(
           kind = string(op.kind, 20) as BoardNode["kind"];
         if (!/^[\w-]+$/.test(id) || next.nodes.some((n) => n.id === id))
           throw new Error("节点 ID 已存在或格式无效");
-        if (!["text", "shot", "note", "asset", "plan"].includes(kind))
+        if (!["text", "shot", "note", "asset", "screenplay"].includes(kind))
           throw new Error("节点类型无效");
-        if (kind === "plan" && next.nodes.some((n) => n.kind === "plan"))
+        if (
+          kind === "screenplay" &&
+          next.nodes.some((n) => n.kind === "screenplay")
+        )
           throw new Error(
             "项目已有脚本，请使用 update_node 修改现有脚本并保留 ID",
           );
@@ -108,20 +111,10 @@ export function applyOperations(
           title: string(op.title, 300),
           text: op.text === undefined ? "" : string(op.text),
           assetId,
-          x: number(
-            op.x,
-            kind === "plan"
-              ? (32 - next.viewport.x) / next.viewport.scale
-              : 400 + (next.nodes.length % 3) * 360,
-          ),
-          y: number(
-            op.y,
-            kind === "plan"
-              ? (94 - next.viewport.y) / next.viewport.scale
-              : Math.floor(next.nodes.length / 3) * 300,
-          ),
-          width: kind === "plan" ? 780 : kind === "text" ? 360 : 280,
-          height: kind === "plan" ? 640 : kind === "text" ? 300 : 218,
+          x: number(op.x, 400 + (next.nodes.length % 3) * 360),
+          y: number(op.y, Math.floor(next.nodes.length / 3) * 300),
+          width: kind === "text" ? 360 : 280,
+          height: kind === "text" ? 300 : 218,
         };
         next = {
           ...next,
@@ -159,8 +152,8 @@ export function applyOperations(
       case "choose_take":
         next = chooseTake(next, string(op.id, 80), string(op.assetId, 100));
         break;
-      case "assemble_plan":
-        next = assemblePlan(next, string(op.id, 80));
+      case "assemble_screenplay":
+        next = assembleScreenplay(next, string(op.id, 80));
         break;
       case "update_generation":
         next = editTaskPrompt(
@@ -172,16 +165,12 @@ export function applyOperations(
       case "regenerate_generation": {
         if (!context || context.turn.projectId !== next.id)
           throw new Error("本轮生成上下文已结束，请重新发送要求");
-        const key = `retry:${context.callId}:${raw.indexOf(value)}`;
-        if (next.production?.drafts?.[key]) break;
+        const actionId = `${context.callId}:${raw.indexOf(value)}`;
         const source = next.production?.drafts?.[string(op.taskKey, 300)];
         if (!source) throw new Error("任务不存在");
-        const task = regenerationDraft(
-          source,
-          `${context.callId}:${raw.indexOf(value)}`,
-        );
-        task.turnId = context.turnId;
-        task.instruction = context.turn.instruction;
+        if (source.lastRegenerationId === actionId) break;
+        const task = regenerationDraft(source);
+        task.lastRegenerationId = actionId;
         task.status =
           context.turn.models.execution === "automatic" && task.modelId
             ? "READY"
