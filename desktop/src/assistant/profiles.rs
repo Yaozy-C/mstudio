@@ -56,6 +56,8 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
         Some(raw) => {
             let mut saved: Vec<AgentProfile> = serde_json::from_str(&raw)?;
             let original_len = saved.len();
+            let instructions_changed =
+                super::profile_instructions::upgrade(&mut saved, &builtins());
             for builtin in builtins() {
                 if !saved.iter().any(|p| p.id == builtin.id)
                     && [
@@ -69,7 +71,7 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
                     saved.push(builtin);
                 }
             }
-            if saved.len() != original_len {
+            if saved.len() != original_len || instructions_changed {
                 db.execute(
                     "UPDATE settings SET value=?1 WHERE key='agents'",
                     [serde_json::to_string(&saved)?],

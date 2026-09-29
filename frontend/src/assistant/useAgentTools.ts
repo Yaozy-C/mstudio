@@ -1,3 +1,4 @@
+import { modelToolError } from "./toolMessages";
 import { savedValues, clipReceipt } from "./savedValues";
 import { scriptReceipt } from "./scriptReceipt";
 import { productionTurn, type ProductionTurn } from "../production/turnContext";
@@ -113,10 +114,10 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
                     status: t.status,
                     modelId: t.modelId,
                     message:
-                      "生成任务已保存；重新执行沿用原任务卡，以实际任务状态为准",
+                      "Generation task saved; retries reuse the original task card. Check actual task status.",
                   })),
                 revision: m.get().revision,
-                message: "修改已应用并保存，可撤销",
+                message: "Changes applied and saved; undo is available.",
                 changed: ops.map((o) => ({
                   op: o.op,
                   id: "id" in o ? o.id : undefined,
@@ -127,7 +128,7 @@ export function useAgentTools(model: ReturnType<typeof useProject>) {
               };
             } else throw new Error("未知工具操作");
           } catch (e) {
-            result = { error: String(e) };
+            result = { error: modelToolError(e) };
           }
           await bridge("agent_tool_result", {
             callId: payload.callId,

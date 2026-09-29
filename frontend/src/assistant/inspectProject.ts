@@ -133,7 +133,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   return {
     revision,
     readDetails: ids.length
-      ? "用 fields 读取正文；script + paragraphIds/scriptFields 精确读取脚本段落，screenplay 返回完整方案（分页）。"
+      ? "Use fields for full text; script with paragraphIds/scriptFields narrows paragraphs; screenplay returns the full paginated document."
       : undefined,
     missingNodeIds: ids.filter((id) => !p.nodes.some((n) => n.id === id)),
     name: p.name.slice(0, 200),

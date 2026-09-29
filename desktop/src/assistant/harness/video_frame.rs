@@ -12,23 +12,26 @@ pub fn parts(
     doc: &Value,
     args: &Value,
 ) -> Result<(String, Vec<Value>)> {
-    let time = args["time"]
-        .as_f64()
-        .context("读取视频必须提供 time 秒数；素材为源时间，clipId 为片段内时间")?;
-    ensure!(time.is_finite() && time >= 0., "抽帧时间无效");
+    let time = args["time"].as_f64().context(
+        "Video reads require time in seconds: source time for assets, clip-local time with clipId",
+    )?;
+    ensure!(time.is_finite() && time >= 0., "Invalid frame time");
     let (source_time, visual, label) = if let Some(id) = args.get("clipId") {
-        let id = id.as_str().context("clipId 必须是片段 ID")?;
+        let id = id.as_str().context("clipId must be a clip ID")?;
         let clip = doc["clips"]
             .as_array()
             .and_then(|a| a.iter().find(|c| c["id"] == id))
-            .context("片段不存在")?;
-        ensure!(clip["assetId"] == asset.id, "片段不属于指定素材");
-        let start = clip["trimIn"].as_f64().context("片段裁切无效")?;
-        let end = clip["trimOut"].as_f64().context("片段裁切无效")?;
-        let speed = clip["speed"].as_f64().context("片段速度无效")?;
+            .context("Clip not found")?;
+        ensure!(
+            clip["assetId"] == asset.id,
+            "Clip does not reference the specified asset"
+        );
+        let start = clip["trimIn"].as_f64().context("Invalid clip trim")?;
+        let end = clip["trimOut"].as_f64().context("Invalid clip trim")?;
+        let speed = clip["speed"].as_f64().context("Invalid clip speed")?;
         ensure!(
             speed > 0. && time < (end - start) / speed,
-            "时间超出片段可见范围（不含尾点）"
+            "Time outside visible clip range (end excluded)"
         );
         let visual: Option<Visual> =
             serde_json::from_value(clip.get("visual").cloned().unwrap_or(Value::Null))?;
@@ -45,12 +48,12 @@ pub fn parts(
     };
     ensure!(
         source_time.is_finite() && source_time >= 0. && source_time < asset.duration,
-        "抽帧超出源视频时长（不含尾点）"
+        "Frame time outside source duration (end excluded)"
     );
     let path = Path::new(&asset.path).canonicalize()?;
     ensure!(
         path.starts_with(store.media_root().join("assets").canonicalize()?),
-        "素材路径不属于应用素材库"
+        "Asset path is outside the application media library"
     );
     let grade = mstudio::visual::ffmpeg(visual.as_ref(), asset.width as i64, asset.height as i64)?;
     frame(&path, source_time, &grade, label)
@@ -97,10 +100,10 @@ pub(super) fn frame(
             "pipe:1",
         ])
         .output()
-        .context("无法启动 FFmpeg 抽帧")?;
+        .context("Cannot start FFmpeg frame extraction")?;
     ensure!(
         output.status.success() && !output.stdout.is_empty(),
-        "无法解码指定帧：{}",
+        "Cannot decode the specified frame: {}",
         String::from_utf8_lossy(&output.stderr)
             .chars()
             .take(600)
@@ -108,7 +111,7 @@ pub(super) fn frame(
     );
     ensure!(
         output.stdout.len() <= 2 * 1024 * 1024,
-        "抽帧图片超出大小限制"
+        "Extracted image exceeds size limit"
     );
     let url = format!("data:image/jpeg;base64,{}", STANDARD.encode(output.stdout));
     Ok((

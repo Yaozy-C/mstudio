@@ -12,18 +12,21 @@ pub fn validate(schema: &Value, value: &Value) -> Result<(), String> {
         _ => false,
     };
     if !valid {
-        return Err("参数类型与工具定义不符".into());
+        return Err("Argument type does not match the tool schema".into());
     }
     if let Some(values) = schema["enum"].as_array()
         && !values.contains(value)
     {
-        return Err(format!("参数不在允许值内；允许值：{}", schema["enum"]));
+        return Err(format!(
+            "Argument not in enum; allowed values: {}",
+            schema["enum"]
+        ));
     }
     if let Some(object) = value.as_object() {
         if let Some(required) = schema["required"].as_array() {
             for field in required.iter().filter_map(Value::as_str) {
                 if !object.contains_key(field) {
-                    return Err(format!("缺少必填参数：{field}"));
+                    return Err(format!("Missing required argument: {field}"));
                 }
             }
         }
@@ -31,7 +34,7 @@ pub fn validate(schema: &Value, value: &Value) -> Result<(), String> {
             if let Some(child) = schema["properties"].get(key) {
                 validate(child, item).map_err(|e| format!("{key}: {e}"))?;
             } else if schema["additionalProperties"] == false {
-                return Err(format!("未知参数：{key}"));
+                return Err(format!("Unknown argument: {key}"));
             }
         }
     }
@@ -40,7 +43,7 @@ pub fn validate(schema: &Value, value: &Value) -> Result<(), String> {
             .as_u64()
             .is_some_and(|n| items.len() > n as usize)
         {
-            return Err("数组项目过多".into());
+            return Err("Too many array items".into());
         }
         if let Some(child) = schema.get("items") {
             for (index, item) in items.iter().enumerate() {
@@ -53,14 +56,14 @@ pub fn validate(schema: &Value, value: &Value) -> Result<(), String> {
             .as_u64()
             .is_some_and(|n| text.chars().count() > n as usize)
     {
-        return Err("参数文字过长".into());
+        return Err("Argument text too long".into());
     }
     if let Some(n) = value.as_f64()
         && (schema["minimum"].as_f64().is_some_and(|v| n < v)
             || schema["exclusiveMinimum"].as_f64().is_some_and(|v| n <= v)
             || schema["maximum"].as_f64().is_some_and(|v| n > v))
     {
-        return Err("数值超出允许范围".into());
+        return Err("Number outside allowed range".into());
     }
     Ok(())
 }

@@ -86,7 +86,7 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
     assert!(serialized.contains("旧请求"));
     assert!(serialized.contains("inspect"));
     assert!(serialized.contains("ok"));
-    assert!(serialized.contains("已卸载"));
+    assert!(serialized.contains("offloaded"));
     assert!(!serialized.contains("aGVsbG8="));
     let id:String=store.db.lock().unwrap().query_row(
         "SELECT json_extract(j.value,'$.id') FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id='p' AND e.kind='image/offload' LIMIT 1",[],|r|r.get(0),

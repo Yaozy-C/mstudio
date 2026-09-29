@@ -85,7 +85,7 @@ pub(crate) async fn complete_with_resume(
             let recovery = super::task_context::recovery(&store, &t.project, &scope, turn)?;
             if !recovery.is_null() {
                 messages.push(Message::user(format!(
-                    "中断任务恢复资料（结果未知的操作先核实，不自动重放）：{recovery}"
+                    "Interrupted-task recovery data (verify unknown effects before retrying; do not replay automatically):{recovery}"
                 )));
             }
         }

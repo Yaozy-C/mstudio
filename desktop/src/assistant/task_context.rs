@@ -153,11 +153,11 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
                 .filter(|n| ids.contains(&n["id"].as_str().unwrap_or("")))
                 .collect::<Vec<_>>()
         );
-        snapshot["relevantNodes"] = json!(ids.iter().filter_map(|id|doc["nodes"].as_array()?.iter().find(|n|n["id"]==*id)).map(|n|json!({"id":n["id"],"kind":n["kind"],"title":n["title"],"details":"按 nodeIds/fields inspect 读取"})).collect::<Vec<_>>());
+        snapshot["relevantNodes"] = json!(ids.iter().filter_map(|id|doc["nodes"].as_array()?.iter().find(|n|n["id"]==*id)).map(|n|json!({"id":n["id"],"kind":n["kind"],"title":n["title"],"details":"Read with inspect nodeIds/fields."})).collect::<Vec<_>>());
         snapshot["tracks"] = json!([]);
     }
     snapshot["task"] = json!({"taskId":scope.task_id,"agentId":scope.agent_id,"targets":scope.targets,"view":scope.view});
-    snapshot["contextPolicy"] = json!({"history":"默认仅最近一轮已完成问答，不带旧工具过程；更早历史通过 history 按需读取，当前要求优先","details":"省略不代表不存在；inspect 支持 ids、nodeIds、fields 与分页。修改前读取目标最新状态。","sharedConstraints":"requirements/creation 是有长度限制的项目约束预览；truncated 为 true 时先 inspect section=creation 补读完整约束。"});
+    snapshot["contextPolicy"] = json!({"history":"Fresh context includes only the latest completed exchange, without old tool traces; request earlier history as needed. Current requirements take precedence.","details":"Omission does not mean absence. inspect supports ids, nodeIds, fields and pagination. Establish current target state before editing.","sharedConstraints":"requirements/creation preview project constraints with length limits; when truncated=true, inspect section=creation for the full constraints."});
     snapshot["constraintsTruncated"] = json!(
         doc["brief"].as_str().unwrap_or("").chars().count() > 2000
             || ["intent", "essential", "preserve"]
@@ -196,7 +196,7 @@ pub fn recovery(
         }
     }
     Ok(
-        json!({"turnId":turn,"receipts":selected,"partial":true,"note":"仅部分写入回执；完整结果通过 mstudio_read_result 的 turnId/callId 读取。没有回执不代表未执行，未知状态先 inspect 核实，不自动重放。"}),
+        json!({"turnId":turn,"receipts":selected,"partial":true,"note":"Partial write receipts only; retrieve full results with mstudio_read_result turnId/callId. Missing receipts do not prove no execution; inspect unknown effects before deciding whether to retry."}),
     )
 }
 

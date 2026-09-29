@@ -11,7 +11,7 @@ Read the current target and relevant project state. Continue from the [productio
 
 ## Local prompt changes
 
-A referenced card identifies the target through referencedTask.taskKey. Use inspect(section=generation, taskKey=theKey), not the full task list. Read associated nodes/fields only for missing evidence and neighboring shots only for a real dependency.
+A referenced card identifies the target through referencedTask.key. Use inspect(section=generation, taskKey=theKey), not the full task list. Read associated nodes/fields only for missing evidence and neighboring shots only for a real dependency.
 
 Use update_generation(taskKey,text) for the task; a submitted task stores the revised text for its next generation. Do not also overwrite shot.prompt/framePrompt unless the user requests synchronization. Use update_node for an explicitly requested shot draft. Prompt-only changes do not generate media or prove a visual issue resolved. History does not introduce unrelated tasks; return only actual changes and relevant gaps.
 

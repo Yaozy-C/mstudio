@@ -196,7 +196,7 @@ async fn execute(
                 .map_err(|e| e.to_string())?
                 .into_iter()
                 .filter(|p| p.enabled && p.id != agent_profile.id && p.id != "coordinator")
-                .map(|p| json!({"id":p.id,"name":p.name,"description":p.description,"tools":p.tool_ids}))
+                .map(|p| crate::assistant::model_profile::summary(&p))
                 .collect::<Vec<_>>()
         );
     }
@@ -213,7 +213,7 @@ async fn execute(
         &doc,
     )
     .map_err(|e| e.to_string())?;
-    snapshot["agent"] = json!({"name":agent_profile.name,"instructions":agent_profile.instructions,"skills":agent_profile.skill_ids,"tools":agent_profile.tool_ids,"canEdit":profiles::allows(&agent_profile,"edit")});
+    snapshot["agent"] = crate::assistant::model_profile::role(&agent_profile);
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     let input = context::assemble_with_budget(
         &previous,

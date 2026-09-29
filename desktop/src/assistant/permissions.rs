@@ -78,7 +78,7 @@ pub fn allows_shot_field(p: &AgentProfile, key: &str) -> bool {
 pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
     let ops = args["operations"]
         .as_array()
-        .ok_or_else(|| anyhow::anyhow!("缺少操作列表"))?;
+        .ok_or_else(|| anyhow::anyhow!("Missing operations list"))?;
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
     let mut kinds: std::collections::HashMap<String, String> = doc["nodes"]
         .as_array()
@@ -97,34 +97,40 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                 op["generationPurpose"] == "asset"
                     && op.get("id").is_none()
                     && op.get("canvasTaskKey").is_none(),
-                "资产 Agent 只能创建独立资产任务"
+                "Asset Agent can only create standalone asset tasks"
             );
         }
         if matches!(name, "update_generation" | "regenerate_generation") {
             let key = op["taskKey"]
                 .as_str()
-                .ok_or_else(|| anyhow::anyhow!("缺少任务 ID"))?;
+                .ok_or_else(|| anyhow::anyhow!("Missing task ID"))?;
             let task = &doc["production"]["drafts"][key];
-            ensure!(task.is_object(), "任务不存在");
+            ensure!(task.is_object(), "Task not found");
             if asset_only {
                 ensure!(
                     task["generationPurpose"] == "asset",
-                    "资产 Agent 只能修改资产任务"
+                    "Asset Agent can only modify asset tasks"
                 );
             }
             if !has("project-production") && !has("project-edit") {
-                ensure!(task["kind"] == "image", "当前 Agent 只能修改图片任务");
+                ensure!(
+                    task["kind"] == "image",
+                    "This Agent can only modify image tasks"
+                );
             }
         }
         ensure!(
             allows_operation(p, name),
-            "当前 Agent 没有此操作能力：{name}"
+            "Operation not permitted for this Agent: {name}"
         );
         if has("project-edit") {
             continue;
         }
         if name == "request_generation" && !has("project-production") {
-            ensure!(op["mediaKind"] == "image", "当前 Agent 只能生成图片");
+            ensure!(
+                op["mediaKind"] == "image",
+                "This Agent can only generate images"
+            );
         }
         if matches!(
             name,
@@ -132,7 +138,7 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
         ) {
             let id = op["id"]
                 .as_str()
-                .ok_or_else(|| anyhow::anyhow!("缺少节点 ID"))?;
+                .ok_or_else(|| anyhow::anyhow!("Missing node ID"))?;
             let kind = if name == "add_node" {
                 op["kind"].as_str().unwrap_or("")
             } else {
@@ -146,12 +152,12 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                 && (kind == "asset" || (kind == "shot" && name == "set_references"));
             ensure!(
                 screenplay || shot || production || frames || asset,
-                "此节点不属于当前 Agent 的编辑范围"
+                "Node outside this Agent's edit scope"
             );
             if name == "add_node" || name == "update_node" {
                 let fields = op
                     .as_object()
-                    .ok_or_else(|| anyhow::anyhow!("操作格式无效"))?;
+                    .ok_or_else(|| anyhow::anyhow!("Invalid operation format"))?;
                 for key in fields.keys().map(String::as_str) {
                     let allowed = matches!(key, "op" | "id")
                         || (asset && ["kind", "title", "text", "assetId", "x", "y"].contains(&key))
@@ -160,16 +166,16 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                             && ["kind", "title", "text", "shot", "references", "x", "y"]
                                 .contains(&key))
                         || ((production || frames) && ["shot", "references"].contains(&key));
-                    ensure!(allowed, "当前 Agent 不能修改字段：{key}");
+                    ensure!(allowed, "Field not editable by this Agent: {key}");
                 }
                 if let Some(fields) = op.get("shot") {
                     let fields = fields
                         .as_object()
-                        .ok_or_else(|| anyhow::anyhow!("镜头字段必须是对象"))?;
+                        .ok_or_else(|| anyhow::anyhow!("shot must be an object"))?;
                     for key in fields.keys().map(String::as_str) {
                         ensure!(
                             allows_shot_field(p, key),
-                            "当前 Agent 不能修改镜头字段：{key}"
+                            "Shot field not editable by this Agent: {key}"
                         );
                     }
                 }

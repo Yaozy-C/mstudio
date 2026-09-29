@@ -13,7 +13,7 @@ pub fn resolve(doc: &Value, work: &Value, target: Option<&str>) -> Result<Value,
     }
     let id = target.or(work["screenplayId"].as_str());
     let Some(id) = id else {
-        return Ok(json!({"view":view,"task":"新建脚本"}));
+        return Ok(json!({"view":view,"task":"Create a script"}));
     };
     let screenplay = doc["nodes"]
         .as_array()
@@ -35,7 +35,7 @@ pub fn resolve(doc: &Value, work: &Value, target: Option<&str>) -> Result<Value,
         return Err("当前段落已移除，请重新选择".into());
     }
     Ok(
-        json!({"view":view,"screenplayId":id,"title":screenplay["title"],"paragraphId":paragraph,"instruction":"这是当前编辑对象。用户明确指定的范围优先；修改脚本要写回此方案的 screenplay.script，沿用原段落 ID，不创建普通文字卡片。不自动推进到生成媒体。"}),
+        json!({"view":view,"screenplayId":id,"title":screenplay["title"],"paragraphId":paragraph,"instruction":"This is the current editing target. Explicit user scope takes precedence. Save script edits to this screenplay.script, retaining paragraph IDs; do not create generic text cards or automatically proceed to media generation."}),
     )
 }
 #[cfg(test)]

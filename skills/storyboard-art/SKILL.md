@@ -19,7 +19,7 @@ For frames that depend on a shared unverified identity, viewpoint or interaction
 
 ## Prompts and tasks
 
-Read [image prompts](../creative-ad-director/references/image-prompt-writing.md). Save shot.framePrompt for shot-draft work. When a generation card is referenced, inspect(section=generation, taskKey=referencedTask.taskKey) and update only that task with update_generation(taskKey,text); do not also overwrite the shot draft unless requested. Do not browse all tasks when the exact key is known. Read only the target and necessary evidence; history does not add unrelated work.
+Read [image prompts](../creative-ad-director/references/image-prompt-writing.md). Save shot.framePrompt for shot-draft work. When a generation card is referenced, inspect(section=generation, taskKey=referencedTask.key) and update only that task with update_generation(taskKey,text); do not also overwrite the shot draft unless requested. Do not browse all tasks when the exact key is known. Read only the target and necessary evidence; history does not add unrelated work.
 
 Generate images only within the requested scope. Completion yields a real assetId for shot.frames; task IDs are not asset IDs. Do not duplicate running tasks. Text-only work does not generate images.
 

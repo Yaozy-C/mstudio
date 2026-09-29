@@ -22,6 +22,7 @@ pub(super) async fn drive_child(
         deadline,
     )
     .await
+    .map_err(|error| crate::assistant::model_feedback::error(&error))
 }
 pub(super) fn stop_reason(answer: &Result<String, String>, child: &ChildHost) -> String {
     if child.token().is_cancelled() {

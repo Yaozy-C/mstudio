@@ -69,11 +69,11 @@ pub(super) fn start_continuation(
         || binding["endpoint"] != route.endpoint
         || binding["model"] != route.model
     {
-        return Err("子 Agent 的原模型连接已变更，无法自动恢复".into());
+        return Err("The child model connection changed; automatic resume unavailable".into());
     }
     let mut messages =
         super::super::session::restore(&store, &parent.project, last_turn, &binding)?
-            .ok_or("子 Agent 会话无法恢复")?;
+            .ok_or("Cannot restore child session")?;
     let document: String = store
         .db
         .lock()
@@ -94,7 +94,7 @@ pub(super) fn start_continuation(
     };
     snapshot["skills"] = skills::runtime_catalog(&parent.app, &profiles::skill_setting(&profile))
         .map_err(|e| e.to_string())?;
-    snapshot["agent"] = json!({"name":profile.name,"instructions":profile.instructions,"skills":profile.skill_ids,"tools":profile.tool_ids,"canEdit":profiles::allows(&profile,"edit")});
+    snapshot["agent"] = crate::assistant::model_profile::role(&profile);
     let original = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
@@ -117,7 +117,9 @@ pub(super) fn start_continuation(
     let previous_revision = binding["revision"].clone();
     binding["revision"] = json!(profile.revision);
     let snapshot = crate::assistant::task_context::reference_snapshot(snapshot);
-    let mut current = vec![Message::user(format!("当前工程参考数据：{snapshot}"))];
+    let mut current = vec![Message::user(format!(
+        "Current project reference data:{snapshot}"
+    ))];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut current);
     messages.extend(current);
     let user_evidence = crate::assistant::generation_context::request(
@@ -128,7 +130,7 @@ pub(super) fn start_continuation(
     .map_err(|e| e.to_string())?
     .and_then(|(_, request)| request["prompt"].as_str().map(str::to_owned))
     .unwrap_or_default();
-    messages.push(Message::user(format!("原始用户要求（记忆 evidence 只能引用这些原话）：{user_evidence}；后续委派消息不属于用户原话。")));
+    messages.push(Message::user(format!("Original user request (memory evidence must quote this text):{user_evidence}; subsequent delegated messages are not original user statements.")));
     let claimed = store.db.lock().unwrap().execute(
         "UPDATE subagent_runs SET status='running',updated=unixepoch() WHERE id=?1 AND last_turn=?2 AND status!='running'",
         rusqlite::params![id,last_turn],

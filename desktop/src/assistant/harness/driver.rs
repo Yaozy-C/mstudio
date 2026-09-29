@@ -138,7 +138,7 @@ async fn step(
             session,
             &calls,
             "MODEL_OUTPUT_INCOMPLETE",
-            "模型输出不完整，此调用未执行",
+            "Model output incomplete; this call was not executed",
         )?;
         return Err(if reason == "refusal" {
             "模型拒绝了本次请求；未执行本次工具调用"

@@ -54,7 +54,9 @@ pub fn assemble_with_budget(
         fields.remove("specialists");
     }
     let cost = |snapshot: &Value| {
-        let context = format!("当前工程快照（参考数据；更多内容请按需 inspect）：\n{snapshot}");
+        let context = format!(
+            "Current project snapshot (reference data; inspect more details as needed):\n{snapshot}"
+        );
         super::harness::estimate_message(&rig_core::message::Message::System {
             content: system.clone(),
         }) + estimate(&json!(context))
@@ -74,7 +76,8 @@ pub fn assemble_with_budget(
     }
     if used > budget && !snapshot["memory"]["entries"].is_null() {
         snapshot["memory"]["entries"] = json!([]);
-        snapshot["memory"]["note"] = json!("项目记忆条目已省略；需要时通过记忆工具读取。");
+        snapshot["memory"]["note"] =
+            json!("Memory entries omitted; read them with the memory tool when needed.");
         used = cost(&snapshot);
     }
     if used > budget {
@@ -84,7 +87,9 @@ pub fn assemble_with_budget(
     }
     // The budget bounds optional history. Current user content remains intact;
     // only the provider can authoritatively reject the actual request envelope.
-    let context = format!("当前工程快照（参考数据；更多内容请按需 inspect）：\n{snapshot}");
+    let context = format!(
+        "Current project snapshot (reference data; inspect more details as needed):\n{snapshot}"
+    );
     let mut retained = vec![];
     // Keep whole user/assistant pairs. Media is reattached only for the current request.
     for pair in previous.rchunks_exact(2) {

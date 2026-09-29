@@ -2,7 +2,7 @@ use serde_json::{Value, json};
 pub fn schema() -> Value {
     let mut operation = json!({"type":"object","properties":{
         "op":{"type":"string","enum":["add_node","update_node","remove_node","set_brief","append_clip","update_clip"]},
-        "id":{"type":"string","description":"节点/片段 ID；add_node 用唯一英文 ID"},
+        "id":{"type":"string","description":"Node/clip ID; add_node requires a unique ASCII ID."},
         "kind":{"type":"string","enum":["text","shot","note","asset","screenplay"]},
         "title":{"type":"string"},"text":{"type":"string"},"assetId":{"type":"string"},
         "x":{"type":"number"},"y":{"type":"number"},
@@ -35,21 +35,21 @@ pub fn schema() -> Value {
     let properties = operation["properties"].as_object_mut().unwrap();
     properties.insert("name".into(), json!({"type":"string"}));
     properties.insert("description".into(), json!({"type":"string"}));
-    properties.insert("sourceOffset".into(), json!({"type":"number","description":"slip_clip：源素材偏移秒数，可正可负，同时移动 trimIn/trimOut，保持时间线位置和时长；源余量不足报错"}));
-    properties.insert("ripple".into(), json!({"type":"boolean","description":"retime_clip：保持源区间与起点，按 speed 改变时长；true 顺移同轨原尾点及之后的片段，其他轨道和字幕不动。默认 false"}));
-    properties.insert("allowOverlap".into(), json!({"type":"boolean","description":"move_clip/retime_clip 默认拒绝同轨重叠；仅用户明确需要叠加时设 true"}));
-    properties.insert("speed".into(), json!({"type":"number","minimum":0.25,"maximum":4,"description":"播放倍率；retime_clip 推荐用于变速，可配合 ripple。move_clip 使用 start（时间线秒数，自动对齐帧）及可选 trackId，不改变源区间"}));
-    properties.insert("visual".into(), json!({"type":["object","null"],"description":"update_clip 的非破坏式调色；只覆盖指定参数，保留其余效果；null 清除。由本地 FFmpeg 滤镜执行并同步到 GES 预览与成片导出，不是生成新视频。参数是绝对值。","additionalProperties":false,"properties":{
-        "brightness":{"type":"number","minimum":-0.5,"maximum":0.5,"description":"亮度，默认0，FFmpeg eq"},
-        "contrast":{"type":"number","minimum":0.5,"maximum":1.5,"description":"对比度，默认1，FFmpeg eq"},
-        "saturation":{"type":"number","minimum":0,"maximum":2,"description":"饱和度，默认1，FFmpeg eq"},
-        "temperature":{"type":"number","minimum":-1,"maximum":1,"description":"冷暖，默认0，负冷正暖，FFmpeg colorbalance"},
-        "effect":{"type":"string","enum":["none","grayscale","sepia","blur","vignette"],"description":"单个特效；调色时保留现有效果，除非用户要求改变"}
+    properties.insert("sourceOffset".into(), json!({"type":"number","description":"slip_clip: signed source offset in seconds. Shift trimIn/trimOut together, preserving timeline position and duration. Insufficient source handles fail."}));
+    properties.insert("ripple".into(), json!({"type":"boolean","description":"retime_clip: preserve source range and start; speed changes duration. true shifts same-track clips at/after the original end; other tracks and captions remain unchanged. Default false."}));
+    properties.insert("allowOverlap".into(), json!({"type":"boolean","description":"move_clip/retime_clip reject same-track overlap by default; set true only for explicitly requested layering."}));
+    properties.insert("speed".into(), json!({"type":"number","minimum":0.25,"maximum":4,"description":"Absolute playback multiplier. Prefer retime_clip for speed changes, optionally with ripple. move_clip uses frame-aligned timeline start seconds and optional trackId without changing source range."}));
+    properties.insert("visual".into(), json!({"type":["object","null"],"description":"Non-destructive update_clip color settings: merge specified absolute values, preserve other effects; null clears. Local FFmpeg filters feed GES preview and export; this does not generate new media.","additionalProperties":false,"properties":{
+        "brightness":{"type":"number","minimum":-0.5,"maximum":0.5,"description":"Brightness, default 0, FFmpeg eq."},
+        "contrast":{"type":"number","minimum":0.5,"maximum":1.5,"description":"Contrast, default 1, FFmpeg eq."},
+        "saturation":{"type":"number","minimum":0,"maximum":2,"description":"Saturation, default 1, FFmpeg eq."},
+        "temperature":{"type":"number","minimum":-1,"maximum":1,"description":"Temperature, default 0; negative cools, positive warms, FFmpeg colorbalance."},
+        "effect":{"type":"string","enum":["none","grayscale","sepia","blur","vignette"],"description":"One effect; preserve the existing effect while grading unless asked to change it."}
     }}));
     properties["visual"]["properties"]["grade"] = grade_schema();
-    properties.insert("fromClipId".into(), json!({"type":"string","description":"set_transition 的前一片段ID，id 为后一片段ID；必须底层画面轨相邻全幅片段"}));
-    properties.insert("duration".into(), json!({"type":"number","minimum":0.05,"maximum":3,"description":"转场总时长，不超过任一相邻片段时长，不移动剪辑、音频或字幕"}));
-    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","screenplay","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve","custom",null],"description":"set_transition: null 移除；其他为转场类型，缺余量会延展边缘帧，短时优先"}));
+    properties.insert("fromClipId".into(), json!({"type":"string","description":"set_transition outgoing clip ID; id is the incoming clip. Requires adjacent full-frame clips on the base visual track."}));
+    properties.insert("duration".into(), json!({"type":"number","minimum":0.05,"maximum":3,"description":"Total transition duration, no longer than either adjacent clip; does not move clips, audio or captions."}));
+    properties.insert("kind".into(), json!({"type":["string","null"],"enum":["text","shot","note","asset","screenplay","fade","fadeblack","fadewhite","wipeleft","wiperight","slideleft","slideright","smoothleft","smoothright","circleopen","circleclose","dissolve","custom",null],"description":"set_transition: null removes; otherwise select the transition type. Missing handles use extended edge frames; prefer short transitions."}));
     properties.insert("design".into(), transition_schema());
     for name in ["start", "end", "scale", "opacity", "fadeIn", "fadeOut"] {
         properties.insert(name.into(), json!({"type":"number"}));
@@ -66,8 +66,8 @@ pub fn schema() -> Value {
     ] {
         properties.insert(name.into(), json!({"type":"string"}));
     }
-    properties.insert("generationPurpose".into(), json!({"type":"string","enum":["asset"],"description":"request_generation: asset 创建独立参考图片任务，不关联镜头，不继承当前画格。必须显式提供 references，可为 []。"}));
-    properties.insert("mediaModelId".into(), json!({"type":"string","description":"用户在聊天中指定模型时，先读 mstudio_models，将用户选择解析为目录中的准确 ID；名称有多个匹配时澄清，不猜测服务商。省略则沿用本轮选择；与已有选择冲突时不可覆盖。"}));
+    properties.insert("generationPurpose".into(), json!({"type":"string","enum":["asset"],"description":"request_generation: asset creates a standalone reference-image task without a shot link or inherited current frame. Explicit references required; [] is allowed."}));
+    properties.insert("mediaModelId".into(), json!({"type":"string","description":"For a model named in chat, use mstudio_models to resolve the exact catalog ID. Clarify ambiguous names rather than guessing a provider. Omission keeps the current selection; do not override a conflicting explicit selection."}));
     for name in ["muted", "hidden"] {
         properties.insert(name.into(), json!({"type":"boolean"}));
     }
@@ -89,29 +89,29 @@ pub fn schema() -> Value {
     );
     properties.insert(
         "screenplay".into(),
-        json!({"type":"object","additionalProperties":false,"properties":{"scriptMode":{"type":"string","enum":["merge","replace"],"description":"默认 merge 按 ID 局部合并；整篇改写必须 replace，script 提供完整段落与顺序，省略的旧段落删除，镜头素材保留"},"removeParagraphIds":{"type":"array","items":{"type":"string"},"description":"merge 模式删除指定段落，保留镜头素材"},"paragraphOrder":{"type":"array","items":{"type":"string"},"description":"merge 模式调整顺序，必须列出操作后的全部段落 ID"},"script":{"type":"array","maxItems":200,"description":"merge 按 id 合并，省略内容保留；replace 全篇替换，必须提供完整段落 id/title/action/onScreenText/dialogue/sound/duration；保留对应段落 ID 可维持镜头关联","items":{"type":"object","required":["id"],"properties":{"id":{"type":"string"},"duration":{"type":"number","minimum":0.01,"maximum":3600},"title":{"type":"string"},"action":{"type":"string"},"onScreenText":{"type":"string","description":"画面上实际显示的文字，与台词分开；无则空字符串"},"dialogue":{"type":"string"},"sound":{"type":"string"}}}}}}),
+        json!({"type":"object","additionalProperties":false,"properties":{"scriptMode":{"type":"string","enum":["merge","replace"],"description":"Default merge updates by ID. Full rewrites require replace and the complete ordered script; omitted old paragraphs are removed, shot media retained."},"removeParagraphIds":{"type":"array","items":{"type":"string"},"description":"Delete these paragraphs in merge mode; retain shot media."},"paragraphOrder":{"type":"array","items":{"type":"string"},"description":"Reorder in merge mode; list every paragraph ID remaining after the operation."},"script":{"type":"array","maxItems":200,"description":"merge updates by id and preserves omissions; replace requires the complete script with id/title/action/onScreenText/dialogue/sound/duration. Preserve corresponding IDs to retain shot links.","items":{"type":"object","required":["id"],"properties":{"id":{"type":"string"},"duration":{"type":"number","minimum":0.01,"maximum":3600},"title":{"type":"string"},"action":{"type":"string"},"onScreenText":{"type":"string","description":"Text actually displayed on screen, separate from speech; empty string when absent."},"dialogue":{"type":"string"},"sound":{"type":"string"}}}}}}),
     );
-    properties.insert("shot".into(),json!({"type":"object","properties":{"screenplayId":{"type":"string"},"scriptId":{"type":"string","description":"所属脚本段落 ID"},"order":{"type":"integer","minimum":1},"duration":{"type":"number","exclusiveMinimum":0},"dialogue":{"type":"string"},"frames":{"type":"array","maxItems":50,"items":{"type":"object","required":["assetId","title"],"additionalProperties":false,"properties":{"assetId":{"type":"string"},"title":{"type":"string"},"prompt":{"type":"string","maxLength":12000}}}},"framePrompt":{"type":"string","maxLength":12000},"prompt":{"type":"string","maxLength":12000}}}));
+    properties.insert("shot".into(),json!({"type":"object","properties":{"screenplayId":{"type":"string"},"scriptId":{"type":"string","description":"Parent script paragraph ID."},"order":{"type":"integer","minimum":1},"duration":{"type":"number","exclusiveMinimum":0},"dialogue":{"type":"string"},"frames":{"type":"array","maxItems":50,"items":{"type":"object","required":["assetId","title"],"additionalProperties":false,"properties":{"assetId":{"type":"string"},"title":{"type":"string"},"prompt":{"type":"string","maxLength":12000}}}},"framePrompt":{"type":"string","maxLength":12000},"prompt":{"type":"string","maxLength":12000}}}));
     properties.insert("references".into(),json!({"type":"array","maxItems":12,"items":{"type":"object","properties":{"assetId":{"type":"string"},"purpose":{"type":"string"},"role":{"type":"string","enum":["edit","reference","first-frame","last-frame","video-reference"]},"start":{"type":"number"},"end":{"type":"number"}},"required":["assetId","purpose"]}}));
     json!({"type":"object","properties":{
       "action":{"type":"string","enum":["inspect","edit","history","skills","read_skill","models"]},
-      "skill":{"type":"string","description":"read_skill 的技能目录 ID，来自 skills 目录"},
-      "path":{"type":"string","description":"相对 skill 根目录的 Markdown 路径，默认 SKILL.md；支持链接到其他已启用技能"},
-      "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect 按需读取的内容区，省略为精简工程摘要"},
-      "revision":{"type":"integer","description":"inspect 返回的最新工程 revision；edit 必填"},
-      "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","screenplay","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden","status","targetNodeId","resultAssetIds","error","trackingPaused","turnId","modelId","ownerId","inputs","parameters","generationPurpose"]},"description":"nodeIds：fields 只返回选定字段，id/kind 始终返回。shot 为基础结构，shot.order/shot.duration 仅取顺序/时长；shots 为脚本镜头目录，text 为动作。省略 fields 只返回摘要；text 读取动作正文，script 读取脚本段落摘要；screenplay 读取完整脚本文档（分页），可用 paragraphIds/scriptFields 限定脚本范围"},
-      "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions：按精确 ID 读取；fields 选择返回字段"},
-      "nodeIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect: 批量读取最多 12 个节点；建议配合 fields 选择字段，文字按 textOffset 分页"},
-      "paragraphIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect fields=script/screenplay：只读这些脚本段落；不存在的 ID 明确返回"},
-      "scriptFields":{"type":"array","items":{"type":"string","enum":["title","duration","action","onScreenText","dialogue","sound"]},"description":"脚本段落字段，id 始终返回。script 默认 title/duration；screenplay 默认全部。文字使用 textOffset 分页"},
-      "taskId":{"type":"string","description":"history：按 taskScope.taskId 筛选任务历史"},
-      "turnId":{"type":"string","description":"inspect section=generation：按持久化批次（会话轮次）筛选任务"},
-      "status":{"type":"string","description":"inspect section=generation：按状态筛选，如 FAILED、READY、COMPLETED；batch 返回整批统计"},
-      "taskKey":{"type":"string","description":"inspect section=generation 按任务 ID 查询，包含已隐藏记录"},
-      "messageId":{"type":"integer","description":"history: 读取指定历史消息"},
-      "textOffset":{"type":"integer","description":"inspect/history 的文字偏移；使用返回的 nextTextOffset"},
-      "mediaModelId":{"type":"string","description":"models：所选生成模型 ID；返回该模型专属提示词规则"},
-      "offset":{"type":"integer","description":"inspect/history 分页偏移，默认 0"},
+      "skill":{"type":"string","description":"read_skill directory ID from the skills catalog."},
+      "path":{"type":"string","description":"Markdown path relative to the Skill root; default SKILL.md. Supports permitted cross-Skill links."},
+      "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect section to read; omission returns a compact project summary."},
+      "revision":{"type":"integer","description":"Latest project revision returned by inspect; required for edit."},
+      "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","screenplay","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden","status","targetNodeId","resultAssetIds","error","trackingPaused","turnId","modelId","ownerId","inputs","parameters","generationPurpose"]},"description":"With nodeIds, return selected fields plus id/kind. shot is basic structure; shot.order/shot.duration select order/timing; shots is a screenplay shot directory; text is action/staging. Omission returns summaries. script gives paragraph summaries; screenplay gives the full paginated script. Narrow with paragraphIds/scriptFields."},
+      "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions: exact IDs; fields selects returned fields."},
+      "nodeIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect up to 12 nodes; select needed fields and paginate text with textOffset."},
+      "paragraphIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect fields=script/screenplay: only these paragraphs; missing IDs are reported."},
+      "scriptFields":{"type":"array","items":{"type":"string","enum":["title","duration","action","onScreenText","dialogue","sound"]},"description":"Paragraph fields; id always returned. script defaults to title/duration; screenplay defaults to all. Paginate text with textOffset."},
+      "taskId":{"type":"string","description":"history: filter task history by taskScope.taskId."},
+      "turnId":{"type":"string","description":"inspect section=generation: filter by durable batch/turn ID."},
+      "status":{"type":"string","description":"inspect section=generation: filter status, e.g. FAILED, READY, COMPLETED; batch reports whole-batch statistics."},
+      "taskKey":{"type":"string","description":"inspect section=generation: exact task ID, including hidden records."},
+      "messageId":{"type":"integer","description":"history: read this historical message."},
+      "textOffset":{"type":"integer","description":"inspect/history text offset; use returned nextTextOffset."},
+      "mediaModelId":{"type":"string","description":"models: selected generation model ID; returns model-specific prompt rules."},
+      "offset":{"type":"integer","description":"inspect/history page offset, default 0."},
       "operations":{"type":"array","maxItems":30,"items":operation}
     },"required":["action"]})
 }
@@ -137,7 +137,7 @@ fn grade_schema() -> Value {
     }
     properties.insert(
         "exposure".into(),
-        json!({"type":"number","minimum":-3,"maximum":3,"description":"曝光 EV"}),
+        json!({"type":"number","minimum":-3,"maximum":3,"description":"Exposure in EV."}),
     );
     for (key, count, min, max, description) in [
         (
@@ -145,38 +145,38 @@ fn grade_schema() -> Value {
             8,
             -100,
             100,
-            "红橙黄绿青蓝紫洋红，每行[色相偏移,饱和度,明度]；整组覆盖",
+            "Red/orange/yellow/green/cyan/blue/purple/magenta; each row [hue shift,saturation,lightness]; replaces the whole group.",
         ),
         (
             "curves",
             4,
             0,
             1,
-            "总/R/G/B曲线，每行是x=.25,.5,.75的三个输出值，单调递增；默认[.25,.5,.75]",
+            "Master/R/G/B curves; each row contains outputs at x=.25,.5,.75, monotonically increasing; default [.25,.5,.75].",
         ),
         (
             "wheels",
             3,
             -100,
             360,
-            "阴影/中间调/高光，每行[色相0–360,饱和度0–100,明度-100–100]；默认全零",
+            "Shadows/midtones/highlights; each row [hue 0-360,saturation 0-100,lightness -100-100]; default all zeros.",
         ),
     ] {
         properties.insert(key.into(), json!({"type":"array","minItems":count,"maxItems":count,"description":description,"items":{"type":"array","minItems":3,"maxItems":3,"items":{"type":"number","minimum":min,"maximum":max}}}));
     }
-    json!({"type":["object","null"],"additionalProperties":false,"properties":properties,"description":"可编辑 SDR 调色方案，借鉴 mlight 的明暗/HSL/曲线/分区色轮；只覆盖指定字段，null 清除方案。烘焙为自定义 LUT，原生预览、抽帧、转场和导出共用；不是相机Log/HDR转换。先看帧再调参，修改后同一时间复查。"})
+    json!({"type":["object","null"],"additionalProperties":false,"properties":properties,"description":"Editable SDR grade inspired by mlight tonal/HSL/curve/wheel controls. Merge specified fields; null clears. Baked as a shared LUT for native preview, frame reads, transitions and export; not a camera Log/HDR transform. Inspect pixels before adjustment and recheck the same times afterward."})
 }
 
 fn transition_schema() -> Value {
     let pair = |min: f64, max: f64| json!({"type":"array","minItems":2,"maxItems":2,"items":{"type":"number","minimum":min,"maximum":max}});
-    json!({"type":"object","additionalProperties":false,"description":"kind=custom 的可组合设计，其他 kind 不接受。位置与偏移以画幅比例计；首尾自动回到未变换原片，避免接缝跳变。只接受结构化数值，不接受滤镜代码。","properties":{
-        "mask":{"type":"string","enum":["uniform","linear","radial"],"description":"整体混合/方向蒙版/径向蒙版，可与运动组合"},
-        "angle":{"type":"number","minimum":-180,"maximum":180,"description":"方向蒙版角度，0 从左向右"},
+    json!({"type":"object","additionalProperties":false,"description":"Composable design for kind=custom only. Positions/offsets are frame fractions; endpoints return to untransformed footage to avoid jumps. Structured numbers only, not filter code.","properties":{
+        "mask":{"type":"string","enum":["uniform","linear","radial"],"description":"Overall blend, directional mask or radial mask; can combine with motion."},
+        "angle":{"type":"number","minimum":-180,"maximum":180,"description":"Directional mask angle; 0 moves left to right."},
         "center":pair(0.,1.),
-        "feather":{"type":"number","minimum":0.001,"maximum":1,"description":"蒙版边缘柔化，默认0.1"},
-        "curve":{"type":"array","minItems":2,"maxItems":8,"items":pair(0.,1.),"description":"[时间比例,完成比例]控制点，时间严格递增、完成比例不下降，必须始于[0,0]终于[1,1]；可设计先慢后快等节奏"},
-        "outgoingZoom":{"type":"number","minimum":1,"maximum":4,"description":"前镜从1倍推进到此倍率"},
-        "incomingZoom":{"type":"number","minimum":1,"maximum":4,"description":"后镜从此倍率回到1倍"},
+        "feather":{"type":"number","minimum":0.001,"maximum":1,"description":"Mask feathering, default 0.1."},
+        "curve":{"type":"array","minItems":2,"maxItems":8,"items":pair(0.,1.),"description":"[time fraction,completion fraction] control points. Strictly increasing time, nondecreasing completion; starts [0,0], ends [1,1]. Supports custom pacing."},
+        "outgoingZoom":{"type":"number","minimum":1,"maximum":4,"description":"Outgoing shot zooms from 1 to this scale."},
+        "incomingZoom":{"type":"number","minimum":1,"maximum":4,"description":"Incoming shot zooms from this scale back to 1."},
         "outgoingOffset":pair(-1.,1.),"incomingOffset":pair(-1.,1.)
     }})
 }

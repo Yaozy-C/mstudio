@@ -13,30 +13,33 @@ pub fn parts(
 ) -> Result<(String, Vec<Value>)> {
     let id = args["clipId"]
         .as_str()
-        .context("转场抽帧需要后片段 clipId")?;
+        .context("Transition frame requires the incoming clipId")?;
     let time = args["time"]
         .as_f64()
-        .context("转场抽帧需要 time（转场开始后的秒数）")?;
+        .context("Transition frame requires time in seconds from transition start")?;
     let mut spec: RenderSpec = serde_json::from_value(doc.clone())?;
     let right = spec
         .clips
         .iter()
         .find(|c| c.id == id)
-        .context("转场目标不存在")?;
+        .context("Transition target not found")?;
     ensure!(
         args["assetId"] == right.asset_id,
-        "assetId 必须是后片段的素材 ID"
+        "assetId must reference the incoming clip asset"
     );
-    let transition = right.transition.as_ref().context("此片段没有转场")?;
+    let transition = right
+        .transition
+        .as_ref()
+        .context("Clip has no transition")?;
     ensure!(
         time.is_finite() && time >= 0. && time < transition.duration,
-        "抽帧时间超出转场范围"
+        "Frame time outside transition range"
     );
     let left = spec
         .clips
         .iter()
         .find(|c| c.id == transition.from_clip_id)
-        .context("前片段不存在")?;
+        .context("Outgoing clip not found")?;
     let ids = [left.asset_id.clone(), right.asset_id.clone()];
     let mut assets = store.assets()?;
     let root = store.media_root().join("assets").canonicalize()?;
@@ -45,15 +48,15 @@ pub fn parts(
             doc["assets"]
                 .as_array()
                 .is_some_and(|a| a.iter().any(|a| a["id"] == *id)),
-            "转场素材不属于当前工程"
+            "Transition assets are outside this project"
         );
         let a = assets
             .iter()
             .find(|a| a.id == *id)
-            .context("转场素材丢失")?;
+            .context("Transition asset missing")?;
         ensure!(
             Path::new(&a.path).canonicalize()?.starts_with(&root),
-            "素材路径不属于应用素材库"
+            "Asset path is outside the application media library"
         );
     }
     // Preserve all clips for overlap validation, but render only the requested seam.
@@ -68,7 +71,9 @@ pub fn parts(
         &store.media_root().join("proxies"),
         true,
     )?;
-    let path = paths.first().context("接缝已失效，请重新检查片段位置")?;
+    let path = paths
+        .first()
+        .context("Join is no longer valid; inspect clip positions")?;
     crate::project_storage::track_file(store, project, path)?;
     super::video_frame::frame(
         path,

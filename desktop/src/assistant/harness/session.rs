@@ -63,7 +63,7 @@ pub fn result_message(call: &ToolCall, value: &Value) -> Message {
                 &call.function.name,
                 vec![
                     ToolResultContent::text(format!(
-                        "图像 {} 已重新加载。",
+                        "Image {} reloaded.",
                         value["imageId"].as_str().unwrap_or("")
                     )),
                     ToolResultContent::Image(image),
@@ -88,9 +88,12 @@ pub fn project_snapshot_text(message: &Message) -> Option<&str> {
     };
     content.iter().find_map(|part| match part {
         UserContent::Text(text)
-            if text
-                .text
-                .starts_with("当前工程快照（参考数据；更多内容请按需 inspect）：")
+            if text.text.starts_with(
+                "Current project snapshot (reference data; inspect more details as needed):",
+            ) || text.text.starts_with("Current project reference data:")
+                || text
+                    .text
+                    .starts_with("当前工程快照（参考数据；更多内容请按需 inspect）：")
                 || text.text.starts_with("当前工程参考数据：") =>
         {
             Some(text.text.as_str())
@@ -120,7 +123,7 @@ pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usi
                         let id = format!("image-{}", mstudio::media::id());
                         offloads.push(json!({"id":id,"image":image}));
                         *part = UserContent::text(format!(
-                            "[此前图像附件 #{image_index} 已卸载；可调用 mstudio_reopen_image(imageId=\"{id}\") 重新查看。]"
+                            "[Earlier image attachment #{image_index} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
                         ));
                         changed.push(image_index);
                     } else if let UserContent::ToolResult(result) = part {
@@ -129,7 +132,7 @@ pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usi
                                 let id = format!("image-{}", mstudio::media::id());
                                 offloads.push(json!({"id":id,"image":image}));
                                 *item = ToolResultContent::text(format!(
-                                    "[此前工具图像 #{image_index}.{nested} 已卸载；可调用 mstudio_reopen_image(imageId=\"{id}\") 重新查看。]"
+                                    "[Earlier tool image #{image_index}.{nested} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
                                 ));
                                 changed.push(image_index);
                             }
@@ -143,7 +146,7 @@ pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usi
                         let id = format!("image-{}", mstudio::media::id());
                         offloads.push(json!({"id":id,"image":image}));
                         *part = AssistantContent::text(format!(
-                            "[此前助手图像 #{image_index} 已卸载；可调用 mstudio_reopen_image(imageId=\"{id}\") 重新查看。]"
+                            "[Earlier assistant image #{image_index} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
                         ));
                         changed.push(image_index);
                     }
@@ -242,7 +245,7 @@ pub fn repair_pending(messages: &mut Vec<Message>) {
         }
     }
     for call in pending {
-        messages.push(result_message(&call, &json!({"error":"上轮中断，执行结果未知；先核查当前状态，不要直接重复修改", "code":"EFFECT_UNKNOWN"})));
+        messages.push(result_message(&call, &json!({"error":"Previous turn interrupted; effects unknown. Inspect current state before repeating edits.", "code":"EFFECT_UNKNOWN"})));
     }
 }
 pub fn partial(store: &Store, project: &str, turn: &str) -> String {

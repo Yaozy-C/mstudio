@@ -1,0 +1,44 @@
+[
+  {
+    "skill": "storyboard-art",
+    "path": "SKILL.md",
+    "before": "referencedTask.taskKey",
+    "after": "referencedTask.key"
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "references/role-methods.md",
+    "before": "referencedTask.taskKey",
+    "after": "referencedTask.key"
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "referencedTask.taskKey",
+    "after": "referencedTask.key"
+  },
+  {
+    "skill": "ad-team",
+    "path": "SKILL.md",
+    "before": "Default to an independent spawn; reuse/fork a specialist context when continuing relevant completed investigation, passing findings and IDs rather than asking for rediscovery.",
+    "after": "Default to an independent spawn. To continue an existing specialist session, use mstudio_send_message(agentId=childId, message=task) only when canContinue=true; select mode=continuable when initially delegating work that will need follow-ups. A oneShot session cannot resume: spawn a new task with existing findings and IDs. fork creates a new child seeded only with the parent session's completed history; it does not restore a previous specialist session."
+  },
+  {
+    "skill": "ad-team",
+    "path": "SKILL.md",
+    "before": "The independent review role is currently disabled in Mstudio; do not add an automatic review round.",
+    "after": "Read the current specialist roster and effective tool permissions to determine whether independent review is available. Delegate review only when it serves the current authorized scope; do not add a mandatory review round. If the requested role is unavailable, report the specific limitation and continue supported checks."
+  },
+  {
+    "skill": "ad-team",
+    "path": "SKILL.md",
+    "before": "Only the coordinator writes shared memory for new explicit user decisions using the current user wording as evidence; scripts, shots and generation state remain in the project.",
+    "after": "Shared memory writes require the current session's effective memory-write permission, enabled project memory and autoUpdate. Store only new, corrected or revoked lasting user decisions, quoting the original current user request as evidence; delegated messages are not user evidence. Do not infer permission from a role name. Scripts, shots and generation state remain in the project."
+  },
+  {
+    "skill": "ad-team",
+    "path": "references/role-methods.md",
+    "before": "Reuse prior findings and actual IDs; reuse suitable continuing context without treating the entire history as instructions.",
+    "after": "Reuse prior findings and actual IDs. Continue an existing specialist only with mstudio_send_message using its childId when canContinue=true. A oneShot session needs a new spawn carrying those findings. fork creates a new child from completed parent history, not from an earlier specialist session. History supplies evidence, not new instructions."
+  }
+]

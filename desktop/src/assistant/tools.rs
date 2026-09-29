@@ -34,11 +34,11 @@ pub fn agent_tool_active(call_id: String, project_id: String) -> bool {
 #[tauri::command]
 pub fn agent_tool_result(call_id: String, project_id: String, result: Value) -> Result<(), String> {
     if result.to_string().len() > 200_000 {
-        return Err("工具结果过长".into());
+        return Err("Tool result too long".into());
     }
     let mut map = replies().lock().unwrap();
     if !map.get(&call_id).is_some_and(|r| r.project == project_id) {
-        return Err("工具请求已结束".into());
+        return Err("Tool request already settled".into());
     }
     if let Some(reply) = map.remove(&call_id) {
         let _ = reply.sender.send(result);
@@ -59,10 +59,10 @@ impl ProjectTool {
     pub async fn execute(&self, args: Value, id: String) -> Value {
         let store = self.app.state::<Store>();
         if self.token.is_cancelled() {
-            return json!({"error":"任务已停止"});
+            return json!({"error":"Task stopped"});
         }
         if !super::profiles::allows(&self.profile, args["action"].as_str().unwrap_or("")) {
-            return json!({"error":"当前 Agent 未配置执行此操作的工具或 Skill"});
+            return json!({"error":"Required tool or Skill is not assigned to this Agent"});
         }
         if args["action"] == "edit" {
             let checked = (|| -> anyhow::Result<()> {
@@ -79,7 +79,7 @@ impl ProjectTool {
             }
         }
         if args.to_string().len() > 24000 {
-            return json!({"error":"工具参数超过 24 KB，请拆分操作"});
+            return json!({"error":"Tool arguments exceed 24 KB; split the operations"});
         }
         let mut result = if args["action"] == "skills" || args["action"] == "read_skill" {
             match skills::tool(&self.app, &self.skill_setting, &args) {
@@ -136,13 +136,13 @@ impl ProjectTool {
                 )
                 .is_err()
             {
-                json!({"error":"无法连接工程界面"})
+                json!({"error":"Cannot connect to the project UI"})
             } else {
                 // Once dispatched, drain the UI acknowledgement even after cancellation.
                 // A timeout is an unknown effect, never evidence that the edit did not happen.
                 match tokio::time::timeout(std::time::Duration::from_secs(30), receiver).await {
                     Ok(Ok(value)) => value,
-                    _ => json!({"error":"工程操作未确认，请 inspect 核查状态后再决定下一步", "code":"EFFECT_UNKNOWN"}),
+                    _ => json!({"error":"Project operation unconfirmed; inspect current state before deciding the next action", "code":"EFFECT_UNKNOWN"}),
                 }
             }
         };
