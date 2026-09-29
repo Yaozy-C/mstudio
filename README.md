@@ -1,115 +1,125 @@
-# mstudio
+# Mstudio
 
 **A Vibe Video Studio · From mind to motion.**
-从脑海里的画面，到自己的影片。
 
-**简体中文** | [English](README.en.md)
+**English** | [简体中文](README.zh-CN.md)
 
-mstudio 是一个本地的视频创作工作室。你可以从一个想法、一份脚本或一段参考开始，和 AI 一起写、一起看、一起改，在同一个项目里完成脚本、分镜、素材生成、剪辑和导出。
+An open-source desktop video studio for working with AI, from the first idea to the final cut. Write a script, organize references and shots, generate media with your own models, and edit and export in one local workspace.
 
-脑海里的画面往往很难一次描述清楚。看过分镜，才知道构图该怎么改；播放片段，才发现动作太慢、音乐进早了。我们把这种边聊、边看、边调整的创作方式叫作 **Vibe Video**。画布把方案和素材摊开，时间线让你调整具体片段，创作助手参与写作和操作，你随时可以接手。
+We call this **Vibe Video**: talk through an idea, see what it looks like, and refine it together. The script, production canvas and timeline keep the work editable at every step.
 
-> 项目仍在开发中，目前主要在 macOS 上开发和验证。Windows 尚未完成构建与实机验证，Linux 暂不支持桌面原生预览。AI 的画面、动作和节奏仍需要你检查和判断。
+[Quick start](#quick-start) · [Features](#features) · [Development](#development) · [Contributing](CONTRIBUTING.md) · [Report a bug](https://github.com/Yaozy-C/mstudio/issues)
 
-## 你可以用它做什么
+![Mstudio in English: a portrait film preview beside project media, with three clips on the timeline](assets/screenshots/timeline.jpg)
 
-1. **带着参考开始创作**
-   导入图片、视频、音频、文字资料和 PDF。把素材放到画布里整理，或在对话里引用具体内容，让 AI 围绕你的材料工作。项目素材用于当前影片，全局素材库方便多个项目重复使用。模型能否理解某种资料，取决于它支持的输入类型。
+*Actual macOS desktop capture. The Daybreak project uses original demo artwork prepared for this documentation.*
 
-2. **写清楚故事，也写清楚声音**
-   在脚本工作区分别编辑画面与动作、台词与旁白、画面文字、声音与节奏，以及预计时长。可以让创意编剧起草，也可以自己写。修改总时长时，时间会按现有节奏分配到各段；你也能单独调整某一段。
+> **Development preview.** macOS is the primary development and validation platform. Windows packaging and device validation are incomplete; Linux native desktop preview is not supported. Build from source using the steps below.
 
-3. **先设计镜头，再看见分镜**
-   分镜导演根据完整脚本设计景别、机位、主体动作、相机运动和切点。分镜画手把设计变成可见的画格；复杂动作可以用同一镜头的多个关键画格表达。脚本段落和镜头保持关联，方便回到具体位置继续修改。
+## Features
 
-4. **围绕每个镜头生成和修改素材**
-   镜头保留生成描述、参考和结果。按模型能力使用内容参考、动作参考或首尾帧；也能选中图片，直接告诉 AI 想怎么改。生成任务显示进度，结果可预览、引用和放到画布，挑选满意的版本再加入时间线。遇到异常时，可以查询原任务或重试收取已有结果。
+- **Script to shots.** Write visuals, dialogue, on-screen text and sound as separate fields. Set paragraph timing and keep shots linked to their source script.
+- **A canvas for production.** Arrange references and media, inspect storyboard frames, and keep alternatives together before deciding what belongs in the film.
+- **Your models, your workflow.** Configure chat and media models separately. Generate and revise images or videos with the references and controls supported by each provider.
+- **Specialist Agents.** Configure a producer, writer, shot director, storyboard artist, editor and other roles with editable instructions, Skills and tool permissions. Reference specific project items in conversation.
+- **An editable timeline.** Arrange multiple tracks; split, trim and retime clips; detach audio; adjust color and transitions; add captions and local voiceover; preview and export MP4.
+- **Local project storage.** Automatic saving, project memory, a reusable media library and storage migration. The interface supports English and Simplified Chinese.
 
-5. **把节奏剪到你满意**
-   在多轨时间线上安排画面和声音，移动、分割、裁剪、变速、复制或删除片段，调整画面大小、位置、不透明度和音量。可以分离视频中的音频，设置声音淡入淡出，逐帧检查切点。引用具体片段给 Agent，它也可以协助修改。
+Manual media import, editing and local export do not require an AI account.
 
-6. **补上字幕、配音、转场和色彩**
-   手动添加字幕，导入或导出 SRT，调整字体、颜色和位置。使用本机已安装的声音生成分段配音，并按实际配音长度创建字幕。相邻的底层画面片段可添加叠化、推移、擦除等转场；调色支持亮度、对比度、饱和度和冷暖调整，也可以请转场 Agent 或调色师协助。
+### Write the story and its sound
 
-7. **配置自己的创作团队和模型**
-   项目统筹、创意编剧、分镜导演、分镜画手、媒体制作、剪辑声音、审片等 Agent 按职责参与制作。你可以编辑职责和工作指令，装配 Skills 中的创作方法，并单独设置工具权限。对话与媒体生成分别选择模型，可以连接兼容的本地或在线服务。
+![English script workspace showing visuals, on-screen text, narration and sound for a demo scene](assets/screenshots/script.jpg)
 
-8. **继续上次的创作，导出自己的影片**
-   项目自动保存到本机。项目记忆保存目标、约束和已经确定的事，供同一项目的 Agent 使用。完成后在本机导出 MP4，预览成片并另存到需要的位置。设置中心支持简体中文和 English，也可以更改素材存储目录并迁移已有文件。
+### Keep references and media in view
 
-## 从第一个项目开始
+![English production canvas with three original landscape illustrations arranged side by side](assets/screenshots/canvas.jpg)
 
-### 1. 打开应用，选好语言和模型
+## Quick start
 
-在项目首页打开 **通用设置 → 语言**，选择简体中文或 English，立即生效，下次打开仍会保留。语言设置只改变界面，不翻译你已经写好的脚本、提示词、项目名称或聊天记录。
+### Build and run on macOS
 
-在 **模型 → 服务连接** 添加要使用的服务，再添加对话模型，并设为默认。图像、视频和音频模型分别管理，按你的创作需要配置。支持的接入方式包括兼容 OpenAI 的服务、Responses、Gemini、Claude 原生接口，以及支持相应协议的本机服务。
+Install Xcode Command Line Tools, [Rust via rustup](https://rustup.rs/), [Bun](https://bun.sh/) and [Homebrew](https://brew.sh/). The repository pins its Rust version in [`rust-toolchain.toml`](rust-toolchain.toml). Python 3.12 or newer is required.
 
-使用远程服务时，需要你自己的账号或 API Key，费用由相应服务商收取。仅导入素材、手动剪辑和本地导出，不需要配置 AI 模型。
+```sh
+git clone https://github.com/Yaozy-C/mstudio.git
+cd mstudio
 
-### 2. 新建项目，把目标和参考放进来
+brew install python pkgconf ffmpeg gstreamer
+(cd frontend && bun install --frozen-lockfile)
+python3 scripts/bundle-ges.py
+sh scripts/dev.sh
+```
 
-点击 **新建项目**，给影片起一个名字。默认是 1080 × 1920 竖屏，也可以在项目设置里调整画幅和帧率。
+The development script starts the frontend and the Tauri desktop application. Use the desktop application for file imports, native playback, generation and export; the browser preview alone does not provide the complete workflow.
 
-打开 **素材** 导入文件。你可以直接把已有素材加入时间线，也可以先放到制作画布上构思。聊天中输入 `@` 引用素材、脚本或镜头，输入 `$` 选择专业 Agent。
+To build a local app bundle:
 
-例如，你可以告诉项目统筹：
+```sh
+sh scripts/bundle.sh
+open Mstudio.app
+```
 
-> 我想做一支 30 秒的咖啡店短片，给附近上班的人看。希望安静、有生活感。这几张图是店内环境，先帮我整理方向和脚本。
+This creates `Mstudio.app` in the repository root. See the [development guide](docs/development.md) for native dependencies, media regression checks and platform limitations.
 
-### 3. 写脚本，检查镜头设计
+### Make your first film
 
-进入 **脚本**，让 AI 起草或手动编写。先看故事是否说清楚，台词、画面文字和声音是否合适，再选择 **设计整片镜头**。到 **制作画布** 查看镜头和分镜画格，引用需要调整的部分继续讨论。
+1. Open **General → Language** to choose English or 简体中文.
+2. Create a project. Import your own media, or start by writing a script.
+3. For AI assistance, open **Models**, add a service connection and configure a chat model. Add image or video models when you need generation.
+4. In chat, use `@` to reference project items and `$` to choose a specialist. For example: “Help me outline a 15-second landscape film. Keep the pace quiet and leave room for natural sound.”
+5. Arrange and inspect media in **Production canvas**, then edit in **Film**. Review picture and sound before exporting.
 
-> 这个镜头先让观众看清杯口的热气，再切到人物。不要改后面的台词。
+Remote AI services require your own account or API key and may charge for usage. Model inputs, generation controls and availability depend on the configured provider.
 
-### 4. 制作画面，选出可用的结果
+## Models and Agents
 
-为镜头选择图像或视频模型，填写生成描述，放入参考，按模型能力设置画幅、时长或首尾帧。检查后开始生成。结果回来后先预览，再决定修改、重新生成，还是加入时间线。
+Chat connections support OpenAI-compatible APIs, Responses, Gemini and native Claude protocols, including compatible local services. Media generation uses separate adapters and model configuration; support for a chat protocol does not automatically imply image or video generation support.
 
-如果提交结果不明确，先查询原任务或到服务商核查，避免重复生成和重复计费。
+Agents share project context and can use permitted tools to update scripts, shots and edits. Their instructions and assigned Skills are configurable. Child conversations distinguish independent creation, inheritance of completed parent history, and continuation of an existing session. See the [architecture guide](docs/architecture.md) for the Rust host and execution pipeline.
 
-### 5. 剪辑、试听、导出
+## Data and privacy
 
-进入 **成片**，在时间线上调整顺序、切点和声音，按需要添加字幕、配音、转场和调色。播放完整影片，检查画面与声音是否符合预期，然后点击 **导出成片 → 开始导出**。完成后可以预览，并 **另存为 MP4**。
+- Projects and media are stored locally. On macOS, the default application data directory is `~/Library/Application Support/local.mstudio.canvas/`; media may be stored elsewhere if you move it in **General → Storage**.
+- Online model requests send prompts and selected references to the configured provider. Local storage does not mean all AI processing happens on your computer.
+- API credentials currently reside in the local SQLite database and are **not protected by the system keychain**. Do not share your database, full application data directory or credential-bearing logs.
+- Autosave is not versioned backup. Quit the app before backing up its application data and any separately configured media directory.
 
-## 常用操作
+Report vulnerabilities privately using the instructions in [SECURITY.md](SECURITY.md).
 
-| 想做什么 | 如何操作 |
-| --- | --- |
-| 让 AI 针对具体内容修改 | 对话中输入 `@`，或使用素材、镜头、片段的「引用到对话」 |
-| 选择专业助手 | 对话中输入 `$` 选择 Agent |
-| 查看素材或生成结果 | 双击画布内容，或使用预览操作 |
-| 将素材用于成片 | 拖入时间线，或选择「加入时间线」 |
-| 分割选中片段 | `⌘B`，Windows 使用 `Ctrl+B` |
-| 复制 / 剪切 / 粘贴片段 | `⌘C` / `⌘X` / `⌘V`，Windows 使用 `Ctrl` |
-| 裁掉播放头前 / 后的内容 | `⌥[` / `⌥]`，Windows 使用 `Alt` |
-| 撤销 / 重做 | `⌘Z` / `⇧⌘Z`，Windows 使用 `Ctrl` |
-| 播放 / 暂停 | `Space`；更多操作见时间线「快捷键」 |
+## Current limitations
 
-裁剪保留片段速度；剪切和删除留下空隙，不会自动移动其他片段。文字输入框内仍使用文字编辑快捷键。
+- AI output needs human review for visual consistency, motion, timing and sound.
+- Transitions currently target adjacent, opaque, full-frame base-layer visuals. They do not provide optical flow, occlusion masks or audio crossfades.
+- Color controls are not a complete professional color-management workflow.
+- Native playback, file dialogs and real model integrations still require desktop validation. Passing automated checks is not a substitute for watching the finished film.
 
-## 保存、素材和隐私
+## Development
 
-- **自动保存**：停止操作约 1.5 秒后保存到本机；可通过工作栏的保存状态确认。自动保存不等于历史版本备份。
-- **项目记忆**：在当前项目的设置中维护目标和关键决定，可以手动添加，也可以允许 Agent 整理。切换模型或清空聊天不会清掉项目记忆。
-- **素材存储**：在 **通用设置 → 存储** 查看位置、选择新目录并迁移。文件缺失时保留镜头、时间线位置和引用；文件放回原位置后自动恢复。
-- **备份**：macOS 默认应用数据位于 `~/Library/Application Support/local.mstudio.canvas/`。先退出应用，再备份整个目录；如果迁移过素材目录，也要备份设置中显示的素材文件夹。
-- **远程模型**：本地工作室不代表所有 AI 都在本机运行。调用在线模型时，提示词和所选参考会发送给对应服务商。
-- **账号凭据**：当前保存在本机数据库中，尚未使用系统钥匙串加密存储。不要公开数据库、完整数据目录或含密钥的日志。
+Mstudio uses **React + TypeScript** for the interface, **Tauri + Rust** for desktop services, **SQLite** for persistence, **GStreamer Editing Services (GES)** for native preview and **FFmpeg** for media processing and export.
 
-## 当前边界
+```text
+frontend/       React interface, canvas, timeline and Agent configuration
+desktop/        Tauri host, persistence, Agent runtime and model adapters
+src/            Shared Rust editing and media logic
+skills/         Bundled creative methods and role guidance
+scripts/        Development, validation and macOS packaging
+```
 
-AI 生成仍可能出现物体错误、动作不自然和前后不一致，需要人工选择和调整。导入参考并不意味着应用会自动搜索或筛选参考视频。
+Run the required checks after preparing the native dependencies:
 
-转场目前适用于全幅、不透明的底层相邻画面片段，时长为 0.05–3 秒且不超过相邻片段；素材余量不足时延展边缘帧。当前不包含自动光流、蒙版遮挡和音频交叉淡化。调色提供基础调整，尚不属于完整的专业色彩管理系统。
+```sh
+sh scripts/check.sh
+```
 
-浏览器开发页面用于界面预览。文件导入、原生播放、生成任务和导出等完整流程需要桌面应用；浏览器中的转场预览显示直接切换。
+This checks formatting, source release hygiene, source size, Skills, frontend build and tests, and Rust linting and tests. Some backend tests start a local HTTP server and need loopback access. No external model account is required for the check suite.
 
-## 获取与参与
+## Contributing
 
-目前可以从源码构建并运行桌面应用。安装依赖、启动与打包步骤见 [开发指南](docs/development.md)。开发实现另见 [架构说明](docs/architecture.md)。
+Bug reports, documentation, translations and focused fixes are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Include your OS version, reproduction steps and sanitized diagnostics in bug reports. Discuss larger changes in an issue first.
 
-欢迎通过 [贡献指南](CONTRIBUTING.md) 参与。报告问题时，请提供系统版本、复现步骤和脱敏后的错误信息；安全问题请参见 [安全说明](SECURITY.md)。
+Start with the [development guide](docs/development.md) and [architecture guide](docs/architecture.md); these detailed guides are currently in Chinese. The repository homepage and contribution/security guidance are available in English.
 
-本项目采用 [MIT License](LICENSE)。第三方依赖和品牌图标见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+## License
+
+Mstudio is released under the [MIT License](LICENSE). Third-party libraries and brand assets retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Packaging the application does not replace the redistribution obligations of FFmpeg, GStreamer or their dependencies.

@@ -1,9 +1,17 @@
-# Security
+# Security policy
 
-Mstudio 目前处于开发阶段，安全修复针对默认分支的最新代码，不承诺维护旧版本。
+## Supported code
 
-请通过 GitHub 仓库的 **Security → Report a vulnerability** 私下报告安全问题。如果该入口不可用，请先联系维护者建立私密渠道，不要在公开 Issue 中发布密钥、利用步骤或私人项目数据。
+Mstudio is in active development. Security fixes target the latest code on the default branch; older versions are not currently maintained separately.
 
-报告尽量包括受影响提交、操作系统、复现步骤、影响与不含私人数据的最小示例。常规 bug 可使用公开 Issue。
+## Report a vulnerability
 
-模型 API Key 保存在本机 SQLite 中，目前不使用系统钥匙串。不要共享应用数据库或完整数据目录；备份由用户自行保护。模型端点应由可信用户配置。
+Use the repository's **Security → Report a vulnerability** entry on GitHub to report privately. If that entry is unavailable, contact the maintainer to arrange a private channel before sharing sensitive details. Do not post credentials, exploit details or private project data in public issues.
+
+Include the affected commit, operating system, reproduction steps, impact and a minimal example without private data. Ordinary bugs can be reported through [GitHub issues](https://github.com/Yaozy-C/mstudio/issues).
+
+## Current security considerations
+
+Model API keys are stored in the local SQLite database. They are not currently protected by the system keychain. Do not share the application database or entire application data directory; protect your own backups.
+
+Model endpoints should only be configured by trusted users. Requests to online models transmit prompts and selected references to the configured provider. Local project storage does not imply that all AI processing happens locally.
