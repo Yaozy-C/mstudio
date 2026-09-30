@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { errorText } from "../errors/catalog";
 import { useEffect, useRef, useState } from "react";
 import { bridge } from "../bridge";
@@ -6,8 +7,8 @@ import type { ImportedFiles } from "../assistant/fileImports";
 import { collectAsset } from "./assetLibrary";
 
 export function useAssetLibrary(
-  projectId: string,
-  change: (fn: (p: Project) => Project) => void,
+  projectId?: string,
+  change?: (fn: (p: Project) => Project) => void,
 ) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [busy, setBusy] = useState(false);
@@ -80,7 +81,9 @@ export function useAssetLibrary(
       setError(errorText(result.errors.join("\n"), "ASSET_IMPORT_FAILED"));
     }
     if (result.assets.length)
-      setMessage(`已上传 ${result.assets.length} 个全局素材`);
+      setMessage(
+        t("已上传 {count} 个公共素材", { count: result.assets.length }),
+      );
   }
   return {
     assets,
@@ -95,22 +98,23 @@ export function useAssetLibrary(
       run(async () => {
         await bridge("add_global_asset", { id: asset.id });
         await refresh();
-        setMessage("已添加到全局素材库");
+        setMessage(t("已添加到公共素材库"));
       }),
     use: (asset: Asset) =>
       run(async () => {
+        if (!projectId || !change) throw new Error("请先打开项目");
         const saved = await bridge<Asset>("use_global_asset", {
           projectId,
           id: asset.id,
         });
         change((p) => collectAsset(p, saved));
-        setMessage("已加入项目素材");
+        setMessage(t("已加入项目素材"));
       }),
     remove: (asset: Asset) =>
       run(async () => {
         await bridge("remove_global_asset", { id: asset.id });
         await refresh();
-        setMessage("已从全局素材库移除");
+        setMessage(t("已从公共素材库移除"));
       }),
   };
 }

@@ -56,12 +56,19 @@
 }
 .radix-themes .studio-modes button {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 0;
   border-radius: 0;
   background: transparent;
   padding: 0 5px;
   white-space: nowrap;
   font-size: 14px;
+}
+.studio-modes button > svg {
+  flex-shrink: 0;
 }
 .studio-modes button[aria-pressed="true"] {
   font-weight: 600;

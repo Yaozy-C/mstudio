@@ -18,9 +18,11 @@ export function Settings({
   initialTab = "general",
   project,
   projectCount,
+  onPublicAssets,
 }: {
   onClose: () => void;
   projectCount?: number;
+  onPublicAssets?: () => void;
   project?: { id: string; name: string };
   initialTab?: SettingsTab;
 }) {
@@ -42,6 +44,7 @@ export function Settings({
       <StudioSidebar
         activePage={tab}
         onProjects={onClose}
+        onPublicAssets={onPublicAssets}
         onSettings={setTab}
         count={projectCount}
         project={project}

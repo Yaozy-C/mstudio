@@ -7,7 +7,7 @@ import {
   runsOf,
   type GenerationCommandContext,
 } from "./requestTask";
-import { applyOperations, inspectProject } from "../assistant/projectCommands";
+import { applyOperations } from "../assistant/projectCommands";
 import { receiveProductionResult } from "./document";
 function setup() {
   const p = fixture();
@@ -89,21 +89,17 @@ test("asset generation delivers a reusable library image that can be passed dire
     canvasGeneration: { task: run, x: 30, y: 40 },
   });
   expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBe(true);
-  const record = next.nodes.find((n) => n.assetId === image.id)!;
-  expect(record.kind).toBe("asset");
-  expect(record.shot).toBeUndefined();
+  expect(next.nodes.some((n) => n.assetId === image.id)).toBe(false);
+  expect(productionItems(next).some((n) => n.assetId === image.id)).toBe(false);
   next = applyOperations(next, next.revision ?? 0, [
     {
-      op: "update_node",
-      id: record.id,
-      title: "Character reference",
-      text: "ready; white background inspected; outfit fixed",
+      op: "set_references",
+      id: "shot",
+      referenceMode: "upsert",
+      references: [{ assetId: image.id, purpose: "character and wardrobe" }],
     },
   ]);
-  expect(
-    inspectProject(next, { nodeIds: [record.id], fields: ["text", "assetId"] })
-      .details?.[0].assetId,
-  ).toBe(image.id);
+  expect(next.nodes.find((n) => n.id === "shot")!.references).toHaveLength(2);
   next = requestTask(
     next,
     {
@@ -116,11 +112,6 @@ test("asset generation delivers a reusable library image that can be passed dire
   expect(
     runsOf(next).find((t) => t.key.includes("downstream"))!.inputs[0].assetId,
   ).toBe(image.id);
-  expect(() =>
-    applyOperations(next, next.revision ?? 0, [
-      { op: "update_node", id: record.id, assetId: "missing" },
-    ]),
-  ).toThrow();
 });
 
 test("shot image references feed new tasks without changing historical inputs", () => {

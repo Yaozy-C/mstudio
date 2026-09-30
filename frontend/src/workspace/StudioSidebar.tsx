@@ -9,6 +9,7 @@ import {
   Notebook,
   SquaresFour,
   ArrowLeft,
+  Images,
 } from "@phosphor-icons/react";
 export function sidebarPages(hasProject = false) {
   return [
@@ -28,12 +29,14 @@ export function StudioSidebar({
   activePage = "projects",
   onProjects,
   onSettings,
+  onPublicAssets,
   count,
   project,
 }: {
-  activePage?: "projects" | SettingsTab;
+  activePage?: "projects" | "public-assets" | SettingsTab;
   onProjects: () => void;
   onSettings: (page: SettingsTab) => void;
+  onPublicAssets?: () => void;
   count?: number;
   project?: { name: string };
 }) {
@@ -55,6 +58,16 @@ export function StudioSidebar({
         {project ? t("返回项目") : t("项目空间")}
         {count !== undefined && <span>{count}</span>}
       </button>
+      {onPublicAssets && !project && (
+        <button
+          className={`nav-item ${activePage === "public-assets" ? "active" : ""}`}
+          aria-current={activePage === "public-assets" ? "page" : undefined}
+          onClick={onPublicAssets}
+        >
+          <Images size={21} />
+          {t("公共素材")}
+        </button>
+      )}
       {project && (
         <div className="sidebar-project" title={project.name}>
           {project.name}

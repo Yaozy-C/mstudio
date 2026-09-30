@@ -71,7 +71,47 @@ export function creationOperation(p: Project, op: Op): Project | null {
     }
     case "set_references": {
       if (!p.nodes.some((n) => n.id === op.id)) throw new Error("镜头不存在");
-      const references = checkedReferences(p, op.references);
+      const node = p.nodes.find((n) => n.id === op.id)!;
+      const mode = op.referenceMode ?? "replace";
+      if (!["replace", "upsert", "remove"].includes(String(mode)))
+        throw new Error("参考编辑方式无效");
+      let references: Reference[];
+      if (mode === "remove") {
+        if (
+          !Array.isArray(op.assetIds) ||
+          !op.assetIds.every((id) => typeof id === "string")
+        )
+          throw new Error("请指定要解除引用的素材 ID");
+        const removed = new Set(op.assetIds);
+        references = (node.references ?? []).filter(
+          (r) => !removed.has(r.assetId),
+        );
+      } else {
+        const raw =
+          mode === "upsert" && Array.isArray(op.references)
+            ? op.references.map((ref) =>
+                ref && typeof ref === "object"
+                  ? {
+                      ...node.references?.find(
+                        (old) => old.assetId === ref.assetId,
+                      ),
+                      ...ref,
+                    }
+                  : ref,
+              )
+            : op.references;
+        const incoming = checkedReferences(p, raw);
+        if (mode === "replace") references = incoming;
+        else {
+          const merged = new Map(
+            (node.references ?? []).map((r) => [r.assetId, r]),
+          );
+          for (const ref of incoming)
+            merged.set(ref.assetId, { ...merged.get(ref.assetId), ...ref });
+          references = [...merged.values()];
+          if (references.length > 12) throw new Error("参考数量无效");
+        }
+      }
       return {
         ...p,
         nodes: p.nodes.map((n) =>

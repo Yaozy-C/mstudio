@@ -16,9 +16,7 @@ test("reference borders follow the composer inputs, including removal", () => {
   expect(
     referenced.has(items.find((item) => item.kind === "script")!.key),
   ).toBe(false);
-  expect(
-    referenced.has(items.find((item) => item.assetId === "reference")!.key),
-  ).toBe(false);
+  expect(items.some((item) => item.assetId === "reference")).toBe(false);
 });
 
 test("a canvas reference marks its card rather than unrelated copies", () => {
