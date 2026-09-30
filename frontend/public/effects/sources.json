@@ -1,0 +1,158 @@
+[
+  {
+    "id": "particles",
+    "file": "particles.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/4e981984-1cdc-4b96-a2b1-1a7c1ecb822d",
+    "sourceVideo": "https://static.higgsfield.ai/42ec6c22-5281-479d-b136-f000c590badb.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "particles.jpg",
+      "timeSeconds": 2.4
+    }
+  },
+  {
+    "id": "melt",
+    "file": "melt.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/017ae2b7-bcff-42ef-863e-6e198f96c3ec",
+    "sourceVideo": "https://static.higgsfield.ai/fea4b45e-9056-4181-be47-d85c37780a25.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "melt.jpg",
+      "timeSeconds": 2.4
+    }
+  },
+  {
+    "id": "bloom",
+    "file": "bloom.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/b25600ef-238e-448a-bb07-1ff74fd0207f",
+    "sourceVideo": "https://static.higgsfield.ai/29731034-c01e-4cef-83c2-3272911e0af7.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "bloom.jpg",
+      "timeSeconds": 2.4
+    }
+  },
+  {
+    "id": "earth",
+    "file": "earth.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/70e490b9-26b7-4572-8d9c-2ac8dcc9adc0",
+    "sourceVideo": "https://static.higgsfield.ai/32fe360d-1568-4fb6-af4c-6ad904f4d691.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "earth.jpg",
+      "timeSeconds": 4.8
+    },
+    "durationSeconds": 5.366667,
+    "bytes": 424528,
+    "selectionReason": "地景到地球的尺度变化完整，适合空间叙事。"
+  },
+  {
+    "id": "freeze",
+    "file": "freeze.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/777f1604-afee-406d-a711-bf1e0ea23c86",
+    "sourceVideo": "https://static.higgsfield.ai/4a3b2c6e-95b3-4eeb-86a6-5502477698d7.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "freeze.jpg",
+      "timeSeconds": 2.7
+    },
+    "durationSeconds": 5.366667,
+    "bytes": 406043,
+    "selectionReason": "霜纹与冰层变化清楚，适合冷感场景；样片为动画风格。"
+  },
+  {
+    "id": "glow",
+    "file": "glow.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/519e724e-760f-4703-b6cd-d38223f27e53",
+    "sourceVideo": "https://cdn.higgsfield.ai/minimax_hailuo_motion/9ea1789d-942e-4aa2-b501-8fe931291711.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "glow.jpg",
+      "timeSeconds": 2.8
+    },
+    "durationSeconds": 5.875,
+    "bytes": 1244866,
+    "selectionReason": "描边清楚、主体保留完整，拖尾表现较弱，因此以发光描边命名。"
+  },
+  {
+    "id": "orbit",
+    "file": "orbit.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/0275bb9f-7e50-4d45-84e4-3cb9dcbdd126",
+    "sourceVideo": "https://cdn.higgsfield.ai/kling_motion/b2db5035-ac85-4741-ab0f-adbab579ca31.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "orbit.jpg",
+      "timeSeconds": 3.2
+    },
+    "durationSeconds": 5.041667,
+    "bytes": 499534,
+    "selectionReason": "物体前后遮挡与环绕运动可辨，需替换为项目相关物件。"
+  },
+  {
+    "id": "portal",
+    "file": "portal.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/2391dbfb-edc3-4982-b5b0-bf3746a25359",
+    "sourceVideo": "https://cdn.higgsfield.ai/minimax_hailuo_motion/4594acd6-0e50-4d41-830d-3c61c6f5e29b.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "portal.jpg",
+      "timeSeconds": 3.0
+    },
+    "durationSeconds": 5.875,
+    "bytes": 1463615,
+    "selectionReason": "入口展开与穿越过程清楚，样片为卡通风格。"
+  },
+  {
+    "id": "smoke",
+    "file": "smoke.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/efb77740-741f-419d-ae8d-cf487e01a6e9",
+    "sourceVideo": "https://cdn.higgsfield.ai/kling_motion/bc070c05-9d3a-45b2-9858-30350ceacc30.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "smoke.jpg",
+      "timeSeconds": 4.0
+    },
+    "durationSeconds": 10.083333,
+    "bytes": 757826,
+    "selectionReason": "烟雾形成完整遮挡后揭示另一场景，转场过程完整。"
+  },
+  {
+    "id": "splash",
+    "file": "splash.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/105c744b-05bf-44ae-ba34-5a7144f4ec46",
+    "sourceVideo": "https://cdn.higgsfield.ai/kling_motion/812614b7-2d4d-4ec4-b99e-816fe44ce826.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "splash.jpg",
+      "timeSeconds": 2.5
+    },
+    "durationSeconds": 10.083333,
+    "bytes": 2120243,
+    "selectionReason": "水幕遮挡和场景揭示清楚；样片附带火焰，不写入通用模板。"
+  },
+  {
+    "id": "wireframe",
+    "file": "wireframe.mp4",
+    "sourcePage": "https://higgsfield.ai/motion/ea67acab-a7bf-4fff-b098-a0f1f1a6796c",
+    "sourceVideo": "https://cdn.higgsfield.ai/minimax_hailuo_motion/57b0984d-dde1-4ee5-a8d7-b02f9dadf527.mp4",
+    "retrievedAt": "2026-09-30",
+    "usage": "Third-party effect preview reference; original rights retained. Redistribution license has not been verified.",
+    "poster": {
+      "file": "wireframe.jpg",
+      "timeSeconds": 3.0
+    },
+    "durationSeconds": 5.875,
+    "bytes": 357870,
+    "selectionReason": "真实鞋面转网格的过程清楚，适合形体与科技外观展示。"
+  }
+]

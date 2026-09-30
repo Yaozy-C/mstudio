@@ -12,6 +12,7 @@ import {
   Plus,
   NotePencil,
   FilmSlate,
+  SquaresFour,
   Images,
   Graph,
   CaretDown,
@@ -102,16 +103,17 @@ export function StudioChrome({
       <nav className="studio-modes" aria-label={t("工作区模式")}>
         {(
           [
-            ["script", t("脚本")],
-            ["storyboard", t("制作画布")],
-            ["film", t("成片")],
+            ["script", t("脚本"), NotePencil],
+            ["storyboard", t("制作画布"), SquaresFour],
+            ["film", t("成片"), FilmSlate],
           ] as const
-        ).map(([key, label]) => (
+        ).map(([key, label, Icon]) => (
           <button
             key={key}
             aria-pressed={view === key}
             onClick={() => onView(key)}
           >
+            <Icon size={18} aria-hidden="true" />
             {label}
           </button>
         ))}

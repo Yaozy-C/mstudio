@@ -1,3 +1,5 @@
+import { requestCreativeTask } from "../creative/aiTasks";
+import { effectAgentTask } from "./effectAgentTask";
 import { TaskPanel } from "../production/TaskPanel";
 import { useTaskNavigation } from "./useTaskNavigation";
 import { initialPanels, toggleStudioPanel } from "./studioPanels";
@@ -219,6 +221,19 @@ export function Studio({ initial, onBack }: StudioProps) {
             onImport={() => void importMedia()}
             onAdd={add}
             onPlace={place}
+            onEffect={(effect, asset) => {
+              clock.pause();
+              setCreationTab(null);
+              canvas.setComposerMode("agent");
+              const ref = asset
+                ? { kind: "asset" as const, id: asset.id }
+                : clipId
+                  ? { kind: "clip" as const, id: clipId }
+                  : nodeId
+                    ? { kind: "node" as const, id: nodeId }
+                    : undefined;
+              requestCreativeTask(effectAgentTask(effect, ref));
+            }}
             onRemove={(a) => change((p) => uncollectAsset(p, a.id))}
             onReference={(a) => {
               if (canvas.task && activeView === "storyboard")
