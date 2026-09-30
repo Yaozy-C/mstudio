@@ -9,7 +9,9 @@
     "poster": {
       "file": "particles.jpg",
       "timeSeconds": 2.4
-    }
+    },
+    "bytes": 222267,
+    "sha256": "cd639509f0abc52b75086ae52dcfd9f64682b204d4e25600c5f14524d8991fee"
   },
   {
     "id": "melt",
@@ -21,7 +23,9 @@
     "poster": {
       "file": "melt.jpg",
       "timeSeconds": 2.4
-    }
+    },
+    "bytes": 352946,
+    "sha256": "c7061e2e3cdd2f05a14ba94b5faf8e43ee0f270b9feb4808a2cc293b87399e7d"
   },
   {
     "id": "bloom",
@@ -33,7 +37,9 @@
     "poster": {
       "file": "bloom.jpg",
       "timeSeconds": 2.4
-    }
+    },
+    "bytes": 783204,
+    "sha256": "06bc142623b2ce57724487261fdebaf570e47ff473bf7e5f821110672ac01d8e"
   },
   {
     "id": "earth",
@@ -48,7 +54,8 @@
     },
     "durationSeconds": 5.366667,
     "bytes": 424528,
-    "selectionReason": "地景到地球的尺度变化完整，适合空间叙事。"
+    "selectionReason": "地景到地球的尺度变化完整，适合空间叙事。",
+    "sha256": "6990c8b519e6838c855d3327901bbdd5ec52adc4c5c6876a148a5e50c24e8e20"
   },
   {
     "id": "freeze",
@@ -63,7 +70,8 @@
     },
     "durationSeconds": 5.366667,
     "bytes": 406043,
-    "selectionReason": "霜纹与冰层变化清楚，适合冷感场景；样片为动画风格。"
+    "selectionReason": "霜纹与冰层变化清楚，适合冷感场景；样片为动画风格。",
+    "sha256": "f4a311fff64fa81076711acb1af8fb9efea8837a8ec3b9b27570e546a758496b"
   },
   {
     "id": "glow",
@@ -78,7 +86,8 @@
     },
     "durationSeconds": 5.875,
     "bytes": 1244866,
-    "selectionReason": "描边清楚、主体保留完整，拖尾表现较弱，因此以发光描边命名。"
+    "selectionReason": "描边清楚、主体保留完整，拖尾表现较弱，因此以发光描边命名。",
+    "sha256": "166ecfeaa364dd6c87c77b9fa4721e573e62789cee16c2ecd775553e3f839e41"
   },
   {
     "id": "orbit",
@@ -93,7 +102,8 @@
     },
     "durationSeconds": 5.041667,
     "bytes": 499534,
-    "selectionReason": "物体前后遮挡与环绕运动可辨，需替换为项目相关物件。"
+    "selectionReason": "物体前后遮挡与环绕运动可辨，需替换为项目相关物件。",
+    "sha256": "29a6f0193f9a3c2c396b3231847c1900c4097f17c7c6de3e947dc0e8577a983a"
   },
   {
     "id": "portal",
@@ -108,7 +118,8 @@
     },
     "durationSeconds": 5.875,
     "bytes": 1463615,
-    "selectionReason": "入口展开与穿越过程清楚，样片为卡通风格。"
+    "selectionReason": "入口展开与穿越过程清楚，样片为卡通风格。",
+    "sha256": "6a0a999ade5e3fb0e7fc08cfa1c84eea30dd65f5beb6a136eba0d586b457da8c"
   },
   {
     "id": "smoke",
@@ -123,7 +134,8 @@
     },
     "durationSeconds": 10.083333,
     "bytes": 757826,
-    "selectionReason": "烟雾形成完整遮挡后揭示另一场景，转场过程完整。"
+    "selectionReason": "烟雾形成完整遮挡后揭示另一场景，转场过程完整。",
+    "sha256": "6ec6f740f6f5cf4340472e9a710e26182475ab643f55f480da658d622de6744e"
   },
   {
     "id": "splash",
@@ -138,7 +150,8 @@
     },
     "durationSeconds": 10.083333,
     "bytes": 2120243,
-    "selectionReason": "水幕遮挡和场景揭示清楚；样片附带火焰，不写入通用模板。"
+    "selectionReason": "水幕遮挡和场景揭示清楚；样片附带火焰，不写入通用模板。",
+    "sha256": "6303eb9a02c975b0227ba2f28639891810f7db53cf10a7641ccdbd7db31545e7"
   },
   {
     "id": "wireframe",
@@ -153,6 +166,7 @@
     },
     "durationSeconds": 5.875,
     "bytes": 357870,
-    "selectionReason": "真实鞋面转网格的过程清楚，适合形体与科技外观展示。"
+    "selectionReason": "真实鞋面转网格的过程清楚，适合形体与科技外观展示。",
+    "sha256": "d496171ce351238565504e2c7e9c1de45b6a55340b40e93becedf96ddd88563e"
   }
 ]
