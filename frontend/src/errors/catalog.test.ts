@@ -88,3 +88,16 @@ test("cancelled chat is a stopped operation, not a failed model request", () => 
     "CHAT_FAILED",
   );
 });
+
+test("local preview worker failures never become network troubleshooting", () => {
+  const value = normalizeError(
+    new Error(
+      commandError(
+        "native_preview_status",
+        "预览进程已退出或连接中断：connection closed",
+      ),
+    ),
+  );
+  expect(value.code).toBe("PREVIEW_FAILED");
+  expect(value.recovery).toContain("重新加载预览");
+});

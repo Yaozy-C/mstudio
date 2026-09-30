@@ -228,3 +228,25 @@ test("secondary drift uses rate correction until a large discontinuity", () => {
     globalThis.cancelAnimationFrame = oldCancel;
   }
 });
+
+test("preview rate multiplies clip speed without changing source position or clip", () => {
+  const clock = new PlaybackClock();
+  clock.configure(4, 30);
+  const video = new FakeVideo();
+  const dispose = bindVideo(
+    video as unknown as HTMLVideoElement,
+    entry,
+    clock,
+    () => {},
+    { seeks: 0, waiting: 0, playCalls: 0 },
+  );
+  clock.setRate(0.5);
+  expect(video.playbackRate).toBe(0.75);
+  expect(video.currentTime).toBe(2);
+  clock.seek(2);
+  expect(video.currentTime).toBe(5);
+  expect(entry.clip.speed).toBe(1.5);
+  clock.setRate(2);
+  expect(video.playbackRate).toBe(3);
+  dispose();
+});

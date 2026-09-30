@@ -1,6 +1,11 @@
+import { addCaptionTrack } from "./captionTracks";
 import { t, useLanguage } from "../i18n";
 import {
   ArrowsOutSimple,
+  FilmStrip,
+  MusicNotes,
+  Subtitles,
+  ArrowsHorizontal,
   Scissors,
   Trash,
   Minus,
@@ -63,7 +68,6 @@ export function TimelineToolbar({
           onClick={onSplit}
         >
           <Scissors />
-          {t("分割")}
         </button>
         <button
           title={selectedCaption ? t("删除字幕 Delete") : t("删除片段 Delete")}
@@ -82,13 +86,29 @@ export function TimelineToolbar({
         >
           <Trash />
         </button>
-        <button onClick={() => onChange((p) => addTrack(p, "video"))}>
-          {t("＋画面轨")}
-        </button>
-        <button onClick={() => onChange((p) => addTrack(p, "audio"))}>
-          {t("＋音轨")}
+        <button
+          title={t("＋画面轨")}
+          aria-label={t("＋画面轨")}
+          onClick={() => onChange((p) => addTrack(p, "video"))}
+        >
+          <FilmStrip />
         </button>
         <button
+          title={t("＋音轨")}
+          aria-label={t("＋音轨")}
+          onClick={() => onChange((p) => addTrack(p, "audio"))}
+        >
+          <MusicNotes />
+        </button>
+        <button
+          title={t("添加字幕轨道")}
+          aria-label={t("添加字幕轨道")}
+          onClick={() => onChange(addCaptionTrack)}
+        >
+          <Subtitles />
+        </button>
+        <button
+          aria-label={t("一键排片")}
           title={t("所有轨道按当前顺序从 0 秒首尾相接（可撤销）")}
           disabled={!project.clips.length}
           onClick={() => {
@@ -96,7 +116,7 @@ export function TimelineToolbar({
             onChange((p) => packClips(p));
           }}
         >
-          {t("一键排片")}
+          <ArrowsHorizontal />
         </button>
       </div>
       <span className="time-display">

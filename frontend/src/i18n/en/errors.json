@@ -61,5 +61,7 @@
   "[已隐藏]": "[Hidden]",
   "无法读取错误详情": "Unable to read error details",
   "参考图片的宽高比不符合要求": "Reference image aspect ratio is unsupported",
-  "视频时长不符合模型要求": "Video duration does not meet model requirements"
+  "视频时长不符合模型要求": "Video duration does not meet model requirements",
+  "预览播放已中断": "Preview playback was interrupted",
+  "点击重新加载预览，恢复播放器。": "Click Reload preview to restart the player."
 }

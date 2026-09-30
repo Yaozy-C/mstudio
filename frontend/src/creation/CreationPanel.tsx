@@ -1,3 +1,4 @@
+import { TransitionPanel } from "../timeline/TransitionPanel";
 import "../styles/inspector-desk.css";
 import "../styles/creation-panel.css";
 import { t, useLanguage } from "../i18n";
@@ -23,6 +24,17 @@ export function CreationPanel({
 }) {
   useLanguage();
   const [tab, setTab] = useState(initialTab);
+  if (initialTab.startsWith("transition:")) {
+    const [leftId, rightId] = JSON.parse(initialTab.slice(11)) as [
+      string,
+      string,
+    ];
+    return (
+      <TransitionPanel
+        {...{ project, clock, change, onClose, leftId, rightId }}
+      />
+    );
+  }
   return (
     <DockPanel id="creation" title={t("字幕与配音")} onClose={onClose}>
       <div className="creation-tabs inspector-tabs">

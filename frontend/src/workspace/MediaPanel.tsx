@@ -2,6 +2,10 @@ import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import {
   FileText,
+  FolderSimple,
+  Globe,
+  SquaresFour,
+  UploadSimple,
   Plus,
   Images,
   FilmStrip,
@@ -100,6 +104,20 @@ export function MediaPanel({
         {(["project", "global", "effects"] as const).map((value) => (
           <button
             key={value}
+            title={t(
+              value === "project"
+                ? "项目素材"
+                : value === "global"
+                  ? "公共素材"
+                  : "特效",
+            )}
+            aria-label={t(
+              value === "project"
+                ? "项目素材"
+                : value === "global"
+                  ? "公共素材"
+                  : "特效",
+            )}
             aria-pressed={scope === value}
             disabled={disabled}
             onClick={() => {
@@ -108,11 +126,13 @@ export function MediaPanel({
               setPreview(null);
             }}
           >
-            {value === "project"
-              ? t("项目素材")
-              : value === "global"
-                ? t("公共素材")
-                : t("特效")}
+            {value === "project" ? (
+              <FolderSimple size={20} />
+            ) : value === "global" ? (
+              <Globe size={20} />
+            ) : (
+              <SquaresFour size={20} />
+            )}
           </button>
         ))}
       </nav>
@@ -127,16 +147,22 @@ export function MediaPanel({
         />
       ) : (
         <>
-          <button className="import-box" onClick={upload} disabled={disabled}>
-            <Plus size={18} />
-            <strong>
-              {disabled
+          <button
+            className="import-box"
+            onClick={upload}
+            disabled={disabled}
+            title={
+              disabled
                 ? t("处理中…")
                 : scope === "project"
                   ? t("上传项目素材")
-                  : t("上传公共素材")}
-            </strong>
-            <small>{t("图片、文本、视频、音频、PDF")}</small>
+                  : t("上传公共素材")
+            }
+            aria-label={
+              scope === "project" ? t("上传项目素材") : t("上传公共素材")
+            }
+          >
+            <UploadSimple size={20} />
           </button>
           {library.error && !removing && (
             <ErrorNotice

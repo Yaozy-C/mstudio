@@ -1,7 +1,12 @@
 import { t, useLanguage } from "../i18n";
 import { useRef, useState } from "react";
 import type { Caption } from "../model";
-import { captionFonts } from "./captionStyle";
+import { captionImage } from "./captions";
+import {
+  captionFonts,
+  defaultCaptionStyle,
+  captionAppearance,
+} from "./captionStyle";
 import "../styles/caption-style.css";
 export function CaptionStyleFields({
   caption,
@@ -15,6 +20,7 @@ export function CaptionStyleFields({
   patch: (v: Partial<Caption>) => void;
 }) {
   useLanguage();
+  const style = captionAppearance(caption);
   const area = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<{ x: number; y: number } | null>(null);
   const position = draft ?? { x: caption.x ?? 0.5, y: caption.y ?? 0.85 };
@@ -72,6 +78,60 @@ export function CaptionStyleFields({
         />
         {t("显示字幕底色")}
       </label>
+      <div className="field-grid">
+        <label>
+          {t("字重")}
+          <select
+            value={style.fontWeight}
+            onChange={(e) => patch({ fontWeight: +e.target.value })}
+          >
+            {[400, 600, 800, 900].map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </select>
+        </label>
+        {(
+          [
+            ["strokeColor", "描边颜色"],
+            ["shadowColor", "阴影颜色"],
+            ["backgroundColor", "底板颜色"],
+          ] as const
+        ).map(([key, label]) => (
+          <label key={key}>
+            {t(label)}
+            <input
+              type="color"
+              value={style[key]}
+              onChange={(e) => patch({ [key]: e.target.value })}
+            />
+          </label>
+        ))}
+      </div>
+      {(
+        [
+          ["strokeWidth", "描边粗细", 0.15],
+          ["shadowBlur", "发光柔化", 0.5],
+          ["shadowOffset", "阴影距离", 0.2],
+          ["backgroundOpacity", "底板透明度", 1],
+          ["backgroundRadius", "底板圆角", 0.6],
+        ] as const
+      ).map(([key, label, max]) => (
+        <label key={key}>
+          {t(label)} · {Math.round(style[key]! * 100)}%
+          <input
+            aria-label={t(label)}
+            type="range"
+            min={0}
+            max={max}
+            step={0.01}
+            value={style[key]}
+            disabled={key.startsWith("background") && !style.background}
+            onChange={(e) => patch({ [key]: +e.target.value })}
+          />
+        </label>
+      ))}
       <div
         className="caption-position"
         ref={area}
@@ -82,6 +142,11 @@ export function CaptionStyleFields({
         role="group"
         aria-label={t("字幕画面位置")}
       >
+        <img
+          className="caption-position-render"
+          alt=""
+          src={captionImage({ ...caption, ...position }, width, height)}
+        />
         <span className="caption-safe-area" />
         <button
           className="caption-position-text"
@@ -89,9 +154,9 @@ export function CaptionStyleFields({
           style={{
             left: `${position.x * 100}%`,
             top: `${position.y * 100}%`,
-            color: caption.color ?? "#ffffff",
+            color: "transparent",
             fontFamily: captionFonts[caption.font ?? "sans"].family,
-            background: caption.background === false ? "transparent" : "#000a",
+            background: "transparent",
           }}
           onPointerDown={(e) => {
             e.preventDefault();
@@ -157,10 +222,9 @@ export function CaptionStyleFields({
           patch({
             x: 0.5,
             y: 0.85,
-            font: "sans",
-            fontSize: 0.048,
-            color: "#ffffff",
-            background: true,
+            ...defaultCaptionStyle,
+            animation: "none",
+            highlightColor: "#ffe14a",
           })
         }
       >

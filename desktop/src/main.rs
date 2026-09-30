@@ -3,6 +3,7 @@ mod app_error;
 mod asset_library;
 mod assistant;
 mod canvas_inputs;
+mod caption_animation;
 mod creation_commands;
 mod database;
 mod ges_engine;
@@ -18,6 +19,10 @@ mod model_adapters;
 mod models;
 mod native_preview;
 mod preview_prepare;
+mod preview_process;
+mod preview_protocol;
+mod preview_session;
+mod preview_worker;
 mod project_storage;
 mod projects;
 mod reference_commands;
@@ -30,6 +35,13 @@ fn finish_exit(app: tauri::AppHandle) {
 }
 fn main() {
     ges_runtime::configure();
+    if std::env::args().nth(1).as_deref() == Some("--preview-worker") {
+        if let Err(error) = preview_worker::run() {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     tauri::Builder::default()
         .setup(|app| {
             let store = database::Store::open(app.path().app_data_dir()?)?;
@@ -66,6 +78,7 @@ fn main() {
             creation_commands::list_voices,
             creation_commands::generate_voice,
             creation_commands::store_caption_image,
+            caption_animation::store_caption_animation,
             creation_commands::save_subtitles,
             assistant::profiles::agent_catalog,
             assistant::profiles::save_agent,

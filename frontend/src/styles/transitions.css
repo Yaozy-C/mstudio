@@ -18,11 +18,7 @@
 .transition-editor {
   display: grid;
   gap: 12px;
-  max-height: min(720px, calc(100vh - 80px));
-  overflow-y: auto;
-}
-.transition-editor h3 {
-  margin: 0;
+  padding: 16px 0;
 }
 .transition-editor label {
   display: grid;
@@ -33,4 +29,87 @@
   color: var(--desk-muted);
   line-height: 1.6;
   margin: 0;
+}
+.transition-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.radix-themes .precision-panel .transition-cards button.transition-card,
+.radix-themes
+  .precision-panel
+  .transition-cards
+  button.transition-card:hover:not(:disabled) {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: var(--desk-bg);
+  text-align: left;
+  cursor: pointer;
+}
+.radix-themes
+  .precision-panel
+  .transition-cards
+  button.transition-card[aria-pressed="true"],
+.radix-themes
+  .precision-panel
+  .transition-cards
+  button.transition-card[aria-pressed="true"]:hover:not(:disabled) {
+  border-color: var(--desk-text);
+}
+.transition-card:focus-visible {
+  outline: 2px solid var(--desk-text);
+  outline-offset: 2px;
+}
+.transition-card video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+}
+.transition-card > span:first-of-type {
+  display: block;
+  padding: 8px;
+  font-size: 12px;
+}
+.transition-card-play {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  color: white;
+  font-size: 10px;
+  opacity: 0.8;
+}
+.preview-transport .preview-speed {
+  width: 68px;
+  flex: 0 0 68px;
+  font-size: 11px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  padding: 4px;
+  cursor: pointer;
+}
+.transition-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--desk-rule);
+}
+.radix-themes .preview-speed .studio-select-trigger {
+  height: 28px;
+  padding: 0 8px;
+  gap: 6px;
+  font-size: 12px;
+}
+.preview-transport .preview-speed {
+  border: 0;
+  padding: 0;
 }

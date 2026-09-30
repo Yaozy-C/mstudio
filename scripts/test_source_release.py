@@ -41,6 +41,13 @@ class SourceReleaseTests(unittest.TestCase):
         result = self.check_release()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_generated_transition_previews_require_pinned_manifest(self):
+        target = self.effects.with_name('transition-previews')
+        self.effects.rename(target)
+        self.assertEqual(self.check_release().returncode, 0)
+        (target / 'demo.mp4').write_bytes(b'changed')
+        self.assertNotEqual(self.check_release().returncode, 0)
+
     def test_unlisted_media_remains_blocked(self):
         (self.effects / 'unlisted.mp4').write_bytes(b'private footage')
         self.assertNotEqual(self.check_release().returncode, 0)

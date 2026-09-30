@@ -33,7 +33,9 @@ pub fn validate(spec: &RenderSpec, assets: &[Asset], edge: u32) -> Result<()> {
         ensure!(
             assets
                 .get(c.asset_id.as_str())
-                .is_some_and(|a| a.kind == "image" && !a.missing),
+                .is_some_and(|a| (a.kind == "image"
+                    || (a.kind == "video" && a.duration + 0.05 >= c.end - c.start))
+                    && !a.missing),
             "字幕画面尚未准备"
         );
         total = total.max(c.end);

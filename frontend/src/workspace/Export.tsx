@@ -6,7 +6,7 @@ import { X, Export as ExportIcon, CheckCircle } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import { formatTime } from "../model";
 import { endTime } from "../timeline/document";
-import { prepareCaptions } from "../creation/prepareCaptions";
+import { prepareProjectCaptions } from "../creation/prepareProjectCaptions";
 import { bridge, mediaUrl, native } from "../bridge";
 import { runtime } from "../plugins/runtime";
 export function ExportDialog({
@@ -37,16 +37,7 @@ export function ExportDialog({
     setError("");
     setProgress(0);
     try {
-      const captions = await prepareCaptions(
-        project.captions ?? [],
-        project.width,
-        project.height,
-        (data) =>
-          bridge<string>("store_caption_image", {
-            data,
-            projectId: project.id,
-          }),
-      );
+      const captions = await prepareProjectCaptions(project);
       const result = await runtime.execute<{ path: string }>("render_video", {
         projectId: project.id,
         spec: {

@@ -9,7 +9,7 @@ import type { WorkContext } from "../assistant/workContext";
 import { useProduction } from "../production/useProduction";
 import { useGeneratedJobs } from "./useGeneratedJobs";
 import { useStudioCreativeEvents } from "./useStudioCreativeEvents";
-import { useStudioPlayback } from "./useStudioPlayback";
+import { useStudioPlayback, useCreationTab } from "./useStudioPlayback";
 import { CreationPanel } from "../creation/CreationPanel";
 import { StudioNodeEditor } from "./StudioNodeEditor";
 import { useAttachments } from "../assistant/useAttachments";
@@ -63,7 +63,7 @@ export function Studio({ initial, onBack }: StudioProps) {
     else setPanels((p) => toggleStudioPanel(p, key));
   };
   const [editing, setEditing] = useState<string | null>(null);
-  const [creationTab, setCreationTab] = useState<string | null>(null);
+  const [creationTab, setCreationTab] = useCreationTab();
   const playback = useStudioPlayback(
     project,
     change,

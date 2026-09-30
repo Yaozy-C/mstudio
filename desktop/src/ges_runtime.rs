@@ -1,5 +1,12 @@
 //! Configure plugin discovery before Tauri starts any threads.
 pub fn configure() {
+    // The bundled compositor's ORC-generated alpha blend crashes in the
+    // hardened macOS arm64 app (blend_pads -> JIT code), despite passing in
+    // the test binary. Use ORC's C fallback before any GStreamer threads start.
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    unsafe {
+        std::env::set_var("ORC_CODE", "backup");
+    }
     let packaged = std::env::current_exe()
         .ok()
         .and_then(|p| p.parent()?.parent().map(|p| p.join("Resources/gstreamer")));

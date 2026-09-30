@@ -49,7 +49,22 @@ export type Track = {
   hidden?: boolean;
 };
 export type Caption = {
-  font?: "sans" | "serif" | "mono";
+  trackId?: string;
+  animation?:
+    "none" | "pop" | "typewriter" | "highlight" | "rise" | "shake" | "glow";
+  highlightColor?: string;
+  /** Word times in seconds relative to caption start; concatenated text includes spaces. */
+  words?: { text: string; start: number; end: number }[];
+  font?: "sans" | "serif" | "mono" | "hand";
+  fontWeight?: number;
+  strokeColor?: string;
+  strokeWidth?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffset?: number;
+  backgroundColor?: string;
+  backgroundOpacity?: number;
+  backgroundRadius?: number;
   color?: string;
   fontSize?: number;
   x?: number;
@@ -99,6 +114,7 @@ export type Project = {
   clips: Clip[];
   tracks: Track[];
   captions: Caption[];
+  captionTracks?: import("./timeline/captionTracks").CaptionLane[];
   creation?: Creation;
   width: number;
   height: number;

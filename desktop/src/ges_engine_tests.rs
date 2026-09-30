@@ -1,6 +1,7 @@
 use super::*;
 use mstudio::preview_ges::{Layer, Plan};
 use std::{process::Command, time::Instant};
+static PLAYER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
     let deadline = Instant::now() + Duration::from_secs(12);
     while Instant::now() < deadline {
@@ -15,6 +16,7 @@ fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
 }
 #[test]
 fn ges_composites_seeks_replays_and_closes() {
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
     let root = std::env::temp_dir().join(format!("mstudio-ges-test-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
     let red = root.join("red.mp4");
@@ -107,6 +109,28 @@ fn ges_composites_seeks_replays_and_closes() {
     let before = p.control("status", 0).unwrap().frame;
     std::thread::sleep(Duration::from_millis(120));
     assert_eq!(p.control("status", 0).unwrap().frame, before);
+    assert!(p.control("rate", 0).is_err());
+    assert!(p.control("rate", 9).is_err());
+    // A seek must retain the selected preview rate, including fractional rates.
+    for (step, minimum, maximum) in [(8, 18, 40), (1, 1, 8)] {
+        p.control("rate", step).unwrap();
+        p.control("seek", 0).unwrap();
+        p.control("play", 0).unwrap();
+        std::thread::sleep(Duration::from_millis(450));
+        let position = p.control("pause", 0).unwrap().frame;
+        assert!(
+            (minimum..=maximum).contains(&position),
+            "step {step}: frame {position}"
+        );
+    }
+    p.control("seek", 0).unwrap();
+    p.control("play", 0).unwrap();
+    let changed = p.control("rate", 6).unwrap();
+    assert!(changed.playing);
+    std::thread::sleep(Duration::from_millis(200));
+    let advanced = p.control("pause", 0).unwrap();
+    assert!(advanced.frame > changed.frame && advanced.frame < 30);
+    p.control("rate", 4).unwrap();
     for _ in 0..2 {
         p.control("seek", 0).unwrap();
         p.control("play", 0).unwrap();
@@ -140,5 +164,92 @@ fn ges_composites_seeks_replays_and_closes() {
     next.control("seek", 30).unwrap();
     wait_frame(&next, 30);
     drop(next);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn ges_seeks_transparent_animated_captions() {
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
+    let root = std::env::temp_dir().join(format!("mstudio-ges-caption-{}", mstudio::media::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    let mut frames = vec![];
+    for (i, x) in [20, 100].iter().enumerate() {
+        let path = root.join(format!("input-{i}.png"));
+        mstudio::media::run(Command::new(mstudio::media::binary("ffmpeg")).args(["-v","error","-y","-f","lavfi","-i", &format!("color=black@0:s=1080x1920,format=rgba,drawbox=x={x}:y=30:w=20:h=20:color=white:t=fill:replace=1"),"-frames:v","1"]).arg(&path)).unwrap();
+        frames.push((path, 0.5));
+    }
+    let video = root.join("caption.mov");
+    mstudio::caption_animation::encode(&frames, 30, 2., true, &root, &video).unwrap();
+    let red = root.join("red.png");
+    mstudio::media::run(
+        Command::new(mstudio::media::binary("ffmpeg"))
+            .args([
+                "-v",
+                "error",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=red:s=1080x1920",
+                "-frames:v",
+                "1",
+            ])
+            .arg(&red),
+    )
+    .unwrap();
+    let layer = |path: &std::path::Path, start, duration| Layer {
+        path: path.to_string_lossy().into(),
+        start,
+        duration,
+        trim: 0.,
+        x: 0,
+        y: 0,
+        width: 1080,
+        height: 1920,
+        opacity: 1.,
+    };
+    let player = Player::open(Plan {
+        width: 1080,
+        height: 1920,
+        fps: 30,
+        duration: 4.,
+        audio: None,
+        files: vec![],
+        layers: vec![layer(&red, 0., 4.), layer(&video, 1., 2.)],
+    })
+    .unwrap();
+    wait_frame(&player, 0);
+    for (target, x, white) in [
+        (38, 25, true),
+        (53, 105, true),
+        (68, 25, true),
+        (8, 25, false),
+        (98, 25, false),
+        (38, 25, true),
+    ] {
+        player.control("seek", target).unwrap();
+        let data = wait_frame(&player, target as u32);
+        let at = 16 + (40 * 1080 + x) * 4;
+        assert!(
+            data[16] > 220 && data[17] < 30,
+            "transparent layer blacked out the background"
+        );
+        assert_eq!(
+            data[at + 1] > 220,
+            white,
+            "caption state incorrect at {target}"
+        );
+    }
+    player.control("seek", 0).unwrap();
+    player.control("play", 0).unwrap();
+    let deadline = Instant::now() + Duration::from_secs(6);
+    while Instant::now() < deadline {
+        if player.control("status", 0).unwrap().frame >= 100 {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(30));
+    }
+    assert!(player.control("status", 0).unwrap().frame >= 100);
+    drop(player);
     std::fs::remove_dir_all(root).unwrap();
 }

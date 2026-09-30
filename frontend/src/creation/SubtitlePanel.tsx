@@ -1,3 +1,7 @@
+import { captionTracksOf, captionTrackId } from "../timeline/captionTracks";
+import { StudioSelect } from "../ui/StudioSelect";
+import { CaptionAnimationFields } from "./CaptionAnimationFields";
+import { useCaptionSelection } from "./captionSelection";
 import { ActionButton } from "../ui/ActionButton";
 import { InspectorControl } from "../timeline/InspectorControl";
 import {
@@ -8,6 +12,7 @@ import {
   Crosshair,
 } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
+import { CaptionPresets } from "./CaptionPresets";
 import { CaptionStyleFields } from "./CaptionStyleFields";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useRef, useState } from "react";
@@ -28,11 +33,26 @@ export function SubtitlePanel({
   const input = useRef<HTMLInputElement>(null),
     [error, setError] = useState("");
   const captions = project.captions ?? [];
+  const [selectedId, selectCaption] = useCaptionSelection(clock);
+  const c = captions.find((item) => item.id === selectedId);
+  const i = captions.findIndex((item) => item.id === selectedId);
   function patch(id: string, fields: Partial<Caption>) {
     change((p) => ({
       ...p,
       captions: (p.captions ?? []).map((c) =>
-        c.id === id ? { ...c, ...fields, assetId: undefined } : c,
+        c.id === id
+          ? {
+              ...c,
+              ...fields,
+              words:
+                fields.text !== undefined ||
+                fields.start !== undefined ||
+                fields.end !== undefined
+                  ? undefined
+                  : c.words,
+              assetId: undefined,
+            }
+          : c,
       ),
     }));
   }
@@ -43,13 +63,21 @@ export function SubtitlePanel({
           icon={Plus}
           onClick={() => {
             const start = clock.getSnapshot().time;
+            const id = uid();
             change((p) => ({
               ...p,
               captions: [
                 ...(p.captions ?? []),
-                { id: uid(), start, end: start + 3, text: t("新字幕") },
+                {
+                  id,
+                  trackId: c ? captionTrackId(p, c) : captionTracksOf(p)[0].id,
+                  start,
+                  end: start + 3,
+                  text: t("新字幕"),
+                },
               ],
             }));
+            selectCaption(id);
           }}
         >
           {t("添加字幕")}
@@ -91,8 +119,17 @@ export function SubtitlePanel({
               const added = parseSrt(text);
               change((p) => ({
                 ...p,
-                captions: [...(p.captions ?? []), ...added],
+                captions: [
+                  ...(p.captions ?? []),
+                  ...added.map((item) => ({
+                    ...item,
+                    trackId: c
+                      ? captionTrackId(p, c)
+                      : captionTracksOf(p)[0].id,
+                  })),
+                ],
               }));
+              selectCaption(added[0]?.id ?? null);
               setError("");
             })
             .catch((e) => setError(String(e)));
@@ -100,7 +137,12 @@ export function SubtitlePanel({
       />
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       {!captions.length && <p className="subtle">{t("暂无字幕")}</p>}
-      {captions.map((c, i) => (
+      {!!captions.length && !c && (
+        <p className="subtitle-selection-empty">
+          {t("请在时间线选中一条字幕，查看和调整它的设置。")}
+        </p>
+      )}
+      {c && (
         <article className="caption-editor" key={c.id}>
           <div className="inline">
             <button
@@ -125,6 +167,15 @@ export function SubtitlePanel({
               <Trash size={20} />
             </button>
           </div>
+          <StudioSelect
+            label={t("字幕轨道")}
+            value={captionTrackId(project, c)}
+            options={captionTracksOf(project).map((track) => ({
+              value: track.id,
+              label: track.name,
+            }))}
+            onValueChange={(trackId) => patch(c.id, { trackId })}
+          />
           <InspectorControl
             label={t("开始")}
             value={c.start}
@@ -150,6 +201,17 @@ export function SubtitlePanel({
             value={c.text}
             onChange={(e) => patch(c.id, { text: e.target.value })}
           />
+          <CaptionAnimationFields
+            width={project.width}
+            height={project.height}
+            caption={c}
+            patch={(fields) => patch(c.id, fields)}
+          />
+          <details className="caption-library">
+            <summary>{t("字幕模板")}</summary>
+            <p className="subtle">{t("仅应用到当前选中的字幕。")}</p>
+            <CaptionPresets caption={c} apply={(style) => patch(c.id, style)} />
+          </details>
           <details className="caption-appearance">
             <summary>{t("字幕样式")}</summary>
             <CaptionStyleFields
@@ -165,7 +227,7 @@ export function SubtitlePanel({
             </small>
           )}
         </article>
-      ))}
+      )}
     </div>
   );
 }
