@@ -1,10 +1,12 @@
+import { CaptionTrackHeadings } from "./CaptionTrackHeading";
+import { useTimelineCaptionSelection } from "../creation/captionSelection";
 import { t as translate, useLanguage } from "../i18n";
 import { TransitionSeams } from "./TransitionSeams";
-import { CaptionTrack } from "./CaptionTrack";
+import { CaptionTrackRows } from "./CaptionTrackRows";
 import { trackRows } from "./trackRows";
 import { TrackHeading } from "./TrackHeading";
 import { TimelineToolbar } from "./TimelineToolbar";
-import { memo, useMemo, useRef, useEffect, useState } from "react";
+import { memo, useMemo, useRef, useEffect } from "react";
 import { type Project } from "../model";
 import { type PlaybackClock } from "./clock";
 import { ticks, frameTime } from "./geometry";
@@ -43,7 +45,11 @@ export const Timeline = memo(function Timeline({
   useLanguage();
   const { ref, labels, zoom, viewport, changeZoom, onScroll } =
     useTimelineViewport(clock);
-  const [captionId, setCaptionId] = useState<string | null>(null);
+  const [captionId, setCaptionId] = useTimelineCaptionSelection(
+    clock,
+    selected,
+    onSelect,
+  );
   const selectedCaption =
     !selected && project.captions.some((c) => c.id === captionId)
       ? captionId
@@ -59,9 +65,6 @@ export const Timeline = memo(function Timeline({
     }));
     setCaptionId(null);
   };
-  useEffect(() => {
-    if (selected) setCaptionId(null);
-  }, [selected]);
   const seekFrame = useRef(0);
   useEffect(() => () => cancelAnimationFrame(seekFrame.current), []);
   const index = useMemo(() => intervals(project.clips), [project.clips]);
@@ -159,7 +162,7 @@ export const Timeline = memo(function Timeline({
                 }}
               />
             ))}
-            <div className="caption-heading">{translate("字幕")}</div>
+            <CaptionTrackHeadings project={project} change={onChange} />
           </div>
         </div>
         <div
@@ -277,7 +280,7 @@ export const Timeline = memo(function Timeline({
                 )}
               </div>
             ))}
-            <CaptionTrack
+            <CaptionTrackRows
               selected={selectedCaption}
               onSelect={(id) => {
                 onSelect(null);

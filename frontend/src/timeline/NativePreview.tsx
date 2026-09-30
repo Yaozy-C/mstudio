@@ -1,22 +1,20 @@
+import { PlaybackSpeed } from "./PlaybackSpeed";
 import { t, useLanguage } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, SkipBack, ArrowClockwise } from "@phosphor-icons/react";
 import { bridge } from "../bridge";
 import type { Project } from "../model";
 import type { PlaybackClock } from "./clock";
-import { prepareCaptions } from "../creation/prepareCaptions";
+import { prepareProjectCaptions } from "../creation/prepareProjectCaptions";
 import { ClockReadout } from "./ClockReadout";
 import { previewSpec } from "./previewSpec";
 import { startPreviewFrames } from "./previewFrames";
-import { PreviewCommands } from "./previewCommands";
+import {
+  NativePreviewController,
+  type PreviewStatus,
+} from "./nativePreviewController";
 import { ActionButton } from "../ui/ActionButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
-type Status = {
-  frame: number;
-  playing: boolean;
-  total: number;
-};
-const captionCache = new Map<string, string>();
 export function NativePreview({
   project,
   clock,
@@ -51,115 +49,53 @@ export function NativePreview({
   useEffect(() => {
     const token = crypto.randomUUID();
     const doc = JSON.parse(spec);
-    let alive = true,
-      opened = false,
-      polling = false;
-    let timer: ReturnType<typeof setInterval> | undefined;
     let stopFrames: (() => void) | undefined;
-
-    const fail = (e: unknown) => {
-      if (alive) {
-        setError(String(e));
-        clock.acceptTransportState(clock.getSnapshot().time, false);
-      }
-    };
-    const commands = new PreviewCommands(async ({ action, frame }) => {
-      if (alive && opened)
-        await bridge<void>("native_preview_control", { token, action, frame });
-    }, fail);
-    const command = commands.push;
-    const detach = clock.attachTransport({
-      play: () => command("play"),
-      pause: () => command("pause"),
-      seek: (t) => command("seek", Math.round(t * doc.fps)),
-    });
-    clock.ready = false;
     setReady(false);
     setError("");
-    const load = async () => {
-      if (!doc.clips.length && !doc.captions.length) return;
-      doc.captions = await prepareCaptions(
-        doc.captions,
-        doc.width,
-        doc.height,
-        async (data) => {
-          const key = `${project.id}:${data}`;
-          if (captionCache.has(key)) return captionCache.get(key)!;
-          const id = await bridge<string>("store_caption_image", {
-            data,
+    const controller = new NativePreviewController(
+      clock,
+      doc.fps,
+      {
+        open: async () => {
+          doc.captions = await prepareProjectCaptions(
+            { ...doc, id: project.id },
+            () => controller.phase === "closed",
+          );
+          if (controller.phase === "closed") return;
+          await bridge("native_preview_open", {
+            token,
             projectId: project.id,
+            spec: doc,
+            edge: 0,
           });
-          captionCache.set(key, id);
-          return id;
         },
-      );
-      if (!alive) return;
-      await bridge("native_preview_open", {
-        token,
-        projectId: project.id,
-        spec: doc,
-        edge: 0,
-      });
-      if (!alive) {
-        await bridge("native_preview_control", { token, action: "close" });
-        return;
-      }
-      opened = true;
-      command("seek", Math.round(clock.getSnapshot().time * doc.fps));
+        control: (command) =>
+          bridge<PreviewStatus>("native_preview_control", { token, command }),
+        status: () => bridge<PreviewStatus>("native_preview_status", { token }),
+      },
+      (phase, error) => {
+        if (phase === "ready") setReady(true);
+        if (phase === "error") {
+          setError(String(error));
+          stopFrames?.();
+        }
+      },
+    );
+    if (doc.clips.length || doc.captions.length) {
       if (canvas.current)
         stopFrames = startPreviewFrames(
           canvas.current,
           (last) =>
             bridge<ArrayBuffer>("native_preview_frame", { token, last }),
-          fail,
-          (position) => {
-            const state = clock.getSnapshot();
-            const target = Math.max(
-              0,
-              Math.min(
-                Math.ceil(clock.total * doc.fps) - 1,
-                Math.round(state.time * doc.fps),
-              ),
-            );
-            return !commands.busy && (state.playing || position === target);
-          },
-          () => {
-            clock.ready = true;
-            setReady(true);
-          },
+          controller.fail,
+          controller.acceptFrame,
+          controller.presented,
         );
-      timer = setInterval(async () => {
-        if (polling || !alive || commands.busy) return;
-        const revision = commands.revision;
-        polling = true;
-        try {
-          const s = await bridge<Status>("native_preview_status", { token });
-          if (alive && revision === commands.revision && !commands.busy) {
-            clock.acceptTransportState(
-              !s.playing && s.frame >= s.total - 1
-                ? clock.total
-                : s.frame / doc.fps,
-              s.playing,
-            );
-          }
-        } catch (e) {
-          fail(e);
-        } finally {
-          polling = false;
-        }
-      }, 50);
-    };
-    void load().catch(fail);
+      void controller.start();
+    }
     return () => {
-      alive = false;
-      commands.clear();
-      clock.ready = true;
-      detach();
-      clearInterval(timer);
       stopFrames?.();
-      void bridge("native_preview_control", { token, action: "close" }).catch(
-        () => {},
-      );
+      controller.dispose();
     };
   }, [spec, project.id, clock, retry]);
   return (
@@ -183,7 +119,7 @@ export function NativePreview({
       </div>
       {error && (
         <>
-          <ErrorNotice error={error} fallback="OPERATION_FAILED" />
+          <ErrorNotice error={error} fallback="PREVIEW_FAILED" />
           <ActionButton
             icon={ArrowClockwise}
             onClick={() => setRetry((n) => n + 1)}
@@ -211,6 +147,7 @@ export function NativePreview({
           {playing ? <Pause weight="fill" /> : <Play weight="fill" />}
         </button>
         <ClockReadout clock={clock} />
+        <PlaybackSpeed clock={clock} />
       </div>
     </div>
   );

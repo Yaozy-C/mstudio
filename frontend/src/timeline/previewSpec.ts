@@ -1,3 +1,4 @@
+import { orderedCaptions } from "./captionTracks";
 import type { Project } from "../model";
 
 /** UI labels and canvas associations do not change rendered media. */
@@ -13,6 +14,6 @@ export function previewSpec(project: Project): string {
         name: "",
       }),
     ),
-    captions: project.captions ?? [],
+    captions: orderedCaptions(project),
   });
 }

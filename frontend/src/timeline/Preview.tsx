@@ -1,3 +1,5 @@
+import { orderedCaptions } from "./captionTracks";
+import { PlaybackSpeed } from "./PlaybackSpeed";
 import { useColorComparison } from "./useColorComparison";
 import { NativePreview } from "./NativePreview";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -10,7 +12,7 @@ import { tracksOf } from "./document";
 import { MediaLayer } from "./MediaLayer";
 import { PlaybackDiagnostics } from "./PlaybackDiagnostics";
 import { ClockReadout } from "./ClockReadout";
-import { captionImage } from "../creation/captions";
+import { AnimatedCaption } from "./AnimatedCaption";
 import { useFrameSize } from "./useFrameSize";
 import { native } from "../bridge";
 export function Preview(props: { project: Project; clock: PlaybackClock }) {
@@ -147,14 +149,16 @@ const BrowserPreview = memo(function BrowserPreview({
               />
             ) : null;
           })}
-          {(project.captions ?? [])
+          {orderedCaptions(project)
             .filter((c) => view.captions.includes(c.id))
             .map((c) => (
-              <img
+              <AnimatedCaption
                 key={c.id}
-                className="caption-overlay"
-                src={captionImage(c, project.width, project.height)}
-                alt={c.text}
+                caption={c}
+                width={project.width}
+                height={project.height}
+                fps={project.fps}
+                clock={clock}
               />
             ))}
           {!project.clips.length && (
@@ -194,6 +198,7 @@ const BrowserPreview = memo(function BrowserPreview({
           {view.playing ? <Pause weight="fill" /> : <Play weight="fill" />}
         </button>
         <ClockReadout clock={clock} />
+        <PlaybackSpeed clock={clock} />
       </div>
     </div>
   );

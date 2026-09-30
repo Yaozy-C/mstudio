@@ -24,29 +24,29 @@ patterns = [
 ]
 # Shipped effect previews are application resources, not user production media.
 # Only manifest-listed MP4s with pinned content and a bounded size qualify.
-effect_root = root / 'frontend/public/effects'
-manifest = effect_root / 'sources.json'
 effect_previews = {}
 errors = []
-if manifest.exists():
-    for entry in json.loads(manifest.read_text()):
-        filename = entry.get('file', '')
-        if not re.fullmatch(r'[a-z0-9-]+\.mp4', filename):
-            errors.append('Effect preview manifest: invalid filename')
-            continue
-        name = f'frontend/public/effects/{filename}'
-        path = root / name
-        expected_size = entry.get('bytes', 0)
-        if (name in effect_previews or not path.is_file() or path.is_symlink()
-            or not isinstance(expected_size, int) or not 0 < expected_size <= 3 * 1024 * 1024
-            or not entry.get('sourcePage') or not entry.get('sourceVideo') or not entry.get('usage')):
-            errors.append(f'{name}: invalid effect preview manifest entry')
-            continue
-        data = path.read_bytes()
-        if len(data) != expected_size or hashlib.sha256(data).hexdigest() != entry.get('sha256'):
-            errors.append(f'{name}: effect preview content differs from manifest')
-            continue
-        effect_previews[name] = expected_size
+for preview_root in ['frontend/public/effects', 'frontend/public/transition-previews']:
+    manifest = root / preview_root / 'sources.json'
+    if manifest.exists():
+        for entry in json.loads(manifest.read_text()):
+            filename = entry.get('file', '')
+            if not re.fullmatch(r'[a-z0-9-]+\.mp4', filename):
+                errors.append('Effect preview manifest: invalid filename')
+                continue
+            name = f'{preview_root}/{filename}'
+            path = root / name
+            expected_size = entry.get('bytes', 0)
+            if (name in effect_previews or not path.is_file() or path.is_symlink()
+                or not isinstance(expected_size, int) or not 0 < expected_size <= 3 * 1024 * 1024
+                or not entry.get('sourcePage') or not entry.get('sourceVideo') or not entry.get('usage')):
+                errors.append(f'{name}: invalid effect preview manifest entry')
+                continue
+            data = path.read_bytes()
+            if len(data) != expected_size or hashlib.sha256(data).hexdigest() != entry.get('sha256'):
+                errors.append(f'{name}: effect preview content differs from manifest')
+                continue
+            effect_previews[name] = expected_size
 size = 0
 for name in files:
     path = root / name

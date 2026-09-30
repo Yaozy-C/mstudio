@@ -1,3 +1,4 @@
+import { captionPresets, captionKey } from "./captionStyle";
 import { expect, test } from "bun:test";
 import { validCaption, captionImage } from "./captions";
 import { prepareCaptions } from "./prepareCaptions";
@@ -29,6 +30,12 @@ test("caption styles validate and same text with different styles gets distinct 
     textAlign: "",
     textBaseline: "",
     measureText: () => ({ width: 20 }),
+    translate: () => {},
+    scale: () => {},
+    beginPath: () => {},
+    roundRect: (...args: unknown[]) => calls.push(["roundRect", ...args]),
+    fill: () => calls.push(["fill"]),
+    strokeText: (...args: unknown[]) => calls.push(["stroke", ...args]),
     fillRect: (...args: unknown[]) => calls.push(["rect", ...args]),
     fillText: (text: string, x: number, y: number) =>
       calls.push([text, x, y, ctx.font, ctx.fillStyle]),
@@ -53,6 +60,13 @@ test("caption styles validate and same text with different styles gets distinct 
     expect(
       captionImage({ ...c, id: "same", start: 2, end: 3 }, 1000, 1000),
     ).toBe(image);
+    captionImage(
+      { ...c, strokeWidth: 0.08, backgroundRadius: 0.3 },
+      1000,
+      1000,
+    );
+    expect(calls.some((call) => call[0] === "roundRect")).toBe(true);
+    expect(calls.some((call) => call[0] === "stroke")).toBe(true);
     const stored: string[] = [];
     const result = await prepareCaptions(
       [c, { ...c, id: "b", color: "#00ff00" }, { ...c, id: "c" }],
@@ -69,7 +83,48 @@ test("caption styles validate and same text with different styles gets distinct 
       "asset-2",
       "asset-1",
     ]);
+    let animationStored = false;
+    const animated = await prepareCaptions(
+      [{ ...c, animation: "pop" }],
+      1000,
+      1000,
+      async () => {
+        throw new Error("Animation cannot use a static asset");
+      },
+      {
+        fps: 30,
+        store: async (frames, duration, loop) => {
+          animationStored = true;
+          expect(frames.length).toBeGreaterThan(10);
+          expect(duration).toBe(1);
+          expect(loop).toBe(false);
+          return "animated-video";
+        },
+      },
+    );
+    expect(animationStored).toBe(true);
+    expect(animated[0].assetId).toBe("animated-video");
   } finally {
     globalThis.document = old;
   }
+});
+
+test("all presets validate and visual changes invalidate raster cache without timing changes", () => {
+  const c: Caption = { id: "sample", start: 0, end: 2, text: "中文字幕" };
+  for (const preset of captionPresets)
+    expect(validCaption({ ...c, ...preset.style })).toBe(true);
+  for (const fields of [
+    { strokeWidth: 0.07 },
+    { shadowBlur: 0.3 },
+    { shadowOffset: 0.1 },
+    { backgroundRadius: 0.5 },
+    { backgroundColor: "#ff0000" },
+    { fontWeight: 900 },
+  ]) {
+    expect(captionKey({ ...c, ...fields })).not.toBe(captionKey(c));
+  }
+  expect(captionKey({ ...c, start: 10, end: 12 })).toBe(captionKey(c));
+  expect(validCaption({ ...c, strokeWidth: NaN })).toBe(false);
+  expect(validCaption({ ...c, shadowColor: "red" })).toBe(false);
+  expect(validCaption({ ...c, backgroundOpacity: 2 })).toBe(false);
 });

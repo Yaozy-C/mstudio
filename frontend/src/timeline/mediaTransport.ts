@@ -18,8 +18,9 @@ export function bindVideo(
     positioned = false,
     requested = false,
     revision = -1,
-    correctedAt = 0;
-  el.playbackRate = entry.clip.speed;
+    correctedAt = 0,
+    playbackRate = clock.getRate();
+  el.playbackRate = entry.clip.speed * clock.getRate();
   el.volume = entry.clip.volume;
   const position = () => {
     if (el.readyState < 1) return;
@@ -38,6 +39,10 @@ export function bindVideo(
     if (disposed) return;
     if (!positioned || revision !== clock.seekRevision) position();
     const state = clock.getSnapshot();
+    if (playbackRate !== clock.getRate()) {
+      playbackRate = clock.getRate();
+      el.playbackRate = entry.clip.speed * playbackRate;
+    }
     if (master && state.playing && (!positioned || el.readyState < 2))
       clock.setBuffering(true);
     const local = Math.max(0, state.time - entry.start);
@@ -61,13 +66,13 @@ export function bindVideo(
         entry.clip.trimIn + local * entry.clip.speed - el.currentTime;
       if (Math.abs(drift) > 0.5) {
         position();
-        el.playbackRate = entry.clip.speed;
+        el.playbackRate = entry.clip.speed * clock.getRate();
       } else {
         const correction =
           Math.abs(drift) < 0.04
             ? 1
             : 1 + Math.max(-0.08, Math.min(0.08, drift * 0.5));
-        const rate = entry.clip.speed * correction;
+        const rate = entry.clip.speed * clock.getRate() * correction;
         if (Math.abs(el.playbackRate - rate) > 0.001) el.playbackRate = rate;
       }
     }
@@ -87,8 +92,8 @@ export function bindVideo(
     } else {
       requested = false;
       if (!el.paused) el.pause();
-      if (el.playbackRate !== entry.clip.speed)
-        el.playbackRate = entry.clip.speed;
+      if (el.playbackRate !== entry.clip.speed * clock.getRate())
+        el.playbackRate = entry.clip.speed * clock.getRate();
     }
   };
   const source = () => {

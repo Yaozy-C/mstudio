@@ -75,7 +75,9 @@ pub fn render(
         ensure!(
             assets
                 .get(c.asset_id.as_str())
-                .is_some_and(|a| a.kind == "image"),
+                .is_some_and(|a| (a.kind == "image"
+                    || (a.kind == "video" && a.duration + 0.05 >= c.end - c.start))
+                    && !a.missing),
             "字幕画面尚未准备"
         );
         total = total.max(c.end);
@@ -134,23 +136,19 @@ pub fn render(
     }
     for (j, c) in spec.captions.iter().enumerate() {
         let i = spec.clips.len() + j;
-        cmd.args([
-            "-threads",
-            "1",
-            "-loop",
-            "1",
-            "-framerate",
-            &spec.fps.to_string(),
-            "-i",
-            &assets[c.asset_id.as_str()].path,
-        ]);
+        let asset = &assets[c.asset_id.as_str()];
+        cmd.args(["-threads", "1"]);
+        if asset.kind == "image" {
+            cmd.args(["-loop", "1", "-framerate", &spec.fps.to_string()]);
+        }
+        cmd.arg("-i").arg(&asset.path);
         graph.push(format!(
-            "[{i}:v]scale={}:{},format=rgba[caption{j}]",
-            spec.width, spec.height
+            "[{i}:v]scale={}:{},format=rgba,setpts=PTS-STARTPTS+{}/TB[caption{j}]",
+            spec.width, spec.height, c.start
         ));
         let next = format!("sub{j}");
         graph.push(format!(
-            "[{current}][caption{j}]overlay=enable='gte(t,{})*lt(t,{})':shortest=0[{next}]",
+            "[{current}][caption{j}]overlay=enable='gte(t,{})*lt(t,{})':eof_action=pass:repeatlast=0[{next}]",
             c.start, c.end
         ));
         current = next;

@@ -141,3 +141,9 @@
   width: 20px;
   height: 20px;
 }
+.subtitle-selection-empty {
+  margin: 24px 0;
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}

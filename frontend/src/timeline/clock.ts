@@ -4,6 +4,24 @@ export class PlaybackClock {
   private listeners = new Set<() => void>();
   private frame = 0;
   private previous = 0;
+  private rate = 1;
+  getRate = () => this.rate;
+  setRate = (rate: number) => {
+    if (
+      !Number.isFinite(rate) ||
+      rate < 0.25 ||
+      rate > 2 ||
+      !Number.isInteger(rate * 4)
+    )
+      throw new Error(
+        "Playback rate must be a quarter step between 0.25 and 2",
+      );
+    if (this.rate === rate) return;
+    this.rate = rate;
+    this.previous = performance.now();
+    this.transport?.rate?.(rate);
+    this.listeners.forEach((fn) => fn());
+  };
   seekRevision = 0;
   ready = true;
   buffering = false;
@@ -17,6 +35,7 @@ export class PlaybackClock {
     play: () => void;
     pause: () => void;
     seek: (time: number) => void;
+    rate?: (rate: number) => void;
   } | null = null;
   attachTransport(transport: NonNullable<PlaybackClock["transport"]>) {
     this.pause();
@@ -93,7 +112,8 @@ export class PlaybackClock {
       this.total,
       this.source
         ? this.source()
-        : this.state.time + Math.max(0, (now - this.previous) / 1000),
+        : this.state.time +
+            Math.max(0, (now - this.previous) / 1000) * this.rate,
     );
     this.previous = now;
     this.publish(time, time < this.total);

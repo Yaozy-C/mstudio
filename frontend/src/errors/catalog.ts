@@ -50,6 +50,7 @@ export const errorCatalog = {
   CHAT_STOPPED: ["已停止回答", "已完成的修改已保留；需要继续时可以重试。"],
   CHAT_FAILED: ["回答未完成", "原消息和附件已保留，可以重试。"],
   STORAGE_FAILED: ["存储操作未完成", "检查存储设备、空间与目录权限后重试。"],
+  PREVIEW_FAILED: ["预览播放已中断", "点击重新加载预览，恢复播放器。"],
   OPERATION_FAILED: ["操作未完成", "请查看错误详情，处理后再重试。"],
 } as const;
 export type ErrorCode = keyof typeof errorCatalog;
@@ -150,6 +151,7 @@ export function normalizeError(
   } catch {
     /* Legacy project errors are display-only; never infer job outcomes. */
   }
+  if (fallback === "PREVIEW_FAILED") return issue(fallback, raw);
   const http = /(?:HTTP\s*|status(?: code)?[:= ]+)(\d{3})/i.exec(raw)?.[1];
   const codes: Record<string, ErrorCode> = {
     "400": "INVALID_INPUT",

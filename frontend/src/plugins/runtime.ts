@@ -37,7 +37,11 @@ export const definitions = [
     id: "export",
     name: "本地成片",
     description: "FFmpeg 裁切、变速、混音与 MP4 导出",
-    commands: ["render_video", "store_caption_image"],
+    commands: [
+      "render_video",
+      "store_caption_image",
+      "store_caption_animation",
+    ],
   },
 ];
 export class Runtime {

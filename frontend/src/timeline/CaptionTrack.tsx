@@ -1,3 +1,4 @@
+import { captionTrackId } from "./captionTracks";
 import { t, useLanguage } from "../i18n";
 import { Check, Subtitles } from "@phosphor-icons/react";
 import { useRef } from "react";
@@ -22,6 +23,7 @@ export function moveCaption(
   return { ...c, start, end: start + c.end - c.start };
 }
 export function CaptionTrack({
+  trackId,
   selected,
   onSelect,
   project,
@@ -31,6 +33,7 @@ export function CaptionTrack({
   onChange,
   onCaption,
 }: {
+  trackId: string;
   selected?: string | null;
   onSelect?: (id: string | null) => void;
   project: Project;
@@ -49,13 +52,15 @@ export function CaptionTrack({
     );
     clock.pause();
     requestAnimationFrame(() => clock.seek(start));
+    const id = uid();
     onChange((p) => ({
       ...p,
       captions: [
         ...(p.captions ?? []),
-        { id: uid(), start, end: start + 3, text: t("新字幕") },
+        { id, trackId, start, end: start + 3, text: t("新字幕") },
       ],
     }));
+    onSelect?.(id);
     onCaption?.();
   };
   return (
@@ -75,7 +80,9 @@ export function CaptionTrack({
           if (e.target === e.currentTarget) add();
         }}
       >
-        {!project.captions?.length && (
+        {!project.captions.some(
+          (c) => captionTrackId(project, c) === trackId,
+        ) && (
           <span className="track-empty" style={{ pointerEvents: "none" }}>
             {t("双击添加字幕 · 右键更多操作")}
           </span>
@@ -83,6 +90,7 @@ export function CaptionTrack({
         {(project.captions ?? [])
           .filter(
             (c) =>
+              captionTrackId(project, c) === trackId &&
               c.end * zoom >= viewport.left &&
               c.start * zoom <= viewport.left + viewport.width,
           )
@@ -130,7 +138,18 @@ function CaptionChip({
   const patch = (next: Caption) =>
     change((p) => ({
       ...p,
-      captions: p.captions.map((v) => (v.id === c.id ? next : v)),
+      captions: p.captions.map((v) =>
+        v.id === c.id
+          ? {
+              ...next,
+              words:
+                next.end - next.start === c.end - c.start
+                  ? next.words
+                  : undefined,
+              assetId: undefined,
+            }
+          : v,
+      ),
     }));
   return (
     <ObjectMenu

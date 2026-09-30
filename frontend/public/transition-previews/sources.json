@@ -1,0 +1,114 @@
+[
+  {
+    "file": "circleclose.mp4",
+    "bytes": 9465,
+    "sha256": "a917ebcd57af07b243c7c16ae5a479eda7d9f46d9b19c3ccbcf3774d68d5ade6",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "circleopen.mp4",
+    "bytes": 9495,
+    "sha256": "cddb97905c857ca3c72485bc2ba5d22af4d022158c462135b2cb822c2b0695dd",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "custom.mp4",
+    "bytes": 10806,
+    "sha256": "7c6693c883156e9d056dd017e120c99b956baf36436db9de2c7478cc42092c49",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "dissolve.mp4",
+    "bytes": 166096,
+    "sha256": "7f1cbfdbe7b8921f7085b95db285efcecb7c88200c3f05d725494065915f7c61",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "fade.mp4",
+    "bytes": 8841,
+    "sha256": "4544fbc9bc278d88500fd5485e790e1477c915d9a107ca649497fa6d27b382e9",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "fadeblack.mp4",
+    "bytes": 6565,
+    "sha256": "ebb10c579551ca01086f48769f4bf36067ca9462e5c4a89c251b19743df98f3f",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "fadewhite.mp4",
+    "bytes": 6539,
+    "sha256": "202d21408118e1eefcedac30d1e2c4d350d65be17317b3ee73fa4d4b53d57820",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "none.mp4",
+    "bytes": 4312,
+    "sha256": "63c6a87eb47b733e90e9c72d20115856d3b0747a8c4bdf98131b62242e6b2c3c",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "slideleft.mp4",
+    "bytes": 5901,
+    "sha256": "783101dc082bbd6d8384db937582ed667551f0e5b7bc253200398259f0d223d8",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "slideright.mp4",
+    "bytes": 6780,
+    "sha256": "64631e1b66a94ad57633aa7e6bedd5309114e34ff76f21997781f33ec78ee4bd",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "smoothleft.mp4",
+    "bytes": 9731,
+    "sha256": "852813fe325240c446ef2483455bd215197dc52ea072f40ca8b6cc26d9444914",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "smoothright.mp4",
+    "bytes": 9762,
+    "sha256": "b0994d446d1589a950bfb5189ca440a23268fcdd28ba2b3fc6289b5ce4657765",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "wipeleft.mp4",
+    "bytes": 5814,
+    "sha256": "ea9fee88ba314c904c7714326fb4bdac371cbbf5e6e59660ef422933d0dd7c46",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  },
+  {
+    "file": "wiperight.mp4",
+    "bytes": 5919,
+    "sha256": "d245f8d3f45b09d033e556f817cecd26f05fb6f6e11dec8afbec543448b057e9",
+    "sourcePage": "scripts/generate-transition-previews.py",
+    "sourceVideo": "Original procedural geometry rendered by Mstudio",
+    "usage": "Original application preview, distributed under the repository MIT license"
+  }
+]

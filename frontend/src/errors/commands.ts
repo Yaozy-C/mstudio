@@ -1,5 +1,9 @@
 import { errorText, type ErrorCode } from "./catalog";
 const commandCodes: Record<string, ErrorCode> = {
+  native_preview_open: "PREVIEW_FAILED",
+  native_preview_control: "PREVIEW_FAILED",
+  native_preview_status: "PREVIEW_FAILED",
+  native_preview_frame: "PREVIEW_FAILED",
   submit_job: "SUBMISSION_UNKNOWN",
   refresh_job: "JOB_SYNC_FAILED",
   list_jobs: "JOB_SYNC_FAILED",

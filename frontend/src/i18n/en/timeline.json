@@ -1,4 +1,5 @@
 {
+  "添加字幕轨道": "Add caption track",
   "自定义调色": "Custom grading",
   "重置调色方案": "Reset grade",
   "颜色混合": "Color mixer",
@@ -213,5 +214,10 @@
   "片段过短，无法按 0.1 秒设置目标时长": "This clip is too short for a target duration in 0.1-second increments",
   "重新加载预览": "Reload preview",
   "后一段画面从圆心向外扩大，直到铺满画面。": "The incoming clip expands from the center to fill the frame.",
-  "前一段画面在圆内缩小，露出后一段画面。": "The outgoing clip shrinks inside a circle to reveal the incoming clip."
+  "前一段画面在圆内缩小，露出后一段画面。": "The outgoing clip shrinks inside a circle to reveal the incoming clip.",
+  "请选择两个相邻片段之间的转场。": "Select a transition between two adjacent clips.",
+  "点击卡片应用转场，悬停查看动态效果。": "Hover to preview. Click to apply a transition.",
+  "播放倍速": "Playback speed",
+  "仅影响预览，不改变成片速度": "Preview only; export speed stays unchanged",
+  "自定义卡片展示组合示例，调整参数后请在时间线预览。": "This card shows a custom example. Preview your adjusted settings on the timeline."
 }

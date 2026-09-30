@@ -1,3 +1,4 @@
+export { useCreationTab } from "../timeline/transitionDock";
 import { useEffect, useState } from "react";
 import { PlaybackClock } from "../timeline/clock";
 import { appendAsset, endTime } from "../timeline/document";

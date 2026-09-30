@@ -138,3 +138,9 @@ GST_PLUGIN_SYSTEM_PATH_1_0="$PWD/desktop/native/ges-dev-plugins" GST_PLUGIN_PATH
 ```
 
 GES 集成测试使用合成素材，验证透明字幕、准确定位、暂停、两轮播放和销毁重开；准备测试检查变速时长、灰度像素、缓存复用与源文件不变。`examples/ges_plan.rs` 和 `desktop/examples/ges_play.rs` 可验证只读工程快照，快照不应提交。播放器计数不等于屏幕 vsync 或精确音画同步测量。
+
+## 播放器隔离回归
+
+打包后运行 `python3 scripts/test-preview-worker.py`，验证实际安装包子进程的音频管线、全部八个倍速档位、定位、播放中切换速度及关闭。`preview_process_tests` 使用受控子进程模拟退出、挂起和初始化中关闭；前端 `nativePreviewController.test.ts` 验证旧状态回包、加载期间最新意图与旧会话失效。实际应用验收还应确认预览子进程被终止后主窗口仍可操作，且“重新加载预览”能恢复播放。
+
+完整检查为 GES 测试进程设置 `ORC_CODE=backup`，与应用的 macOS arm64 回退路径保持一致；Rust 测试入口不会执行桌面 `main()` 的运行时配置。
