@@ -1,3 +1,5 @@
+import { ShotReferences } from "./ShotReferences";
+import { editReferences } from "./editReferences";
 import "./shot-editor.css";
 import { ActionButton } from "../ui/ActionButton";
 import { ZoomableImage } from "../workspace/ZoomableImage";
@@ -30,11 +32,19 @@ export function CanvasPreview({
   const node = project.nodes.find((n) => n.id === item.nodeId);
   const [text, setText] = useState(node ? actionText(node) : item.text);
   const [dialogue, setDialogue] = useState(node?.shot?.dialogue ?? "");
+  const [initialReferences] = useState(node?.references ?? []);
+  const [references, setReferences] = useState(initialReferences);
+  const [error, setError] = useState("");
   const save = () =>
     change((p) =>
       node?.shot
         ? editShotText(
-            editShotText(p, node.id, "action", text),
+            editShotText(
+              editReferences(p, node.id, initialReferences, references),
+              node.id,
+              "action",
+              text,
+            ),
             node.id,
             "dialogue",
             dialogue,
@@ -87,8 +97,12 @@ export function CanvasPreview({
             className="shot-editor-form"
             onSubmit={(e) => {
               e.preventDefault();
-              save();
-              close();
+              try {
+                save();
+                close();
+              } catch (error) {
+                setError(String(error));
+              }
             }}
           >
             <div className="shot-editor-fields">
@@ -97,7 +111,7 @@ export function CanvasPreview({
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  rows={12}
+                  rows={6}
                 />
               </label>
               {node?.shot && (
@@ -110,7 +124,15 @@ export function CanvasPreview({
                   />
                 </label>
               )}
+              {node?.shot && (
+                <ShotReferences
+                  project={project}
+                  references={references}
+                  onChange={setReferences}
+                />
+              )}
             </div>
+            {error && <p role="alert">{error}</p>}
             <footer className="shot-editor-actions">
               <ActionButton icon={X} onClick={close}>
                 {t("取消")}

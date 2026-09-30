@@ -106,6 +106,17 @@ export function receiveProductionResult(
         ]),
       ],
     });
+  // Reference assets live in project media. Linking them to shots must not
+  // materialize a canvas node; users can still place them manually.
+  if (data.task.generationPurpose === "asset")
+    return {
+      ...p,
+      assets: p.assets.some((a) => a.id === asset.id)
+        ? p.assets.map((a) =>
+            a.id === asset.id ? { ...a, inLibrary: true } : a,
+          )
+        : [...p.assets, asset],
+    };
   const node = p.nodes.find((n) => n.id === data.task.ownerId && n.shot);
   if (
     node &&

@@ -9,5 +9,20 @@
   "写下脚本、镜头内容或想法…": "Write a script, shot description or idea…",
   "移除画布对象": "Remove canvas item",
   "移除画布对象，可撤销": "Remove canvas item (undoable)",
-  "将素材加入时间线": "Add media to timeline"
+  "将素材加入时间线": "Add media to timeline",
+  "镜头参考素材": "Shot references",
+  "尚未关联参考素材": "No reference assets linked",
+  "素材不可用": "Asset unavailable",
+  "引用用途": "Reference purpose",
+  "解除引用": "Unlink",
+  "添加参考素材": "Add reference asset",
+  "从项目素材添加参考": "Add a reference from project media",
+  "需要新元素时，先导入或生成素材，再添加到此镜头。解除引用不会删除素材。": "Import or generate new assets, then link them to this shot. Unlinking does not delete media.",
+  "完成选择": "Done",
+  "搜索参考素材": "Search reference assets",
+  "搜索项目素材…": "Search project media…",
+  "没有匹配的素材": "No matching assets",
+  "添加商品、人物或场景，让这个镜头保持一致。": "Add a product, character or scene to guide this shot.",
+  "例如：保持商品外观一致": "e.g. Keep the product consistent",
+  "仅关联到当前镜头 · 原素材保留在素材库": "Linked to this shot · Originals stay in your library"
 }

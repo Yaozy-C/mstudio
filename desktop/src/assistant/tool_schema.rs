@@ -33,6 +33,8 @@ pub fn schema() -> Value {
             .push(json!(name));
     }
     let properties = operation["properties"].as_object_mut().unwrap();
+    properties.insert("referenceMode".into(), json!({"type":"string","enum":["upsert","remove","replace"],"description":"set_references: prefer upsert to add or update by assetId while preserving unrelated references; remove unlinks assetIds without deleting media; replace explicitly replaces the entire list (legacy default). References do not create canvas cards."}));
+    properties.insert("assetIds".into(), json!({"type":"array","items":{"type":"string"},"description":"set_references with referenceMode=remove: asset IDs to unlink from this node only."}));
     properties.insert("name".into(), json!({"type":"string"}));
     properties.insert("description".into(), json!({"type":"string"}));
     properties.insert("sourceOffset".into(), json!({"type":"number","description":"slip_clip: signed source offset in seconds. Shift trimIn/trimOut together, preserving timeline position and duration. Insufficient source handles fail."}));

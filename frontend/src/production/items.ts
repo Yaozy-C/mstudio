@@ -44,27 +44,6 @@ export function productionItems(p: Project): ProductionItem[] {
       width: 460,
       height: 300,
     });
-    (n.references ?? []).forEach((ref, j) => {
-      const a = assets.get(ref.assetId);
-      if (!a) return;
-      items.push({
-        key: itemKey("reference", n.id, a.id),
-        kind:
-          a.kind === "video"
-            ? "video"
-            : a.kind === "image"
-              ? "reference"
-              : "note",
-        ownerId,
-        assetId: a.id,
-        title: a.name,
-        text: ref.purpose,
-        x: x + 1135,
-        y: 110 + j * 395,
-        width: 250,
-        height: 350,
-      });
-    });
     takesOf(n)
       .filter((t) => assets.get(t.assetId)?.kind === "video")
       .forEach((t, j) => {
