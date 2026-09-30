@@ -29,6 +29,7 @@ The full check suite needs the native GES dependencies and permission to listen 
 - Keep each maintained source, test, rule or configuration file at or below **300 lines**. Split by responsibility; do not add exemptions. Dependency lockfiles and third-party generated files are managed by their tools.
 - Keep lockfiles committed and update them when changing dependencies.
 - Do not commit compiled applications, native runtime bundles, credentials, databases, real chat logs, personal media, generated production media, design explorations or review screenshots. The curated public screenshots in `assets/screenshots/` use original demo content and are documentation assets.
+- Bundled effect preview videos are limited to `frontend/public/effects/sources.json`: each entry records its source, exact byte count and SHA-256. The release check allows only matching MP4s up to 3 MiB; other media restrictions remain in place. Source metadata does not establish redistribution rights.
 - Use synthetic data for tests. Keep error output free of credentials and private project content.
 - New interface text must use the existing localization system, with English and Simplified Chinese translations. Never translate user-authored content implicitly.
 

@@ -1,6 +1,6 @@
 import { requestCreativeTask } from "../creative/aiTasks";
-import { effectAgentTask } from "./effectAgentTask";
-import { TaskPanel } from "../production/TaskPanel";
+import { effectAgentTask, effectReference } from "./effectAgentTask";
+import { StudioTaskPanel } from "./StudioTaskPanel";
 import { useTaskNavigation } from "./useTaskNavigation";
 import { initialPanels, toggleStudioPanel } from "./studioPanels";
 import { useSidebarWidths } from "../ui/useSidebarWidths";
@@ -20,7 +20,7 @@ import { useMissingAssets } from "./useMissingAssets";
 import { useAgentTools } from "../assistant/useAgentTools";
 import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
-import { useEffect, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { StudioError } from "./StudioError";
 import { useCanvasInsertion } from "./useCanvasInsertion";
 import { StudioChrome } from "./StudioChrome";
@@ -31,7 +31,7 @@ import { StudioStage, type StudioView } from "./StudioStage";
 import { StudioMedia } from "./StudioMedia";
 import { StudioTimeline } from "./StudioTimeline";
 import { StudioInspector } from "./StudioInspector";
-import { StudioDialogs } from "./StudioDialogs";
+import { StudioDialogs, type StudioDialogKind } from "./StudioDialogs";
 type StudioProps = { initial: Project; onBack: () => void };
 export function Studio({ initial, onBack }: StudioProps) {
   const m = useProject(initial);
@@ -81,9 +81,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   const [error, setError] = useState("");
   useGeneratedJobs(project.id, m.get, change, m.flush, setError);
   const { busy, importMedia } = useImportMedia(initial.id, change, setError);
-  const [dialog, setDialog] = useState<
-    "settings" | "models" | "agents" | "export" | null
-  >(null);
+  const [dialog, setDialog] = useState<StudioDialogKind>(null);
   const canvas = useProduction(
     project,
     change,
@@ -138,10 +136,6 @@ export function Studio({ initial, onBack }: StudioProps) {
             clips: p.clips.filter((c) => c.id !== clipId),
           })),
   });
-  const settingsOpen = ["settings", "models", "agents"].includes(dialog ?? "");
-  useEffect(() => {
-    if (settingsOpen) clock.pause();
-  }, [settingsOpen, clock]);
   const sidebarWidths = useSidebarWidths({
     ...panels,
     agent: panels.agent || inspectorOpen || !!creationTab,
@@ -150,7 +144,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   return (
     <>
       <div
-        hidden={settingsOpen}
+        hidden={["settings", "models", "agents"].includes(dialog ?? "")}
         style={sidebarWidths.style}
         data-media={panels.media}
         data-agent={panels.agent || inspectorOpen || !!creationTab}
@@ -160,13 +154,10 @@ export function Studio({ initial, onBack }: StudioProps) {
         <StudioChrome
           canInspect={canInspect}
           tasks={
-            <TaskPanel
+            <StudioTaskPanel
               project={project}
               canvas={canvas}
-              settings={() => {
-                canvas.setTaskPanelOpen(false);
-                setDialog("models");
-              }}
+              onModels={() => setDialog("models")}
             />
           }
           view={activeView}
@@ -225,13 +216,7 @@ export function Studio({ initial, onBack }: StudioProps) {
               clock.pause();
               setCreationTab(null);
               canvas.setComposerMode("agent");
-              const ref = asset
-                ? { kind: "asset" as const, id: asset.id }
-                : clipId
-                  ? { kind: "clip" as const, id: clipId }
-                  : nodeId
-                    ? { kind: "node" as const, id: nodeId }
-                    : undefined;
+              const ref = effectReference(asset, clipId, nodeId);
               requestCreativeTask(effectAgentTask(effect, ref));
             }}
             onRemove={(a) => change((p) => uncollectAsset(p, a.id))}
@@ -305,6 +290,7 @@ export function Studio({ initial, onBack }: StudioProps) {
         )}
       </div>
       <StudioDialogs
+        clock={clock}
         kind={dialog}
         project={project}
         close={() => setDialog(null)}

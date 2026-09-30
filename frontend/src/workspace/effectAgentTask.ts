@@ -1,3 +1,4 @@
+import type { Asset } from "../model";
 import type { AttachmentRef } from "../assistant/attachments";
 import type { CreativeTask } from "../creative/aiTasks";
 import type { EffectPreset } from "./effects";
@@ -19,4 +20,14 @@ export function effectAgentTask(
       "只追问阻碍执行的关键信息。目标明确且生成已获授权时，遵循项目现有的模型配置与生成确认流程提交；缺少必要输入或可用模型时说明原因。保留原素材，将结果作为新版本供预览，不宣称未完成的生成成功。",
     ].join("\n\n"),
   };
+}
+
+export function effectReference(
+  asset?: Asset,
+  clipId?: string | null,
+  nodeId?: string | null,
+): AttachmentRef | undefined {
+  if (asset) return { kind: "asset", id: asset.id };
+  if (clipId) return { kind: "clip", id: clipId };
+  if (nodeId) return { kind: "node", id: nodeId };
 }

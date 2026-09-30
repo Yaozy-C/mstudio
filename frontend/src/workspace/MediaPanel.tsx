@@ -14,7 +14,7 @@ import { MediaTile } from "./MediaTile";
 import { EffectLibrary } from "./EffectLibrary";
 import type { EffectPreset } from "./effects";
 import { useState } from "react";
-import { AlertDialog } from "@radix-ui/themes";
+import { RemoveLibraryAssetDialog } from "./RemoveLibraryAssetDialog";
 import { isLibraryAsset } from "./assetLibrary";
 import { useAssetLibrary } from "./useAssetLibrary";
 import { type Project, type Asset } from "../model";
@@ -247,57 +247,22 @@ export function MediaPanel({
             add={scope === "project" ? onAdd : undefined}
             reference={scope === "project" ? onReference : undefined}
           />
-          <AlertDialog.Root
-            open={!!removing}
-            onOpenChange={(open) => {
-              if (!open && !disabled) setRemoving(null);
+          <RemoveLibraryAssetDialog
+            removing={removing}
+            scope={scope}
+            disabled={disabled}
+            error={library.error}
+            onClose={() => setRemoving(null)}
+            onConfirm={async () => {
+              if (!removing) return;
+              if (scope === "global" && !(await library.remove(removing)))
+                return;
+              if (scope === "project") onRemove(removing);
+              setSelected(null);
+              setPreview(null);
+              setRemoving(null);
             }}
-          >
-            <AlertDialog.Content className="modal small" aria-busy={disabled}>
-              <AlertDialog.Title>
-                {t("移除")}
-                {scope === "project" ? t("项目") : t("公共")}
-                {t("素材")}
-              </AlertDialog.Title>
-              <AlertDialog.Description>
-                {t("将「")}
-                {removing?.name}
-                {t("」移出")}
-                {scope === "project" ? t("项目") : t("公共")}
-                {t("素材库？已用于分镜、时间线和对话的内容会保留")}
-                {scope === "project"
-                  ? t("，公共素材不受影响")
-                  : t("，其他项目中已选用的素材不受影响")}
-                。
-              </AlertDialog.Description>
-              {library.error && (
-                <ErrorNotice
-                  error={library.error}
-                  fallback="OPERATION_FAILED"
-                />
-              )}
-              <footer>
-                <AlertDialog.Cancel>
-                  <button disabled={disabled}>{t("取消")}</button>
-                </AlertDialog.Cancel>
-                <button
-                  className="primary"
-                  disabled={disabled}
-                  onClick={async () => {
-                    if (!removing) return;
-                    if (scope === "global" && !(await library.remove(removing)))
-                      return;
-                    if (scope === "project") onRemove(removing);
-                    setSelected(null);
-                    setPreview(null);
-                    setRemoving(null);
-                  }}
-                >
-                  {disabled ? t("正在移除…") : t("确认移除")}
-                </button>
-              </footer>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
+          />
         </>
       )}
     </aside>
