@@ -32,3 +32,36 @@
 .storage-migration {
   max-width: calc(100vw - 40px);
 }
+
+.storage-preview {
+  align-items: flex-start;
+  background: var(--desk-sidebar);
+}
+.storage-preview span {
+  font-size: 13px;
+  color: var(--desk-muted);
+  line-height: 1.8;
+}
+.general-info {
+  border-top: 1px solid var(--desk-rule);
+  margin-top: 28px;
+  padding-top: 28px;
+}
+.general-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 13px;
+}
+.general-info-row strong {
+  font-weight: 500;
+}
+.general-info-row span,
+.general-description {
+  color: var(--desk-muted);
+}
+.general-description {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 10px 0;
+}

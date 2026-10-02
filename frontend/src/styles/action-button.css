@@ -1,5 +1,5 @@
 /* Shared transparent icon-and-label actions; navigation and primary buttons are separate. */
-.radix-themes button.action-button {
+.radix-themes :is(button, a).action-button {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -16,25 +16,26 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 24px;
+  text-decoration: none;
   text-align: left;
   white-space: nowrap;
 }
-.radix-themes button.action-button > svg {
+.radix-themes :is(button, a).action-button > svg {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
 }
-.radix-themes button.action-button:hover:not(:disabled),
-.radix-themes button.action-button[aria-pressed="true"] {
+.radix-themes :is(button, a).action-button:hover:not(:disabled),
+.radix-themes :is(button, a).action-button[aria-pressed="true"] {
   background: transparent;
   box-shadow: none;
   color: var(--desk-accent);
 }
-.radix-themes button.action-button:focus-visible {
+.radix-themes :is(button, a).action-button:focus-visible {
   outline: 2px solid var(--desk-accent);
   outline-offset: 2px;
 }
-.radix-themes button.action-button:disabled {
+.radix-themes :is(button, a).action-button:disabled {
   opacity: 0.35;
   cursor: default;
 }

@@ -22,7 +22,7 @@ const commandCodes: Record<string, ErrorCode> = {
   use_global_asset: "ASSET_OPERATION_FAILED",
   assistant_chat: "CHAT_FAILED",
   migrate_storage: "STORAGE_FAILED",
-  storage_settings: "STORAGE_FAILED",
+  storage_settings: "STORAGE_READ_FAILED",
   choose_storage_directory: "STORAGE_FAILED",
 };
 export function commandError(command: string, value: unknown): string {

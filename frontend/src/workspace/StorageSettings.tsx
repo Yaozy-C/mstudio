@@ -2,7 +2,8 @@ import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
-import { FolderOpen } from "@phosphor-icons/react";
+import { ActionButton } from "../ui/ActionButton";
+import { FolderOpen, ArrowsClockwise } from "@phosphor-icons/react";
 import { bridge, native } from "../bridge";
 import { flushBeforeStorageChange } from "./useSafeExit";
 import "../styles/storage-settings.css";
@@ -14,11 +15,28 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
   const [target, setTarget] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(native);
+  const [loadError, setLoadError] = useState("");
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (!native) return;
+    let active = true;
+    setLoading(true);
+    setLoadError("");
     bridge<Storage>("storage_settings")
-      .then(setStorage)
-      .catch((e) => setError(String(e)));
-  }, []);
+      .then((value) => {
+        if (active) setStorage(value);
+      })
+      .catch((e) => {
+        if (active) setLoadError(String(e));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [attempt]);
   async function choose() {
     setError("");
     setBusy(true);
@@ -54,25 +72,50 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
       setBusy(false);
     }
   }
+  if (!native)
+    return (
+      <section className="storage-settings">
+        <h2>{t("存储")}</h2>
+        <div className="storage-location storage-preview">
+          <FolderOpen size={24} />
+          <span>{t("请在桌面应用中管理素材目录")}</span>
+        </div>
+      </section>
+    );
   return (
     <section className="storage-settings">
       <h2>{t("存储")}</h2>
-      <div className="storage-location">
-        <FolderOpen size={24} />
-        <code>{storage?.directory || t("正在读取…")}</code>
-      </div>
+      {loading ? (
+        <p role="status">{t("正在读取…")}</p>
+      ) : loadError ? (
+        <ErrorNotice error={loadError} fallback="STORAGE_READ_FAILED">
+          <ActionButton
+            icon={ArrowsClockwise}
+            onClick={() => setAttempt((value) => value + 1)}
+          >
+            {t("重新读取")}
+          </ActionButton>
+        </ErrorNotice>
+      ) : (
+        storage && (
+          <div className="storage-location">
+            <FolderOpen size={24} />
+            <code>{storage.directory}</code>
+          </div>
+        )
+      )}
       {storage && !storage.available && (
         <p className="error">
           {t("存储目录当前不可用，请连接原存储设备。项目中的文件位置已保留。")}
         </p>
       )}
-      <button
-        className="primary"
-        disabled={!native || busy || !storage}
+      <ActionButton
+        icon={FolderOpen}
+        disabled={loading || !!loadError || busy || !storage}
         onClick={() => void choose()}
       >
         {t("选择新目录并迁移")}
-      </button>
+      </ActionButton>
       {error && !target && (
         <ErrorNotice error={error} fallback="STORAGE_FAILED" />
       )}

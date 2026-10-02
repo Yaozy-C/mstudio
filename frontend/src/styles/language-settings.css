@@ -27,20 +27,20 @@
   align-items: center;
   gap: 14px;
   padding: 18px 20px;
-  border: 1px solid var(--gray-6);
+  border: 1px solid var(--desk-rule);
   border-radius: 8px;
   cursor: pointer;
 }
 .language-option:has(input:checked) {
-  border-color: var(--accent-9);
-  background: var(--accent-2);
+  border-color: var(--desk-accent);
+  background: var(--desk-surface);
 }
 .language-option:focus-within {
-  outline: 2px solid var(--accent-9);
+  outline: 2px solid var(--desk-accent);
   outline-offset: 3px;
 }
 .language-option input {
-  accent-color: var(--accent-9);
+  accent-color: var(--desk-accent);
   width: 18px;
   height: 18px;
 }

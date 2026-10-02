@@ -19,10 +19,12 @@ export function Settings({
   project,
   projectCount,
   onPublicAssets,
+  onManual,
 }: {
   onClose: () => void;
   projectCount?: number;
   onPublicAssets?: () => void;
+  onManual?: () => void;
   project?: { id: string; name: string };
   initialTab?: SettingsTab;
 }) {
@@ -45,6 +47,7 @@ export function Settings({
         activePage={tab}
         onProjects={onClose}
         onPublicAssets={onPublicAssets}
+        onManual={onManual}
         onSettings={setTab}
         count={projectCount}
         project={project}

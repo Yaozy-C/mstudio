@@ -1,3 +1,4 @@
+import { Stack } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -19,7 +20,10 @@ export function SkillLibrary({ openAgents }: { openAgents: () => void }) {
   return (
     <section>
       <div className="settings-actions">
-        <button onClick={openAgents}>{t("去 Agent 装配")}</button>
+        <button className="primary" onClick={openAgents}>
+          <Stack aria-hidden="true" />
+          {t("装配 Skills")}
+        </button>
       </div>
       {skills.map((s) => (
         <article className="hub-feature" key={s.id}>

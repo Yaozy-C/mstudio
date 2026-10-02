@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
+import "./styles/color-tokens.css";
 import "./styles/base.css";
 import "./styles/workspace.css";
 import "./styles/timeline.css";

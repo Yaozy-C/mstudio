@@ -1,3 +1,4 @@
+import { Wrench } from "@phosphor-icons/react";
 import { agentLabel } from "../agents/display";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -9,7 +10,10 @@ export function ToolLibrary({ openAgents }: { openAgents: () => void }) {
   return (
     <section>
       <div className="settings-actions">
-        <button onClick={openAgents}>{t("配置 Agent 工具")}</button>
+        <button className="primary" onClick={openAgents}>
+          <Wrench aria-hidden="true" />
+          {t("配置工具")}
+        </button>
       </div>
       {tools.map((tool) => {
         const assigned = hub.agents.filter((a) => a.toolIds.includes(tool.id));

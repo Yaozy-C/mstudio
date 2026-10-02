@@ -1,0 +1,106 @@
+.appearance-preview {
+  display: block;
+  overflow: hidden;
+  border-bottom: 1px solid var(--desk-rule);
+  border-radius: 3px 3px 0 0;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-size: 8px;
+  line-height: 1.5;
+}
+.appearance-preview-bar,
+.appearance-preview-bar > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.appearance-preview-bar {
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.appearance-preview-bar b {
+  color: var(--desk-accent);
+  font-weight: 500;
+  border-bottom: 1px solid currentColor;
+}
+.appearance-preview svg {
+  width: 12px;
+  height: 12px;
+}
+.appearance-preview-body {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  min-height: 115px;
+}
+.appearance-preview-sidebar {
+  padding: 10px 8px;
+  background: var(--desk-sidebar);
+  border-right: 1px solid var(--desk-rule);
+  color: var(--desk-muted);
+}
+.appearance-preview-assets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-top: 10px;
+}
+.appearance-preview-assets i {
+  height: 22px;
+  background: var(--desk-surface);
+  border: 1px solid var(--desk-rule);
+}
+.appearance-preview-canvas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-content: center;
+  padding: 12px;
+}
+.appearance-preview-shot > span {
+  display: grid;
+  place-items: center;
+  height: 52px;
+  background: var(--desk-sidebar);
+  border: 1px solid var(--desk-rule);
+  color: var(--desk-muted);
+}
+.appearance-preview-shot:first-child > span {
+  outline: 1px solid var(--desk-accent);
+  outline-offset: 2px;
+}
+.appearance-preview-shot b {
+  display: inline-block;
+  margin-top: 7px;
+  font-weight: 500;
+}
+.appearance-preview-shot > i {
+  display: inline-block;
+  width: 36%;
+  margin: 0 0 2px 5px;
+  border-top: 2px solid var(--desk-rule);
+}
+.appearance-preview-timeline {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  border-top: 1px solid var(--desk-rule);
+  background: var(--desk-surface);
+}
+.appearance-preview-timeline > span:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--desk-muted);
+}
+.appearance-preview-tracks {
+  display: flex;
+  gap: 4px;
+  padding: 10px 12px;
+}
+.appearance-preview-tracks i {
+  height: 14px;
+  flex: 1;
+  background: var(--desk-sidebar);
+  border: 1px solid var(--desk-rule);
+}

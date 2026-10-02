@@ -13,7 +13,10 @@ import messages11 from "./timeline.json";
 import messages12 from "./ui.json";
 import messages13 from "./workspace.json";
 
+import manual from "./manual.json";
+
 export default {
+  ...manual,
   ...messages0,
   ...messages1,
   ...messages2,

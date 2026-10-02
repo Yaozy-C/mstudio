@@ -1,15 +1,4 @@
-/* Frame / Cut: semantic tokens shared by the desktop workspace. */
-:root {
-  --desk-bg: #f5f3ed;
-  --desk-sidebar: #e7e4dc;
-  --desk-surface: #faf9f5;
-  --desk-text: #22221f;
-  --desk-muted: #68665f;
-  --desk-rule: #d5d1c7;
-  --desk-control: #aaa69b;
-  --desk-accent: #d6452d;
-  --desk-overlay: #22221f33;
-}
+/* Frame / Cut workspace styles; colors live in color-tokens.css. */
 .radix-themes {
   --default-font-family:
     -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", sans-serif;

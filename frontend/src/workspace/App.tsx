@@ -10,12 +10,15 @@ import { Studio } from "./Studio";
 import { Settings } from "./Settings";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { PublicAssets } from "./PublicAssets";
+import { UserManual } from "../manual/UserManual";
 export function App() {
   const language = useLanguage();
   const [entries, setEntries] = useState<ProjectEntry[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [settings, setSettings] = useState<SettingsTab | null>(null);
-  const [page, setPage] = useState<"projects" | "public-assets">("projects");
+  const [page, setPage] = useState<"projects" | "public-assets" | "manual">(
+    "projects",
+  );
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [storageNotice, setStorageNotice] = useState(
@@ -55,6 +58,10 @@ export function App() {
           setSettings(null);
           setPage("projects");
         }}
+        onManual={() => {
+          setSettings(null);
+          setPage("manual");
+        }}
         onPublicAssets={() => {
           setSettings(null);
           setPage("public-assets");
@@ -79,9 +86,12 @@ export function App() {
         count={entries.length}
         onProjects={() => setPage("projects")}
         onPublicAssets={() => setPage("public-assets")}
+        onManual={() => setPage("manual")}
         onSettings={setSettings}
       />
-      {page === "public-assets" ? (
+      {page === "manual" ? (
+        <UserManual onBack={() => setPage("projects")} />
+      ) : page === "public-assets" ? (
         <PublicAssets />
       ) : (
         <>

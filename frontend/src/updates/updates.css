@@ -1,0 +1,29 @@
+.about-version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.about-version {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+}
+.about-version small {
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.update-result {
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.update-result:not(:empty) {
+  margin-top: 12px;
+}
+.release-url {
+  overflow-wrap: anywhere;
+  user-select: text;
+}

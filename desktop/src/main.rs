@@ -28,6 +28,7 @@ mod projects;
 mod reference_commands;
 mod storage;
 mod system_voice;
+mod updates;
 mod waveform;
 #[cfg(windows)]
 mod windows_host;
@@ -63,6 +64,8 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             finish_exit,
+            updates::check_app_update,
+            updates::open_release_page,
             waveform::audio_waveform,
             native_preview::native_preview_open,
             native_preview::native_preview_control,
