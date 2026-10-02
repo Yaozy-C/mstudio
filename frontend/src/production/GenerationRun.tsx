@@ -1,3 +1,5 @@
+import { RunStatus } from "./RunStatus";
+import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { TaskPromptEditor } from "./TaskPromptEditor";
 import { canEditOriginal, canRegenerate } from "./taskEditing";
@@ -20,7 +22,7 @@ import { canvasSnapshot, inputFor, roleLabels } from "./request";
 import { GenerationResults } from "./GenerationResults";
 import type { ReactNode } from "react";
 import { ActionButton } from "../ui/ActionButton";
-import { pendingRun, runStatuses, useRunActions } from "./useRunActions";
+import { pendingRun, useRunActions } from "./useRunActions";
 import "./conversation.css";
 import "./task-detail.css";
 
@@ -71,9 +73,7 @@ export function GenerationRun({
           {t("生成")}
           {task.kind === "image" ? t("图片") : t("视频")}
         </strong>
-        <span role="status" className={pending ? "run-active" : ""}>
-          {t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
-        </span>
+        <RunStatus task={task} />
         {headerAction}
       </header>
       {node && <small className="run-owner">{node.title}</small>}
@@ -237,13 +237,15 @@ export function GenerationRun({
             <UnknownRunRecovery task={task} canvas={canvas} />
           )}
           {task.jobId && (task.status === "UNKNOWN" || task.error) && (
-            <button type="button" disabled={busy} onClick={() => void check()}>
-              {busy
-                ? t("正在核查…")
-                : task.status === "RECEIVING"
-                  ? t("重试收取结果")
-                  : t("重新查询状态")}
-            </button>
+            <AsyncButton
+              busy={busy}
+              busyLabel={t("正在核查…")}
+              onClick={() => void check()}
+            >
+              {task.status === "RECEIVING"
+                ? t("重试收取结果")
+                : t("重新查询状态")}
+            </AsyncButton>
           )}
           {["READY", "IN_QUEUE", "IN_PROGRESS"].includes(task.status ?? "") && (
             <button

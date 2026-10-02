@@ -1,3 +1,4 @@
+import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { inputSummary } from "./inputCapabilities";
@@ -23,18 +24,20 @@ export function TextModels() {
   const [edit, setEdit] = useState<ModelConnection | null>(null);
   const [remove, setRemove] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [activeTest, setActiveTest] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; error: boolean } | null>(
     null,
   );
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   useEffect(() => {
-    if (!toast) return;
+    if (!toast || toast.error) return;
     const timeout = window.setTimeout(() => setToast(null), 5000);
     return () => window.clearTimeout(timeout);
   }, [toast]);
   async function act(command: string, id: string) {
     setBusy(true);
+    setActiveTest(command === "test_model" ? id : null);
     setError("");
     setToast(null);
     try {
@@ -57,6 +60,7 @@ export function TextModels() {
       }
     } finally {
       setBusy(false);
+      setActiveTest(null);
     }
   }
   if (edit)
@@ -145,7 +149,13 @@ export function TextModels() {
         />
       )}
       {(error || hub.error) && (
-        <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED" />
+        <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED">
+          {hub.error && (
+            <AsyncButton busy={hub.loading} onClick={() => void hub.refresh()}>
+              {t("重试")}
+            </AsyncButton>
+          )}
+        </ErrorNotice>
       )}
       {toast && (
         <div
@@ -161,6 +171,9 @@ export function TextModels() {
             <X size={16} />
           </button>
         </div>
+      )}
+      {hub.loading && !hub.catalog.profiles.length && (
+        <LoadingState label={t("正在读取…")} />
       )}
       <div className="model-list">
         {profiles.map((p) => (
@@ -181,20 +194,24 @@ export function TextModels() {
               </p>
               <small>
                 {inputSummary(p)} ·{" "}
-                {p.hasKey
-                  ? t("密钥已配置")
-                  : localEndpoint(p.endpoint)
-                    ? t("本机连接")
-                    : t("待配置密钥")}
+                {p.adapter === "codex"
+                  ? t("ChatGPT 账号登录")
+                  : p.hasKey
+                    ? t("密钥已配置")
+                    : localEndpoint(p.endpoint)
+                      ? t("本机连接")
+                      : t("待配置密钥")}
               </small>
             </div>
             <div className="model-row-actions">
-              <button
+              <AsyncButton
+                busy={activeTest === p.id}
+                busyLabel={t("正在连接…")}
                 disabled={busy || !readyModel(p)}
                 onClick={() => void act("test_model", p.id)}
               >
                 {t("测试连接")}
-              </button>
+              </AsyncButton>
               <button
                 aria-label={t("编辑模型 {v0}", { v0: p.name })}
                 title={t("编辑模型")}
@@ -222,25 +239,23 @@ export function TextModels() {
                 <button disabled={busy} onClick={() => setRemove(null)}>
                   {t("取消")}
                 </button>
-                <button
+                <AsyncButton
+                  busy={busy}
+                  busyLabel={t("正在移除…")}
                   disabled={busy}
                   onClick={() => void act("remove_model", p.id)}
                 >
                   {t("确认移除")}
-                </button>
+                </AsyncButton>
               </div>
             )}
           </article>
         ))}
-        {!profiles.length && (
+        {!hub.loading && !hub.error && !profiles.length && (
           <div className="model-empty">
             <Cube size={32} />
             <strong>
-              {hub.loading
-                ? t("读取模型连接…")
-                : query
-                  ? t("没有匹配的模型")
-                  : t("连接你的第一个对话模型")}
+              {query ? t("没有匹配的模型") : t("连接你的第一个对话模型")}
             </strong>
             <p>
               {native

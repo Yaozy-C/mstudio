@@ -1,3 +1,4 @@
+import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { presets } from "./mediaModelPresets";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -131,7 +132,16 @@ export function MediaModels({
         placeholder={t("搜索模型名称或端点…")}
       />
       {((!remove && error) || hub.error) && (
-        <ErrorNotice error={(!remove && error) || hub.error} />
+        <ErrorNotice error={(!remove && error) || hub.error}>
+          {hub.error && (
+            <AsyncButton busy={hub.loading} onClick={() => void hub.refresh()}>
+              {t("重试")}
+            </AsyncButton>
+          )}
+        </ErrorNotice>
+      )}
+      {hub.loading && !hub.models.length && (
+        <LoadingState label={t("正在读取…")} />
       )}
       <div className="hub-model-grid">
         {items.map((m) => (
@@ -234,7 +244,7 @@ export function MediaModels({
           </article>
         ))}
       </div>
-      {!items.length && (
+      {!hub.loading && !hub.error && !items.length && (
         <div className="hub-empty">
           <Icon size={34} />
           <h3>

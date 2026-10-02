@@ -1,3 +1,4 @@
+import { StatusIcon } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { useState, type ReactNode } from "react";
 import { normalizeError, errorCatalog, type ErrorCode } from "./catalog";
@@ -28,7 +29,10 @@ export function ErrorNotice({
   if (item.code === "CHAT_STOPPED")
     return (
       <div className="operation-stopped" role="status">
-        <strong>{message}</strong>
+        <strong className="error-notice-heading">
+          <StatusIcon kind="paused" />
+          {message}
+        </strong>
         <span>{recovery}</span>
         {children}
       </div>
@@ -44,13 +48,14 @@ export function ErrorNotice({
     .join("\n");
   return (
     <div className="error error-notice" role="alert">
-      <strong>{message}</strong>
+      <strong className="error-notice-heading">
+        <StatusIcon kind="error" />
+        {message}
+      </strong>
       <span>{recovery}</span>
       {children && <div className="error-notice-actions">{children}</div>}
       <details>
-        <summary>
-          {t("错误详情 ·")} {item.code}
-        </summary>
+        <summary>{t("错误详情")}</summary>
         <pre>{details}</pre>
         <button
           type="button"

@@ -73,7 +73,9 @@ pub fn resolve(
     config::validate(&model.profile)?;
     let key = credential(db, &model)?;
     ensure!(
-        !key.is_empty() || config::is_local(&model.profile.endpoint),
+        model.profile.adapter == "codex"
+            || !key.is_empty()
+            || config::is_local(&model.profile.endpoint),
         "该模型尚未配置 API Key，请到模型中心补充"
     );
     Ok((model, key))

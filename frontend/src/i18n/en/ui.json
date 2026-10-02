@@ -22,5 +22,10 @@
   "缩小图片": "Zoom out",
   "放大图片": "Zoom in",
   "缩放比例": "Zoom level",
-  "画布缩放": "Canvas zoom"
+  "画布缩放": "Canvas zoom",
+  "错误详情": "Error details",
+  "正在准备导出…": "Preparing export…",
+  "状态同步已暂停": "Status updates paused",
+  "待核查": "Needs verification",
+  "关闭": "Close"
 }

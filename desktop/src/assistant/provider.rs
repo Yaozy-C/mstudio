@@ -13,6 +13,11 @@ pub(super) fn http_client(timeout: Duration) -> Result<rig_http::Client, String>
 }
 
 pub fn builder(profile: &Profile, key: &str) -> Result<AgentBuilder, String> {
+    if profile.adapter == "codex" {
+        return Ok(AgentBuilder::new(super::codex_provider::CodexModel(
+            profile.model.clone(),
+        )));
+    }
     // Each model request gets its own budget, including after tool execution.
     let http = http_client(Duration::from_secs(240))?;
     let key = if key.is_empty() { "local" } else { key };

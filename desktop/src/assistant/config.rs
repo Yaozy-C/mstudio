@@ -15,6 +15,20 @@ pub fn validate(profile: &Profile) -> Result<()> {
         !profile.endpoint.trim().is_empty(),
         "请先在模型中心连接 Agent 服务"
     );
+    if profile.adapter == "codex" {
+        ensure!(profile.endpoint == "codex://local", "Codex 使用本机服务");
+        ensure!(
+            !profile.model.trim().is_empty() && profile.model.len() < 256,
+            "请选择 Codex 模型"
+        );
+        ensure!(
+            profile
+                .context_window
+                .is_none_or(|n| (8192..=2_000_000).contains(&n)),
+            "上下文窗口须在 8192 到 2000000 token 之间"
+        );
+        return Ok(());
+    }
     let url = reqwest::Url::parse(&profile.endpoint)?;
     let local = matches!(url.host_str(), Some("localhost" | "127.0.0.1" | "[::1]"));
     ensure!(

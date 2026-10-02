@@ -74,11 +74,16 @@ fn validate(service: &ServiceConnection) -> Result<()> {
             "anthropic-native",
             "gemini-native",
             "fal",
-            "http-json"
+            "http-json",
+            "codex"
         ]
         .contains(&service.kind.as_str()),
         "不支持的连接类型"
     );
+    if service.kind == "codex" {
+        ensure!(service.endpoint == "codex://local", "Codex 使用本机服务");
+        return Ok(());
+    }
     let url = reqwest::Url::parse(&service.endpoint)?;
     ensure!(
         url.scheme() == "https"
@@ -123,6 +128,10 @@ pub fn save(
             .as_ref()
             .is_none_or(|s| s.len() <= 8192 && !s.contains(['\r', '\n'])),
         "API Key 格式无效"
+    );
+    ensure!(
+        service.kind != "codex" || new_key.is_none(),
+        "Codex 使用 ChatGPT 登录，无需 API Key"
     );
     let old = get(db, &service.id).ok();
     if let Some(old) = &old {
@@ -197,6 +206,12 @@ pub fn bind_text(db: &Connection, model: &mut Model) -> Result<()> {
 pub fn bind_media(db: &Connection, model: &mut media::MediaModel) -> Result<()> {
     if let Some(id) = &model.connection_id {
         let service = get(db, id)?;
+        if service.kind == "codex" {
+            ensure!(model.plugin == "codex-image", "Codex 媒体连接仅支持生图");
+            model.endpoint = "codex://local/images".into();
+            model.has_key = false;
+            return Ok(());
+        }
         ensure!(model.plugin == service.kind, "模型接入方式与服务连接不一致");
         match service.kind.as_str() {
             "gemini-native" => model.endpoint = service.endpoint,

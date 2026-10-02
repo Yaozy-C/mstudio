@@ -1,3 +1,4 @@
+import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -174,7 +175,10 @@ export function ModelForm({
           <button type="button" onClick={cancel}>
             {t("取消")}
           </button>
-          <button
+          <AsyncButton
+            busy={busy}
+            busyLabel={t("保存中…")}
+            type="submit"
             className="primary"
             disabled={
               busy ||
@@ -184,8 +188,8 @@ export function ModelForm({
               !profile.model.trim()
             }
           >
-            {busy ? t("保存中…") : t("保存模型")}
-          </button>
+            {t("保存模型")}
+          </AsyncButton>
         </footer>
       </fieldset>
     </form>

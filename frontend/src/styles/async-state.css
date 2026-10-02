@@ -1,0 +1,91 @@
+.status-spinner {
+  animation: status-spin var(--motion-spin) linear infinite;
+}
+.status-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 24px;
+  margin: 12px 0;
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+}
+.status-message > svg {
+  flex: none;
+  margin-top: 2px;
+}
+.status-message[data-kind="error"] {
+  color: var(--desk-accent);
+}
+.status-message[data-kind="success"] {
+  color: var(--desk-text);
+}
+.loading-state {
+  padding: 8px 0;
+}
+.loading-skeleton {
+  display: grid;
+  gap: 16px;
+  padding: 8px 0 16px;
+}
+.loading-skeleton-row {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--desk-rule);
+  animation: skeleton-pulse var(--motion-pulse) ease-in-out infinite;
+}
+.loading-skeleton-row > span {
+  height: 10px;
+  width: 38%;
+  background: var(--desk-rule);
+  border-radius: 2px;
+}
+.loading-skeleton-row > span + span {
+  width: 65%;
+  height: 8px;
+}
+.async-button {
+  display: inline-grid;
+  place-items: center;
+}
+.async-button-label,
+.async-button-pending {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.async-button [data-hidden="true"] {
+  visibility: hidden;
+}
+.async-button-pending {
+  white-space: nowrap;
+}
+.radix-themes .async-button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-message,
+  .status-spinner,
+  .loading-skeleton-row {
+    animation: none;
+  }
+}
+
+.run-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.run-status[data-kind="error"] {
+  color: var(--desk-accent);
+}
+.async-button-pending[data-hidden="true"] .status-spinner {
+  animation: none;
+}

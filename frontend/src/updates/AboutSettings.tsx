@@ -1,3 +1,4 @@
+import { StatusMessage } from "../ui/AsyncState";
 import { useRef, useState, useEffect } from "react";
 import { ArrowsClockwise, ArrowUpRight } from "@phosphor-icons/react";
 import { version } from "../../package.json";
@@ -46,22 +47,35 @@ export function AboutSettings() {
         </span>
         <ActionButton
           icon={ArrowsClockwise}
+          busy={busy}
           disabled={busy}
           onClick={() => void check()}
         >
           {busy ? t("正在检查更新…") : t("检查更新")}
         </ActionButton>
       </div>
-      <div className="update-result" role="status" aria-live="polite">
-        {failed
-          ? t("检查失败，请重试")
-          : result?.status === "available"
-            ? t("新版本 {version} 可用", { version: result.version })
-            : result?.status === "current"
-              ? t("暂无新版本")
-              : result?.status === "unpublished"
-                ? t("暂无可查询的正式版本")
-                : ""}
+      <div className="update-result">
+        {(failed || result) && (
+          <StatusMessage
+            kind={
+              failed
+                ? "error"
+                : result?.status === "current"
+                  ? "success"
+                  : "info"
+            }
+          >
+            {failed
+              ? t("检查失败，请重试")
+              : result?.status === "available"
+                ? t("新版本 {version} 可用", { version: result.version })
+                : result?.status === "current"
+                  ? t("暂无新版本")
+                  : result?.status === "unpublished"
+                    ? t("暂无可查询的正式版本")
+                    : ""}
+          </StatusMessage>
+        )}
       </div>
       {(failed || (result && result.status !== "current")) &&
         (native ? (

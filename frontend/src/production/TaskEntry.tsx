@@ -2,7 +2,7 @@ import { ArrowUpRight, Image, VideoCamera } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
-import { runStatuses } from "./useRunActions";
+import { RunStatus } from "./RunStatus";
 import "./task-panel.css";
 export function TaskEntry({
   task,
@@ -28,7 +28,7 @@ export function TaskEntry({
         </strong>
         <span className="task-entry-prompt">{task.prompt}</span>
         <span className="task-entry-status" data-status={task.status}>
-          {t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
+          <RunStatus task={task} />
         </span>
       </span>
       <span className="task-entry-open">

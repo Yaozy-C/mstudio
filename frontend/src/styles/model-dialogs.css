@@ -30,7 +30,7 @@
   line-height: 1.5;
 }
 .model-toast-error {
-  border-color: var(--desk-error, #d66);
+  border-color: var(--desk-accent);
 }
 .model-toast button {
   flex: none;
@@ -53,15 +53,19 @@
   margin-top: 24px;
 }
 .model-form label {
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
   min-width: 0;
 }
-.model-form input:not([type="checkbox"]),
-.model-form .studio-select-trigger {
+.radix-themes .model-form input:not([type="checkbox"]),
+.radix-themes .model-form .studio-select-trigger {
   width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  margin-top: 0;
 }
 .model-field-wide {
   grid-column: 1 / -1;

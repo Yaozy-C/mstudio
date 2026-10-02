@@ -17,5 +17,14 @@
   "更新 Codex": "Update Codex",
   "登录 ChatGPT": "Sign in with ChatGPT",
   "一键检测并启用": "Detect and enable",
-  "重新检测": "Check again"
+  "重新检测": "Check again",
+  "输入新密钥以替换": "Enter a new key to replace it",
+  "添加其他模型": "Add another model",
+  "没有找到此型号，可点击“添加其他模型”。": "Model not listed? Choose “Add another model”.",
+  "本机 Codex": "Local Codex",
+  "ChatGPT 账号登录": "ChatGPT sign-in",
+  "连接 Codex": "Connect Codex",
+  "正在连接 Codex，若打开浏览器请完成登录。": "Connecting to Codex. Complete sign-in if your browser opens.",
+  "自动连接本机 Codex，同步对话模型和可用的生图能力。": "Connect local Codex and sync chat models and available image generation.",
+  "一键连接": "Connect"
 }

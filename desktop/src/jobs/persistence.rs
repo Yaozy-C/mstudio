@@ -29,7 +29,9 @@ pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
         let db = store.db.lock().unwrap();
         let connection = crate::models::connections::get(&db, id)?;
         ensure!(
-            connection.endpoint == job["connectionEndpoint"] && connection.kind == provider.id(),
+            connection.endpoint == job["connectionEndpoint"]
+                && (connection.kind == provider.id()
+                    || (connection.kind == "codex" && provider.id() == "codex-image")),
             "服务连接已变化，不向原任务地址发送新凭据"
         );
         return crate::models::connections::key(&db, id);

@@ -16,12 +16,18 @@ pub struct Rpc {
 }
 impl Rpc {
     pub async fn start() -> Result<Self> {
+        Self::start_mode(true).await
+    }
+    pub async fn start_text() -> Result<Self> {
+        Self::start_mode(false).await
+    }
+    async fn start_mode(images: bool) -> Result<Self> {
         let mut last = anyhow::anyhow!("未找到 Codex");
         for binary in super::codex_discovery::binaries().await {
             for transport in ["--stdio", "--listen"] {
                 match tokio::time::timeout(
                     std::time::Duration::from_secs(4),
-                    Self::connect(&binary, transport),
+                    Self::connect(&binary, transport, images),
                 )
                 .await
                 {
@@ -33,7 +39,7 @@ impl Rpc {
         }
         Err(last)
     }
-    async fn connect(binary: &std::path::Path, transport: &str) -> Result<Self> {
+    async fn connect(binary: &std::path::Path, transport: &str, images: bool) -> Result<Self> {
         let mut command = tokio::process::Command::new(binary);
         #[cfg(windows)]
         command.creation_flags(0x08000000);
@@ -41,8 +47,10 @@ impl Rpc {
         if transport == "--listen" {
             command.arg("stdio://");
         }
+        if images {
+            command.args(["--enable", "image_generation"]);
+        }
         let mut child = command
-            .args(["--enable", "image_generation"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -143,8 +151,8 @@ read -r initialized
         )
         .unwrap();
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
-        assert!(Rpc::connect(&path, "--stdio").await.is_err());
-        let mut rpc = Rpc::connect(&path, "--listen").await.unwrap();
+        assert!(Rpc::connect(&path, "--stdio", false).await.is_err());
+        let mut rpc = Rpc::connect(&path, "--listen", false).await.unwrap();
         rpc.stop().await;
         std::fs::remove_file(path).unwrap();
     }

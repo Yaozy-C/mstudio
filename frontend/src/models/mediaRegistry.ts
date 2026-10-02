@@ -73,19 +73,23 @@ export function useMediaModels() {
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
+    let revision = 0;
     const refresh = () => {
+      const current = ++revision;
+      setLoading(true);
+      setError("");
       void bridge<MediaModel[]>("media_model_catalog")
         .then((next) => {
-          if (active) {
+          if (active && current === revision) {
             setModels(next);
             setError("");
           }
         })
         .catch((e) => {
-          if (active) setError(String(e));
+          if (active && current === revision) setError(String(e));
         })
         .finally(() => {
-          if (active) setLoading(false);
+          if (active && current === revision) setLoading(false);
         });
     };
     refresh();
@@ -104,5 +108,12 @@ export function useMediaModels() {
     await bridge("remove_media_model", { id });
     window.dispatchEvent(new Event("media-models-changed"));
   }
-  return { models, loading, error, save, remove };
+  return {
+    models,
+    loading,
+    error,
+    save,
+    remove,
+    refresh: () => window.dispatchEvent(new Event("media-models-changed")),
+  };
 }

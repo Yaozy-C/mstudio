@@ -74,10 +74,12 @@ pub fn init(db: &Connection) -> Result<()> {
         None
     };
     for model in &mut media {
-        if model.plugin == "codex-image" || model.connection_id.is_some() {
+        if model.connection_id.is_some() {
             continue;
         }
-        let id = if model.plugin == "fal" {
+        let id = if model.plugin == "codex-image" {
+            migrate_one(&tx, "Codex", "codex", "codex://local", "")?
+        } else if model.plugin == "fal" {
             fal_id.clone().unwrap()
         } else {
             let secret =

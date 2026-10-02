@@ -1,0 +1,61 @@
+/* Frame / Cut: brief state transitions, no decorative movement. */
+:root {
+  --motion-fast: 120ms;
+  --motion-enter: 180ms;
+  --motion-progress: 240ms;
+  --motion-spin: 900ms;
+  --motion-pulse: 1600ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes state-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.radix-themes button,
+.radix-themes .action-button {
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast),
+    opacity var(--motion-fast);
+}
+.modal,
+.model-toast,
+.object-menu,
+.studio-select-menu[data-state="open"] {
+  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+}
+.progress > span {
+  transition: width var(--motion-progress) var(--motion-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-enter: 0ms;
+    --motion-progress: 0ms;
+  }
+  .status-spinner,
+  .loading-skeleton-row,
+  .modal,
+  .model-toast,
+  .object-menu,
+  .studio-select-menu {
+    animation: none !important;
+  }
+}

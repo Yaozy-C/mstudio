@@ -37,7 +37,9 @@ export function ServicePicker({
           disabled={loading}
           options={available.map((s) => ({
             value: s.id,
-            label: s.name + (s.hasKey ? "" : t(" · 未配置密钥")),
+            label:
+              s.name +
+              (s.hasKey || s.kind === "codex" ? "" : t(" · 未配置密钥")),
           }))}
           onValueChange={(id) => {
             const service = available.find((s) => s.id === id);

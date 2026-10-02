@@ -1,3 +1,4 @@
+import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { ServicePicker } from "./ServicePicker";
@@ -227,9 +228,15 @@ export function MediaModelForm({
           <button type="button" onClick={cancel}>
             {t("取消")}
           </button>
-          <button className="primary" disabled={busy || !model.connectionId}>
-            {busy ? t("保存中…") : t("保存模型")}
-          </button>
+          <AsyncButton
+            busy={busy}
+            busyLabel={t("保存中…")}
+            type="submit"
+            className="primary"
+            disabled={busy || !model.connectionId}
+          >
+            {t("保存模型")}
+          </AsyncButton>
         </footer>
       </fieldset>
     </form>

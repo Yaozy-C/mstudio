@@ -102,6 +102,7 @@ fn main() {
             assistant::media_prompt::prepare_media_prompt,
             assistant::pending::cancel_assistant,
             model_adapters::codex_setup::codex_image_status,
+            models::codex_connection::connect_codex_service,
             model_adapters::codex_setup::codex_login,
             model_adapters::codex_setup::open_codex_download,
             models::media::media_model_catalog,

@@ -75,6 +75,11 @@ pub(super) async fn fetch_models(
     profile: &crate::assistant::config::Profile,
     key: &str,
 ) -> Result<Vec<serde_json::Value>, String> {
+    if profile.adapter == "codex" {
+        return super::codex_connection::model_list()
+            .await
+            .map_err(|e| e.to_string());
+    }
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))
         .redirect(reqwest::redirect::Policy::none())

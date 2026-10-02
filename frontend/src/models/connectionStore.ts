@@ -7,7 +7,8 @@ export type ServiceKind =
   | "gemini-native"
   | "anthropic-native"
   | "fal"
-  | "http-json";
+  | "http-json"
+  | "codex";
 export type ServiceConnection = {
   id: string;
   name: string;
@@ -17,6 +18,7 @@ export type ServiceConnection = {
   modelCount: number;
 };
 export const textServiceKinds: ServiceKind[] = [
+  "codex",
   "openai-compatible",
   "openai-responses",
   "gemini-native",
@@ -35,8 +37,10 @@ export const serviceLabels: Record<ServiceKind, string> = {
   "anthropic-native": "Claude 原生",
   fal: "fal",
   "http-json": "自定义 HTTP",
+  codex: "Codex",
 };
 export const servicePresets = [
+  { name: "Codex", kind: "codex", endpoint: "codex://local" },
   {
     name: "OpenAI",
     kind: "openai-responses",
@@ -79,6 +83,8 @@ export function useServiceConnections() {
         setLoading(false);
         return;
       }
+      setLoading(true);
+      setError("");
       void bridge<ServiceConnection[]>("service_connections")
         .then((rows) => {
           if (live && current === revision) {
@@ -100,5 +106,11 @@ export function useServiceConnections() {
       window.removeEventListener("service-connections-changed", refresh);
     };
   }, []);
-  return { connections, error, loading };
+  return {
+    connections,
+    error,
+    loading,
+    refresh: () =>
+      window.dispatchEvent(new Event("service-connections-changed")),
+  };
 }

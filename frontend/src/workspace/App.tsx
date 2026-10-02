@@ -1,3 +1,4 @@
+import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { StudioSidebar, type SettingsTab } from "./StudioSidebar";
@@ -24,30 +25,45 @@ export function App() {
   const [storageNotice, setStorageNotice] = useState(
     () => sessionStorage.getItem("mstudio-storage-notice") || "",
   );
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
-  const refresh = () =>
-    bridge<ProjectEntry[]>("list_projects")
+  const refresh = () => {
+    setLoading(true);
+    return bridge<ProjectEntry[]>("list_projects")
       .then((items) => {
         setEntries(items);
+        setError("");
         const reopen = sessionStorage.getItem("mstudio-reopen-project");
         if (reopen) {
           sessionStorage.removeItem("mstudio-reopen-project");
           setProject(items.find((p) => p.id === reopen)?.document ?? null);
         }
       })
-      .catch((e) => setError(String(e)));
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false));
+  };
   useEffect(() => {
     void refresh();
     void initPlugins().catch((e) => setError(String(e)));
   }, []);
   async function create() {
-    if (!name.trim()) return;
-    const p = newProject(name.trim());
-    await bridge("create_project", { document: p });
-    setProject(p);
-    setCreating(false);
-    setName("");
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    setCreateError("");
+    try {
+      const p = newProject(name.trim());
+      await bridge("create_project", { document: p });
+      setProject(p);
+      setCreating(false);
+      setName("");
+    } catch (e) {
+      setCreateError(String(e));
+    } finally {
+      setSaving(false);
+    }
   }
   if (settings)
     return (
@@ -116,7 +132,16 @@ export function App() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
+            {error && (
+              <ErrorNotice error={error} fallback="OPERATION_FAILED">
+                <AsyncButton busy={loading} onClick={() => void refresh()}>
+                  {t("重试")}
+                </AsyncButton>
+              </ErrorNotice>
+            )}
+            {loading && !entries.length && (
+              <LoadingState label={t("正在读取…")} />
+            )}
             {storageNotice && (
               <p role="status">
                 {storageNotice}{" "}
@@ -130,7 +155,7 @@ export function App() {
                 </button>
               </p>
             )}
-            <section className="project-grid">
+            <section className="project-grid" aria-busy={loading}>
               {entries
                 .filter((p) =>
                   p.name.toLowerCase().includes(query.toLowerCase()),
@@ -200,13 +225,18 @@ export function App() {
         </>
       )}
       {creating && (
-        <div className="modal-backdrop" onClick={() => setCreating(false)}>
+        <div
+          className="modal-backdrop"
+          onClick={() => {
+            if (!saving) setCreating(false);
+          }}
+        >
           <form
             className="modal small"
             onClick={(e) => e.stopPropagation()}
             onSubmit={(e) => {
               e.preventDefault();
-              void create().catch((e) => setError(String(e)));
+              void create();
             }}
           >
             <h2>{t("新建项目")}</h2>
@@ -219,13 +249,25 @@ export function App() {
             <p className="subtle">
               {t("默认竖屏 1080 × 1920，可在项目内调整。")}
             </p>
+            {createError && <ErrorNotice error={createError} />}
             <footer>
-              <button type="button" onClick={() => setCreating(false)}>
+              <button
+                disabled={saving}
+                type="button"
+                onClick={() => {
+                  if (!saving) setCreating(false);
+                }}
+              >
                 {t("取消")}
               </button>
-              <button className="primary" disabled={!name.trim()}>
+              <AsyncButton
+                type="submit"
+                busy={saving}
+                className="primary"
+                disabled={!name.trim()}
+              >
                 {t("创建项目")} <ArrowUpRight />
-              </button>
+              </AsyncButton>
             </footer>
           </form>
         </div>

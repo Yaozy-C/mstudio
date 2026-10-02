@@ -1,3 +1,4 @@
+import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { FrameRole } from "../production/frameInputs";
@@ -239,7 +240,9 @@ export function ComposerReference({
             })}
         </div>
         {loading ? (
-          <p className="reference-picker-empty">{t("正在加载素材…")}</p>
+          <StatusMessage className="reference-picker-empty">
+            {t("正在加载素材…")}
+          </StatusMessage>
         ) : (
           !assets.length &&
           !nodes.length && (

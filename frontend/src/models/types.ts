@@ -9,7 +9,8 @@ export type ModelConnection = {
     | "openai-compatible"
     | "openai-responses"
     | "gemini-native"
-    | "anthropic-native";
+    | "anthropic-native"
+    | "codex";
   inputs: {
     image: boolean;
     audio: boolean;
@@ -33,7 +34,7 @@ export function localEndpoint(endpoint: string) {
   }
 }
 export const readyModel = (model: ModelConnection) =>
-  model.hasKey || localEndpoint(model.endpoint);
+  model.adapter === "codex" || model.hasKey || localEndpoint(model.endpoint);
 export const selectedModel = (catalog: ModelCatalog) =>
   catalog.profiles.find(
     (p) => p.id === (catalog.selectedId || catalog.defaultId),

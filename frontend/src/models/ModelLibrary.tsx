@@ -2,7 +2,7 @@ import { t, useLanguage } from "../i18n";
 import { StudioSelect } from "../ui/StudioSelect";
 import { ModelMark } from "../ui/Identity";
 import { useState } from "react";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeft, Plus } from "@phosphor-icons/react";
 import { native } from "../bridge";
 import { modelLibrary, type ModelSpec, type OutputKind } from "./catalogSpecs";
 import "../styles/model-library.css";
@@ -52,8 +52,9 @@ export function ModelLibrary({
               : t("视频")}
           {t("模型")}
         </h3>
-        <button className="model-custom" onClick={custom}>
-          {t("接入其他模型")}
+        <button className="model-custom primary" onClick={custom}>
+          <Plus size={16} />
+          {t("添加其他模型")}
         </button>
       </div>
       <div className="model-picker-filter">
@@ -113,7 +114,7 @@ export function ModelLibrary({
       </div>
       {!items.length && (
         <p className="model-hint">
-          {t("没有找到此型号，可点击“接入其他模型”。")}
+          {t("没有找到此型号，可点击“添加其他模型”。")}
         </p>
       )}
     </section>

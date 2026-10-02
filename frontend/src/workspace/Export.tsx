@@ -1,8 +1,10 @@
+import { AsyncButton, StatusMessage } from "../ui/AsyncState";
+import { progressRatio } from "./exportProgress";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { X, Export as ExportIcon, CheckCircle } from "@phosphor-icons/react";
+import { X, Export as ExportIcon } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import { formatTime } from "../model";
 import { endTime } from "../timeline/document";
@@ -18,7 +20,9 @@ export function ExportDialog({
 }) {
   useLanguage();
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number | null>(null);
+  const rendering = useRef(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [path, setPath] = useState("");
   const [saved, setSaved] = useState("");
@@ -26,18 +30,22 @@ export function ExportDialog({
     if (!native) return;
     const off = listen<{ done: number; total: number }>(
       "render-progress",
-      (e) => setProgress(e.payload.done / e.payload.total),
+      (e) => {
+        if (rendering.current) setProgress(progressRatio(e.payload));
+      },
     );
     return () => {
       void off.then((f) => f());
     };
   }, []);
   async function render() {
+    if (busy) return;
     setBusy(true);
     setError("");
-    setProgress(0);
+    setProgress(null);
     try {
       const captions = await prepareProjectCaptions(project);
+      rendering.current = true;
       const result = await runtime.execute<{ path: string }>("render_video", {
         projectId: project.id,
         spec: {
@@ -53,7 +61,21 @@ export function ExportDialog({
     } catch (e) {
       setError(String(e));
     } finally {
+      rendering.current = false;
       setBusy(false);
+    }
+  }
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const target = await bridge<string | null>("save_export", { path });
+      if (target) setSaved(target);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSaving(false);
     }
   }
   return (
@@ -63,7 +85,12 @@ export function ExportDialog({
           <div>
             <h2>{path ? t("成片已就绪") : t("导出成片")}</h2>
           </div>
-          <button className="icon-button" disabled={busy} onClick={onClose}>
+          <button
+            className="icon-button"
+            aria-label={t("关闭")}
+            disabled={busy || saving}
+            onClick={onClose}
+          >
             <X />
           </button>
         </header>
@@ -82,13 +109,23 @@ export function ExportDialog({
         )}
         {busy && (
           <>
-            <div className="progress">
-              <span style={{ width: `${progress * 100}%` }} />
-            </div>
-            <p className="subtle">
-              {t("正在本机渲染")} {Math.round(progress * 100)}
-              {t("% · 请保持应用打开")}
-            </p>
+            {progress !== null && (
+              <div
+                className="progress"
+                role="progressbar"
+                aria-label={t("正在本机渲染")}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress * 100)}
+              >
+                <span style={{ width: `${progress * 100}%` }} />
+              </div>
+            )}
+            <StatusMessage>
+              {progress === null
+                ? t("正在准备导出…")
+                : `${t("正在本机渲染")} ${Math.round(progress * 100)}${t("% · 请保持应用打开")}`}
+            </StatusMessage>
           </>
         )}
         {error && (
@@ -98,34 +135,31 @@ export function ExportDialog({
           />
         )}
         {saved && (
-          <p className="notice">
-            <CheckCircle />
+          <StatusMessage kind="success">
             {t("已保存至")} {saved}
-          </p>
+          </StatusMessage>
         )}
         <footer>
           {path ? (
-            <button
+            <AsyncButton
               className="primary"
-              onClick={() =>
-                void bridge<string | null>("save_export", { path })
-                  .then((p) => {
-                    if (p) setSaved(p);
-                  })
-                  .catch((e) => setError(String(e)))
-              }
+              busy={saving}
+              busyLabel={t("保存中…")}
+              onClick={() => void save()}
             >
               {t("另存为 MP4")}
-            </button>
+            </AsyncButton>
           ) : (
-            <button
+            <AsyncButton
+              busy={busy}
+              busyLabel={t("正在渲染…")}
               className="primary"
               disabled={busy || !project.clips.length}
               onClick={() => void render()}
             >
               <ExportIcon />
-              {busy ? t("正在渲染…") : error ? t("重试导出") : t("开始导出")}
-            </button>
+              {error ? t("重试导出") : t("开始导出")}
+            </AsyncButton>
           )}
         </footer>
       </section>

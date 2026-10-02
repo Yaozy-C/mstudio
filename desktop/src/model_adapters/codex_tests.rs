@@ -33,7 +33,7 @@ fn codex_model_survives_service_migration_without_api_credentials() {
     let store = crate::database::Store::open(root.clone()).unwrap();
     let rows = crate::models::media::resolved(&store.db.lock().unwrap()).unwrap();
     assert_eq!(rows.len(), 1);
-    assert!(rows[0].connection_id.is_none());
+    assert!(rows[0].connection_id.is_some());
     crate::models::media::validate(&rows[0]).unwrap();
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

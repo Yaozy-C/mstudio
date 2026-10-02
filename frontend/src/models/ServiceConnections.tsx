@@ -1,3 +1,4 @@
+import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -79,7 +80,13 @@ export function ServiceConnections() {
         </button>
       </div>
       {(error || hub.error) && (
-        <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED" />
+        <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED">
+          {hub.error && (
+            <AsyncButton busy={hub.loading} onClick={() => void hub.refresh()}>
+              {t("重试")}
+            </AsyncButton>
+          )}
+        </ErrorNotice>
       )}
       {notice && (
         <div className="model-toast" role="status">
@@ -93,19 +100,30 @@ export function ServiceConnections() {
           </button>
         </div>
       )}
+      {hub.loading && !hub.connections.length && (
+        <LoadingState label={t("正在读取…")} />
+      )}
       <div className="model-list">
         {hub.connections.map((service) => (
           <article className="model-row" key={service.id}>
             <div className="model-logo">
-              <ModelMark identity={`${service.name} ${service.endpoint}`} />
+              <ModelMark
+                identity={`${service.name} ${service.kind === "codex" ? t("本机 Codex") : service.endpoint}`}
+              />
             </div>
             <div className="model-row-copy">
               <strong>{service.name}</strong>
-              <p>{service.endpoint}</p>
+              <p>
+                {service.kind === "codex" ? t("本机 Codex") : service.endpoint}
+              </p>
               <small>
                 {t(serviceLabels[service.kind])} · {service.modelCount}{" "}
                 {t("个模型 ·")}{" "}
-                {service.hasKey ? t("密钥已配置") : t("未配置密钥")}
+                {service.kind === "codex"
+                  ? t("ChatGPT 账号登录")
+                  : service.hasKey
+                    ? t("密钥已配置")
+                    : t("未配置密钥")}
               </small>
             </div>
             <div className="model-row-actions">
@@ -150,7 +168,7 @@ export function ServiceConnections() {
           </article>
         ))}
       </div>
-      {!hub.loading && !hub.connections.length && (
+      {!hub.loading && !hub.error && !hub.connections.length && (
         <p className="model-hint">
           {t("先添加一个服务连接，再从模型库选择型号。")}
         </p>

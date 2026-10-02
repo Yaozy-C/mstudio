@@ -72,7 +72,7 @@ pub(crate) fn resolved(db: &rusqlite::Connection) -> Result<Vec<MediaModel>> {
     }
     Ok(models)
 }
-fn write(db: &rusqlite::Connection, models: &[MediaModel]) -> Result<()> {
+pub(crate) fn write(db: &rusqlite::Connection, models: &[MediaModel]) -> Result<()> {
     db.execute("INSERT INTO settings VALUES('media-models',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [serde_json::to_string(models)?])?;
     Ok(())
 }

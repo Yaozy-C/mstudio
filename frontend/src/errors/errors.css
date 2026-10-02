@@ -44,3 +44,33 @@
   color: var(--desk-text);
   font-weight: 500;
 }
+
+.error-notice,
+.operation-stopped {
+  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+}
+.error-notice-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.error-notice-heading > svg {
+  flex: none;
+  margin-top: 1px;
+}
+.error-notice details {
+  margin-top: 4px;
+  color: var(--desk-muted);
+}
+.error-notice details[open] {
+  color: var(--desk-text);
+}
+.error-notice-actions {
+  margin-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .error-notice,
+  .operation-stopped {
+    animation: none;
+  }
+}

@@ -1,3 +1,4 @@
+import { AsyncButton, LoadingState, StatusMessage } from "../ui/AsyncState";
 import { useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
 import { Images, Plus, Trash, Eye } from "@phosphor-icons/react";
@@ -41,14 +42,15 @@ export function PublicAssets() {
           <h1>{t("公共素材")}</h1>
           <p className="subtle">{t("跨项目复用的素材，在这里统一管理。")}</p>
         </div>
-        <button
+        <AsyncButton
+          busy={library.busy}
           className="primary"
           disabled={!native || library.busy}
           onClick={() => void library.upload()}
         >
           <Plus />
-          {library.busy ? t("处理中…") : t("导入素材")}
-        </button>
+          {t("导入素材")}
+        </AsyncButton>
       </header>
       {!native && (
         <p className="subtle">
@@ -86,9 +88,10 @@ export function PublicAssets() {
         </ErrorNotice>
       )}
       {library.message && (
-        <p role="status" className="subtle">
-          {library.message}
-        </p>
+        <StatusMessage kind="success">{library.message}</StatusMessage>
+      )}
+      {library.loading && !library.assets.length && (
+        <LoadingState label={t("正在读取公共素材…")} />
       )}
       <section
         className="public-assets-grid"
@@ -121,15 +124,13 @@ export function PublicAssets() {
           </div>
         ))}
       </section>
-      {!assets.length && !library.error && (
+      {!library.loading && !assets.length && !library.error && (
         <div className="resource-empty" role="status">
           <Images size={36} />
           <h2>
-            {library.loading
-              ? t("正在读取公共素材…")
-              : library.assets.length
-                ? t("没有匹配的素材")
-                : t("把常用素材放在这里")}
+            {library.assets.length
+              ? t("没有匹配的素材")
+              : t("把常用素材放在这里")}
           </h2>
           <p>
             {library.assets.length
@@ -167,7 +168,9 @@ export function PublicAssets() {
             <AlertDialog.Cancel>
               <button disabled={library.busy}>{t("取消")}</button>
             </AlertDialog.Cancel>
-            <button
+            <AsyncButton
+              busy={library.busy}
+              busyLabel={t("正在移除…")}
               className="primary"
               disabled={library.busy}
               onClick={async () => {
@@ -178,8 +181,8 @@ export function PublicAssets() {
                 }
               }}
             >
-              {library.busy ? t("正在移除…") : t("确认移除")}
-            </button>
+              {t("确认移除")}
+            </AsyncButton>
           </footer>
         </AlertDialog.Content>
       </AlertDialog.Root>

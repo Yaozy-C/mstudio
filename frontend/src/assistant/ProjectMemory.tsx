@@ -1,3 +1,4 @@
+import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -106,7 +107,7 @@ export function ProjectMemory({
       </div>
       {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
       {!memory ? (
-        <p>{t("正在读取项目记忆…")}</p>
+        <StatusMessage>{t("正在读取项目记忆…")}</StatusMessage>
       ) : (
         <form
           onSubmit={(e) => {

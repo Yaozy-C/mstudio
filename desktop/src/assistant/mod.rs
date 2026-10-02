@@ -1,5 +1,6 @@
 mod agent;
 mod chat;
+mod codex_provider;
 mod failure;
 mod generation_context;
 pub(crate) mod harness;

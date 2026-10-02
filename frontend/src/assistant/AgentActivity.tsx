@@ -1,3 +1,4 @@
+import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -111,9 +112,9 @@ export function AgentActivity({
   return (
     <>
       {running && (
-        <div className="agent-run-status" role="status">
+        <StatusMessage className="agent-run-status">
           {status || t("正在处理任务…")}
-        </div>
+        </StatusMessage>
       )}
       {[...scripts.values()].map((s) => (
         <div className="agent-script-receipt" key={s.id}>

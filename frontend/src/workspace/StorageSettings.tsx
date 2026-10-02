@@ -1,3 +1,4 @@
+import { LoadingState, StatusMessage, AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -86,7 +87,7 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
     <section className="storage-settings">
       <h2>{t("存储")}</h2>
       {loading ? (
-        <p role="status">{t("正在读取…")}</p>
+        <LoadingState label={t("正在读取…")} rows={1} />
       ) : loadError ? (
         <ErrorNotice error={loadError} fallback="STORAGE_READ_FAILED">
           <ActionButton
@@ -139,20 +140,24 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
             <code>{target}</code>
           </div>
           {busy && (
-            <p role="status">{t("正在迁移并校验文件，请勿关闭应用…")}</p>
+            <StatusMessage>
+              {t("正在迁移并校验文件，请勿关闭应用…")}
+            </StatusMessage>
           )}
           {error && <ErrorNotice error={error} fallback="STORAGE_FAILED" />}
           <footer>
             <AlertDialog.Cancel>
               <button disabled={busy}>{t("取消")}</button>
             </AlertDialog.Cancel>
-            <button
+            <AsyncButton
+              busy={busy}
+              busyLabel={t("迁移中…")}
               className="primary"
               disabled={busy}
               onClick={() => void migrate()}
             >
-              {busy ? t("迁移中…") : t("迁移并切换")}
-            </button>
+              {t("迁移并切换")}
+            </AsyncButton>
           </footer>
         </AlertDialog.Content>
       </AlertDialog.Root>

@@ -74,7 +74,7 @@ fn login_url_allowed(url: &str) -> bool {
 #[tauri::command]
 pub async fn codex_login() -> Result<(), String> {
     tokio::time::timeout(Duration::from_secs(180), async {
-        let mut rpc = Rpc::start().await?;
+        let mut rpc = Rpc::start_text().await?;
         let result: anyhow::Result<()> = async {
             let login = rpc
                 .call("account/login/start", json!({"type":"chatgpt"}))

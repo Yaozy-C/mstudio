@@ -1,3 +1,4 @@
+pub mod codex_connection;
 pub mod commands;
 #[cfg(test)]
 mod connection_tests;
