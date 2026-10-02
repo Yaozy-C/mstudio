@@ -17,7 +17,8 @@ with tempfile.TemporaryDirectory(prefix='mstudio Windows 中文 ') as temporary:
     installed = work / '安装目录'
     env = {k: v for k, v in os.environ.items()
            if not k.upper().startswith(('GST_', 'GSTREAMER', 'DYLD_', 'MSTUDIO_', 'PKG_CONFIG'))}
-    env['PATH'] = os.pathsep.join([str(Path(env['SystemRoot']) / 'System32'), env['SystemRoot']])
+    system = os.environ['SystemRoot']
+    env['PATH'] = os.pathsep.join([str(Path(system) / 'System32'), system])
     env['GST_REGISTRY_1_0'] = str(work / 'registry.bin')
     subprocess.run([str(installers[0]), '/S', f'/D={installed}'], env=env, check=True, timeout=180)
     exe = installed / 'mstudio-desktop.exe'

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { afterEach, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync, readdirSync } from "node:fs";
@@ -124,7 +125,7 @@ test("all literal translation calls have English entries and matching placeholde
       visit(file);
     }
   }
-  walk(new URL("..", import.meta.url).pathname);
+  walk(fileURLToPath(new URL("..", import.meta.url)));
   expect(missing).toEqual([]);
   const placeholders = (value: string) =>
     [...value.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
