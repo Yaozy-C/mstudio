@@ -51,6 +51,9 @@
       "app"
     ],
     "category": "Video",
+    "macOS": {
+      "minimumSystemVersion": "26.0"
+    },
     "shortDescription": "本地画布视频工作室",
     "icon": [
       "icons/32x32.png",

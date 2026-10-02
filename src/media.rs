@@ -20,6 +20,13 @@ pub fn id() -> String {
     )
 }
 pub fn binary(name: &str) -> PathBuf {
+    if let Ok(exe) = std::env::current_exe()
+        && let Some(path) = bundled_binary(&exe, name)
+    {
+        // Never silently use a machine-installed tool in a packaged app.
+        // A missing bundled tool should surface as a packaging error.
+        return path;
+    }
     for prefix in ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"] {
         let p = Path::new(prefix).join(name);
         if p.exists() {
@@ -28,6 +35,15 @@ pub fn binary(name: &str) -> PathBuf {
     }
     PathBuf::from(name)
 }
+fn bundled_binary(exe: &Path, name: &str) -> Option<PathBuf> {
+    let macos = exe.parent()?;
+    let contents = macos.parent()?;
+    if macos.file_name()? != "MacOS" || contents.file_name()? != "Contents" {
+        return None;
+    }
+    Some(contents.join("Resources/gstreamer/bin").join(name))
+}
+
 pub fn run(command: &mut Command) -> Result<()> {
     let output = command.output().context("无法启动 FFmpeg；请安装 ffmpeg")?;
     ensure!(
@@ -133,4 +149,27 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
         height: video.and_then(|v| v["height"].as_u64()).unwrap_or(0) as u32,
         has_audio,
     })
+}
+
+#[cfg(test)]
+mod binary_tests {
+    use super::*;
+
+    #[test]
+    fn relocated_app_uses_private_tools_even_when_missing() {
+        let exe = Path::new("/Applications/视频 工作室.app/Contents/MacOS/mstudio-desktop");
+        for name in ["ffmpeg", "ffprobe"] {
+            assert_eq!(
+                bundled_binary(exe, name),
+                Some(
+                    Path::new("/Applications/视频 工作室.app/Contents/Resources/gstreamer/bin")
+                        .join(name)
+                )
+            );
+        }
+        assert_eq!(
+            bundled_binary(Path::new("/tmp/target/release/example"), "ffmpeg"),
+            None
+        );
+    }
 }
