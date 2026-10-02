@@ -57,6 +57,9 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/bundle-windows.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $env:GST_PLUGIN_SYSTEM_PATH_1_0 = "$PWD/desktop/native/windows-bundle/gstreamer/lib/gstreamer-1.0"
+          $env:GST_PLUGIN_PATH_1_0 = ''
+          $env:GST_REGISTRY_FORK = 'no'
           cargo fmt --all -- --check
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo fmt --manifest-path desktop/Cargo.toml -- --check

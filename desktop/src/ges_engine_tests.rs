@@ -2,6 +2,31 @@ use super::*;
 use mstudio::preview_ges::{Layer, Plan};
 use std::{process::Command, time::Instant};
 static PLAYER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+#[cfg(windows)]
+fn isolated(name: &str) -> bool {
+    if std::env::var_os("MSTUDIO_GES_TEST_ROOT").is_some() {
+        return false;
+    }
+    // Match the application's preview-worker lifetime. The Windows SDK can
+    // retain media handles beyond pipeline disposal; process exit releases them.
+    let root = std::env::temp_dir().join(format!("mstudio-ges-{}", mstudio::media::id()));
+    let status = Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", name, "--nocapture"])
+        .env("MSTUDIO_GES_TEST_ROOT", &root)
+        .status()
+        .unwrap();
+    // Check cleanup in the parent, after the real worker has exited.
+    std::fs::remove_dir_all(&root).unwrap();
+    assert!(status.success(), "GES worker test failed: {status}");
+    true
+}
+fn test_root(prefix: &str) -> std::path::PathBuf {
+    #[cfg(windows)]
+    if let Some(root) = std::env::var_os("MSTUDIO_GES_TEST_ROOT") {
+        return root.into();
+    }
+    std::env::temp_dir().join(format!("{prefix}-{}", mstudio::media::id()))
+}
 fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
     let deadline = Instant::now() + Duration::from_secs(12);
     while Instant::now() < deadline {
@@ -16,8 +41,12 @@ fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
 }
 #[test]
 fn ges_composites_seeks_replays_and_closes() {
+    #[cfg(windows)]
+    if isolated("ges_engine::tests::ges_composites_seeks_replays_and_closes") {
+        return;
+    }
     let _guard = PLAYER_TEST_LOCK.lock().unwrap();
-    let root = std::env::temp_dir().join(format!("mstudio-ges-test-{}", mstudio::media::id()));
+    let root = test_root("mstudio-ges-test");
     std::fs::create_dir_all(&root).unwrap();
     let red = root.join("red.mp4");
     let png = root.join("caption.png");
@@ -164,13 +193,18 @@ fn ges_composites_seeks_replays_and_closes() {
     next.control("seek", 30).unwrap();
     wait_frame(&next, 30);
     drop(next);
+    #[cfg(not(windows))]
     std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]
 fn ges_seeks_transparent_animated_captions() {
+    #[cfg(windows)]
+    if isolated("ges_engine::tests::ges_seeks_transparent_animated_captions") {
+        return;
+    }
     let _guard = PLAYER_TEST_LOCK.lock().unwrap();
-    let root = std::env::temp_dir().join(format!("mstudio-ges-caption-{}", mstudio::media::id()));
+    let root = test_root("mstudio-ges-caption");
     std::fs::create_dir_all(&root).unwrap();
     let mut frames = vec![];
     for (i, x) in [20, 100].iter().enumerate() {
@@ -251,5 +285,6 @@ fn ges_seeks_transparent_animated_captions() {
     }
     assert!(player.control("status", 0).unwrap().frame >= 100);
     drop(player);
+    #[cfg(not(windows))]
     std::fs::remove_dir_all(root).unwrap();
 }
