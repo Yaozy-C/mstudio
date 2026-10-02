@@ -22,7 +22,10 @@ with tempfile.TemporaryDirectory(prefix='mstudio Windows 中文 ') as temporary:
     env['PATH'] = os.pathsep.join([str(Path(system) / 'System32'), system])
     env['TEMP'] = env['TMP'] = str(work)
     env['GST_REGISTRY_1_0'] = str(work / 'registry.bin')
-    subprocess.run([str(installers[0]), '/S', f'/D={installed}'], env=env, check=True, timeout=180)
+    # NSIS requires /D= last and unquoted, even when the path contains spaces.
+    # Passing an argv list would quote the whole switch and silently ignore it.
+    install_command = subprocess.list2cmdline([str(installers[0]), '/S']) + f' /D={installed}'
+    subprocess.run(install_command, env=env, check=True, timeout=180)
     exe = installed / 'mstudio-desktop.exe'
     assert exe.is_file(), f'Installer omitted executable: {list(installed.iterdir())}'
     assert (installed / 'skills/ad-team/SKILL.md').is_file(), 'Installer omitted skills'
@@ -86,6 +89,7 @@ with tempfile.TemporaryDirectory(prefix='mstudio Windows 中文 ') as temporary:
             process.wait(timeout=15)
     uninstall = installed / 'uninstall.exe'
     assert uninstall.is_file(), 'Missing uninstaller'
-    subprocess.run([str(uninstall), '/S', f'_?={installed}'], env=env, check=True, timeout=90)
+    uninstall_command = subprocess.list2cmdline([str(uninstall), '/S']) + f' _?={installed}'
+    subprocess.run(uninstall_command, env=env, check=True, timeout=90)
     assert not exe.exists(), 'Uninstaller left the main executable'
 print(f'Windows installed package passed: {installers[0].name}; clean PATH, Unicode paths, media, GES, GUI and uninstall')
