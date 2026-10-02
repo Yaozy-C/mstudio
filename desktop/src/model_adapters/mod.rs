@@ -1,7 +1,9 @@
 //! Provider transport is separate from model capabilities and project job persistence.
 mod codex;
+mod codex_discovery;
 mod codex_request;
 pub mod codex_rpc;
+pub mod codex_setup;
 mod fal;
 pub mod prompt_rules;
 pub(crate) use fal::recover_cancelled;

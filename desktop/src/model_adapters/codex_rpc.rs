@@ -7,55 +7,6 @@ use tokio::{
     process::{Child, ChildStdin, ChildStdout},
 };
 
-fn resolve_binary(
-    override_path: Option<std::ffi::OsString>,
-    candidates: &[std::path::PathBuf],
-) -> std::path::PathBuf {
-    if let Some(path) = override_path {
-        return path.into();
-    }
-    candidates
-        .iter()
-        .find(|path| path.is_file())
-        .cloned()
-        .unwrap_or_else(|| "codex".into())
-}
-
-fn codex_binary() -> std::path::PathBuf {
-    let mut candidates = Vec::new();
-    let mut roots = vec![std::path::PathBuf::from("/Applications")];
-    if let Some(home) = std::env::var_os("HOME") {
-        roots.push(std::path::PathBuf::from(home).join("Applications"));
-    }
-    for root in roots {
-        for bundle in ["ChatGPT.app", "Codex.app"] {
-            let resources = root.join(bundle).join("Contents/Resources");
-            candidates.push(resources.join("codex-cli/CodexCLI.app/Contents/MacOS/codex"));
-            candidates.push(resources.join("codex"));
-        }
-    }
-    candidates
-        .extend(["/opt/homebrew/bin/codex", "/usr/local/bin/codex"].map(std::path::PathBuf::from));
-    #[cfg(windows)]
-    {
-        if let Some(path) = std::env::var_os("PATH") {
-            candidates.extend(std::env::split_paths(&path).map(|p| p.join("codex.exe")));
-        }
-        // npm's launcher is a .cmd wrapper; prefer the bundled native executable.
-        if let Some(appdata) = std::env::var_os("APPDATA") {
-            let npm = std::path::PathBuf::from(appdata).join("npm/node_modules/@openai/codex");
-            for relative in [
-                "vendor/x86_64-pc-windows-msvc/codex/codex.exe",
-                "../codex-win32-x64/vendor/x86_64-pc-windows-msvc/codex/codex.exe",
-                "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/codex/codex.exe",
-            ] {
-                candidates.push(npm.join(relative));
-            }
-        }
-    }
-    resolve_binary(std::env::var_os("MSTUDIO_CODEX_BIN"), &candidates)
-}
-
 pub struct Rpc {
     child: Child,
     input: ChildStdin,
@@ -65,12 +16,33 @@ pub struct Rpc {
 }
 impl Rpc {
     pub async fn start() -> Result<Self> {
-        let binary = codex_binary();
-        let mut command = tokio::process::Command::new(&binary);
+        let mut last = anyhow::anyhow!("未找到 Codex");
+        for binary in super::codex_discovery::binaries().await {
+            for transport in ["--stdio", "--listen"] {
+                match tokio::time::timeout(
+                    std::time::Duration::from_secs(4),
+                    Self::connect(&binary, transport),
+                )
+                .await
+                {
+                    Ok(Ok(rpc)) => return Ok(rpc),
+                    Ok(Err(error)) => last = error,
+                    Err(_) => last = anyhow::anyhow!("连接 Codex 超时"),
+                }
+            }
+        }
+        Err(last)
+    }
+    async fn connect(binary: &std::path::Path, transport: &str) -> Result<Self> {
+        let mut command = tokio::process::Command::new(binary);
         #[cfg(windows)]
         command.creation_flags(0x08000000);
+        command.args(["app-server", transport]);
+        if transport == "--listen" {
+            command.arg("stdio://");
+        }
         let mut child = command
-            .args(["app-server", "--stdio", "--enable", "image_generation"])
+            .args(["--enable", "image_generation"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -88,7 +60,7 @@ impl Rpc {
             sequence: 0,
             pending: Default::default(),
         };
-        rpc.call("initialize", json!({"clientInfo":{"name":"mstudio","version":"0.1.0"},"capabilities":{"experimentalApi":true}})).await?;
+        rpc.call("initialize", json!({"clientInfo":{"name":"mstudio","version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true}})).await?;
         rpc.send(json!({"method":"initialized","params":{}}))
             .await?;
         Ok(rpc)
@@ -151,40 +123,30 @@ impl Rpc {
         let _ = self.child.wait().await;
     }
 }
-#[tauri::command]
-pub async fn codex_image_status() -> Result<Value, String> {
-    let result = tokio::time::timeout(std::time::Duration::from_secs(20), async {
-        let mut rpc = Rpc::start().await?;
-        let result: Result<Value> = async {
-            let account = rpc.call("account/read", json!({"refreshToken":false})).await?;
-            let capabilities = rpc.call("modelProvider/capabilities/read", json!({})).await?;
-            Ok(json!({"loggedIn":account["account"]["type"] == "chatgpt", "imageGeneration":capabilities["imageGeneration"],"modelVerified":false}))
-        }.await;
-        rpc.stop().await;
-        result
-    }).await;
-    result
-        .map_err(|_| "连接 Codex 超时".to_string())?
-        .map_err(|e| e.to_string())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn discovery_preserves_override_and_skips_missing_app_locations() {
-        let root = std::env::temp_dir().join(format!("codex-discovery-{}", mstudio::media::id()));
-        std::fs::create_dir_all(&root).unwrap();
-        let installed = root.join("codex");
-        std::fs::write(&installed, "fixture").unwrap();
-        let candidates = [root.join("missing"), installed.clone()];
-        assert_eq!(resolve_binary(None, &candidates), installed);
-        assert_eq!(
-            resolve_binary(Some("custom-codex".into()), &candidates),
-            std::path::PathBuf::from("custom-codex")
-        );
-        assert_eq!(resolve_binary(None, &[]), std::path::PathBuf::from("codex"));
-        std::fs::remove_dir_all(root).unwrap();
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn supports_listen_transport_when_legacy_flag_is_rejected() {
+        use std::os::unix::fs::PermissionsExt;
+        let path = std::env::temp_dir().join(format!("codex-rpc-{}", mstudio::media::id()));
+        std::fs::write(
+            &path,
+            r#"#!/bin/sh
+if [ "$2" = "--stdio" ]; then exit 2; fi
+if [ "$2" != "--listen" ] || [ "$3" != "stdio://" ]; then exit 3; fi
+read -r request
+printf '%s\n' '{"id":1,"result":{}}'
+read -r initialized
+"#,
+        )
+        .unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+        assert!(Rpc::connect(&path, "--stdio").await.is_err());
+        let mut rpc = Rpc::connect(&path, "--listen").await.unwrap();
+        rpc.stop().await;
+        std::fs::remove_file(path).unwrap();
     }
     #[tokio::test]
     #[ignore = "requires a locally installed Codex; handshake only, no generation"]

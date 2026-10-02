@@ -1,5 +1,21 @@
 {
   "Claude 原生": "Native Claude",
   "{kind}模型": "{kind} models",
-  "{kind}生成": "{kind} generation"
+  "{kind}生成": "{kind} generation",
+  "自动查找 Codex、检查登录与生图能力，无需填写。": "Automatically find Codex and check sign-in and image generation. No setup fields.",
+  "Codex 已就绪。": "Codex is ready.",
+  "未找到 Codex，安装后点击重新检测。": "Codex was not found. Install it, then check again.",
+  "登录 ChatGPT 后即可继续检测。": "Sign in with ChatGPT to continue.",
+  "当前 Codex 未提供生图能力，请更新后重试。": "Image generation is unavailable in this Codex. Update it and try again.",
+  "暂时无法连接 Codex，请确认 Codex 可正常运行后重试。": "Unable to connect to Codex. Check that Codex runs, then retry.",
+  "连接 Codex 超时，请重试。": "The connection to Codex timed out. Try again.",
+  "连接 Codex 生图": "Connect Codex images",
+  "请在桌面应用中检测本机 Codex。": "Open the desktop app to detect local Codex.",
+  "请在浏览器完成登录，完成后将自动检测。": "Finish signing in in your browser. Detection will continue automatically.",
+  "正在检测本机 Codex…": "Checking local Codex…",
+  "安装 Codex": "Install Codex",
+  "更新 Codex": "Update Codex",
+  "登录 ChatGPT": "Sign in with ChatGPT",
+  "一键检测并启用": "Detect and enable",
+  "重新检测": "Check again"
 }
