@@ -38,6 +38,18 @@ fn main() -> anyhow::Result<()> {
         "unexpected imported asset"
     );
     anyhow::ensure!(Path::new(&asset.preview).is_file(), "missing thumbnail");
+    // Exercise LUT paths with drive letters, spaces and Unicode on Windows.
+    let visual: mstudio::visual::Visual = serde_json::from_value(serde_json::json!({
+        "grade": {"exposure": 0.4}
+    }))?;
+    let filter = mstudio::visual::ffmpeg(Some(&visual), 320, 180)?;
+    media::run(
+        media::command("ffmpeg")
+            .args(["-v", "error", "-y", "-i"])
+            .arg(&asset.path)
+            .args(["-vf", &filter, "-frames:v", "1"])
+            .arg(Path::new(&args[2]).join("graded.png")),
+    )?;
     let player = ges_engine::Player::open(Plan {
         width: 320,
         height: 180,

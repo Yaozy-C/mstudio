@@ -233,5 +233,6 @@ fn shot_reference_is_text_and_directory_without_implicitly_reading_frames() {
             .contains("Only change the light.")
     );
     assert!(payload[0]["text"].as_str().unwrap().contains("image"));
+    drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }

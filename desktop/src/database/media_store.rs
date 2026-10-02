@@ -108,8 +108,8 @@ pub fn save(db: &Connection, bytes: &[u8]) -> Result<String> {
                 .open(&temporary)?;
             file.write_all(bytes)?;
             file.sync_all()?;
-            std::fs::rename(&temporary, &destination)?;
-            std::fs::File::open(destination.parent().unwrap())?.sync_all()?;
+            drop(file);
+            install_file(&temporary, &destination)?;
             Ok(())
         })();
         if result.is_err() {
@@ -126,6 +126,30 @@ pub fn save(db: &Connection, bytes: &[u8]) -> Result<String> {
         params![digest, bytes.len()],
     )?;
     Ok(digest)
+}
+
+fn install_file(from: &std::path::Path, to: &std::path::Path) -> std::io::Result<()> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStrExt;
+        #[link(name = "kernel32")]
+        unsafe extern "system" {
+            fn MoveFileExW(from: *const u16, to: *const u16, flags: u32) -> i32;
+        }
+        let from: Vec<u16> = from.as_os_str().encode_wide().chain(Some(0)).collect();
+        let to: Vec<u16> = to.as_os_str().encode_wide().chain(Some(0)).collect();
+        // WRITE_THROUGH: persist the rename before committing its SQLite reference.
+        // Opening a directory and calling sync_all is not supported on Windows.
+        if unsafe { MoveFileExW(from.as_ptr(), to.as_ptr(), 8) } == 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
+        std::fs::rename(from, to)?;
+        std::fs::File::open(to.parent().unwrap())?.sync_all()
+    }
 }
 pub fn read(db: &Connection, digest: &str, prefix: &str) -> Result<String> {
     let file = path(db, digest)?;

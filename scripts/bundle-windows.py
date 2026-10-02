@@ -69,10 +69,9 @@ for label, package in [('gstreamer', sdk), ('ffmpeg', ffmpeg)]:
     'ffmpeg': subprocess.check_output([str(ffmpeg / 'bin/ffmpeg.exe'), '-version'], text=True),
     'plugins': plugins, 'architecture': 'x86_64',
 }, indent=2), encoding='utf-8')
-resources = {'../skills/': 'skills/'}
-for file in sorted(out.rglob('*')):
-    if file.is_file():
-        resources[file.relative_to(root / 'desktop').as_posix()] = file.relative_to(out).as_posix()
+# Keep TAURI_CONFIG bounded on Windows; map the directory instead of hundreds
+# of individual files. Tauri preserves its relative tree below the EXE directory.
+resources = {'../skills/': 'skills/', 'native/windows-bundle/': './'}
 (root / 'desktop/native/windows-resources.json').write_text(
     json.dumps({'bundle': {'resources': resources}}, indent=2), encoding='utf-8')
-print(f'Staged Windows media runtime: {len(resources) - 1} files')
+print(f'Staged Windows media runtime: {sum(p.is_file() for p in out.rglob("*"))} files')

@@ -143,7 +143,15 @@ fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<
             ensure!(text.len() <= 200_000, "Rule file too large");
             db.execute(
                 "INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES(?1,?2,?3)",
-                params![id, path.strip_prefix(base)?.to_string_lossy(), text],
+                params![
+                    id,
+                    path.strip_prefix(base)?
+                        .components()
+                        .map(|p| p.as_os_str().to_string_lossy())
+                        .collect::<Vec<_>>()
+                        .join("/"),
+                    text
+                ],
             )?;
         }
     }

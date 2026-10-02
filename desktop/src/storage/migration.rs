@@ -142,7 +142,10 @@ pub(super) fn migrate(
             fs::copy(source.join(relative), &destination).with_context(|| {
                 format!("无法复制 {}，请检查权限和剩余空间", relative.display())
             })?;
-            fs::File::open(&destination)?.sync_all()?;
+            fs::OpenOptions::new()
+                .write(true)
+                .open(&destination)?
+                .sync_all()?;
             ensure!(
                 equal(&source.join(relative), &destination)?,
                 "文件校验失败：{}",

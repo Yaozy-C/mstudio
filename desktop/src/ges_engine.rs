@@ -215,6 +215,12 @@ impl Player {
                             let _ = reply.send(result);
                         }
                         let _ = pipeline.set_state(gst::State::Null);
+                        drop(pipeline);
+                        // Complete GLib disposal callbacks before the worker releases its
+                        // context; Windows cannot delete media with an open source handle.
+                        while context.pending() {
+                            context.iteration(false);
+                        }
                     }
                 }
             });

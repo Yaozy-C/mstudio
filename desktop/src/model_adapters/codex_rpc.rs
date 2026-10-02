@@ -46,6 +46,7 @@ fn codex_binary() -> std::path::PathBuf {
             let npm = std::path::PathBuf::from(appdata).join("npm/node_modules/@openai/codex");
             for relative in [
                 "vendor/x86_64-pc-windows-msvc/codex/codex.exe",
+                "../codex-win32-x64/vendor/x86_64-pc-windows-msvc/codex/codex.exe",
                 "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/codex/codex.exe",
             ] {
                 candidates.push(npm.join(relative));
