@@ -4,7 +4,7 @@ use anyhow::{Context, Result, ensure};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use mstudio::{model::Asset, visual::Visual};
 use serde_json::{Value, json};
-use std::{path::Path, process::Command};
+use std::path::Path;
 
 pub fn parts(
     store: &Store,
@@ -71,7 +71,7 @@ pub(super) fn frame(
     } else {
         format!("{grade},{scale}")
     };
-    let output = Command::new(mstudio::media::binary("ffmpeg"))
+    let output = mstudio::media::command("ffmpeg")
         .args([
             "-v",
             "error",
@@ -131,7 +131,7 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("source.mp4");
         mstudio::media::run(
-            Command::new(mstudio::media::binary("ffmpeg"))
+            mstudio::media::command("ffmpeg")
                 .args([
                     "-v",
                     "error",

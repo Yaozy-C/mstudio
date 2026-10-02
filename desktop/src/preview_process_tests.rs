@@ -11,7 +11,7 @@ fn fixture() -> Plan {
     }
 }
 fn fake(delay: bool) -> PreviewProcess {
-    let mut command = std::process::Command::new("python3");
+    let mut command = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" });
     command.arg("-u").arg("-c").arg(r#"
 import json,struct,sys,time,os
 r=sys.stdin.buffer; w=sys.stdout.buffer

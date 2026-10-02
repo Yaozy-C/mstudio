@@ -223,7 +223,11 @@ fn clipboard_paths() -> Vec<PathBuf> {
         })
         .collect()
 }
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+fn clipboard_paths() -> Vec<PathBuf> {
+    crate::windows_host::clipboard_paths()
+}
+#[cfg(not(any(windows, target_os = "macos")))]
 fn clipboard_paths() -> Vec<PathBuf> {
     vec![]
 }

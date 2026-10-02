@@ -74,6 +74,7 @@ fn removing_from_library_does_not_lose_cleanup_ownership() {
     assert!(!Path::new(&asset.path).exists());
 }
 
+#[cfg(unix)]
 #[test]
 fn file_failure_is_reported_and_retry_cleans_the_committed_queue() {
     use std::os::unix::fs::PermissionsExt;

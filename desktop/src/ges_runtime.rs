@@ -7,13 +7,23 @@ pub fn configure() {
     unsafe {
         std::env::set_var("ORC_CODE", "backup");
     }
+    #[cfg(not(windows))]
     let packaged = std::env::current_exe()
         .ok()
         .and_then(|p| p.parent()?.parent().map(|p| p.join("Resources/gstreamer")));
+    #[cfg(windows)]
+    let packaged = std::env::current_exe().ok().and_then(|p| {
+        let root = p.parent()?.join("gstreamer");
+        root.join("runtime.json").is_file().then_some(root)
+    });
     let plugins = packaged
         .filter(|p| p.join("lib/gstreamer-1.0").is_dir())
         .map(|p| p.join("lib/gstreamer-1.0"))
         .unwrap_or_else(|| {
+            #[cfg(windows)]
+            if let Some(sdk) = std::env::var_os("GSTREAMER_1_0_ROOT_MSVC_X86_64") {
+                return std::path::PathBuf::from(sdk).join("lib/gstreamer-1.0");
+            }
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("native/ges-dev-plugins")
         });
     if plugins.is_dir() {

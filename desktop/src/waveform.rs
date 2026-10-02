@@ -3,7 +3,7 @@ use crate::database::Store;
 use std::{
     hash::{Hash, Hasher},
     io::{BufReader, Read},
-    process::{Command, Stdio},
+    process::Stdio,
 };
 use tauri::Manager;
 #[tauri::command]
@@ -49,7 +49,7 @@ pub async fn audio_waveform(
         {
             return Ok(peaks);
         }
-        let mut child = Command::new(mstudio::media::binary("ffmpeg"))
+        let mut child = mstudio::media::command("ffmpeg")
             .args([
                 "-v",
                 "error",

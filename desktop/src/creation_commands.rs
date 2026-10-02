@@ -1,37 +1,10 @@
 use crate::database::Store;
 use base64::Engine;
 use mstudio::{media, model::Asset};
-use serde::Serialize;
 use std::process::Command;
 use tauri::Manager;
 
-#[derive(Serialize)]
-pub struct Voice {
-    name: String,
-    language: String,
-}
-fn installed_voices() -> Result<Vec<Voice>, String> {
-    let out = Command::new("/usr/bin/say")
-        .args(["-v", "?"])
-        .output()
-        .map_err(|e| e.to_string())?;
-    if !out.status.success() {
-        return Err("无法读取本机声音".into());
-    }
-    Ok(String::from_utf8_lossy(&out.stdout)
-        .lines()
-        .filter_map(|line| {
-            let fields: Vec<_> = line.split('#').next()?.split_whitespace().collect();
-            let i = fields
-                .iter()
-                .position(|v| v.len() >= 5 && v.as_bytes().get(2) == Some(&b'_'))?;
-            Some(Voice {
-                name: fields[..i].join(" "),
-                language: fields[i].into(),
-            })
-        })
-        .collect())
-}
+use crate::system_voice::{Voice, installed_voices};
 #[tauri::command]
 pub async fn list_voices() -> Result<Vec<Voice>, String> {
     tauri::async_runtime::spawn_blocking(installed_voices)
@@ -63,20 +36,8 @@ pub async fn generate_voice(
             .map_err(|e| e.to_string())?;
         std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
         let result = (|| {
-            let script = work.join("script.txt");
-            let spoken = work.join("voice.aiff");
+            let spoken = crate::system_voice::synthesize(&work, &text, &voice, rate)?;
             let wav = work.join("配音.wav");
-            std::fs::write(&script, text).map_err(|e| e.to_string())?;
-            let out = Command::new("/usr/bin/say")
-                .args(["-v", &voice, "-r", &rate.to_string(), "-f"])
-                .arg(script)
-                .arg("-o")
-                .arg(&spoken)
-                .output()
-                .map_err(|e| e.to_string())?;
-            if !out.status.success() {
-                return Err("本机配音生成失败，请检查系统声音".into());
-            }
             media::run(
                 Command::new(media::binary("ffmpeg"))
                     .args(["-v", "error", "-y", "-i"])

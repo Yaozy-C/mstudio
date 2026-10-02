@@ -116,7 +116,7 @@ export function SpeechPanel({
     <div className="creation-form speech-form" aria-busy={busy}>
       <div className="speech-source">
         <strong>{t("系统配音")}</strong>
-        <span>macOS</span>
+        <span>{/Win/.test(navigator.platform) ? "Windows" : "macOS"}</span>
       </div>
       <fieldset disabled={busy}>
         <label>

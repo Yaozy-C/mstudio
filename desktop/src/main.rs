@@ -27,7 +27,10 @@ mod project_storage;
 mod projects;
 mod reference_commands;
 mod storage;
+mod system_voice;
 mod waveform;
+#[cfg(windows)]
+mod windows_host;
 use tauri::{Emitter, Manager};
 #[tauri::command]
 fn finish_exit(app: tauri::AppHandle) {

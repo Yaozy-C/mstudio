@@ -34,6 +34,7 @@ impl PreviewProcess {
     pub fn launch(plan: Plan) -> Result<Self, String> {
         let mut command =
             std::process::Command::new(std::env::current_exe().map_err(|e| e.to_string())?);
+        mstudio::media::quiet(&mut command);
         command.arg("--preview-worker");
         Self::spawn(command, plan)
     }

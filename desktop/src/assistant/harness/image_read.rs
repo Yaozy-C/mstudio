@@ -75,7 +75,6 @@ mod tests {
     use super::*;
     #[test]
     fn transition_reader_returns_composited_pixels_and_preserves_project_assets() {
-        use std::process::Command;
         let root = std::env::temp_dir().join(format!("mstudio-seam-read-{}", mstudio::media::id()));
         let store = Store::open(root.clone()).unwrap();
         let media = store.media_root().join("assets");
@@ -84,7 +83,7 @@ mod tests {
         for color in ["red", "blue"] {
             let path = media.join(format!("{color}.mp4"));
             mstudio::media::run(
-                Command::new(mstudio::media::binary("ffmpeg"))
+                mstudio::media::command("ffmpeg")
                     .args([
                         "-v",
                         "error",

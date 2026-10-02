@@ -214,6 +214,7 @@ fn same_file_under_different_asset_ids_is_preserved() {
     assert!(!Path::new(&alias.path).exists());
 }
 
+#[cfg(unix)]
 #[test]
 fn external_files_symlinks_and_database_never_become_delete_targets() {
     let f = Fixture::new();

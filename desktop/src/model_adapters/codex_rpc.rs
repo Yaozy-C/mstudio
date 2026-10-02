@@ -36,6 +36,22 @@ fn codex_binary() -> std::path::PathBuf {
     }
     candidates
         .extend(["/opt/homebrew/bin/codex", "/usr/local/bin/codex"].map(std::path::PathBuf::from));
+    #[cfg(windows)]
+    {
+        if let Some(path) = std::env::var_os("PATH") {
+            candidates.extend(std::env::split_paths(&path).map(|p| p.join("codex.exe")));
+        }
+        // npm's launcher is a .cmd wrapper; prefer the bundled native executable.
+        if let Some(appdata) = std::env::var_os("APPDATA") {
+            let npm = std::path::PathBuf::from(appdata).join("npm/node_modules/@openai/codex");
+            for relative in [
+                "vendor/x86_64-pc-windows-msvc/codex/codex.exe",
+                "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/codex/codex.exe",
+            ] {
+                candidates.push(npm.join(relative));
+            }
+        }
+    }
     resolve_binary(std::env::var_os("MSTUDIO_CODEX_BIN"), &candidates)
 }
 
@@ -49,7 +65,10 @@ pub struct Rpc {
 impl Rpc {
     pub async fn start() -> Result<Self> {
         let binary = codex_binary();
-        let mut child = tokio::process::Command::new(&binary)
+        let mut command = tokio::process::Command::new(&binary);
+        #[cfg(windows)]
+        command.creation_flags(0x08000000);
+        let mut child = command
             .args(["app-server", "--stdio", "--enable", "image_generation"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

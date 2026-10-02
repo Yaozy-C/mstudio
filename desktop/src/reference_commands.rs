@@ -4,7 +4,7 @@ use base64::{Engine, engine::general_purpose::STANDARD};
 use mstudio::{media, model::Asset};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{path::Path, process::Command};
+use std::path::Path;
 use tauri::Manager;
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,7 +41,7 @@ fn prepare(asset: &Asset, reference: &Reference, work: &Path) -> Result<(Vec<u8>
     } else {
         "reference.mp4"
     });
-    let mut cmd = Command::new(media::binary("ffmpeg"));
+    let mut cmd = media::command("ffmpeg");
     cmd.args(["-v", "error", "-y", "-threads", "2"]);
     if !image {
         let start = reference.start.unwrap_or(0.);

@@ -36,6 +36,14 @@ pub fn binary(name: &str) -> PathBuf {
     PathBuf::from(name)
 }
 fn bundled_binary(exe: &Path, name: &str) -> Option<PathBuf> {
+    #[cfg(windows)]
+    {
+        let directory = exe.parent()?;
+        // The manifest distinguishes a packaged app from cargo's build outputs.
+        if directory.join("gstreamer/runtime.json").is_file() {
+            return Some(directory.join("media").join(format!("{name}.exe")));
+        }
+    }
     let macos = exe.parent()?;
     let contents = macos.parent()?;
     if macos.file_name()? != "MacOS" || contents.file_name()? != "Contents" {
@@ -44,7 +52,24 @@ fn bundled_binary(exe: &Path, name: &str) -> Option<PathBuf> {
     Some(contents.join("Resources/gstreamer/bin").join(name))
 }
 
+/// Hide media subprocess console windows while retaining redirected output.
+pub fn command(name: &str) -> Command {
+    let mut command = Command::new(binary(name));
+    quiet(&mut command);
+    command
+}
+pub fn quiet(command: &mut Command) {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    #[cfg(not(windows))]
+    let _ = command;
+}
+
 pub fn run(command: &mut Command) -> Result<()> {
+    quiet(command);
     let output = command.output().context("无法启动 FFmpeg；请安装 ffmpeg")?;
     ensure!(
         output.status.success(),
@@ -61,7 +86,7 @@ pub fn run(command: &mut Command) -> Result<()> {
     Ok(())
 }
 pub fn probe(path: &Path) -> Result<Value> {
-    let result = Command::new(binary("ffprobe"))
+    let result = command("ffprobe")
         .args([
             "-v",
             "error",
@@ -115,7 +140,7 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
     std::fs::copy(path, &destination)?;
     let preview = root.join("previews").join(format!("{id}.jpg"));
     if video.is_some() {
-        run(Command::new(binary("ffmpeg"))
+        run(command("ffmpeg")
             .args(["-v", "error", "-y", "-i"])
             .arg(&destination)
             .args([

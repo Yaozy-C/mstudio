@@ -12,15 +12,23 @@ fn main() -> anyhow::Result<()> {
     ges_runtime::configure();
     let args: Vec<_> = std::env::args().collect();
     anyhow::ensure!(args.len() == 3, "bundled_media source.mp4 work-directory");
+    #[cfg(not(windows))]
     let tools = std::env::current_exe()?
         .parent()
         .unwrap()
         .parent()
         .unwrap()
         .join("Resources/gstreamer/bin");
+    #[cfg(windows)]
+    let tools = std::env::current_exe()?.parent().unwrap().join("media");
     for name in ["ffmpeg", "ffprobe"] {
+        let filename = if cfg!(windows) {
+            format!("{name}.exe")
+        } else {
+            name.into()
+        };
         anyhow::ensure!(
-            media::binary(name) == tools.join(name),
+            media::binary(name) == tools.join(filename),
             "external media tool"
         );
     }

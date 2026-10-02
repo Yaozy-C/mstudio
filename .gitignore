@@ -54,3 +54,5 @@ playwright-report/
 *.swp
 *.swo
 *~
+
+/desktop/native/windows-bundle/
