@@ -41,11 +41,11 @@ fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
 }
 #[test]
 fn ges_composites_seeks_replays_and_closes() {
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
     #[cfg(windows)]
     if isolated("ges_engine::tests::ges_composites_seeks_replays_and_closes") {
         return;
     }
-    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
     let root = test_root("mstudio-ges-test");
     std::fs::create_dir_all(&root).unwrap();
     let red = root.join("red.mp4");
@@ -199,11 +199,11 @@ fn ges_composites_seeks_replays_and_closes() {
 
 #[test]
 fn ges_seeks_transparent_animated_captions() {
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
     #[cfg(windows)]
     if isolated("ges_engine::tests::ges_seeks_transparent_animated_captions") {
         return;
     }
-    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
     let root = test_root("mstudio-ges-caption");
     std::fs::create_dir_all(&root).unwrap();
     let mut frames = vec![];
