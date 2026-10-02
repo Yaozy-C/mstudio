@@ -1,3 +1,4 @@
+import { platformShortcut } from "../ui/platformShortcut";
 import { addCaptionTrack } from "./captionTracks";
 import { t, useLanguage } from "../i18n";
 import {
@@ -63,7 +64,7 @@ export function TimelineToolbar({
       <TimelineTransport clock={clock} onPlay={onPlay} />
       <div className="timeline-edit">
         <button
-          title={t("分割 ⌘B")}
+          title={platformShortcut(t("分割 ⌘B"))}
           disabled={!!selectedCaption}
           onClick={onSplit}
         >
@@ -130,7 +131,7 @@ export function TimelineToolbar({
         </button>
         <button
           aria-label={t("缩小时间精度")}
-          title="⌘−"
+          title={platformShortcut("⌘−")}
           onClick={() => changeZoom(1 / 1.5)}
         >
           <Minus />
@@ -138,7 +139,7 @@ export function TimelineToolbar({
         <span>{Math.round((zoom / 64) * 100)}%</span>
         <button
           aria-label={t("放大时间精度")}
-          title="⌘+"
+          title={platformShortcut("⌘+")}
           onClick={() => changeZoom(1.5)}
         >
           <Plus />

@@ -29,7 +29,7 @@ errors = []
 for preview_root in ['frontend/public/effects', 'frontend/public/transition-previews']:
     manifest = root / preview_root / 'sources.json'
     if manifest.exists():
-        for entry in json.loads(manifest.read_text()):
+        for entry in json.loads(manifest.read_text(encoding="utf-8")):
             filename = entry.get('file', '')
             if not re.fullmatch(r'[a-z0-9-]+\.mp4', filename):
                 errors.append('Effect preview manifest: invalid filename')

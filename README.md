@@ -14,7 +14,7 @@ We call this **Vibe Video**: direct the work through conversation, see the chang
 
 *Actual desktop interface. A script is attached to an example revision request; the request is an unsent draft, not a completed Agent run.*
 
-> **Development preview.** macOS is the primary development and validation platform. Windows packaging and device validation are incomplete; Linux native desktop preview is not supported. Build from source using the steps below.
+> **Development preview.** macOS is the primary development and validation platform. Windows x64 installer builds are available through the Windows installer workflow; physical device validation is still required; Linux native desktop preview is not supported. Build from source using the steps below.
 
 ## How Agents work
 

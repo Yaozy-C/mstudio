@@ -14,7 +14,7 @@ for name in sorted(set(files) - {''}):
     path = root / name
     if not path.is_file() or path.suffix not in source_types:
         continue
-    count = len(path.read_text().splitlines())
+    count = len(path.read_text(encoding="utf-8").splitlines())
     checked += 1
     if count > 300:
         violations.append(f'{name}: {count} lines (limit 300)')

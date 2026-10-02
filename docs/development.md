@@ -85,7 +85,21 @@ sh scripts/bundle.sh
 
 ## Windows 状态
 
-Windows 的 GES 运行时打包、安装器与实机验证尚未完成。当前打包脚本面向 macOS，不能据此宣称 Windows 已支持。
+Windows 首版目标为 Windows 10/11 x64，使用 MSVC 工具链，暂不提供 Windows ARM64 安装包。安装器携带 GStreamer/GES、FFmpeg/ffprobe 和 MSVC CRT；缺少 WebView2 时联网安装。用户无需安装媒体 SDK。
+
+在 Windows 安装 Visual Studio 2022 Build Tools（Desktop development with C++，含 Windows SDK）、Rust、Bun、Python 3.12+，随后在 PowerShell 运行：
+
+```powershell
+./scripts/bundle-windows.ps1
+```
+
+脚本下载并校验固定的 GStreamer 1.28.7 MSVC SDK 和 FFmpeg 9.0.2，生成 `desktop/target/release/bundle/nsis/*-setup.exe`。开发 SDK 安装到生成目录 `desktop/native/vendor/windows`，可通过 `setup-windows.ps1 -DependencyRoot <path>` 选择其他目录。已经设置好 SDK 环境变量时，可加 `-SkipSetup`。PowerShell 的执行策略若阻止脚本，按本机组织策略允许可信脚本后运行。
+
+GStreamer 的启动 DLL 放在应用 EXE 旁，插件位于 `gstreamer/lib/gstreamer-1.0`，FFmpeg 工具位于独立的 `media` 目录。不能只复制 `mstudio-desktop.exe`。构建测试会静默安装到中文空格路径，清除 SDK PATH，验证媒体编码、导入、GES 寻帧、GUI 启动和卸载；GitHub 的 **Windows installer** 工作流只在这些检查通过后上传安装包。
+
+Windows 系统配音使用已安装的 System.Speech 声音，语速映射为系统相对速率；声音与 macOS 不相同。文件粘贴读取 CF_HDROP，不把剪贴板纯文本当作文件路径。本机 Codex 优先查找 PATH 中的 `codex.exe` 和 npm 包中的原生程序，也可通过 `MSTUDIO_CODEX_BIN` 指定原生 EXE；该功能需要用户自己安装并登录 Codex。
+
+安装包暂未进行 Windows 代码签名。CI 验证不等于真实桌面验收：物理声音、声画同步、多屏 DPI、输入法、文件粘贴和完整 Agent 服务仍需 Windows 用户检查。
 
 ## Agent 调色与属性栏
 
@@ -131,7 +145,7 @@ Manually check General → Language in both directions, reload to confirm persis
 
 GES 使用官方 Rust 绑定和独立工作线程，所有 GES 对象与 GLib 默认上下文归该线程；appsink 在暂停时也接收 preroll。GES 排布逐片段视频层、透明字幕、黑场，并播放同一管线内的音频。为了与现有 FFmpeg/GES 效果保持一致，调色及变速视频按片段预计算缓存；转场复用原缓存，声音使用导出混音定义预混（保调变速、淡入淡出、静音、音量和限幅）。因此首次准备或修改效果可能有准备时间，本版不是 GES 原生实时特效实现。缓存按参数、尺寸、源文件路径/大小/修改时间区分，项目原始素材不变。
 
-macOS 开发需要 `brew install gstreamer`，随后 `python3 scripts/bundle-ges.py`。GES 作为必需依赖，不再提供后端切换。GES 库和插件打包到 `Resources/gstreamer`；开发插件链接与打包副本分开，避免同一进程加载两份 GLib/GStreamer。`scripts/bundle.sh` 会完成资源打包与可执行文件链接修正，不依赖目标机器安装 Homebrew。Windows GES 运行时打包尚未实现和验证。
+macOS 开发需要 `brew install gstreamer`，随后 `python3 scripts/bundle-ges.py`。GES 作为必需依赖，不再提供后端切换。GES 库和插件打包到 `Resources/gstreamer`；开发插件链接与打包副本分开，避免同一进程加载两份 GLib/GStreamer。`scripts/bundle.sh` 会完成资源打包与可执行文件链接修正，不依赖目标机器安装 Homebrew。Windows 使用单独的 DLL/插件打包及安装验证流程，参见上方 Windows 状态。
 
 ```sh
 cargo test --test preview_ges

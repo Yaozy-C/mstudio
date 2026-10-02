@@ -1,3 +1,4 @@
+import { platformShortcut } from "../ui/platformShortcut";
 import { t, useLanguage } from "../i18n";
 import { Check } from "@phosphor-icons/react";
 import { requestClipEdit } from "./clipEdits";
@@ -85,12 +86,15 @@ export function TimelineClip({
       actions={[
         { label: t("编辑片段"), run: onOpen },
         {
-          label: t("复制片段 ⌘C"),
+          label: platformShortcut(t("复制片段 ⌘C")),
           run: () => requestClipEdit("copy", clip.id),
         },
-        { label: t("剪切片段 ⌘X"), run: () => requestClipEdit("cut", clip.id) },
         {
-          label: t("粘贴片段 ⌘V"),
+          label: platformShortcut(t("剪切片段 ⌘X")),
+          run: () => requestClipEdit("cut", clip.id),
+        },
+        {
+          label: platformShortcut(t("粘贴片段 ⌘V")),
           run: () => requestClipEdit("paste", clip.id),
         },
         ...(asset?.kind === "video" && asset.hasAudio && !audio

@@ -1,3 +1,4 @@
+import { platformShortcut } from "../ui/platformShortcut";
 import type { ReactNode } from "react";
 import { t, useLanguage } from "../i18n";
 import { DropdownMenu } from "@radix-ui/themes";
@@ -121,7 +122,7 @@ export function StudioChrome({
       <span className="top-divider" />
       <button
         className="icon-button"
-        title={t("撤销 ⌘Z")}
+        title={platformShortcut(t("撤销 ⌘Z"))}
         disabled={!m.canUndo}
         onClick={m.undo}
       >
@@ -129,7 +130,7 @@ export function StudioChrome({
       </button>
       <button
         className="icon-button"
-        title={t("重做 ⇧⌘Z")}
+        title={platformShortcut(t("重做 ⇧⌘Z"))}
         disabled={!m.canRedo}
         onClick={m.redo}
       >
