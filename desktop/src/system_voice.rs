@@ -75,3 +75,25 @@ pub fn synthesize(work: &Path, text: &str, voice: &str, rate: u32) -> Result<Pat
         Err("System speech is unavailable".into())
     }
 }
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_voice_writes_wave_file_from_literal_unicode_input() {
+        let voices = installed_voices().unwrap();
+        let Some(voice) = voices.first() else {
+            eprintln!("No system voice installed; voice enumeration passed");
+            return;
+        };
+        let root = std::env::temp_dir().join(format!("mstudio 配音 {}", mstudio::media::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let output = synthesize(&root, "Hello 世界. Quotes: \" ' $ ;", &voice.name, 180).unwrap();
+        let bytes = std::fs::read(output).unwrap();
+        assert!(bytes.len() > 44);
+        assert_eq!(&bytes[..4], b"RIFF");
+        assert_eq!(&bytes[8..12], b"WAVE");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
