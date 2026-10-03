@@ -17,7 +17,8 @@ export function editTaskPrompt(p: Project, key: string, text: string): Project {
   return saveTask(p, { ...normalizeTaskPrompt(task), prompt: text.trim() });
 }
 export function regenerationDraft(task: ProductionTask): ProductionTask {
-  if (!canRegenerate(task)) throw new Error("请先核查原任务状态，再重新生成");
+  if (!canRegenerate(task) && !canEditOriginal(task))
+    throw new Error("请先核查原任务状态，再重新生成");
   return {
     ...structuredClone(normalizeTaskPrompt(task)),
     hiddenFromList: false,

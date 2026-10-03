@@ -152,3 +152,46 @@ test("legacy prompt edits migrate once without losing text or touching job metad
   expect(regenerationDraft(restored).prompt).toBe("edited");
   expect(legacy.prompt).toBe("submitted");
 });
+
+test("explicit generation reuses an unsubmitted hidden task and respects execution mode", () => {
+  for (const execution of ["automatic", "confirm"] as const) {
+    const p = saveTask(fixture(), { ...task, hiddenFromList: true });
+    const context = {
+      callId: "resume",
+      turnId: "resume-turn",
+      turn: { projectId: p.id, models: { execution }, instruction: "重新生成" },
+    };
+    const ops = [{ op: "regenerate_generation", taskKey: task.key }];
+    const next = applyOperations(p, p.revision ?? 0, ops, context);
+    expect(Object.keys(next.production!.drafts!)).toEqual([task.key]);
+    expect(next.production!.drafts![task.key]).toMatchObject({
+      inputs: task.inputs,
+      parameters: task.parameters,
+      modelId: task.modelId,
+      hiddenFromList: false,
+      status: execution === "automatic" ? "READY" : "AWAITING_CONFIRMATION",
+    });
+    expect(applyOperations(next, next.revision ?? 0, ops, context)).toEqual(
+      next,
+    );
+  }
+});
+
+test("regeneration still blocks pending and uncertain submissions", () => {
+  for (const status of [
+    "READY",
+    "UPLOADING",
+    "SUBMITTING",
+    "IN_QUEUE",
+    "IN_PROGRESS",
+    "RECEIVING",
+    "CANCEL_REQUESTED",
+    "UNKNOWN",
+  ]) {
+    expect(() => regenerationDraft({ ...task, status })).toThrow();
+  }
+  expect(() => regenerationDraft({ ...task, jobId: "existing-job" })).toThrow();
+  expect(() =>
+    regenerationDraft({ ...task, submissionId: "existing-submission" }),
+  ).toThrow();
+});
