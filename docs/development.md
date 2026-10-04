@@ -43,7 +43,7 @@ python3 scripts/test-circle-transitions.py
 
 现有 `mstudio_read_image` 支持视频 `time`；带 `clipId` 时按片段内时间换算源裁切和速度，应用已保存调色。带 `transition:true` 时以指定后片段的转场开始为时间零点，读取与原生预览共用的实际接缝合成。输出最多 960 像素边长，沿用原有图片工具结果、历史与恢复通道，不新增 agent 调度层。抽帧不含字幕、叠加轨或声音，不等于完整播放验收。只支持图片的模型可以接收视频引用并按需抽帧；原生视频模型仍可接收原视频。
 
-时间线增加 `move_clip`、`retime_clip`、`slip_clip`；都走现有 revision 校验、原子编辑和撤销。变速保持源区间，ripple 只顺移同轨后续片段；跨轨音频/字幕同步须显式安排。默认拒绝新重叠、非法轨道和不足的源余量。前端/后端、抽帧、真实 GES/FFmpeg 像素与缓存测试分别覆盖这些边界。`scripts/check.sh` 中本地 HTTP 模拟测试需要允许监听回环端口，不使用外部模型账号。
+时间线提供 `move_clip`、`retime_clip`、`slip_clip`；都走宿主对象观察与并发冲突校验、原子编辑和撤销，模型无需传入工程 revision。变速保持源区间，ripple 只顺移同轨后续片段；跨轨音频/字幕同步须显式安排。默认拒绝新重叠、非法轨道和不足的源余量。前端/后端、抽帧、真实 GES/FFmpeg 像素与缓存测试分别覆盖这些边界。`scripts/check.sh` 中本地 HTTP 模拟测试需要允许监听回环端口，不使用外部模型账号。
 
 独立检查：
 
@@ -111,9 +111,9 @@ inspect 的 clips/assets/tracks/captions 每页最多12项，按12KB内容预算
 
 上下文回收以最近一次 assistant 响应为消费边界：最新一批工具结果及附件在至少一次模型请求前，不能被图片卸载、长结果裁剪或历史压缩提前移除。批量读取和 reopen_image 共用此规则。委派返回必须区分 applied（保存了修改）与 ok/stopReason（任务是否完整完成）；本轮存在未完整完成的子任务时，最终答复由执行器追加状态说明，防止模型只报保存成功。
 
-依据：[Anthropic 工具设计实践](https://www.anthropic.com/engineering/writing-tools-for-agents)建议按实际工作流合并操作、提供有用的返回值并根据冗余调用调整分页；[Gemini function calling](https://ai.google.dev/gemini-api/docs/function-calling)支持一轮返回多个独立调用。此处复用已有批量 operations 和多调用调度，不新增代码执行沙箱或改变角色分工。轮次减少需以模型实际执行验证，不能通过省略抽帧验收获得。
+模型侧使用独立任务工具和多调用调度，例如 `mstudio_update_clip`、`mstudio_update_screenplay` 和批量镜头工具 `mstudio_update_shots`。宿主将直接参数转换为内部 operations，再通过 QuickJS 领域逻辑与 SQLite 事务执行；模型不传 `operations` 包装，也不能执行任意代码。轮次减少需以模型实际执行验证，不能通过省略抽帧验收获得。
 
-选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持引用素材的输入类型。Agent 通过 `update_clip.visual` 合并结构化调色参数，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期 revision。它复用 FFmpeg/GES 渲染，不执行模型提供的任意命令。
+选中视频后，属性栏按画面、调色、声音、时间分类。调色页填写要求并交给 Agent，应用将当前片段作为引用加入对话草稿；发送前可修改要求。模型必须支持相应输入；只支持图片的模型可通过工具抽帧。Agent 通过 `mstudio_update_clip` 的 `visual` 参数合并结构化调色，`null` 清除画面效果；工具拒绝未知字段、越界值、音轨调色和过期对象观察。它复用 FFmpeg/GES 渲染，不执行模型提供的任意命令。
 
 「对比原片」仅临时移除当前片段的预览调色；退出调色页后恢复，不写入项目，也不改变导出。Agent 对话中保留选中片段与返回属性入口。
 

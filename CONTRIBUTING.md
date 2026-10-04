@@ -14,7 +14,7 @@ Do not include API keys, application databases, private conversations or persona
 
 ## Set up and submit a change
 
-1. Fork the repository and create a branch for your change.
+1. Review [LICENSE](LICENSE) and agree on the contribution scope and terms with the maintainer before preparing code changes; then create a branch for the agreed change.
 2. Follow the [README quick start](README.md#quick-start). The detailed [development guide](docs/development.md) is currently in Chinese.
 3. Keep the change focused on one problem. Add a regression test when it meaningfully demonstrates a behavior fix.
 4. Run `sh scripts/check.sh`. Changes to Skills also require `python3 scripts/check_skills.py`.
@@ -43,4 +43,4 @@ Verify the affected workspace, empty and populated states, focus behavior and re
 
 ## Licensing and community
 
-Contributions are submitted under the project's [MIT License](LICENSE). Preserve the source and applicable license of third-party content. Keep discussions respectful and focused on the code and behavior.
+The current project licensing notice is [LICENSE](LICENSE); previously published MIT material is covered by [LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY). Agree on contribution terms with the maintainer before submitting new material. Preserve the source and applicable license of third-party content. Keep discussions respectful and focused on the code and behavior.

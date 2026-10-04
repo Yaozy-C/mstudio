@@ -7,7 +7,7 @@ These are actual captures of the Mstudio macOS desktop app with its interface se
 - `script.jpg`: manually written English demo script with separate action, text, narration and sound fields.
 - `canvas.jpg`: three imported landscape illustrations arranged on the production canvas.
 
-The **Daybreak** project and geometric landscape illustrations were created specifically for documentation. The artwork is original demo content covered by the repository's MIT License. It is not an example of AI-generated output. No external model call was required to create these screenshots.
+The **Daybreak** project and geometric landscape illustrations are documentation examples. The captures show the interface rather than a completed Agent production run. For the repository's licensing transition and historical terms, see [LICENSE](../../LICENSE) and [LICENSE-MIT-LEGACY](../../LICENSE-MIT-LEGACY).
 
 Only these public documentation captures are included. Local databases, provider settings, real conversations and production media are not part of the screenshot set. Screenshots show real UI states; they are not mockups.
 

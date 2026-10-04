@@ -4,7 +4,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-An open-source, Agent-powered video studio. Describe what you want to make, and work with a team of AI specialists that can write scripts, design shots, prepare and generate media, and make edits directly in your project. You can inspect the results and take over in the script, canvas or timeline at any point.
+An Agent-powered desktop video studio. Describe what you want to make, and work with a team of AI specialists that can write scripts, design shots, prepare and generate media, and make edits directly in your project. You can inspect the results and take over in the script, canvas or timeline at any point.
 
 We call this **Vibe Video**: direct the work through conversation, see the changes in your project, and refine the result together. Bring your own models, configure the creative team, and keep the work on your computer.
 
@@ -14,7 +14,7 @@ We call this **Vibe Video**: direct the work through conversation, see the chang
 
 *Actual desktop interface. A script is attached to an example revision request; the request is an unsent draft, not a completed Agent run.*
 
-> **Development preview.** macOS is the primary development and validation platform. Windows x64 installer builds are available through the Windows installer workflow; physical device validation is still required; Linux native desktop preview is not supported. Build from source using the steps below.
+> **Platform support.** The macOS bundle targets Apple Silicon and macOS 26.0 or later. The repository includes a Windows 10/11 x64 installer workflow; physical device validation is still required. Linux native desktop preview is not supported. See the [development guide](docs/development.md) for build instructions and platform details, and [LICENSE](LICENSE) for usage terms.
 
 ## How Agents work
 
@@ -97,7 +97,7 @@ Manual media import, editing and local export do not require an AI account.
 
 ### Build and run on macOS
 
-Install Xcode Command Line Tools, [Rust via rustup](https://rustup.rs/), [Bun](https://bun.sh/) and [Homebrew](https://brew.sh/). The repository pins its Rust version in [`rust-toolchain.toml`](rust-toolchain.toml). Python 3.12 or newer is required.
+Use an Apple Silicon Mac running macOS 26.0 or later for the bundled build. Install Xcode Command Line Tools, [Rust via rustup](https://rustup.rs/), [Bun](https://bun.sh/) and [Homebrew](https://brew.sh/). The repository pins its Rust version in [`rust-toolchain.toml`](rust-toolchain.toml). Python 3.12 or newer is required. Source access and use are subject to [LICENSE](LICENSE).
 
 ```sh
 git clone https://github.com/Yaozy-C/mstudio.git
