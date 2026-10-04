@@ -23,6 +23,7 @@ import { bridge, native } from "../bridge";
 import type { Project } from "../model";
 import type { PlaybackClock } from "../timeline/clock";
 import { useAgentHistory } from "./useAgentHistory";
+import { useHistorySync } from "./useHistorySync";
 import { AgentWelcome } from "./AgentWelcome";
 import "../styles/agent-welcome.css";
 import { MessageContext } from "./AgentMessage";
@@ -45,7 +46,7 @@ type Props = {
 };
 export function AssistantPanel(props: Props) {
   useLanguage();
-  return <AgentPanel {...props} />;
+  return <AgentPanel key={props.project.id} {...props} />;
 }
 function AgentPanel(props: Props) {
   useLanguage();
@@ -108,6 +109,13 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     }),
   );
   const runtime = useLocalRuntime(adapter, { initialMessages: props.history });
+  useHistorySync(
+    props.project.id,
+    runtime,
+    props.visible !== false,
+    props.work?.view,
+    setError,
+  );
   useComposerDraft(props.project.id, runtime);
   useEffect(() => {
     if (!props.draft.suggestion) return;
