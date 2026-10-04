@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { normalizeAudioTrackNames } from "./normalizeAudioTrackNames";
 import { contentChanged } from "./projectRevision";
 import { materializeFrameCards } from "../production/frameCards";
@@ -10,7 +11,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { saveProject } from "../bridge";
+import { bridge, native, saveProject } from "../bridge";
 import type { Project } from "../model";
 import { restoreProject } from "./restoreProject";
 import { createProjectAutosave } from "./projectAutosave";
@@ -19,7 +20,17 @@ export function useProject(initial: Project) {
     materializeFrameCards(normalizeAudioTrackNames(initial)),
   );
   const [autosave] = useState(() =>
-    createProjectAutosave(initial, saveProject),
+    createProjectAutosave(initial, saveProject, (next, remote) => {
+      const previous = latest.current;
+      latest.current = next;
+      setProject(next);
+      if (remote && contentChanged(previous, next)) {
+        setHistory((h) => ({
+          past: [...h.past.slice(-49), previous],
+          future: [],
+        }));
+      }
+    }),
   );
   useEffect(() => {
     if (project !== initial) autosave.update(project);
@@ -32,6 +43,34 @@ export function useProject(initial: Project) {
   const latest = useRef(project);
   latest.current = project;
   const get = useCallback(() => latest.current, []);
+  useEffect(() => {
+    if (!native) return;
+    let active = true;
+    let queue = Promise.resolve();
+    const refresh = () => {
+      queue = queue
+        .catch(() => {})
+        .then(async () => {
+          await autosave.flush();
+          const document = await bridge<Project>("get_project", {
+            projectId: initial.id,
+          });
+          if (active) autosave.accept(document);
+        });
+      void queue.catch(() => {});
+    };
+    const off = listen<{ projectId: string }>(
+      "project-changed",
+      ({ payload }) => {
+        if (payload.projectId === initial.id) refresh();
+      },
+    );
+    void off.then(refresh);
+    return () => {
+      active = false;
+      void off.then((f) => f());
+    };
+  }, [initial.id, autosave]);
   const change = useCallback(
     (fn: (p: Project) => Project, record = true) => {
       const previous = latest.current;
@@ -99,6 +138,14 @@ export function useProject(initial: Project) {
     canUndo: !!history.past.length,
     canRedo: !!history.future.length,
     saved,
+    conflicted: autosave.isConflicted(),
+    resolveConflict: async (choice: "local" | "current") => {
+      const remote = await bridge<Project>("get_project", {
+        projectId: initial.id,
+      });
+      autosave.resolve(remote, choice);
+      await autosave.flush();
+    },
     flush,
   };
 }

@@ -4,7 +4,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use std::collections::BTreeMap;
 
-const MARKER: &str = "skill_contracts_v1";
+const MARKER: &str = "skill_contracts_v3";
 #[derive(Deserialize)]
 struct Edit {
     skill: String,

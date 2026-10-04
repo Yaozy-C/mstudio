@@ -1,3 +1,4 @@
+import { ProjectConflict } from "./ProjectConflict";
 import { platformShortcut } from "../ui/platformShortcut";
 import type { ReactNode } from "react";
 import { t, useLanguage } from "../i18n";
@@ -92,7 +93,8 @@ export function StudioChrome({
           <SaveIcon size={16} aria-hidden="true" />
           {saveFailed && <small>{t("保存失败")}</small>}
         </span>
-        {saveFailed && (
+        {m.conflicted && <ProjectConflict model={m} error={setError} />}
+        {saveFailed && !m.conflicted && (
           <button
             type="button"
             onClick={() => void m.flush().catch((e) => setError(String(e)))}

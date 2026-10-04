@@ -1,5 +1,5 @@
 use crate::{database::Store, models::media};
-use anyhow::{Result, ensure};
+use anyhow::Result;
 use serde_json::{Value, json};
 
 pub fn catalog(store: &Store, args: &Value) -> Result<Value> {
@@ -22,27 +22,6 @@ pub fn catalog(store: &Store, args: &Value) -> Result<Value> {
         "usage":"Select by output type. edit operations request_generation creates a generation task in the conversation; mediaKind specifies output type. Preserve the user-selected model. Submission is not completion. Read selected-model rules with mediaModelId before prompt writing unless the same full rules are already injected. The adapter validates inputs; do not guess model capabilities."}),
     )
 }
-pub fn validate_selection(store: &Store, args: &Value) -> Result<()> {
-    for op in args["operations"].as_array().into_iter().flatten() {
-        if op["op"] == "request_generation" && op.get("mediaModelId").is_some() {
-            let id = op["mediaModelId"]
-                .as_str()
-                .ok_or_else(|| anyhow::anyhow!("Invalid media model ID"))?;
-            let models = media::resolved(&store.db.lock().unwrap())?;
-            let model = models.iter().find(|m| m.id == id).ok_or_else(|| {
-                anyhow::anyhow!("Media model not found; read the model catalog first")
-            })?;
-            ensure!(model.enabled, "Media model disabled; select another model");
-            if let Some(kind) = op["mediaKind"].as_str() {
-                ensure!(
-                    model.kind == kind,
-                    "Media model kind does not match the generation task"
-                );
-            }
-        }
-    }
-    Ok(())
-}
 
 #[cfg(test)]
 mod tests {
@@ -62,12 +41,6 @@ mod tests {
         let result = catalog(&store, &json!({})).unwrap();
         assert_eq!(result["models"].as_array().unwrap().len(), 1);
         assert_eq!(result["models"][0]["id"], "image");
-        for (id, valid) in [("image", true), ("video", false), ("missing", false)] {
-            let args =
-                json!({"operations":[{"op":"request_generation","id":"shot","mediaModelId":id}]});
-            assert_eq!(validate_selection(&store, &args).is_ok(), valid);
-        }
-        assert!(validate_selection(&store, &json!({"operations":[{"op":"request_generation","mediaModelId":"image","mediaKind":"video"}]})).is_err());
         let profiles = super::super::profiles::builtins();
         let production = profiles.iter().find(|p| p.id == "production").unwrap();
         let reviewer = profiles.iter().find(|p| p.id == "reviewer").unwrap();

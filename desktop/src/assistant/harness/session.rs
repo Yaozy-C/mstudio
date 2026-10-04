@@ -1,5 +1,7 @@
 //! The exact provider messages are private session events, never UI tool-card payloads.
 use super::Host;
+#[cfg(test)]
+pub use super::session_recovery::repair_pending;
 use crate::{assistant::journal, database::Store};
 use rig_core::message::{AssistantContent, Message, ToolCall, ToolResultContent, UserContent};
 use serde_json::{Value, json};
@@ -83,23 +85,7 @@ pub fn result_message(call: &ToolCall, value: &Value) -> Message {
 
 /// Detect a project snapshot so an unchanged snapshot is not injected twice.
 pub fn project_snapshot_text(message: &Message) -> Option<&str> {
-    let Message::User { content } = message else {
-        return None;
-    };
-    content.iter().find_map(|part| match part {
-        UserContent::Text(text)
-            if text.text.starts_with(
-                "Current project snapshot (reference data; inspect more details as needed):",
-            ) || text.text.starts_with("Current project reference data:")
-                || text
-                    .text
-                    .starts_with("当前工程快照（参考数据；更多内容请按需 inspect）：")
-                || text.text.starts_with("当前工程参考数据：") =>
-        {
-            Some(text.text.as_str())
-        }
-        _ => None,
-    })
+    super::context_source::source(message).map(|(text, _)| text)
 }
 /// Only a later assistant response proves that a batch reached the model.
 /// Keep the entire newest batch, including reopened images and injected context.
@@ -218,35 +204,9 @@ pub(super) fn restore_through(
         }
     }
     if let Some(messages) = &mut messages {
-        repair_pending(messages);
+        super::session_recovery::repair(store, project, turn, messages);
     }
     Ok(messages)
-}
-// Never replay a side effect after a crash. Pair orphaned calls with an explicit unknown
-// outcome, so the next model request can inspect the project instead of repeating a write.
-pub fn repair_pending(messages: &mut Vec<Message>) {
-    let mut pending = Vec::new();
-    for message in messages.iter() {
-        match message {
-            Message::Assistant { content, .. } => {
-                pending.extend(content.iter().filter_map(|c| match c {
-                    AssistantContent::ToolCall(c) => Some(c.clone()),
-                    _ => None,
-                }))
-            }
-            Message::User { content } => {
-                for part in content {
-                    if let UserContent::ToolResult(result) = part {
-                        pending.retain(|c| c.id != result.call);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-    for call in pending {
-        messages.push(result_message(&call, &json!({"error":"Previous turn interrupted; effects unknown. Inspect current state before repeating edits.", "code":"EFFECT_UNKNOWN"})));
-    }
 }
 pub fn partial(store: &Store, project: &str, turn: &str) -> String {
     store.db.lock().unwrap().query_row("SELECT content FROM agent_messages WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2", rusqlite::params![project,turn], |r|r.get(0)).unwrap_or_default()
@@ -258,6 +218,19 @@ pub fn start(
     binding: Value,
     messages: &[Message],
 ) -> Result<(), String> {
+    {
+        let db = store.db.lock().unwrap();
+        for message in messages {
+            if let Some((_, source)) = super::context_source::source(message)
+                && source["projectId"] == project
+                && let Some(versions) = source["versions"].as_object()
+            {
+                for (key, version) in versions {
+                    db.execute("INSERT INTO project_observations VALUES(?1,?2,?3,?4) ON CONFLICT(project_id,turn_id,target) DO UPDATE SET value=excluded.value", rusqlite::params![project,turn,key,version.as_str()]).map_err(|e| e.to_string())?;
+                }
+            }
+        }
+    }
     journal::append(
         store,
         project,

@@ -17,8 +17,7 @@ import { type Asset, type Project } from "../model";
 import { useGenerationAgent } from "../creation/useGenerationAgent";
 import { productionItems } from "./items";
 import { createTask, taskKey } from "./tasks";
-import { saveTask, recoverUploads } from "./document";
-import { useProductionSubmit } from "./useProductionSubmit";
+import { saveTask } from "./document";
 import type {
   ChangeProject,
   GenerationPreferences,
@@ -59,9 +58,6 @@ export function useProduction(
   }>({
     tick: 0,
   });
-  useEffect(() => {
-    change((p) => recoverUploads(p), false);
-  }, [project.id, change]);
   function update(patch: Partial<ProductionTask>, targetKey = key) {
     change(
       (p) =>
@@ -74,22 +70,22 @@ export function useProduction(
       false,
     );
   }
-  const { submit, submitting, available, slotVersion } = useProductionSubmit({
-    projectId: project.id,
-    media,
-    get,
-    flush,
-    update,
-  });
+  const submit = async (requested: ProductionTask) => {
+    if (!native) throw new Error("请在桌面应用中生成");
+    const current = get().production?.drafts?.[requested.key];
+    if (
+      !current ||
+      !["AWAITING_CONFIRMATION", "READY"].includes(current.status ?? "")
+    )
+      return;
+    update({ status: "READY", error: undefined }, requested.key);
+    await flush();
+  };
   const runs = runsOf(project);
+  const submitting = runs.some((t) =>
+    ["UPLOADING", "SUBMITTING"].includes(t.status ?? ""),
+  );
   const taskPanel = useTaskPanel(runs, change, get, open, setComposerMode);
-  useEffect(() => {
-    if (!native) return;
-    for (const next of runs.filter((t) => t.status === "READY")) {
-      if (available() <= 0) break;
-      void submit(next);
-    }
-  }, [project.production?.drafts, slotVersion]);
   function preferences(patch: Partial<GenerationPreferences>) {
     change(
       (p) => ({

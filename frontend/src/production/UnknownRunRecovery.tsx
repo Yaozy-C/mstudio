@@ -1,6 +1,8 @@
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
+import { ArrowLeft, SlidersHorizontal } from "@phosphor-icons/react";
+import { ActionButton } from "../ui/ActionButton";
 import { runtime } from "../plugins/runtime";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { ProductionTask } from "./types";
@@ -29,7 +31,9 @@ export function UnknownRunRecovery({
       }}
     >
       <Dialog.Trigger>
-        <button type="button">{t("核查后重新设置")}</button>
+        <ActionButton icon={SlidersHorizontal}>
+          {t("核查后重新设置")}
+        </ActionButton>
       </Dialog.Trigger>
       <Dialog.Content maxWidth="440px">
         <Dialog.Title>{t("先核查原任务")}</Dialog.Title>
@@ -53,11 +57,12 @@ export function UnknownRunRecovery({
         <ErrorNotice error={error} fallback="JOB_SYNC_FAILED" />
         <div className="run-actions">
           <Dialog.Close>
-            <button type="button" disabled={busy}>
+            <ActionButton icon={ArrowLeft} disabled={busy}>
               {t("返回")}
-            </button>
+            </ActionButton>
           </Dialog.Close>
-          <button
+          <ActionButton
+            icon={SlidersHorizontal}
             type="button"
             disabled={!confirmed || busy}
             onClick={() => {
@@ -86,7 +91,7 @@ export function UnknownRunRecovery({
             }}
           >
             {busy ? t("正在处理…") : t("重新设置")}
-          </button>
+          </ActionButton>
         </div>
       </Dialog.Content>
     </Dialog.Root>

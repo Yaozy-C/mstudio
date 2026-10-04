@@ -9,6 +9,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import { useAssetLibrary } from "./useAssetLibrary";
 import { MediaTile } from "./MediaTile";
 import { MediaPreview } from "./MediaPreview";
+import { ObjectMenu } from "../ui/ObjectMenu";
 import "./resource-library.css";
 
 export function PublicAssets() {
@@ -99,29 +100,42 @@ export function PublicAssets() {
         aria-busy={library.loading}
       >
         {assets.map((asset) => (
-          <div className="public-asset" key={asset.id}>
-            <MediaTile
-              asset={asset}
-              scope="global"
-              selected={selected === asset.id}
-              select={setSelected}
-              preview={setPreview}
-            />
-            <div className="public-asset-actions">
-              <button onClick={() => setPreview(asset.id)}>
-                <Eye />
-                {t("预览素材")}
-              </button>
-              <button
-                aria-label={t("移除素材 {name}", { name: asset.name })}
-                disabled={library.busy}
-                onClick={() => setRemoving(asset)}
-              >
-                <Trash />
-                {t("移除")}
-              </button>
+          <ObjectMenu
+            key={asset.id}
+            actions={[
+              { label: t("预览素材"), run: () => setPreview(asset.id) },
+              {
+                label: t("从公共素材移除"),
+                run: () => setRemoving(asset),
+                disabled: library.busy,
+                danger: true,
+              },
+            ]}
+          >
+            <div className="public-asset">
+              <MediaTile
+                asset={asset}
+                scope="global"
+                selected={selected === asset.id}
+                select={setSelected}
+                preview={setPreview}
+              />
+              <div className="public-asset-actions">
+                <button onClick={() => setPreview(asset.id)}>
+                  <Eye />
+                  {t("预览素材")}
+                </button>
+                <button
+                  aria-label={t("移除素材 {name}", { name: asset.name })}
+                  disabled={library.busy}
+                  onClick={() => setRemoving(asset)}
+                >
+                  <Trash />
+                  {t("移除")}
+                </button>
+              </div>
             </div>
-          </div>
+          </ObjectMenu>
         ))}
       </section>
       {!library.loading && !assets.length && !library.error && (

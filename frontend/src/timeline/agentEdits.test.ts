@@ -33,7 +33,7 @@ function fixture() {
 }
 test("retime ripples the same track, preserves source range and valid seam, leaves audio and captions", () => {
   const p = fixture();
-  const next = applyOperations(p, 0, [
+  const next = applyOperations(p, [
     { op: "retime_clip", id: "a", speed: 2, ripple: true },
   ]);
   expect(duration(next.clips[0])).toBe(2);
@@ -48,29 +48,27 @@ test("retime ripples the same track, preserves source range and valid seam, leav
 test("slowdown refuses unintended overlap, ripple closes the edit without collision", () => {
   const p = fixture();
   expect(() =>
-    applyOperations(p, 0, [{ op: "retime_clip", id: "a", speed: 0.5 }]),
+    applyOperations(p, [{ op: "retime_clip", id: "a", speed: 0.5 }]),
   ).toThrow("重叠");
-  const next = applyOperations(p, 0, [
+  const next = applyOperations(p, [
     { op: "retime_clip", id: "a", speed: 0.5, ripple: true },
   ]);
   expect(next.clips[1].start).toBe(8);
 });
 test("move snaps to frames and removes disconnected transitions without changing media", () => {
   const p = fixture();
-  const next = applyOperations(p, 0, [
-    { op: "move_clip", id: "b", start: 9.011 },
-  ]);
+  const next = applyOperations(p, [{ op: "move_clip", id: "b", start: 9.011 }]);
   expect(next.clips[1].start).toBe(9);
   expect(next.clips[1].transition).toBeUndefined();
   expect(next.clips[1].trimIn).toBe(6);
   expect(next.clips[1].speed).toBe(1);
   expect(() =>
-    applyOperations(p, 0, [{ op: "move_clip", id: "b", start: 2 }]),
+    applyOperations(p, [{ op: "move_clip", id: "b", start: 2 }]),
   ).toThrow("重叠");
 });
 test("slip uses source seconds, preserves timing and refuses unavailable handles atomically", () => {
   const p = fixture();
-  const next = applyOperations(p, 0, [
+  const next = applyOperations(p, [
     { op: "slip_clip", id: "a", sourceOffset: 1.5 },
   ]);
   expect(next.clips[0].trimIn).toBe(3.5);
@@ -78,7 +76,7 @@ test("slip uses source seconds, preserves timing and refuses unavailable handles
   expect(duration(next.clips[0])).toBe(4);
   expect(next.clips[1]).toEqual(p.clips[1]);
   expect(() =>
-    applyOperations(p, 0, [{ op: "slip_clip", id: "a", sourceOffset: -3 }]),
+    applyOperations(p, [{ op: "slip_clip", id: "a", sourceOffset: -3 }]),
   ).toThrow();
   expect(p.clips[0].trimIn).toBe(2);
 });
@@ -86,21 +84,21 @@ test("reject invalid speed, flags, tracks and ripple across an overlapping tail"
   const p = fixture();
   for (const speed of [0, NaN, Infinity, 5])
     expect(() =>
-      applyOperations(p, 0, [{ op: "retime_clip", id: "a", speed }]),
+      applyOperations(p, [{ op: "retime_clip", id: "a", speed }]),
     ).toThrow();
   expect(() =>
-    applyOperations(p, 0, [
+    applyOperations(p, [
       { op: "retime_clip", id: "a", speed: 2, ripple: "true" },
     ]),
   ).toThrow();
   expect(() =>
-    applyOperations(p, 0, [
+    applyOperations(p, [
       { op: "move_clip", id: "a", start: 0, trackId: "missing" },
     ]),
   ).toThrow();
   p.clips[1].start = 3;
   expect(() =>
-    applyOperations(p, 0, [
+    applyOperations(p, [
       { op: "retime_clip", id: "a", speed: 2, ripple: true },
     ]),
   ).toThrow("尾部");

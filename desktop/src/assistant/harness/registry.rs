@@ -15,7 +15,7 @@ pub struct ProjectHost {
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
         "inspect",
-        "Read project content needed for this task. For generation, query section=generation/taskKey or filter turnId/status; fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] yields up to 30 tasks per page and whole-batch statistics. Follow nextOffset. For shots use nodeIds/fields; for scripts use fields=[script], paragraphIds and scriptFields. Omitted fields return summaries. Other lists have up to 12 entries per page and size limits; read small groups together with needed fields. Batch independent reads. revision is returned, not a query argument; establish current target state before editing.",
+        "Read missing project content needed for this task; use supplied snapshots and complete receipts first. Generation reads include continuation even with fields filters; use mstudio_await_generation for backend work, not repeated inspect status checks. For generation, query section=generation/taskKey or filter turnId/status; fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] yields up to 30 tasks per page and whole-batch statistics. Follow nextOffset. For an existing image/video, section=assets with ids returns source: the linked generating job and original submitted prompt, independently of current task drafts. Use fields=[source] for provenance and textOffset for its prompt pages. Never infer taskKey from a filename or jobId, or search chat for a generation prompt available through source. For shots use nodeIds/fields; for scripts use fields=[script], paragraphIds and scriptFields. Omitted fields return summaries. Other lists have up to 12 entries per page and size limits; read small groups together with needed fields. Batch independent reads. revision is returned, not a query argument; supplied current target content or successful receipts already establish state.",
         &[
             "section",
             "ids",
@@ -47,10 +47,10 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
     ),
     (
         "models",
-        "Paginate enabled media models; use mediaModelId for model-specific prompt rules.",
+        "Paginate enabled media models; use mediaModelId for model-specific prompt rules and parameter capabilities, including exact enums, bounds and configured defaults. Match the generation tool’s parameters to that model’s capability schema; do not copy project export resolution or editorial shot duration as generation settings.",
         &["offset", "mediaModelId"],
     ),
-    ("edit", "", &["revision", "operations"]),
+    ("edit", "", &["operations"]),
 ];
 
 impl ProjectHost {
@@ -88,6 +88,9 @@ impl ProjectHost {
     }
 }
 impl Host for ProjectHost {
+    fn deadline(&self) -> Option<tokio::time::Instant> {
+        self.tool.as_ref().map(|t| t.deadline)
+    }
     fn result_turn(&self) -> Option<&str> {
         self.tool.as_ref().map(|t| t.turn.as_str())
     }
@@ -104,9 +107,20 @@ impl Host for ProjectHost {
         let Some(t) = &self.tool else { return vec![] };
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
+        if profiles::allows(&t.profile, "inspect") {
+            definitions.push(super::generation_tool::definition());
+        }
         definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
             if !profiles::allows(&t.profile, action) {
+                continue;
+            }
+            if *action == "edit" {
+                definitions.extend(
+                    super::operation_tools::tools(&t.profile)
+                        .into_iter()
+                        .map(|tool| tool.definition),
+                );
                 continue;
             }
             let properties: serde_json::Map<_, _> = fields
@@ -114,13 +128,13 @@ impl Host for ProjectHost {
                 .map(|field| ((*field).to_owned(), schema["properties"][*field].clone()))
                 .collect();
             let required = match *action {
-                "edit" => vec!["revision", "operations"],
+                "edit" => vec!["operations"],
                 "read_skill" => vec!["skill"],
                 _ => vec![],
             };
             definitions.push(ToolDefinition {
                 name: format!("mstudio_{action}"),
-                description: if *action == "edit" { edit_description() } else { (*description).into() },
+                description: (*description).into(),
                 parameters: json!({"type":"object","properties":properties,"required":required,"additionalProperties":false}),
             });
         }
@@ -135,7 +149,7 @@ impl Host for ProjectHost {
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(ToolDefinition {
                 name: "mstudio_read_image".into(),
-                description: "Read real image pixels or a video frame directly into the model. Use an assetId returned by inspect. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
+                description: "Read real image pixels or a video frame directly into the model. Use an assetId from a receipt or inspected project state. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
                 parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
             });
             definitions.push(ToolDefinition {
@@ -168,7 +182,7 @@ impl Host for ProjectHost {
         definitions
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
-        // Project reads go through the UI edit queue and are ordering barriers.
+        // Project reads are barriers relative to edits; execution is native and transactional.
         // Skill files/history/catalog are independent reads; memory mutations are exclusive.
         matches!(
             self.action(&call.function.name),
@@ -205,16 +219,27 @@ impl Host for ProjectHost {
         if call.function.name == "mstudio_read_image" {
             return self.read_image(call).await;
         }
-        execute_local(t, call, "").await
+        execute_local(t, call).await
     }
 }
 
-fn edit_description() -> String {
-    "Batch authorized project edits using the latest inspect revision. Operations save atomically and support undo. Preserve existing IDs and omitted fields; add_node requires id/kind/title, and shots link screenplayId. update_node: screenplay.script holds paragraphs, node text holds shot action/staging, shot.prompt video drafts, shot.framePrompt/frames image drafts/assets. update_generation(taskKey,text) updates the task prompt, preserves existing results and does not change a shot draft or already-submitted request. Prompt edits do not generate; explicitly requested regenerate_generation(taskKey) reuses the model, inputs and parameters. request_generation requires the complete final prompt in text; scripts are not appended automatically. For shot references, use set_references with referenceMode=upsert to add/update by assetId, or referenceMode=remove with assetIds to unlink; reserve replace for an explicit full reset. Keep reference assets in project media, not new canvas nodes. references contains real asset IDs, purposes and roles; omission inherits only current composer references, not arbitrary project assets. Use the selected model. choose_take selects media; assemble_screenplay arranges shots. start is output time, trimIn/trimOut source range, speed absolute. savedClips contains actual saved timeline values: when complete=true, use it for parameter verification; inspect missing or uncertain values when complete=false. Receipts do not replace pixel/playback checks. Correct reported errors; inspect uncertain effects before retrying. Use assigned Skills for creative methods.".into()
-}
-
-pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Value {
+pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     let mut args = call.function.arguments.clone();
+    if let Some(decoded) =
+        super::operation_tools::decode(&t.profile, &call.function.name, args.clone())
+    {
+        return match decoded {
+            Ok(args) => {
+                t.execute(args, format!("{}:{}", t.turn, call.id.as_str()))
+                    .await
+            }
+            Err(error) => error,
+        };
+    }
+
+    if call.function.name == "mstudio_await_generation" {
+        return super::generation_tool::execute(t, &args).await;
+    }
     if call.function.name == "mstudio_reopen_image" {
         if !profiles::allows(&t.profile, "inspect") {
             return json!({"error":"Project read permission required","code":"FORBIDDEN"});
@@ -223,7 +248,7 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
             .as_str()
             .filter(|id| id.starts_with("image-") && id.len() < 100)
         else {
-            return json!({"error":"This tool accepts only imageId from an offload notice. For generated images use mstudio_read_image(assetId), with a real asset ID from inspect, not a filename or task ID.","code":"INVALID_ARGS"});
+            return json!({"error":"This tool accepts only imageId from an offload notice. For generated images use mstudio_read_image(assetId), with a real asset ID from a receipt or inspected project state, not a filename or task ID.","code":"INVALID_ARGS"});
         };
         let store = t.app.state::<crate::database::Store>();
         let db = store.db.lock().unwrap();
@@ -247,7 +272,7 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall, prefix: &str) -> Va
         return json!({"error":"Unknown tool", "code":"UNKNOWN_TOOL"});
     };
     args["action"] = json!(action);
-    t.execute(args, format!("{}:{}{}", t.turn, prefix, call.id.as_str()))
+    t.execute(args, format!("{}:{}", t.turn, call.id.as_str()))
         .await
 }
 

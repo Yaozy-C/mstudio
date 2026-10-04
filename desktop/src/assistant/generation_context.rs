@@ -80,17 +80,30 @@ pub fn outcome(store: &Store, project: &str, turn: &str) -> anyhow::Result<Value
             Ok((r.get::<_, String>(0)?, value.to_string()))
         })?
         .collect::<Result<Vec<_>, _>>()?;
-    summarize(rows)
+    let mut result = summarize(rows)?;
+    let keys: Vec<String> = result["generationTasks"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|task| task["id"].as_str().map(str::to_owned))
+        .collect();
+    if !keys.is_empty() {
+        result["generationTasks"] = crate::project_service::generation_wait::snapshot(
+            &db, project, &keys,
+        )?["generationTasks"]
+            .take();
+    }
+    Ok(result)
 }
 
 fn summarize(rows: Vec<(String, String)>) -> anyhow::Result<Value> {
     let mut calls = std::collections::HashMap::new();
     let mut failures = std::collections::BTreeMap::new();
-    let mut tasks = Vec::new();
+    let mut tasks = std::collections::BTreeMap::new();
     for (kind, raw) in rows {
         let event: Value = serde_json::from_str(&raw)?;
         if kind == "tool/call" {
-            let targets: Vec<String> = event["arguments"]["operations"]
+            let mut targets: Vec<String> = event["arguments"]["operations"]
                 .as_array()
                 .into_iter()
                 .flatten()
@@ -107,6 +120,26 @@ fn summarize(rows: Vec<(String, String)>) -> anyhow::Result<Value> {
                     .to_string()
                 })
                 .collect();
+            let media_kind = match event["name"].as_str() {
+                Some("mstudio_generate_image" | "mstudio_generate_reference_image") => {
+                    Some(json!("image"))
+                }
+                Some("mstudio_generate_video") => Some(json!("video")),
+                Some("mstudio_regenerate_generation") => Some(Value::Null),
+                _ => None,
+            };
+            if let Some(media_kind) = media_kind {
+                let args = &event["arguments"];
+                targets.push(
+                    json!([
+                        args["id"],
+                        media_kind,
+                        args["canvasTaskKey"],
+                        args["taskKey"]
+                    ])
+                    .to_string(),
+                );
+            }
             if !targets.is_empty() {
                 calls.insert(event["callId"].as_str().unwrap_or("").to_owned(), targets);
             }
@@ -114,25 +147,51 @@ fn summarize(rows: Vec<(String, String)>) -> anyhow::Result<Value> {
         if kind == "tool/result"
             && let Some(targets) = calls.get(event["callId"].as_str().unwrap_or(""))
         {
+            let result = event.get("value").unwrap_or(&event["result"]);
             for target in targets {
-                if event["result"]["error"].is_null() {
+                if result["error"].is_null() {
                     failures.remove(target);
                 } else {
-                    failures.insert(target.clone(), event["result"]["error"].clone());
+                    failures.insert(target.clone(), result["error"].clone());
                 }
             }
-            if let Some(created) = event["result"]["generationTasks"].as_array() {
-                tasks.extend(created.clone());
+            if let Some(created) = result["generationTasks"].as_array() {
+                for task in created {
+                    if let Some(id) = task["id"].as_str() {
+                        tasks.insert(id.to_owned(), task.clone());
+                    }
+                }
             }
         }
     }
     let failure = failures.into_values().next().unwrap_or(Value::Null);
-    Ok(json!({"error":failure,"generationTasks":tasks}))
+    Ok(json!({"error":failure,"generationTasks":tasks.into_values().collect::<Vec<_>>()}))
 }
 
 #[cfg(test)]
 mod outcome_tests {
     use super::*;
+    #[test]
+    fn standalone_generation_tool_failures_and_receipts_are_tracked() {
+        let call = |id: &str| {
+            ("tool/call".into(),json!({"callId":id,"name":"mstudio_generate_video","arguments":{"id":"s","prompt":"Video"}}).to_string())
+        };
+        let failed = (
+            "tool/result".into(),
+            json!({"callId":"a","result":{"error":"Failed"}}).to_string(),
+        );
+        assert_eq!(
+            summarize(vec![call("a"), failed.clone()]).unwrap()["error"],
+            "Failed"
+        );
+        let success = (
+            "tool/result".into(),
+            json!({"callId":"b","result":{"generationTasks":[{"id":"task"}]}}).to_string(),
+        );
+        let result = summarize(vec![call("a"), failed, call("b"), success]).unwrap();
+        assert!(result["error"].is_null());
+        assert_eq!(result["generationTasks"][0]["id"], "task");
+    }
     #[test]
     fn a_different_success_does_not_hide_failure_but_same_target_retry_can_recover() {
         let call = |id: &str, target: &str| {
@@ -148,12 +207,12 @@ mod outcome_tests {
             call("a", "shot1"),
             result("a", json!({"error":"missing model"})),
             call("b", "shot2"),
-            result("b", json!({"generationTasks":[{"key":"b"}]})),
+            result("b", json!({"generationTasks":[{"id":"b"}]})),
         ];
         assert_eq!(summarize(rows.clone()).unwrap()["error"], "missing model");
         rows.extend([
             call("c", "shot1"),
-            result("c", json!({"generationTasks":[{"key":"c"}]})),
+            result("c", json!({"generationTasks":[{"id":"c"}]})),
         ]);
         let recovered = summarize(rows).unwrap();
         assert!(recovered["error"].is_null());

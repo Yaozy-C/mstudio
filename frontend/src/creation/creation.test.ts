@@ -62,7 +62,7 @@ test("reference preparation validates before uploads and keeps modality order an
 });
 test("Agent modifies scoped multitrack edits and captions atomically with range validation", () => {
   const p = { ...newProject("test"), assets: [asset] };
-  const updated = applyOperations(p, 0, [
+  const updated = applyOperations(p, [
     { op: "set_creation", essential: "不能删关键动作" },
     { op: "add_track", id: "overlay", trackKind: "video", title: "叠加" },
     {
@@ -81,7 +81,7 @@ test("Agent modifies scoped multitrack edits and captions atomically with range 
     "不能删关键动作",
   );
   expect(() =>
-    applyOperations(updated, 0, [
+    applyOperations(updated, [
       { op: "set_creation", intent: "other" },
       { op: "update_clip", id: updated.clips[0].id, speed: 8 },
     ]),

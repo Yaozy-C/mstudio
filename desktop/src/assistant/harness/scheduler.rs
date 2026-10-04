@@ -107,9 +107,8 @@ fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
             json!({"error":"Tool arguments exceed 24 KB; split the operations", "code":"INVALID_ARGS"}),
         );
     }
-    super::schema::validate(&definition.parameters, &call.function.arguments)
-        .err()
-        .map(|error| json!({"error":error,"code":"INVALID_ARGS"}))
+    let issues = super::schema::issues(&definition.parameters, &call.function.arguments);
+    (!issues.is_empty()).then(|| super::schema::rejection(issues))
 }
 
 pub fn skip(

@@ -10,13 +10,13 @@ test("retired generation commands and payloads are rejected without changing the
   const p = fixture();
   const original = JSON.stringify(p);
   expect(() =>
-    applyOperations(p, 0, [{ op: "prepare_generation", id: "shot" }]),
+    applyOperations(p, [{ op: "prepare_generation", id: "shot" }]),
   ).toThrow("不支持");
   expect(() =>
     receiveGeneratedResult(p, asset("new"), p.nodes[1] as ProductionSource),
   ).toThrow("上下文");
   expect(() =>
-    applyOperations(p, 0, [
+    applyOperations(p, [
       { op: "update_node", id: "shot", shot: { frameAssetId: "a" } },
     ]),
   ).toThrow("不支持");
@@ -52,12 +52,10 @@ test("Agent edits frame descriptions while rejecting unsupported fields, wrong m
     ],
   ])
     expect(() =>
-      applyOperations(p, 0, [
-        { op: "update_node", id: "shot", shot: { frames } },
-      ]),
+      applyOperations(p, [{ op: "update_node", id: "shot", shot: { frames } }]),
     ).toThrow();
   expect(JSON.stringify(p)).toBe(original);
-  p = applyOperations(p, 0, [
+  p = applyOperations(p, [
     {
       op: "update_node",
       id: "shot",

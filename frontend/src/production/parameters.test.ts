@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test";
 import { model, fixture } from "./fixtures.test-helper";
-import { parameterFields, taskParameters } from "./parameters";
+import {
+  parameterContract,
+  parameterFields,
+  taskParameters,
+} from "./parameters";
 import { inputFor } from "./request";
 
 test("Gemini overrides preserve the model's other generation settings", () => {
@@ -56,4 +60,31 @@ test("invalid and unsupported settings are rejected before submission", () => {
   expect(() =>
     taskParameters(model("minimax/h3/image-to-video"), { duration: 16 }),
   ).toThrow();
+});
+
+test("discovered model parameters match provider validation and exclude other models’ fields", () => {
+  const m = model("minimax/h3-max/reference-to-video");
+  const schema = parameterContract(m).parameters.properties as Record<
+    string,
+    Record<string, unknown>
+  >;
+  expect(schema.resolution.enum).toEqual(["480P", "768P", "1080P"]);
+  expect(schema.duration.minimum).toBe(5);
+  expect(schema.duration.maximum).toBe(15);
+  for (const resolution of schema.resolution.enum as string[]) {
+    expect(taskParameters(m, { resolution, duration: 5 }).resolution).toBe(
+      resolution,
+    );
+  }
+  expect(() => taskParameters(m, { duration: 4 })).toThrow();
+  expect(() => taskParameters(m, { resolution: "1K" })).toThrow();
+  expect(schema.width).toBeUndefined();
+  const image = model("openai/gpt-image-2.5/flare/edit", "image");
+  const properties = parameterContract(image).parameters.properties as Record<
+    string,
+    unknown
+  >;
+  expect(properties.width).toBeDefined();
+  expect(properties.duration).toBeUndefined();
+  expect(properties.resolution).toBeUndefined();
 });

@@ -1,0 +1,155 @@
+{
+  "resources": [
+    {
+      "skill": "ad-team",
+      "path": "SKILL.md",
+      "previous": "df55b30f7cca949a5bfcb83102482e6a64eea66cd759da13adb802371958e846",
+      "remove": false
+    },
+    {
+      "skill": "ad-team",
+      "path": "references/role-methods.md",
+      "previous": "473e27ade7cecdaee64001df3197c6131934aaa2ea5398fc38b25954772b0ac3",
+      "remove": true
+    },
+    {
+      "skill": "asset-preparation",
+      "path": "CORE.md",
+      "previous": "9c998a048b3b39999e8abd2d054936a45d8b809ea7222207c26f87c9d3b5bd33",
+      "remove": false
+    },
+    {
+      "skill": "asset-preparation",
+      "path": "SKILL.md",
+      "previous": "739726fe317333dcfd1f96d36159795253e1ef2ab087a73bb144a7def6cb07d6",
+      "remove": false
+    },
+    {
+      "skill": "asset-preparation",
+      "path": "references/role-methods.md",
+      "previous": "f4e1afc5d31819d3249e7c47db7dd8e0ebb7f6ed76da3b9234333804c6d05aaa",
+      "remove": true
+    },
+    {
+      "skill": "color-grading",
+      "path": "SKILL.md",
+      "previous": "28a7745882c9a01394d12ea1f6739633fa21edb8b88d2ba692f87310b7e43bdc",
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "SKILL.md",
+      "previous": "1302b89cf050ede71a482978e862be304593934dd1900467dbea0e8a7f1fef68",
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/animation-principles.md",
+      "previous": "b05e197fa58d503b2ef62a68a1d932f530b28a4311e95b97cb4ffb89f1e3f584",
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/image-prompt-writing.md",
+      "previous": "64d991ac3b66819bd39c8502a85f3b8af80d4370dc9f5e0af843e9246f8598a3",
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/naturalistic-performance.md",
+      "previous": null,
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/photographic-appearance.md",
+      "previous": null,
+      "remove": false
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/video-prompt-writing.md",
+      "previous": "fa4d75f82984c5892768704d24f8fdcd5dbd0a1d3d82f1c35e628467297928c8",
+      "remove": false
+    },
+    {
+      "skill": "image-prompt",
+      "path": "SKILL.md",
+      "previous": "efaa788da5048e92e5a92890a85cf2ce5ea8f9c1f968a06512a1fb7a19f67bc7",
+      "remove": false
+    },
+    {
+      "skill": "product-storyboard",
+      "path": "SKILL.md",
+      "previous": "7988b9bf57e19d508d7c9f1288afca32c05e5b920745904168a2ce91ab6e7855",
+      "remove": false
+    },
+    {
+      "skill": "product-storyboard",
+      "path": "references/director-hook.md",
+      "previous": "67b69288d70efa08a9e9cc051747b5e6794eb097968c973c64a3ddfdddcae1cb",
+      "remove": false
+    },
+    {
+      "skill": "product-storyboard",
+      "path": "references/role-methods.md",
+      "previous": "7242513d61e9988443bf81334ef596f5752c32ae773693a758c25b6a9ab82c84",
+      "remove": true
+    },
+    {
+      "skill": "product-storyboard",
+      "path": "references/shots-and-continuity.md",
+      "previous": "89d43a64cf1191f2cf6024d3ff17bf38f21d91604bce172a7ea30d8078c7e5dd",
+      "remove": false
+    },
+    {
+      "skill": "product-video-production",
+      "path": "SKILL.md",
+      "previous": "4ebaa58153724dbd22f6197fe76b4b43df593155856f651eecfc555d8d0e2771",
+      "remove": false
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/role-methods.md",
+      "previous": "50d36b6d9b5ee998af5517892c9c81fc5f7215b2a3a3591fd4f0ad96e6a99b16",
+      "remove": true
+    },
+    {
+      "skill": "storyboard-art",
+      "path": "CORE.md",
+      "previous": "147a4d9ff80dd8cda3513af272ed89c1f3648d4f235a663afa91a0e9bf034144",
+      "remove": false
+    },
+    {
+      "skill": "storyboard-art",
+      "path": "SKILL.md",
+      "previous": "fc3adb949f4042fa225b4b9611fd2bf8443bef9333711fa912a9576ca67e28d6",
+      "remove": false
+    },
+    {
+      "skill": "storyboard-art",
+      "path": "references/role-methods.md",
+      "previous": "52dfdc46810f104162609c8dee6679761e3b56ee41d2e1bbb004d5b0467e61a7",
+      "remove": true
+    },
+    {
+      "skill": "transition-design",
+      "path": "SKILL.md",
+      "previous": "de5108e9d9563a64c8eac23a6f43398bd4eb1b7e9059c1780379be9508a57d74",
+      "remove": false
+    },
+    {
+      "skill": "video-prompt",
+      "path": "SKILL.md",
+      "previous": "3a663a0cb1ead23c916a283767386a8a2e71d20d527977cab010757ee31f5514",
+      "remove": false
+    }
+  ],
+  "agents": {
+    "coordinator": "9960f5316325300f88b499891891a174df0a44b3d01147c0634a373d69ec553d",
+    "storyboard": "539948b35b23ec4ffe6019e9c0f764a4879ec468b72b3e86db3dc5bd5ea14c4d",
+    "asset-designer": "e07ac5e88699dbec3d6b59fce13bb15a6f284919f684f5e53435a99d02f0ae48",
+    "storyboard-artist": "f44e479cc8ef4147f46d0f0c83e2508707ad558821620c69fa1c14815d7c2548",
+    "production": "f01c531df51580693ea12ad0dcb7d8edc8ebcd53beaf81ee1f5f8856eb128614"
+  }
+}

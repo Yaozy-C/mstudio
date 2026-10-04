@@ -27,6 +27,8 @@ import "./styles/frame-media.css";
 import "./styles/object-menu.css";
 import "./styles/text-inputs.css";
 import "./styles/motion.css";
+// Run after React/Radix handlers: cancelling in capture would disable app menus.
+document.addEventListener("contextmenu", (event) => event.preventDefault());
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Theme appearance="light" accentColor="tomato" radius="small">
     <App />

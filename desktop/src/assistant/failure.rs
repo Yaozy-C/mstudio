@@ -3,7 +3,35 @@ use rig_core::completion::CompletionError;
 use serde_json::Value;
 
 pub fn describe(error: &PromptError, key: &str) -> String {
+    if matches!(error, PromptError::PromptCancelled { .. }) {
+        return crate::app_error::cancelled();
+    }
+    let status = error.provider_response_status().map(|s| s.as_u16());
+    let code = match status {
+        Some(401) => "AUTH_REQUIRED",
+        Some(403) => "ACCESS_DENIED",
+        Some(404) => "MODEL_UNAVAILABLE",
+        Some(429) => "RATE_LIMITED",
+        Some(500..=599) => "SERVICE_UNAVAILABLE",
+        _ if matches!(
+            error,
+            PromptError::CompletionError(CompletionError::HttpError(_))
+        ) && status.is_none() =>
+        {
+            "NETWORK_ERROR"
+        }
+        _ => "CHAT_FAILED",
+    };
+    let mut issue = crate::app_error::AppError::new(code, "chat", &describe_details(error, key));
+    issue.http_status = status;
+    issue.to_string()
+}
+fn describe_details(error: &PromptError, key: &str) -> String {
     match error {
+        PromptError::CompletionError(CompletionError::ProviderError(message))
+            if message.starts_with("Codex: ") => {
+                return format!("{}。已完成的操作保留。", clean(message, key));
+            }
         PromptError::PromptCancelled { reason, .. } => return reason.clone(),
         PromptError::MaxTurnsError { .. } => return "本轮已达到 16 个执行步骤；已完成的操作保留，可继续下一轮。".into(),
         PromptError::UnknownToolCall { .. } => return "模型请求了当前 Agent 未提供的工具；请重新描述任务或选择相应 Agent。已完成的操作保留。".into(),
@@ -57,6 +85,11 @@ pub fn describe(error: &PromptError, key: &str) -> String {
 }
 
 pub fn context_overflow(error: &CompletionError) -> bool {
+    if let CompletionError::ProviderError(message) = error {
+        return message.starts_with("Codex: ")
+            && (message.contains("文字上下文超过输入长度限制")
+                || message.contains("Input exceeds the maximum length of 1048576 characters."));
+    }
     let CompletionError::HttpError(http) = error else {
         return false;
     };
@@ -164,9 +197,35 @@ mod tests {
         }
     }
     #[test]
+    fn authentication_classification_uses_status_not_provider_wording() {
+        for text in ["arbitrary wording", "请选择模型", "no localized keywords"] {
+            let value: Value = serde_json::from_str(&describe(
+                &failure(401, json!({"error":{"message":text}})),
+                "",
+            ))
+            .unwrap();
+            assert_eq!(value["code"], "AUTH_REQUIRED");
+            assert_eq!(value["httpStatus"], 401);
+        }
+    }
+    #[test]
     fn parse_failure_is_distinct_from_network_failure() {
         let parse: PromptError = CompletionError::ResponseError("invalid payload".into()).into();
         assert!(describe(&parse, "").contains("无法解析"));
         assert!(!describe(&failure(400, json!({})), "").contains("secret"));
+    }
+    #[test]
+    fn codex_failure_keeps_its_reason_instead_of_claiming_a_protocol_mismatch() {
+        let error: PromptError =
+            CompletionError::ProviderError("Codex: 连接 Codex 超时".into()).into();
+        let message = describe(&error, "");
+        assert!(message.contains("连接 Codex 超时"));
+        assert!(!message.contains("接口协议"));
+        assert!(context_overflow(&CompletionError::ProviderError(
+            "Codex: Codex 文字上下文超过输入长度限制，请压缩对话后继续".into()
+        )));
+        assert!(!context_overflow(&CompletionError::ProviderError(
+            "Codex: 连接 Codex 超时".into()
+        )));
     }
 }

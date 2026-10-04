@@ -26,7 +26,7 @@ pub fn reserve(store: &Store, job: &Value) -> Result<bool> {
 pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
     let provider = crate::model_adapters::for_job(job)?;
     if let Some(id) = job["connectionId"].as_str() {
-        let db = store.db.lock().unwrap();
+        let db = store.conn()?;
         let connection = crate::models::connections::get(&db, id)?;
         ensure!(
             connection.endpoint == job["connectionEndpoint"]
@@ -40,10 +40,10 @@ pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
         return Ok(String::new());
     }
     if provider.id() == "fal" {
-        return crate::models::connections::legacy_fal_key(&store.db.lock().unwrap());
+        return crate::models::connections::legacy_fal_key(&*store.conn()?);
     }
     let id = job["mediaModelId"].as_str().context("任务缺少模型 ID")?;
-    let models = crate::models::media::read(&store.db.lock().unwrap())?;
+    let models = crate::models::media::read(&*store.conn()?)?;
     let model = models
         .iter()
         .find(|m| m.id == id)
@@ -52,7 +52,7 @@ pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
         model.endpoint == job["endpoint"] && model.plugin == job["providerId"],
         "服务地址已变更，不向旧地址发送新凭据"
     );
-    crate::models::connections::media_key(&store.db.lock().unwrap(), model)
+    crate::models::connections::media_key(&*store.conn()?, model)
 }
 
 pub fn save(store: &Store, job: &Value) -> Result<()> {
@@ -60,7 +60,7 @@ pub fn save(store: &Store, job: &Value) -> Result<()> {
     Ok(())
 }
 fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
-    let mut db = store.db.lock().unwrap();
+    let mut db = store.conn()?;
     let tx = db.transaction()?;
     let mut value = job.clone();
     store.normalize_paths(&mut value);
@@ -78,15 +78,23 @@ fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
             rusqlite::params![value.to_string(), id],
         )?;
         crate::database::blobs::collect(&tx)?;
+        // Provider facts remain durable even if project rendering fails. Startup
+        // recovery and subsequent job updates retry document reconciliation.
+        if let Err(_error) = crate::project_service::production::sync_job(&tx, job) {
+            tracing::warn!(event = "job_reconciliation_failed");
+        }
     }
     tx.commit()?;
+    if let Some(project) = job["projectId"].as_str() {
+        store.project_changed(project);
+    }
     if let Err(error) = crate::project_storage::resume_cleanup(&db, &store.media_root()) {
         eprintln!("{error}");
     }
     Ok(inserted)
 }
 pub fn get(store: &Store, id: &str) -> Result<Value> {
-    let db = store.db.lock().unwrap();
+    let db = store.conn()?;
     let raw: String = db.query_row("SELECT data FROM jobs WHERE id=?1", [id], |r| r.get(0))?;
     crate::database::blobs::hydrate(
         &db,

@@ -1,3 +1,4 @@
+import { mergeValue } from "../domain/merge";
 import { normalizeError } from "../errors/catalog";
 import type { Project } from "../model";
 
@@ -9,11 +10,13 @@ export const SAVE_DESCRIPTION =
 
 export function createProjectAutosave(
   initial: Project,
-  write: (project: Project) => Promise<void>,
+  write: (project: Project, base: Project) => Promise<Project>,
+  reconcile: (project: Project, remote: boolean) => void = () => {},
 ) {
   let latest = initial;
   let stored = initial;
   let status = SAVED_LABEL;
+  let conflicted = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let indicator: ReturnType<typeof setTimeout> | undefined;
   let saving: Promise<void> | undefined;
@@ -32,14 +35,21 @@ export function createProjectAutosave(
     if (saving) return saving;
     if (!isDirty()) return Promise.resolve();
     const snapshot = latest;
+    const base = stored;
     indicator = setTimeout(() => report("保存中…"), SAVING_INDICATOR_DELAY);
     saving = Promise.resolve()
-      .then(() => write(snapshot))
-      .then(() => {
-        stored = snapshot;
-        if (latest === snapshot) report(SAVED_LABEL);
+      .then(() => write(snapshot, base))
+      .then((committed) => {
+        if ((committed.storageVersion ?? 0) < (stored.storageVersion ?? 0))
+          committed = stored;
+        latest = mergeValue(snapshot, latest, committed) as Project;
+        stored = committed;
+        conflicted = false;
+        reconcile(latest, false);
+        if (latest === stored) report(SAVED_LABEL);
       })
       .catch((error) => {
+        conflicted = normalizeError(error).code === "PROJECT_CONFLICT";
         report(`保存失败：${normalizeError(error, "SAVE_FAILED").message}`);
         throw error;
       })
@@ -56,6 +66,32 @@ export function createProjectAutosave(
   }
   return {
     isDirty,
+    isConflicted: () => conflicted,
+    resolve(remote: Project, choice: "local" | "current") {
+      if (saving) throw new Error("请等待当前保存完成");
+      latest =
+        choice === "current"
+          ? remote
+          : (mergeValue(stored, latest, remote, "", "local") as Project);
+      stored = remote;
+      conflicted = false;
+      reconcile(latest, false);
+      report(isDirty() ? "待保存" : SAVED_LABEL);
+    },
+    accept(document: Project) {
+      if ((document.storageVersion ?? 0) < (stored.storageVersion ?? 0)) return;
+      try {
+        const merged = mergeValue(stored, latest, document) as Project;
+        stored = document;
+        latest = merged;
+        reconcile(latest, true);
+        if (!isDirty()) report(SAVED_LABEL);
+      } catch (error) {
+        conflicted = normalizeError(error).code === "PROJECT_CONFLICT";
+        report(`保存失败：${normalizeError(error, "SAVE_FAILED").message}`);
+        throw error;
+      }
+    },
     getStatus: () => status,
     subscribe(listener: () => void) {
       listeners.add(listener);

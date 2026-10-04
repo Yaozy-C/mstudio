@@ -1,4 +1,5 @@
-import { validateMediaModel, type MediaModel } from "../models/mediaRegistry";
+import type { MediaModel } from "../models/mediaRegistry";
+import { validateMediaModel } from "../models/validateMediaModel";
 import {
   modelAdapter,
   presetRequest,

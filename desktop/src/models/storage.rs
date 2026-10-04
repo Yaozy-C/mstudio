@@ -9,8 +9,13 @@ fn get(db: &Connection, id: &str) -> Result<Model> {
             r.get(0)
         })
         .optional()?;
-    let mut model: Model =
-        serde_json::from_str(&raw.ok_or_else(|| anyhow::anyhow!("模型连接已移除，请重新选择"))?)?;
+    let mut model: Model = serde_json::from_str(&raw.ok_or_else(|| {
+        anyhow::Error::from(crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "model_selection",
+            "Model connection removed",
+        ))
+    })?)?;
     super::connections::bind_text(db, &mut model)?;
     model.has_key = !credential(db, &model)?.is_empty();
     Ok(model)
@@ -68,7 +73,13 @@ pub fn resolve(
     let id = id
         .or(c.selected_id.as_deref())
         .or(c.default_id.as_deref())
-        .ok_or_else(|| anyhow::anyhow!("请先在模型中心添加并选择 Agent 模型"))?;
+        .ok_or_else(|| {
+            anyhow::Error::from(crate::app_error::AppError::new(
+                "MODEL_UNAVAILABLE",
+                "model_selection",
+                "Select an Agent model",
+            ))
+        })?;
     let model = get(db, id)?;
     config::validate(&model.profile)?;
     let key = credential(db, &model)?;
@@ -76,7 +87,11 @@ pub fn resolve(
         model.profile.adapter == "codex"
             || !key.is_empty()
             || config::is_local(&model.profile.endpoint),
-        "该模型尚未配置 API Key，请到模型中心补充"
+        crate::app_error::AppError::new(
+            "AUTH_REQUIRED",
+            "model_selection",
+            "Model credential missing"
+        )
     );
     Ok((model, key))
 }

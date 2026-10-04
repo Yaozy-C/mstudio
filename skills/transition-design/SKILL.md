@@ -13,6 +13,6 @@ Use mstudio_read_image(assetId,clipId,time), where time is clip-relative. Sample
 
 To change the action phase use slip_clip; for pace use retime_clip; for position use move_clip. A longer dissolve cannot repair an incorrect action match.
 
-Apply set_transition with fromClipId for outgoing, id for incoming, kind and total duration. Use kind:custom with design for masks, progress curves, zoom and offsets; simple supported types remain appropriate. kind:null removes it. Edits affect this join, not other clips, narration or captions. Read revision first, verify savedClips, and inspect again if the receipt is unclear before visual rechecking.
+Apply set_transition with fromClipId for outgoing, id for incoming, kind and total duration. Use kind:custom with design for masks, progress curves, zoom and offsets; simple supported types remain appropriate. kind:null removes it. Edits affect this join, not other clips, narration or captions. Verify savedClips and read only missing or conflicting parameters before visual rechecking.
 
 Batch independent reads and confirmed edits for the same group. Read [selection and engine limits](references/workflow.md). Give a concise reason and the relevant cut to review. The name of an effect is not actual camera motion or optical flow, and saved parameters are not visual acceptance. Respect a specified effect while stating concrete source/tool limitations.

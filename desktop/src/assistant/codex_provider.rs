@@ -15,7 +15,12 @@ use std::time::Duration;
 #[derive(Clone)]
 pub struct CodexModel(pub String);
 fn failure(error: impl std::fmt::Display) -> CompletionError {
-    CompletionError::ResponseError(error.to_string())
+    let message = error.to_string();
+    CompletionError::ProviderError(if message.starts_with("Codex: ") {
+        message
+    } else {
+        format!("Codex: {message}")
+    })
 }
 fn tool_frame(event: &Value, names: &[String]) -> Result<RawStreamingChoice, CompletionError> {
     let params = &event["params"];
@@ -56,6 +61,7 @@ impl CompletionModel for CodexModel {
             .iter()
             .map(|t| json!({"name":t.name,"description":t.description,"inputSchema":t.parameters}))
             .collect();
+        let input = super::codex_input::turn_input(&request.chat_history).map_err(failure)?;
         let setup = async {
             let mut rpc = Rpc::start_text().await.map_err(failure)?;
             let account = rpc
@@ -74,8 +80,12 @@ impl CompletionModel for CodexModel {
             let thread = started["thread"]["id"]
                 .as_str()
                 .ok_or_else(|| failure("Codex 未返回会话"))?;
-            let history = serde_json::to_string(&request.chat_history).map_err(failure)?;
-            rpc.call("turn/start", json!({"threadId":thread,"input":[{"type":"text","text":history}],"outputSchema":request.output_schema})).await.map_err(failure)?;
+            rpc.call(
+                "turn/start",
+                json!({"threadId":thread,"input":input,"outputSchema":request.output_schema}),
+            )
+            .await
+            .map_err(failure)?;
             Ok::<_, CompletionError>(rpc)
         };
         let rpc = tokio::time::timeout(Duration::from_secs(40), setup)
@@ -119,7 +129,11 @@ impl CompletionModel for CodexModel {
                         Some("turn/completed") => {
                             rpc.stop().await;
                             if event["params"]["turn"]["status"] != "completed" {
-                                return Err(failure("Codex 对话未完成，请重试"));
+                                return Err(failure(
+                                    event["params"]["turn"]["error"]["message"]
+                                        .as_str()
+                                        .unwrap_or("Codex 对话未完成，请重试"),
+                                ));
                             }
                             return Ok(Some((
                                 RawStreamingChoice::FinalResponse(
@@ -205,6 +219,26 @@ mod tests {
             serde_json::to_string(&second.choice)
                 .unwrap()
                 .contains("MSTUDIO_TOOL_OK")
+        );
+    }
+    #[tokio::test]
+    #[ignore = "uses local ChatGPT account to verify a synthetic image input"]
+    async fn live_codex_sees_native_image() {
+        use rig_core::message::{ImageMediaType, Message, UserContent};
+        let rows = crate::models::codex_connection::model_list().await.unwrap();
+        let row = rows
+            .iter()
+            .find(|r| r["isDefault"] == true)
+            .unwrap_or(&rows[0]);
+        let model = CodexModel(row["id"].as_str().unwrap().into());
+        let mut request = model.completion_request("Identify the dominant color of the attached image. Reply with one English color word only. Do not use tools.").build();
+        request.chat_history.push(Message::User { content: vec![UserContent::image_base64("iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAb0lEQVR4nO3PAQkAAAyEwO9feoshgnABdLep8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3IPanc8OLDQitxAAAAAElFTkSuQmCC", Some(ImageMediaType::PNG), None)] });
+        let response = model.completion(request).await.unwrap();
+        assert!(
+            serde_json::to_string(&response.choice)
+                .unwrap()
+                .to_lowercase()
+                .contains("red")
         );
     }
     #[test]

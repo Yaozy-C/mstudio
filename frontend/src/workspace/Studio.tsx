@@ -7,7 +7,6 @@ import { useSidebarWidths } from "../ui/useSidebarWidths";
 import { GenerationTaskSettings } from "../production/GenerationTaskSettings";
 import type { WorkContext } from "../assistant/workContext";
 import { useProduction } from "../production/useProduction";
-import { useGeneratedJobs } from "./useGeneratedJobs";
 import { useStudioCreativeEvents } from "./useStudioCreativeEvents";
 import { useStudioPlayback, useCreationTab } from "./useStudioPlayback";
 import { CreationPanel } from "../creation/CreationPanel";
@@ -17,7 +16,6 @@ import { StudioAgent } from "./StudioAgent";
 import { removeNodes } from "../canvas/removeNodes";
 import { uncollectAsset } from "./assetLibrary";
 import { useMissingAssets } from "./useMissingAssets";
-import { useAgentTools } from "../assistant/useAgentTools";
 import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
 import { useCallback, useState } from "react";
@@ -35,7 +33,6 @@ import { StudioDialogs, type StudioDialogKind } from "./StudioDialogs";
 type StudioProps = { initial: Project; onBack: () => void };
 export function Studio({ initial, onBack }: StudioProps) {
   const m = useProject(initial);
-  useAgentTools(m);
   const { project, change } = m;
   useMissingAssets(project, change);
   const attachments = useAttachments(initial.id, change);
@@ -79,7 +76,6 @@ export function Studio({ initial, onBack }: StudioProps) {
     setPanels((p) => ({ ...p, timeline: true }));
   };
   const [error, setError] = useState("");
-  useGeneratedJobs(project.id, m.get, change, m.flush, setError);
   const { busy, importMedia } = useImportMedia(initial.id, change, setError);
   const [dialog, setDialog] = useState<StudioDialogKind>(null);
   const canvas = useProduction(

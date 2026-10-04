@@ -143,6 +143,17 @@ pub async fn http_error(mut response: reqwest::Response, stage: &str) -> AppErro
     }
     error
 }
+
+pub fn cancelled() -> String {
+    let mut error = AppError::new(
+        "CHAT_STOPPED",
+        "chat",
+        "Response stopped; completed operations retained",
+    );
+    error.outcome = Some("cancelled".into());
+    error.to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

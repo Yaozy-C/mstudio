@@ -39,7 +39,9 @@ test("durable batch summary and compact paging cover 100 tasks without losing an
       counts: { COMPLETED: 60, FAILED: 20, AWAITING_CONFIRMATION: 20 },
       attention: 20,
     });
-    expect(JSON.stringify(page).length).toBeLessThan(4000);
+    // Thirty task states now include their actionable continuation, not prompts.
+    expect(JSON.stringify(page).length).toBeLessThan(6000);
+    expect(JSON.stringify(page)).not.toContain("prompt prompt");
     ids.push(...(page.items as { id: string }[]).map((task) => task.id));
     if (page.nextOffset === null) break;
     offset = page.nextOffset!;

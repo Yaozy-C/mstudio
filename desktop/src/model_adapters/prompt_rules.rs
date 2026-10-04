@@ -10,7 +10,7 @@ pub fn init(db: &Connection) -> Result<()> {
     Ok(())
 }
 pub fn guidance(db: &Connection, model: &MediaModel) -> Result<Value> {
-    let (mode, rules) = match (model.plugin.as_str(), model.endpoint.as_str()) {
+    let (input_description, rules) = match (model.plugin.as_str(), model.endpoint.as_str()) {
         ("fal", endpoint @ ("minimax/h3/text-to-video" | "minimax/h3/image-to-video" | "minimax/h3/reference-to-video")) => {
             let body: String = db.query_row("SELECT text FROM model_prompt_rules WHERE id='minimax-h3'", [], |r| r.get(0)).optional()?.unwrap_or_else(|| H3.into());
             let mode = match endpoint {
@@ -25,6 +25,6 @@ pub fn guidance(db: &Connection, model: &MediaModel) -> Result<Value> {
         _ => (model.kind.as_str(), "No model-specific prompt grammar is registered for this endpoint. Use model-independent creative description and only capabilities exposed by its adapter. Do not borrow another model's syntax or infer controls from its name.".into()),
     };
     Ok(
-        json!({"modelId":model.id,"kind":model.kind,"provider":model.plugin,"endpoint":model.endpoint,"mode":mode,"rules":rules}),
+        json!({"modelId":model.id,"kind":model.kind,"provider":model.plugin,"endpoint":model.endpoint,"inputDescription":input_description,"rules":rules,"capabilities":crate::project_service::runtime::execute(json!({"action":"capabilities","model":model}))?}),
     )
 }

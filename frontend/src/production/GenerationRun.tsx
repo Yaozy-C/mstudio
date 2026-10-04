@@ -1,5 +1,4 @@
 import { RunStatus } from "./RunStatus";
-import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { TaskPromptEditor } from "./TaskPromptEditor";
 import { canEditOriginal, canRegenerate } from "./taskEditing";
@@ -13,6 +12,8 @@ import {
   ArrowClockwise,
   SlidersHorizontal,
   X,
+  Stop,
+  PlugsConnected,
 } from "@phosphor-icons/react";
 import { native, mediaUrl } from "../bridge";
 import type { Project } from "../model";
@@ -153,9 +154,9 @@ export function GenerationRun({
       </div>
       <TaskPromptEditor key={task.key} task={task} canvas={canvas} />
       {editable && !models.length && (
-        <button type="button" onClick={settings}>
+        <ActionButton icon={PlugsConnected} onClick={settings}>
           {t("连接生成模型")}
-        </button>
+        </ActionButton>
       )}
       {issue && (
         <p className="run-notice" role="status">
@@ -176,9 +177,9 @@ export function GenerationRun({
           "QUOTA_EXCEEDED",
           "MODEL_UNAVAILABLE",
         ].includes(normalizeError(task.error).code) && (
-          <button type="button" onClick={settings}>
+          <ActionButton icon={SlidersHorizontal} onClick={settings}>
             {t("模型与连接设置")}
-          </button>
+          </ActionButton>
         )}
       </ErrorNotice>
       {editable && (
@@ -221,7 +222,7 @@ export function GenerationRun({
       )}
       {pending && (
         <div className="run-actions">
-          <div role="status" aria-live="polite">
+          <div className="run-progress" role="status" aria-live="polite">
             <span>{t(runProgress(task))}</span>
             {task.error && (
               <small>
@@ -237,7 +238,8 @@ export function GenerationRun({
             <UnknownRunRecovery task={task} canvas={canvas} />
           )}
           {task.jobId && (task.status === "UNKNOWN" || task.error) && (
-            <AsyncButton
+            <ActionButton
+              icon={ArrowClockwise}
               busy={busy}
               busyLabel={t("正在核查…")}
               onClick={() => void check()}
@@ -245,16 +247,17 @@ export function GenerationRun({
               {task.status === "RECEIVING"
                 ? t("重试收取结果")
                 : t("重新查询状态")}
-            </AsyncButton>
+            </ActionButton>
           )}
           {["READY", "IN_QUEUE", "IN_PROGRESS"].includes(task.status ?? "") && (
-            <button
+            <ActionButton
+              icon={Stop}
               type="button"
               disabled={busy}
               onClick={() => void check(true)}
             >
               {t("停止生成")}
-            </button>
+            </ActionButton>
           )}
         </div>
       )}

@@ -1,3 +1,4 @@
+import type { ProductionTurn } from "../production/turnContext";
 import { defaultAgent, type WorkContext } from "./workContext";
 import { streamReply, type SubscribeProgress } from "./streamReply";
 import type { ChatModelAdapter } from "@assistant-ui/react";
@@ -6,11 +7,7 @@ import type { bridge } from "../bridge";
 import type { Project } from "../model";
 import { readyModel, type ModelCatalog } from "../models/types";
 import { taskAttachments, taskContext } from "../production/chat";
-import {
-  beginProductionTurn,
-  endProductionTurn,
-  type ProductionTurn,
-} from "../production/turnContext";
+
 import type { ProductionController } from "../production/useProduction";
 import type { PlaybackClock } from "../timeline/clock";
 import type { Attachment } from "./attachments";
@@ -67,7 +64,6 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
       const message = messages.at(-1)!;
       options.running(true);
       options.error("");
-      let generationTurnId: string | undefined;
       const cancel = () =>
         void options.invoke("cancel_assistant", { threadId: p.project.id });
       try {
@@ -150,8 +146,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
           agentName: agent.name,
           targetNodeId: turn.targetNodeId,
         });
-        generationTurnId = custom.turnId;
-        beginProductionTurn(custom.turnId, turn.production);
+
         yield { content: [], metadata: { custom } };
         await p.flush();
         if (abortSignal.aborted) throw new Error("已停止");
@@ -194,7 +189,6 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
         options.error(String(e));
         throw e;
       } finally {
-        if (generationTurnId) endProductionTurn(generationTurnId);
         options.running(false);
         abortSignal.removeEventListener("abort", cancel);
       }

@@ -9,14 +9,14 @@ fn interrupted_calls_get_unknown_effect_result_never_reexecuted() {
             content: vec![AssistantContent::ToolCall(tool)],
         },
     ];
-    session::repair_pending(&mut messages);
+    session::repair_pending(&mut messages, |_| None);
     assert_eq!(messages.len(), 3);
     assert!(
         serde_json::to_string(&messages[2])
             .unwrap()
             .contains("EFFECT_UNKNOWN")
     );
-    session::repair_pending(&mut messages);
+    session::repair_pending(&mut messages, |_| None);
     assert_eq!(messages.len(), 3);
 }
 #[test]

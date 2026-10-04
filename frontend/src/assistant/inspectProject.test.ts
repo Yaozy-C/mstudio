@@ -4,7 +4,7 @@ import { applyOperations, inspectProject } from "./projectCommands";
 
 test("a six-shot handoff is read once without unrelated video prompts", () => {
   const initial = newProject("Task handoff");
-  const p = applyOperations(initial, 0, [
+  const p = applyOperations(initial, [
     { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 6 }, (_, i) => ({
       op: "add_node",
@@ -33,7 +33,7 @@ test("a six-shot handoff is read once without unrelated video prompts", () => {
 });
 
 test("default batch details omit long prompts and can include creation", () => {
-  const p = applyOperations(newProject("Compact"), 0, [
+  const p = applyOperations(newProject("Compact"), [
     { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 6 }, (_, i) => ({
       op: "add_node",
@@ -63,7 +63,7 @@ test("default batch details omit long prompts and can include creation", () => {
 
 test("targeted reads keep local context without unrelated pagination and can finish long text", () => {
   const text = "镜头动作".repeat(1250);
-  const p = applyOperations(newProject("Local edit"), 0, [
+  const p = applyOperations(newProject("Local edit"), [
     { op: "set_brief", text: "Unrelated project brief" },
     { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 12 }, (_, i) => ({
@@ -138,7 +138,7 @@ test("exact clip reads exclude other targets and expose omitted fields", () => {
 });
 
 test("shot ordering reads exclude long text and scripts, with explicit fields", () => {
-  const p = applyOperations(newProject("Fields"), 0, [
+  const p = applyOperations(newProject("Fields"), [
     {
       op: "add_node",
       id: "screenplay",
@@ -196,7 +196,7 @@ test("shot ordering reads exclude long text and scripts, with explicit fields", 
 
 test("duration edit reads only its paragraph, reports saved values, and preserves every other field", async () => {
   const { savedValues } = await import("./savedValues");
-  let p = applyOperations(newProject("Eight shots"), 0, [
+  let p = applyOperations(newProject("Eight shots"), [
     {
       op: "add_node",
       id: "screenplay",
@@ -251,14 +251,20 @@ test("duration edit reads only its paragraph, reports saved values, and preserve
     },
     { op: "update_node", id: "s4", shot: { duration: 1.5 } },
   ];
-  p = applyOperations(p, p.revision ?? 0, ops);
-  expect(savedValues(p, ops)).toEqual([
+  p = applyOperations(p, ops);
+  expect(savedValues(p, ops)).toMatchObject([
     {
       id: "screenplay",
-      shot: undefined,
-      script: [{ id: "p4", exists: true, duration: 1.5 }],
+      exists: true,
+      complete: true,
+      values: { screenplay: { script: p.nodes[0].screenplay!.script } },
     },
-    { id: "s4", shot: { duration: 1.5 }, script: [] },
+    {
+      id: "s4",
+      exists: true,
+      complete: true,
+      values: { shot: { duration: 1.5 } },
+    },
   ]);
   expect(inspectProject(p, read).details![0].screenplay!.script).toEqual([
     { id: "p4", duration: 1.5 },

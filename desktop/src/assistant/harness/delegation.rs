@@ -93,15 +93,9 @@ impl Host for ChildHost {
             .tool
             .as_ref()
             .ok_or("Subagent project context missing")?;
-        // Persist first; only authoritative committed outcomes count as applied.
-        journal::append(
-            &tool.app.state::<Store>(),
-            &tool.project,
-            &tool.turn,
-            kind,
-            value.clone(),
-        )
-        .map_err(|e| e.to_string())?;
+        // Child replay stays isolated; public progress uses the same event path.
+        tool.record(kind, value.clone())?;
+        crate::assistant::child_activity::record(tool, kind, &value).map_err(|e| e.to_string())?;
         if kind == "model/stop" {
             *self.terminal_reason.lock().unwrap() = value["stopReason"].as_str().map(str::to_owned);
         }
@@ -119,12 +113,7 @@ impl Host for ChildHost {
         if call.function.name == "mstudio_read_image" {
             return self.inner.read_image(call).await;
         }
-        registry::execute_local(
-            self.inner.tool.as_ref().unwrap(),
-            call,
-            &format!("{}:", self.id),
-        )
-        .await
+        registry::execute_local(self.inner.tool.as_ref().unwrap(), call).await
     }
 }
 mod continuation;

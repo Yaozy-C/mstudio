@@ -1,7 +1,6 @@
 import { historyMessages } from "./historyMessages";
 import { expect, test } from "bun:test";
 import { ExportedMessageRepository } from "@assistant-ui/core/internal";
-import { productionTurn } from "../production/turnContext";
 import { fixture, until } from "./chatAdapter.fixture";
 
 test("send clears text and refs before saving or replying; completion keeps the next draft", async () => {
@@ -48,13 +47,9 @@ test("failed canvas request retries original context without consuming the next 
   f.flush.resolve();
   await until(() => f.calls.length === 1);
   const first = f.calls[0];
-  expect(productionTurn(first.args.clientTurnId as string)?.task?.key).toBe(
-    "selected-a",
-  );
   first.result.reject(new Error("模拟网络失败"));
   await sending;
   await until(() => f.thread.messages.at(-1)?.status?.type !== "running");
-  expect(productionTurn(first.args.clientTurnId as string)).toBeUndefined();
   const userId = f.thread.messages.find((m) => m.role === "user")!.id;
   const retry = f.thread.startRun({
     parentId: userId,

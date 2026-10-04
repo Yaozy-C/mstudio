@@ -5,9 +5,7 @@ import { productionItems } from "./items";
 import { editReferences } from "./editReferences";
 
 const edit = (p: ReturnType<typeof fixture>, extra: object) =>
-  applyOperations(p, p.revision ?? 0, [
-    { op: "set_references", id: "shot", ...extra },
-  ]);
+  applyOperations(p, [{ op: "set_references", id: "shot", ...extra }]);
 test("adding and editing one reference preserves other references and never creates cards", () => {
   const p = fixture();
   const next = edit(p, {

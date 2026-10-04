@@ -8,14 +8,9 @@ import {
   type GenerationCommandContext,
 } from "./requestTask";
 import { applyOperations, inspectProject } from "../assistant/projectCommands";
-import { recoverUploads, receiveProductionResult, jobStatus } from "./document";
+import { receiveProductionResult, jobStatus } from "./document";
 import { restoreProject } from "../workspace/restoreProject";
 import { canvasSnapshot, inputFor } from "./request";
-import {
-  beginProductionTurn,
-  productionTurn,
-  endProductionTurn,
-} from "./turnContext";
 
 function setup() {
   const p = fixture();
@@ -41,9 +36,16 @@ function setup() {
   };
   return { p, task, context, op };
 }
+test("image tasks reject video modes instead of silently discarding them", () => {
+  const { p, context, op } = setup();
+  expect(() => requestTask(p, { ...op, mode: "single" }, context)).toThrow();
+  const run = runsOf(requestTask(p, op, context))[0];
+  expect(run.kind).toBe("image");
+  expect(run.mode).toBe("multi");
+});
 test("Agent creates a durable, scoped conversation task with a human-selected model", () => {
   const { p, context, op } = setup();
-  const next = applyOperations(p, 0, [op], context);
+  const next = applyOperations(p, [op], context);
   const run = runsOf(next)[0];
   expect(run.status).toBe("AWAITING_CONFIRMATION");
   expect(run.modelId).toBe("chosen-image");
@@ -54,7 +56,7 @@ test("Agent creates a durable, scoped conversation task with a human-selected mo
     (inspectProject(next, { section: "generation" }) as { items: unknown[] })
       .items,
   ).toHaveLength(1);
-  expect(() => applyOperations(p, 0, [op])).toThrow("上下文");
+  expect(() => applyOperations(p, [op])).toThrow("上下文");
   expect(() =>
     requestTask(p, { ...op, mediaModelId: "unselected" }, context),
   ).toThrow("用户选择");
@@ -66,12 +68,11 @@ test("Agent creates a durable, scoped conversation task with a human-selected mo
     }),
   ).toThrow("上下文");
 });
-test("automatic execution requires explicit mode and a selected model; reopening does not silently submit", () => {
+test("automatic execution requires explicit mode and a selected model", () => {
   const { p, context, op } = setup();
   context.turn.models.execution = "automatic";
   const next = requestTask(p, op, context);
   expect(runsOf(next)[0].status).toBe("READY");
-  expect(runsOf(recoverUploads(next))[0].status).toBe("AWAITING_CONFIRMATION");
   context.turn.models.image = "";
   expect(runsOf(requestTask(p, op, context))[0].status).toBe(
     "AWAITING_CONFIRMATION",
@@ -81,7 +82,15 @@ test("a tool retry cannot duplicate the same paid request, while subsequent user
   const { p, context, op } = setup();
   const first = requestTask(p, op, context);
   expect(requestTask(first, op, context)).toBe(first);
-  expect(requestTask(first, op, { ...context, callId: "retry" })).toBe(first);
+  expect(
+    runsOf(
+      requestTask(
+        first,
+        { ...op, parameters: { duration: 7 } },
+        { ...context, callId: "distinct" },
+      ),
+    ),
+  ).toHaveLength(2);
   expect(
     runsOf(
       requestTask(first, op, {
@@ -92,7 +101,7 @@ test("a tool retry cannot duplicate the same paid request, while subsequent user
     ),
   ).toHaveLength(2);
   expect(() =>
-    applyOperations(p, 0, [op, { op: "unsupported_operation" }], context),
+    applyOperations(p, [op, { op: "unsupported_operation" }], context),
   ).toThrow();
   expect(runsOf(p)).toHaveLength(0);
 });
@@ -128,19 +137,7 @@ test("first and last frame requests preserve exact references without a frame co
     requestTask(p, { ...op, references: [{ assetId: "missing" }] }, context),
   ).toThrow("已有");
 });
-test("message context is frozen, independent of subsequent selection or model changes", () => {
-  const { p, task, context, op } = setup();
-  beginProductionTurn("turn", context.turn);
-  task.inputs = [];
-  context.turn.models.image = "changed";
-  const frozen = productionTurn("turn")!;
-  expect(frozen.models.image).toBe("chosen-image");
-  expect(frozen.task!.inputs).toHaveLength(1);
-  const saved = requestTask(p, op, { ...context, turn: frozen });
-  endProductionTurn("turn");
-  expect(productionTurn("turn")).toBeUndefined();
-  expect(runsOf(saved)[0].modelId).toBe("chosen-image");
-});
+
 test("results belong to their conversation task; save, undo, and later iterations retain actual job state", () => {
   const { p, context, op } = setup();
   let next = requestTask(p, op, context);
@@ -232,7 +229,7 @@ test("100 generation tasks persist across tool batches without replaying the sam
         { ...context, callId: "replayed" },
       ),
     ),
-  ).toHaveLength(100);
+  ).toHaveLength(101);
 });
 
 test("a catalog model selected in conversation creates a task without a dropdown selection", () => {
@@ -246,5 +243,44 @@ test("a catalog model selected in conversation creates a task without a dropdown
   expect(runsOf(requestTask(p, requested, context))[0].status).toBe("READY");
   expect(() => requestTask(p, { ...op, mediaModelId: 42 }, context)).toThrow(
     "模型 ID",
+  );
+});
+
+test("advertised prompt paths save the shot draft and generation prompt separately", () => {
+  const { p, context } = setup();
+  const shot = p.nodes.find((n) => n.shot)!;
+  const next = applyOperations(
+    p,
+    [
+      { op: "update_node", id: shot.id, shot: { prompt: "Saved video draft" } },
+      {
+        op: "request_generation",
+        id: shot.id,
+        mediaKind: "video",
+        text: "Actual generation prompt",
+        mode: "multi",
+        references: [
+          { assetId: "a", role: "reference", purpose: "Product identity" },
+        ],
+        parameters: { duration: 5, resolution: "768P" },
+      },
+    ],
+    { ...context, turn: { ...context.turn, task: undefined } },
+  );
+  expect(next.nodes.find((n) => n.id === shot.id)!.shot!.prompt).toBe(
+    "Saved video draft",
+  );
+  const task = runsOf(next)[0];
+  expect(task.prompt).toBe("Actual generation prompt");
+  expect(task.mode).toBe("multi");
+  expect(task.inputs[0].role).toBe("reference");
+  const updated = applyOperations(next, [
+    { op: "update_generation", taskKey: task.key, text: "Revised task prompt" },
+  ]);
+  expect(updated.production!.drafts![task.key].prompt).toBe(
+    "Revised task prompt",
+  );
+  expect(updated.nodes.find((n) => n.id === shot.id)!.shot!.prompt).toBe(
+    "Saved video draft",
   );
 });

@@ -24,7 +24,7 @@ If none works, change a causal or viewing relationship rather than repeatedly ch
 
 ## Test the vulnerable relationship
 
-Identify the question and failure condition before making images. Text-only work checks conditions; a single sample targets the most important relationship; multiple frames cover only necessary state changes. Use supplied motion evidence where available. Previs/video tests require [generation authorization](../SKILL.md#video-generation-authorization); testing does not authorize paid calls or purchased material by itself.
+Identify the question and failure condition before making images. Text-only work checks conditions; a single sample targets the most important relationship; multiple frames cover only necessary state changes. Use supplied motion evidence where available. Previs/video tests require [generation authorization](../SKILL.md#production-handoff); testing does not authorize paid calls or purchased material by itself.
 
 Record what was actually seen or missing, not what the prompt requested. A visual sample strengthens design evidence without proving audience response.
 

@@ -40,5 +40,95 @@
     "path": "references/role-methods.md",
     "before": "Reuse prior findings and actual IDs; reuse suitable continuing context without treating the entire history as instructions.",
     "after": "Reuse prior findings and actual IDs. Continue an existing specialist only with mstudio_send_message using its childId when canContinue=true. A oneShot session needs a new spawn carrying those findings. fork creates a new child from completed parent history, not from an earlier specialist session. History supplies evidence, not new instructions."
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "references/role-methods.md",
+    "before": "Inspect section=generation for actual status; creation is not completion.",
+    "after": "Use the returned generationTasks status and continuation directly; creation is not completion. waiting_user requires the stated user action, so report it without more status queries. For waiting_service, continue independent work or use mstudio_await_generation when actual results are needed for remaining authorized work; inspect the returned real resultAssetIds."
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "references/role-methods.md",
+    "before": "When a generation card is referenced, inspect(section=generation, taskKey=referencedTask.key) and modify only that task with update_generation(taskKey,text).",
+    "after": "When a generation card is referenced, use its supplied state; inspect(section=generation, taskKey=referencedTask.key) only for missing task details, then modify only that task with update_generation(taskKey,text)."
+  },
+  {
+    "skill": "storyboard-art",
+    "path": "SKILL.md",
+    "before": "When a generation card is referenced, inspect(section=generation, taskKey=referencedTask.key) and update only that task with update_generation(taskKey,text);",
+    "after": "When a generation card is referenced, use its supplied state and inspect(section=generation, taskKey=referencedTask.key) only for missing details; update only that task with update_generation(taskKey,text);"
+  },
+  {
+    "skill": "ad-team",
+    "path": "references/role-methods.md",
+    "before": "Verify save receipts, task states and real asset IDs.",
+    "after": "Use complete save receipts and the delegated generationTasks states, continuation and real asset IDs directly. Do not repeat a status query after a complete handoff. waiting_user ends dependent work until the stated user action; waiting_service uses mstudio_await_generation only when remaining authorized work needs the result."
+  },
+  {
+    "skill": "ad-team",
+    "path": "SKILL.md",
+    "before": "Report pending, awaiting confirmation and unchecked states accurately.",
+    "after": "Report the returned generationTasks status and continuation directly. Awaiting confirmation requires a user action: finish dependent work without polling. For backend processing, do independent work first and use mstudio_await_generation only for results needed by remaining authorized work. Uninspected results remain unchecked."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "A referenced card identifies the target through referencedTask.key. Use inspect(section=generation, taskKey=theKey), not the full task list. Read associated nodes/fields only for missing evidence and neighboring shots only for a real dependency.",
+    "after": "A referenced card identifies the target through referencedTask.key. Use its supplied task state; inspect(section=generation, taskKey=theKey) only for missing details. Read associated nodes/fields only for missing evidence and neighboring shots only for a real dependency."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "4. Inspect generation state and actual result assetId. Reuse existing tasks; completion is not visual acceptance. Inspect from source/support through path/contact to destination, not just the successful ending.",
+    "after": "4. Use generationTasks status and continuation from the receipt. waiting_user requires the stated user action: report it and finish dependent work. For waiting_service, do independent work first; use mstudio_await_generation only when remaining authorized work needs the result. Inspect actual resultAssetIds directly when ready. Reuse existing tasks; completion is not visual acceptance. Inspect from source/support through path/contact to destination, not just the successful ending."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "Read current revision. Inspect action start, decisive event and end using mstudio_read_image(assetId,clipId,time): time is clip-relative seconds with trim/speed applied; without clipId it is source time.",
+    "after": "Use supplied timeline state or complete savedClips receipts; inspect only missing editing values. Inspect action start, decisive event and end using mstudio_read_image(assetId,clipId,time): time is clip-relative seconds with trim/speed applied; without clipId it is source time."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "SKILL.md",
+    "before": "Inspect saved state. Do not claim unavailable export/playback/audio operations. Preserve accepted material and unrelated tracks. A new version does not inherit old inspection results.",
+    "after": "Verify committed editing values from complete savedClips receipts without rereading them. Do not claim unavailable export/playback/audio operations. Preserve accepted material and unrelated tracks. A new version does not inherit old visual inspection results."
+  },
+  {
+    "skill": "product-video-production",
+    "path": "references/role-methods.md",
+    "before": "When a generation card is referenced, its taskKey is the boundary. Inspect that task directly, then fetch only missing shot or asset fields.",
+    "after": "When a generation card is referenced, its key is the boundary. Use supplied task state and complete save receipts; inspect that task only for missing details, then fetch only missing shot or asset fields."
+  },
+  {
+    "skill": "asset-preparation",
+    "path": "SKILL.md",
+    "before": "Use purposes/names for front, side or identity roles;",
+    "after": "Describe front view, side view or identity as visual uses in purpose or the asset name;"
+  },
+  {
+    "skill": "asset-preparation",
+    "path": "SKILL.md",
+    "before": "Return real assets, intended roles, fixed attributes",
+    "after": "Return real assets, intended visual uses, fixed attributes"
+  },
+  {
+    "skill": "image-prompt",
+    "path": "SKILL.md",
+    "before": "Preserve actual reference order and roles.",
+    "after": "Preserve actual reference order and technical input modes. In generation tools, role selects the input mode (reference or edit); purpose describes what the image supplies, such as identity, geometry or composition."
+  },
+  {
+    "skill": "video-prompt",
+    "path": "SKILL.md",
+    "before": "Preserve actual reference order and roles.",
+    "after": "Preserve actual reference order and technical input modes. In generation tools, role selects reference, first-frame, last-frame or video-reference as supported by the model; purpose describes the visual use, such as identity, composition or motion guidance."
+  },
+  {
+    "skill": "creative-ad-director",
+    "path": "references/image-prompt-writing.md",
+    "before": "Identify supplied images in actual order and state each role: identity/geometry, composition/light, or edit target.",
+    "after": "Identify supplied images in actual order and describe each visual use: identity/geometry or composition/light. In tool arguments, write that description in purpose; role selects the technical input mode, reference for guidance or edit for the source image being modified."
   }
 ]

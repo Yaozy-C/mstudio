@@ -111,7 +111,7 @@ fn creative_plan_and_linked_shot_context_are_bounded_and_readable() {
     );
     let schema = super::tool_schema::schema();
     assert!(
-        schema["properties"]["operations"]["items"]["properties"]["kind"]["enum"]
+        schema["properties"]["operations"]["items"]["oneOf"][0]["properties"]["kind"]["enum"]
             .as_array()
             .unwrap()
             .contains(&json!("screenplay"))

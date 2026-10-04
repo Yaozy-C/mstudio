@@ -23,8 +23,10 @@ export function ObjectMenu({
             (e.target as HTMLElement).closest(
               "input, textarea, [contenteditable=true]",
             )
-          )
+          ) {
+            e.preventDefault();
             e.stopPropagation();
+          }
         }}
       >
         {children}

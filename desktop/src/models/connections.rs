@@ -35,7 +35,13 @@ pub fn get(db: &Connection, id: &str) -> Result<ServiceConnection> {
         },
     )
     .optional()?
-    .ok_or_else(|| anyhow::anyhow!("服务连接已移除，请重新选择"))
+    .ok_or_else(|| {
+        anyhow::Error::from(crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "connection",
+            "Service connection removed",
+        ))
+    })
 }
 pub fn key(db: &Connection, id: &str) -> Result<String> {
     Ok(db.query_row(

@@ -7,8 +7,8 @@ import { jobStatus, saveTask } from "../production/document";
 import { regenerationDraft } from "../production/taskEditing";
 import type { ProductionTask } from "../production/types";
 
-test("layout changes keep content edits valid, while real edits reject stale revisions", () => {
-  const p = applyOperations(newProject("Revision"), 0, [
+test("layout changes preserve content while real edits advance revisions", () => {
+  const p = applyOperations(newProject("Revision"), [
     { op: "add_node", id: "note", kind: "note", title: "Original" },
   ]);
   p.revision = 4;
@@ -19,17 +19,13 @@ test("layout changes keep content edits valid, while real edits reject stale rev
     production: { positions: { note: { x: 30, y: 40 } } },
   };
   expect(contentChanged(p, layout)).toBe(false);
-  const edited = applyOperations(layout, 4, [
+  const edited = applyOperations(layout, [
     { op: "update_node", id: "note", title: "Edited" },
   ]);
   expect(edited.nodes[0].x).toBe(500);
   expect(contentChanged(layout, edited)).toBe(true);
   const current = { ...edited, revision: 5 };
-  expect(() =>
-    applyOperations(current, 4, [
-      { op: "update_node", id: "note", title: "Overwrite" },
-    ]),
-  ).toThrow("工程已变化");
+
   expect(restoreProject(p, layout).revision).toBe(4);
   expect(restoreProject(p, current).revision).toBe(6);
   expect(contentChanged(p, { ...p, clips: [...p.clips] })).toBe(false);
@@ -38,7 +34,7 @@ test("layout changes keep content edits valid, while real edits reject stale rev
 
 test("background image/video progress does not invalidate edits or overwrite live task state", () => {
   for (const kind of ["image", "video"] as const) {
-    let p = applyOperations(newProject("Concurrent progress"), 0, [
+    let p = applyOperations(newProject("Concurrent progress"), [
       { op: "add_node", id: "note", kind: "note", title: "Original" },
     ]);
     const task: ProductionTask = {
@@ -68,7 +64,7 @@ test("background image/video progress does not invalidate edits or overwrite liv
       };
     }
     expect(current.revision).toBe(7);
-    const edited = applyOperations(current, 7, [
+    const edited = applyOperations(current, [
       { op: "update_node", id: "note", title: "Corrected" },
     ]);
     expect(edited.nodes[0].title).toBe("Corrected");
@@ -103,10 +99,5 @@ test("background image/video progress does not invalidate edits or overwrite liv
       true,
     );
     expect(contentChanged(p, { ...p, production: { drafts: {} } })).toBe(true);
-    expect(() =>
-      applyOperations({ ...edited, revision: 8 }, 7, [
-        { op: "update_node", id: "note", title: "Stale overwrite" },
-      ]),
-    ).toThrow("工程已变化");
   }
 });

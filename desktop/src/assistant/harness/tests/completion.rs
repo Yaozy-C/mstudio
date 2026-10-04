@@ -189,3 +189,42 @@ async fn refusal_has_explicit_stop_reason_and_does_not_execute_tools() {
             .any(|(kind, value)| kind == "model/stop" && value["stopReason"] == "refusal")
     );
 }
+
+#[tokio::test]
+async fn final_answer_excludes_progress_but_keeps_the_exact_model_transcript() {
+    let host = TestHost::default();
+    let model = TestModel::default();
+    model.responses.lock().unwrap().extend([
+        Ok(reply(vec![
+            AssistantContent::text("正在核对"),
+            AssistantContent::ToolCall(call("read", "read", json!({}))),
+        ])),
+        Ok(reply(vec![AssistantContent::text(
+            "已找到原始提示词，结论如下。",
+        )])),
+    ]);
+    let answer = run(
+        &model,
+        &profile(),
+        &host,
+        Session::new(vec![Message::user("诊断")]),
+        false,
+        "",
+    )
+    .await
+    .unwrap();
+    assert_eq!(answer, "已找到原始提示词，结论如下。");
+    assert!(
+        model.requests.lock().unwrap()[1]
+            .chat_history
+            .iter()
+            .any(|m| serde_json::to_string(m).unwrap().contains("正在核对"))
+    );
+    assert!(
+        host.events
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|(kind, v)| kind == "assistant/partial" && v["delta"] == "正在核对")
+    );
+}

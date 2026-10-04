@@ -14,7 +14,9 @@ pub async fn run(
     streaming: bool,
     key: &str,
 ) -> Result<String, String> {
-    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
+    let deadline = host
+        .deadline()
+        .unwrap_or_else(|| tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60));
     run_until(model, profile, host, session, streaming, key, deadline).await
 }
 pub async fn run_until(
@@ -26,12 +28,11 @@ pub async fn run_until(
     key: &str,
     deadline: tokio::time::Instant,
 ) -> Result<String, String> {
-    for index in 1..=64 {
-        if index > session.edit_progress.step_limit() {
-            break;
-        }
+    let mut index = 0_u64;
+    loop {
+        index += 1;
         if host.token().is_cancelled() {
-            return Err("已停止回答；已输出内容和已完成操作保留".into());
+            return Err(crate::app_error::cancelled());
         }
         session.messages.extend(host.injected()?);
         if budget::pressure(&session, profile, host) > profile.input_budget() {
@@ -43,11 +44,11 @@ pub async fn run_until(
             json!({"step":index,"historyMessages":session.messages.len()}),
         )?;
         let mut result = step(model, profile, host, &mut session, streaming, key, deadline).await;
-        if matches!(&result, Err(error) if error == "CONTEXT_WINDOW_EXCEEDED") {
+        if matches!(&result, Err(model::RequestError::ContextOverflow)) {
             if budget::recover(model, profile, host, &mut session, true).await? {
                 result = step(model, profile, host, &mut session, streaming, key, deadline).await;
             }
-            if matches!(&result, Err(error) if error == "CONTEXT_WINDOW_EXCEEDED") {
+            if matches!(&result, Err(model::RequestError::ContextOverflow)) {
                 result = Err("该模型报告上下文窗口已满；当前输入无法继续压缩，请减少本轮附件或调整模型窗口设置".into());
             }
         }
@@ -55,17 +56,15 @@ pub async fn run_until(
             "step/end",
             json!({"step":index,"status":if result.is_ok() {"completed"} else {"failed"}}),
         )?;
-        let finished = result?;
-        if finished {
+        if let Some(mut answer) = result.map_err(String::from)? {
             let notice = session.delegation_outcomes.notice();
             if !notice.is_empty() {
                 session.publish(host, &notice)?;
+                answer.push_str(&notice);
             }
-            return Ok(session.text);
+            return Ok(answer);
         }
     }
-    host.record("model/stop", json!({"stopReason":"step-limit"}))?;
-    Err("本轮达到执行步数上限；已完成操作保留，剩余任务需继续处理".into())
 }
 async fn step(
     model: &impl CompletionModel,
@@ -75,7 +74,7 @@ async fn step(
     streaming: bool,
     key: &str,
     deadline: tokio::time::Instant,
-) -> Result<bool, String> {
+) -> Result<Option<String>, model::RequestError> {
     super::metering::record(host, session, profile)?;
     let request = CompletionRequest {
         model: None,
@@ -148,18 +147,18 @@ async fn step(
         .into());
     }
     if calls.is_empty() {
-        if session.text.trim().is_empty() {
+        if text.trim().is_empty() {
             return Err("模型回答为空".into());
         }
-        return Ok(true);
+        return Ok(Some(text));
     }
     scheduler::execute(host, session, &calls).await?;
     if let Some(error) = session.edit_progress.stalled() {
         host.record("model/stop", json!({"stopReason":"no-progress"}))?;
-        return Err(error);
+        return Err(error.into());
     }
     if !session.text.is_empty() && !session.text.ends_with("\n\n") {
         session.publish(host, "\n\n")?;
     }
-    Ok(false)
+    Ok(None)
 }

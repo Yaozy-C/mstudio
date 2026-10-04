@@ -12,7 +12,8 @@ pub fn save_service_connection(
 ) -> Result<(), String> {
     let mut db = store.db.lock().unwrap();
     let tx = db.transaction().map_err(|e| e.to_string())?;
-    save(&tx, connection, key, clear_key).map_err(|e| e.to_string())?;
+    save(&tx, connection, key, clear_key)
+        .map_err(|e| crate::app_error::wire(e, "VALIDATION_FAILED", "connection_settings"))?;
     tx.commit().map_err(|e| e.to_string())
 }
 #[tauri::command]

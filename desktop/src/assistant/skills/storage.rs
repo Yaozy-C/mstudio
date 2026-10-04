@@ -97,30 +97,6 @@ pub fn install_core_defaults(db: &Connection) -> Result<()> {
             params![id, body],
         )?;
     }
-    for (id, body) in [
-        (
-            "ad-team",
-            include_str!("../../../../skills/ad-team/references/role-methods.md"),
-        ),
-        (
-            "storyboard-art",
-            include_str!("../../../../skills/storyboard-art/references/role-methods.md"),
-        ),
-        (
-            "asset-preparation",
-            include_str!("../../../../skills/asset-preparation/references/role-methods.md"),
-        ),
-        (
-            "product-storyboard",
-            include_str!("../../../../skills/product-storyboard/references/role-methods.md"),
-        ),
-        (
-            "product-video-production",
-            include_str!("../../../../skills/product-video-production/references/role-methods.md"),
-        ),
-    ] {
-        tx.execute("INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES(?1,'references/role-methods.md',?2)", params![id,body])?;
-    }
     tx.execute(
         "INSERT INTO settings(key,value) VALUES('core_rules_initialized','true')",
         [],

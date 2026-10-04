@@ -32,6 +32,19 @@ export function clipReceipt(before: Project, after: Project) {
     complete: items.length <= 12,
   };
 }
+// Select committed fields recursively. Arrays are complete saved values: their
+// merge/removal semantics belong to the editor, never to the receipt builder.
+function selected(saved: unknown, requested: unknown): unknown {
+  if (!requested || typeof requested !== "object" || Array.isArray(requested))
+    return saved ?? null;
+  const source = (saved ?? {}) as Record<string, unknown>;
+  return Object.fromEntries(
+    Object.entries(requested).map(([key, value]) => [
+      key,
+      selected(source[key], value),
+    ]),
+  );
+}
 // Read receipts from the saved document, never echo requested values as proof.
 export function savedValues(p: Project, operations: unknown) {
   if (!Array.isArray(operations)) return [];
@@ -39,31 +52,24 @@ export function savedValues(p: Project, operations: unknown) {
     .filter((o) => o.op === "update_node" || o.op === "add_node")
     .map((o) => {
       const node = p.nodes.find((n) => n.id === o.id);
-      const paragraphs = Array.isArray(o.screenplay?.script)
-        ? o.screenplay.script
-        : [];
+      const fields = Object.fromEntries(
+        Object.entries(o).filter(([key]) => key !== "op" && key !== "id"),
+      );
+      if (o.screenplay) {
+        const commands = ["scriptMode", "removeParagraphIds", "paragraphOrder"];
+        fields.screenplay = Object.fromEntries(
+          Object.entries(o.screenplay).filter(
+            ([key]) => !commands.includes(key),
+          ),
+        );
+        if (commands.some((key) => key in o.screenplay))
+          (fields.screenplay as Record<string, unknown>).script = [];
+      }
       return {
         id: o.id,
-        shot:
-          node?.shot && o.shot
-            ? Object.fromEntries(
-                ["order", "duration", "screenplayId", "scriptId"]
-                  .filter((k) => k in o.shot)
-                  .map((k) => [k, node.shot![k as keyof typeof node.shot]]),
-              )
-            : undefined,
-        script: paragraphs.map((patch: { id: string; duration?: number }) => {
-          const saved = node?.screenplay?.script?.find(
-            (s) => s.id === patch.id,
-          );
-          return {
-            id: patch.id,
-            exists: !!saved,
-            duration:
-              patch.duration !== undefined ? saved?.duration : undefined,
-          };
-        }),
+        exists: !!node,
+        complete: true,
+        values: selected(node, fields),
       };
-    })
-    .filter((o) => o.shot || o.script.length);
+    });
 }

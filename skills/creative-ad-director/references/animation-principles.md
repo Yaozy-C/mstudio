@@ -1,6 +1,6 @@
 # Animation principles as visible performance
 
-Required reading before every image/video prompt, as well as action design and motion review. Full current text already injected by the app counts as read; a core summary does not. Choose principles that materially improve the shot's purpose, material behavior and style. Do not append a twelve-principle slogan or require all twelve in every shot.
+Use for action design, motion review, or a pose/contact problem that needs more than the prompt guide. Choose principles that materially improve the shot's purpose, material behavior and style. Do not append a twelve-principle slogan or require all twelve in every shot.
 
 | Principle | Apply through visible decisions |
 |---|---|
@@ -40,3 +40,5 @@ The classic framework is Frank Thomas and Ollie Johnston's The Illusion of Life.
 - [Source 1](https://www.disneyanimation.com/process/animation/)
 - [Source 2](https://www.adobe.com/creativecloud/animation/discover/principles-of-animation.html)
 - [Source 3](https://xhslink.cn/o/rLnNxFkjbL)
+
+For live-action acting and interaction, read [naturalistic performance](naturalistic-performance.md) when needed.

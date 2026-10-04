@@ -60,7 +60,9 @@ export function requestTask(
     !assetTask && turn.task?.ownerId === ownerId ? turn.task : undefined;
   let task = source ? structuredClone(source) : createTask(p, [], kind);
   task = { ...task, kind };
-  const mode = op.mode ?? (kind === "image" ? "multi" : task.mode);
+  if (kind === "image" && op.mode !== undefined)
+    throw failure("VALIDATION_FAILED", "图片任务不接受视频素材组合方式");
+  const mode = op.mode ?? task.mode;
   if (!["single", "ends", "multi", "mixed"].includes(String(mode)))
     throw failure("VALIDATION_FAILED", "素材组合方式无效");
   task =
@@ -182,7 +184,16 @@ export function requestTask(
     targetNodeId: typeof ownerId === "string" ? ownerId : undefined,
     prompt,
     parameters:
-      !assetTask && turn.task?.kind === kind ? turn.task.parameters : undefined,
+      op.parameters === undefined
+        ? !assetTask && turn.task?.kind === kind
+          ? turn.task.parameters
+          : undefined
+        : {
+            ...(!assetTask && turn.task?.kind === kind
+              ? turn.task.parameters
+              : {}),
+            ...(op.parameters as ProductionTask["parameters"]),
+          },
     modelId,
     turnId,
     instruction: turn.instruction,
@@ -192,19 +203,6 @@ export function requestTask(
         ? "READY"
         : "AWAITING_CONFIRMATION",
   };
-  // A repeated tool call in this turn must not silently create a second paid job.
-  if (
-    runsOf(p, turnId).some(
-      (t) =>
-        t.kind === run.kind &&
-        t.generationPurpose === run.generationPurpose &&
-        t.targetNodeId === run.targetNodeId &&
-        t.ownerId === run.ownerId &&
-        t.prompt === run.prompt &&
-        JSON.stringify(t.inputs) === JSON.stringify(run.inputs),
-    )
-  )
-    return p;
   if (runsOf(p, turnId).length >= 500)
     throw failure(
       "VALIDATION_FAILED",

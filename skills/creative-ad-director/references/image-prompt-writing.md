@@ -1,40 +1,28 @@
 # Write one image at one visible moment
 
-Required before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.
+Translate the selected design into a visible instant. Keep the requested art direction; a photograph, rough storyboard and graphic layout need different treatment. A still cannot contain incompatible before/after states.
 
-Use for storyboard frames, production frames, product scenes and local image edits. Translate selected shot intent into a visible instant. Time evolution belongs in video prompting. Retain the current tool, model and authorization.
+## Visible decisions
 
-## Output and context
+- Moment and pose: locate the body/object, its support, weight and decisive contact. Distinguish anticipation from result; do not reveal a planned surprise early. For a difficult pose, consult [animation principles](animation-principles.md).
+- Camera and composition: choose compatible view direction, height, visible surfaces, subject scale and crop. Keep the attention center and essential spatial relationships readable. Consult [shot grammar](cinematography.md) for unresolved staging.
+- Light and focus: specify coherent source direction, softness and exposure; retain background cues needed to understand the scene. Mood should arise from visible light, material or weather.
+- Output: distinguish a clean scene frame, annotated storyboard and graphic design. Put presentation labels outside clean video-input frames; when text is requested, specify exact copy and placement.
 
-Distinguish a clean scene frame, annotated storyboard layout and graphic design with onscreen copy. Clean video-input frames have no shot number, caption, subtitle or layout by default; put presentation labels outside the image. If the user requests text or panels, specify exact content and placement instead of banning all text.
+Script, dialogue, sound and camera trajectory are context. Include only what is visible at this moment, with a sound source only when needed. Add details to resolve ambiguity, not new events, people, props or slogans. Surreal effects change the chosen relationships while retaining a compatible source and state.
 
-Script, dialogue, sound and camera trajectory are reasoning inputs, not fields to concatenate into the prompt. Select the state actually visible now: opening, contact, support, occlusion and position. Do not show future events early. Convert sound to a visible source only when needed. Do not append conversation history or review notes.
+## Product structure and references
 
-## Resolve visible ambiguity
+Use original image evidence for openings, closure paths, part count, connections and visible surfaces. A parts list or 'same product' does not resolve contradictory geometry. A director's proposed action cannot redefine the product. Return an evidenced design conflict to direction; hidden geometry remains unknown. Texture similarity alone cannot establish structural fidelity.
 
-Preserve user composition, style and concept. Add only detail needed for this image; do not invent extra people, props, slogans or effects. Resolve conflicts using established intent; ask only when a material locked conflict cannot be resolved.
+Identify supplied images in actual order and describe each visual use: identity/geometry or composition/light. In tool arguments, write that description in purpose; role selects the technical input mode, reference for guidance or edit for the source image being modified. Product photos constrain the product, not the entire original arrangement. Preserve actual markings while excluding irrelevant dimension labels or interface chrome.
 
-- Moment: before, during or after the action, without incompatible simultaneous states.
-- Camera/composition: aspect, subject scale, visible extent and crop; compatible camera height, direction and visible surfaces.
-- Light/focus: coherent time, source direction, palette and focus; required background cues must survive depth of field or bloom.
-- Effect/material: express mood through visible mechanisms, distinguishing refraction, particles, liquid, vapor and emission. Surreal effects change only selected relationships. Use targeted constraints for actual ambiguity rather than universal negative lists.
+An independent request cannot see 'the previous frame' without that image. Supply an inspected base for same-view continuity alongside original product evidence. A generated base supplies composition/state, not proof of unseen mechanisms. Use 'change only X' language for an actual image edit; a new scene remains a new generation. State a model limitation if it cannot accept the required references.
 
-## Reference roles
+## Final prompt and image check
 
-For a recurring real product, inspect original images before asserting geometry. Extract only the structural relationships relevant to this view: opening and closure path, part count and placement, attachment points, and which surfaces become visible when it opens or turns. A parts list or "same product" is insufficient. Keep these invariants in the existing frame description and carry them into each self-contained request. Distinguish verified structure from occlusion or unknown geometry; a new angle does not authorize inventing a seam, opening or connection.
+Write the visible output, selected state, composition, light and necessary reference constraints in direct paragraphs. Specifications belong in supported parameters. Keep planning notes, review history and quality slogans out of the final text. Describe material behavior rather than adding universal negative lists.
 
-Compare the proposed shot and prompt against those relationships before submission. Original product evidence governs identity; a director's proposed action or composition cannot redefine it. If they conflict, return the specific mismatch to direction and preserve the intended reveal while the shot is corrected. Do not submit contradictory geometry alongside "strictly preserve identity". Effects need a compatible physical source and state; an empty container cannot stand in for visible hot contents merely by adding vapor.
+Compare actual output with the intended state, viewpoint, support/contact, identity, components and requested text. Repair the observed mismatch. Fine detail does not by itself establish realism.
 
-Identify inputs in actual order as product identity, composition/light reference or edit target. Product photos constrain visible geometry, connections and material, not the entire original arrangement. Exclude irrelevant dimension annotations, packaging text or interface chrome while preserving required actual product markings.
-
-A new scene with references is still a new generation. Use only-change-X/preserve-Y editing language for an actual existing-image edit. Reuse an inspected base frame for same-view continuity without treating it as factual product evidence.
-
-An independent request cannot see "the previous frame" unless that image is actually supplied. For dependent frames, use the inspected base for composition/state continuity alongside original product evidence, with distinct reference roles. If the selected model cannot accept the needed references, report that limitation rather than promising an identical frame through text alone.
-
-## Submission and inspection
-
-Keep the actual output, visible state, composition, light, reference roles and necessary constraints. Short paragraphs are sufficient. Set specifications through supported parameters; text mentioning dimensions is not proof that an API parameter was set.
-
-Check final text, reference order and parameters against the task preview. No hidden append of metadata, scripts or templates; reference-role text added by a platform is part of the inspectable request. Save the actual request and identify inaccessible provider rewriting as unknown.
-
-Inspect actual state, composition, physical appearance, text and expected components. Texture detail is not perceptual realism. Repair visible deviations rather than adding realistic or high-resolution. Follow existing retry and authorization limits; finishing a prompt does not authorize generation.
+For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic appearance](photographic-appearance.md) only when that task needs the additional detail. These examples do not set the style for other projects.

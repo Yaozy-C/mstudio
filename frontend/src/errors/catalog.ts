@@ -33,6 +33,10 @@ export const errorCatalog = {
     "打开模型设置检查连接，或选择其他模型。",
   ],
   VALIDATION_FAILED: ["请检查当前设置", "修改提示的问题后再继续。"],
+  PROJECT_CONFLICT: [
+    "同一内容有新的修改",
+    "选择保留自己的修改，或放弃未保存修改并加载已保存版本。",
+  ],
   SAVE_FAILED: ["项目尚未保存成功", "检查存储空间和目录权限，再重试保存。"],
   EXPORT_FAILED: ["成片导出未完成", "检查素材是否可用，再重试导出。"],
   EXPORT_SAVE_FAILED: [
@@ -108,15 +112,35 @@ function rawText(value: unknown): string {
 export function normalizeError(
   value: unknown,
   fallback: ErrorCode = "OPERATION_FAILED",
+  depth = 0,
 ): AppIssue {
   const raw = rawText(value);
-  if (/^已停止回答(?:；|$)/.test(raw))
+  // Compatibility for persisted errors from releases before coded cancellation.
+  if (
+    [
+      "已停止回答",
+      "已停止回答；已输出内容和已完成操作保留",
+      "已停止回答；已完成操作保留",
+    ].includes(raw)
+  )
     return issue("CHAT_STOPPED", undefined, { outcome: "cancelled" });
   try {
     const data =
       typeof value === "object" && !(value instanceof Error)
         ? value
         : JSON.parse(raw.slice(raw.indexOf("{")));
+    // assistant-ui wraps thrown errors in { code: "unknown", message }.
+    // Unwrap only that transport envelope, keeping known issue metadata intact.
+    if (
+      depth < 3 &&
+      data &&
+      typeof data === "object" &&
+      "code" in data &&
+      data.code === "unknown" &&
+      "message" in data &&
+      typeof data.message === "string"
+    )
+      return normalizeError(data.message, fallback, depth + 1);
     if (
       data &&
       typeof data === "object" &&
@@ -170,12 +194,11 @@ export function normalizeError(
     : fallback;
   if (
     !http &&
-    /network|failed to fetch|connection|timed? ?out|网络|连接中断/i.test(raw)
+    /network|failed to fetch|error sending request for url|connection|timed? ?out|网络|连接中断/i.test(
+      raw,
+    )
   )
     code = "NETWORK_ERROR";
-  if (!http && /API Key|登录|凭据/.test(raw)) code = "AUTH_REQUIRED";
-  if (!http && /模型已移除|请选择.*模型|请先选择.*模型|连接生成服务/.test(raw))
-    code = "MODEL_UNAVAILABLE";
   const result = issue(code, raw, { httpStatus: http ? +http : undefined });
   // Local validation messages are actionable, already authored for users.
   if (

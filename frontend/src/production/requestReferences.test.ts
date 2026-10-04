@@ -91,7 +91,7 @@ test("asset generation delivers a reusable library image that can be passed dire
   expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBe(true);
   expect(next.nodes.some((n) => n.assetId === image.id)).toBe(false);
   expect(productionItems(next).some((n) => n.assetId === image.id)).toBe(false);
-  next = applyOperations(next, next.revision ?? 0, [
+  next = applyOperations(next, [
     {
       op: "set_references",
       id: "shot",

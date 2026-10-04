@@ -1,0 +1,17 @@
+.new-project-dialog label,
+.new-project-format {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.new-project-dialog input {
+  width: 100%;
+  min-width: 0;
+}
+.new-project-dimensions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}

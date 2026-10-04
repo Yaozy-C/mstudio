@@ -2,6 +2,14 @@ use super::profiles::{AgentProfile, allows};
 use anyhow::{Result, ensure};
 use serde_json::Value;
 
+pub fn asset_only(p: &AgentProfile) -> bool {
+    let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
+    has("project-assets")
+        && !has("project-frames")
+        && !has("project-production")
+        && !has("project-edit")
+}
+
 pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
     if !allows(p, "edit") {
         return false;
@@ -74,7 +82,26 @@ pub fn allows_shot_field(p: &AgentProfile, key: &str) -> bool {
         || (has("project-production") && key == "prompt")
         || (has("project-frames") && ["framePrompt", "frames"].contains(&key))
 }
-/// Check the complete batch before any UI mutation, including field-level scope.
+/// Shared by the advertised node schema and the actual field authorization.
+pub fn allows_node_field(p: &AgentProfile, kind: &str, key: &str) -> bool {
+    let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
+    has("project-edit")
+        || matches!(key, "op" | "id")
+        || (kind == "asset"
+            && has("project-assets")
+            && ["kind", "title", "text", "assetId", "x", "y"].contains(&key))
+        || (kind == "screenplay"
+            && has("project-script")
+            && ["kind", "title", "screenplay"].contains(&key))
+        || (kind == "shot"
+            && has("project-shots")
+            && ["kind", "title", "text", "shot", "references", "x", "y"].contains(&key))
+        || (kind == "shot"
+            && (has("project-production") || has("project-frames"))
+            && ["shot", "references"].contains(&key))
+}
+
+/// Check the complete batch before any project mutation, including field-level scope.
 pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
     let ops = args["operations"]
         .as_array()
@@ -88,25 +115,13 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
         .collect();
     for op in ops {
         let name = op["op"].as_str().unwrap_or("");
-        let asset_only = has("project-assets")
-            && !has("project-frames")
-            && !has("project-production")
-            && !has("project-edit");
-        if asset_only && name == "request_generation" {
-            ensure!(
-                op["generationPurpose"] == "asset"
-                    && op.get("id").is_none()
-                    && op.get("canvasTaskKey").is_none(),
-                "Asset Agent can only create standalone asset tasks"
-            );
-        }
         if matches!(name, "update_generation" | "regenerate_generation") {
             let key = op["taskKey"]
                 .as_str()
                 .ok_or_else(|| anyhow::anyhow!("Missing task ID"))?;
             let task = &doc["production"]["drafts"][key];
             ensure!(task.is_object(), "Task not found");
-            if asset_only {
+            if asset_only(p) {
                 ensure!(
                     task["generationPurpose"] == "asset",
                     "Asset Agent can only modify asset tasks"
@@ -125,12 +140,6 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
         );
         if has("project-edit") {
             continue;
-        }
-        if name == "request_generation" && !has("project-production") {
-            ensure!(
-                op["mediaKind"] == "image",
-                "This Agent can only generate images"
-            );
         }
         if matches!(
             name,
@@ -159,13 +168,7 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                     .as_object()
                     .ok_or_else(|| anyhow::anyhow!("Invalid operation format"))?;
                 for key in fields.keys().map(String::as_str) {
-                    let allowed = matches!(key, "op" | "id")
-                        || (asset && ["kind", "title", "text", "assetId", "x", "y"].contains(&key))
-                        || (screenplay && ["kind", "title", "screenplay"].contains(&key))
-                        || (shot
-                            && ["kind", "title", "text", "shot", "references", "x", "y"]
-                                .contains(&key))
-                        || ((production || frames) && ["shot", "references"].contains(&key));
+                    let allowed = allows_node_field(p, kind, key);
                     ensure!(allowed, "Field not editable by this Agent: {key}");
                 }
                 if let Some(fields) = op.get("shot") {

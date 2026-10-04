@@ -96,7 +96,9 @@ pub(crate) async fn complete_with_resume(
         key: key.into(),
         model_id: model_id.map(str::to_owned),
         fork_history,
-        deadline: tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60),
+        deadline: host.deadline().unwrap_or_else(|| {
+            tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
+        }),
     });
     let model = super::provider::builder(profile, key)?
         .build()
@@ -130,6 +132,9 @@ pub(crate) fn convert(value: &Value) -> Message {
         return Message::assistant(value["content"].as_str().unwrap_or(""));
     }
     if let Some(text) = value["content"].as_str() {
+        if value["source"]["kind"] == "project" {
+            return harness::context_source::message(text.into(), value["source"].clone());
+        }
         return Message::user(text);
     }
     let content = value["content"]

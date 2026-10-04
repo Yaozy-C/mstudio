@@ -2,6 +2,48 @@ import { expect, test } from "bun:test";
 import { errorText, issue, normalizeError, redactDetails } from "./catalog";
 import { commandError } from "./commands";
 
+test("assistant-ui error envelopes preserve readable details and issue metadata", () => {
+  const inner = issue("CHAT_FAILED", "Codex: 连接超时", { stage: "chat" });
+  const result = normalizeError(
+    { code: "unknown", message: JSON.stringify(inner) },
+    "CHAT_FAILED",
+  );
+  expect(result.code).toBe("CHAT_FAILED");
+  expect(result.details).toBe("Codex: 连接超时");
+  expect(result.stage).toBe("chat");
+  expect(
+    normalizeError({ code: "unknown", message: "普通错误" }, "CHAT_FAILED")
+      .details,
+  ).toBe("普通错误");
+});
+
+test("reference upload transport failures point to the network and hide URLs", () => {
+  const value = normalizeError(
+    commandError(
+      "upload_references",
+      "error sending request for url (https://private.test/upload?token=secret)",
+    ),
+  );
+  expect(value.code).toBe("NETWORK_ERROR");
+  expect(value.recovery).toBe("检查网络后重试。");
+  expect(value.details).not.toContain("private.test");
+  expect(value.details).not.toContain("secret");
+  expect(value.outcome).toBeUndefined();
+  const typed = normalizeError(
+    commandError("upload_references", {
+      code: "NETWORK_ERROR",
+      stage: "reference_upload_transfer",
+      details: "服务请求超时",
+      retryable: true,
+    }),
+  );
+  expect(typed.stage).toBe("reference_upload_transfer");
+  expect(typed.retryable).toBe(true);
+  expect(
+    normalizeError(commandError("import_media", "Permission denied")).code,
+  ).toBe("ASSET_IMPORT_FAILED");
+});
+
 test("typed rejection survives native Error, persisted strings and contextual prefixes", () => {
   const wire = JSON.stringify({
     code: "INVALID_INPUT",
@@ -100,4 +142,30 @@ test("local preview worker failures never become network troubleshooting", () =>
   );
   expect(value.code).toBe("PREVIEW_FAILED");
   expect(value.recovery).toContain("重新加载预览");
+});
+
+test("typed error codes do not change when diagnostic wording mentions credentials or models", () => {
+  for (const details of [
+    "API Key 登录 凭据",
+    "请选择模型",
+    "Credentials and selected model",
+    "随意修改的文案",
+  ]) {
+    const value = normalizeError({
+      code: "SAVE_FAILED",
+      details,
+      retryable: false,
+    });
+    expect(value.code).toBe("SAVE_FAILED");
+  }
+  expect(normalizeError("日志中提到了 API Key", "SAVE_FAILED").code).toBe(
+    "SAVE_FAILED",
+  );
+  const stopped = normalizeError({
+    code: "CHAT_STOPPED",
+    details: "arbitrary text",
+    outcome: "cancelled",
+  });
+  expect(stopped.code).toBe("CHAT_STOPPED");
+  expect(stopped.outcome).toBe("cancelled");
 });

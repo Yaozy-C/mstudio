@@ -99,3 +99,34 @@ test("model changes retain unsupported roles and independent images work as vide
     selectMediaModel(draft, model("minimax/h3/reference-to-video")).inputs,
   ).toEqual(draft.inputs);
 });
+
+test("shot results stay beside their shot even when the viewport is far away", () => {
+  const p = fixture();
+  p.production = { viewport: { x: 980, y: 660, scale: 0.18 } };
+  const t = { ...task(), ownerId: "shot", inputs: [] };
+  const position = resultPlacement(p, t);
+  expect(position.x).toBe(527);
+  expect(position.y).toBeLessThan(1000);
+  const next = receiveProductionResult(p, asset("new-frame"), {
+    ...p.nodes[1],
+    canvasGeneration: { task: { ...t, position }, ...position },
+  });
+  const card = productionItems(next).find((n) => n.assetId === "new-frame")!;
+  expect(card.x).toBe(position.x);
+  expect(card.y).toBe(position.y);
+});
+
+test("overview generation stays near visible content instead of the remote viewport corner", () => {
+  const p = fixture();
+  p.production = { viewport: { x: 980, y: 660, scale: 0.18 } };
+  const before = structuredClone(p);
+  const pos = resultPlacement(
+    p,
+    { ...task(), inputs: [] },
+    { width: 1650, height: 1100 },
+  );
+  expect(pos.x).toBeGreaterThan(0);
+  expect(pos.y).toBeGreaterThanOrEqual(110);
+  expect(pos.y).toBeLessThan(1000);
+  expect(p).toEqual(before);
+});

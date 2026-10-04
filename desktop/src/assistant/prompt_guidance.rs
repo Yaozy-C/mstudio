@@ -133,7 +133,7 @@ mod tests {
     use super::*;
     use crate::database::Store;
     #[test]
-    fn prompt_authors_get_full_current_rules_and_only_their_selected_model() {
+    fn prompt_authors_get_complete_assigned_guides_and_optional_references_on_demand() {
         let root =
             std::env::temp_dir().join(format!("mstudio-prompt-rules-{}", mstudio::media::id()));
         let store = Store::open(root.clone()).unwrap();
@@ -164,7 +164,26 @@ mod tests {
         for id in ["storyboard-artist", "asset-designer", "production"] {
             let profile = agents.iter().find(|a| a.id == id).unwrap();
             let result = for_agent(&db, profile, &context, &json!({})).unwrap();
-            assert_eq!(result.matches("CURRENT_ANIMATION_TAIL").count(), 1);
+            assert!(!result.contains("CURRENT_ANIMATION_TAIL"));
+            assert!(
+                result.contains("naturalistic-performance.md")
+                    || result.contains("photographic-appearance.md")
+            );
+            let optional = super::super::skills::storage::read(
+                &db,
+                &super::super::profiles::skill_setting(profile),
+                &profile.skill_ids[0],
+                "../creative-ad-director/references/animation-principles.md",
+                8500,
+                true,
+            )
+            .unwrap();
+            assert!(
+                optional["text"]
+                    .as_str()
+                    .unwrap()
+                    .contains("CURRENT_ANIMATION_TAIL")
+            );
             assert_eq!(result.contains("subject_definitions"), id == "production");
             assert_eq!(
                 result.contains("configured Codex image model"),

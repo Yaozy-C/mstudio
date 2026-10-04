@@ -34,7 +34,7 @@ test("Agent adds/removes all transition types without moving edits or sound", ()
   for (const kind of Object.keys(
     transitionKinds,
   ) as (keyof typeof transitionKinds)[]) {
-    const next = applyOperations(p, 0, [
+    const next = applyOperations(p, [
       {
         op: "set_transition",
         fromClipId: "left",
@@ -60,22 +60,12 @@ test("Agent adds/removes all transition types without moving edits or sound", ()
   }
   expect(p.clips[1].transition).toBeUndefined();
 });
-test("reject stale edits, gaps, overlays, unsupported types and invalid durations", () => {
+test("reject gaps, overlays, unsupported types and invalid durations", () => {
   const p = fixture();
   for (const seconds of [NaN, Infinity, 0, -1, 4, "0.5"])
     expect(() => setTransition(p, "left", "right", "fade", seconds)).toThrow();
   expect(() => setTransition(p, "left", "right", "movie=foo", 0.5)).toThrow();
-  expect(() =>
-    applyOperations(p, 1, [
-      {
-        op: "set_transition",
-        fromClipId: "left",
-        id: "right",
-        kind: "fade",
-        duration: 0.5,
-      },
-    ]),
-  ).toThrow("工程已变化");
+
   for (const patch of [
     { start: 3.2 },
     { start: 2.8 },

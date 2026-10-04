@@ -102,7 +102,7 @@ pub async fn upload_references(
 ) -> Result<Vec<Uploaded>, String> {
     upload(app, project_id, references, approved, media_model_id)
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| crate::app_error::wire(e, "ASSET_IMPORT_FAILED", "reference_prepare"))
 }
 async fn upload(
     app: tauri::AppHandle,
@@ -216,13 +216,28 @@ async fn upload(
             )
             .json(&serde_json::json!({"content_type":mime,"file_name":name}))
             .send()
-            .await?;
-        ensure!(
-            initiated.status().is_success(),
-            "参考上传准备失败：HTTP {}",
-            initiated.status().as_u16()
-        );
-        let data: Value = initiated.json().await?;
+            .await
+            .map_err(|e| {
+                crate::app_error::AppError::from_error(
+                    &e.into(),
+                    "NETWORK_ERROR",
+                    "reference_upload_initiate",
+                )
+            })?;
+        if !initiated.status().is_success() {
+            return Err(
+                crate::app_error::http_error(initiated, "reference_upload_initiate")
+                    .await
+                    .into(),
+            );
+        }
+        let data: Value = initiated.json().await.map_err(|e| {
+            crate::app_error::AppError::from_error(
+                &e.into(),
+                "ASSET_IMPORT_FAILED",
+                "reference_upload_initiate",
+            )
+        })?;
         let upload_url = cdn_url(data["upload_url"].as_str().context("缺少上传地址")?)?;
         let url = cdn_url(data["file_url"].as_str().context("缺少参考地址")?)?;
         // Never forward the API credential to storage PUT URLs.
@@ -231,12 +246,21 @@ async fn upload(
             .header("Content-Type", mime)
             .body(bytes)
             .send()
-            .await?;
-        ensure!(
-            sent.status().is_success(),
-            "参考上传失败：HTTP {}",
-            sent.status().as_u16()
-        );
+            .await
+            .map_err(|e| {
+                crate::app_error::AppError::from_error(
+                    &e.into(),
+                    "NETWORK_ERROR",
+                    "reference_upload_transfer",
+                )
+            })?;
+        if !sent.status().is_success() {
+            return Err(
+                crate::app_error::http_error(sent, "reference_upload_transfer")
+                    .await
+                    .into(),
+            );
+        }
         uploaded.push(Uploaded {
             asset_id: asset.id,
             kind: asset.kind,

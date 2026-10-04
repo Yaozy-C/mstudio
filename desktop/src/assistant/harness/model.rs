@@ -7,21 +7,46 @@ use rig_core::{
 };
 use serde_json::json;
 
+#[derive(Debug)]
+pub enum RequestError {
+    ContextOverflow,
+    Failed(String),
+}
+impl From<String> for RequestError {
+    fn from(value: String) -> Self {
+        Self::Failed(value)
+    }
+}
+impl From<&str> for RequestError {
+    fn from(value: &str) -> Self {
+        Self::Failed(value.into())
+    }
+}
+impl From<RequestError> for String {
+    fn from(value: RequestError) -> Self {
+        match value {
+            RequestError::ContextOverflow => "Model context window exceeded".into(),
+            RequestError::Failed(message) => message,
+        }
+    }
+}
+
 pub async fn request(
     model: &impl CompletionModel,
-    request: CompletionRequest,
+    mut request: CompletionRequest,
     host: &impl Host,
     session: &mut Session,
     streaming: bool,
     key: &str,
     deadline: tokio::time::Instant,
-) -> Result<CompletionResponse, String> {
+) -> Result<CompletionResponse, RequestError> {
+    super::context_source::wire(&mut request.chat_history);
     request
         .validate_message_content()
         .map_err(|e| e.to_string())?;
     for attempt in 0..3 {
         if host.token().is_cancelled() {
-            return Err("已停止回答；已输出内容和已完成操作保留".into());
+            return Err(crate::app_error::cancelled().into());
         }
         host.record("request/start", json!({"attempt":attempt + 1}))?;
         let prefix = session.text.len();
@@ -69,11 +94,11 @@ pub async fn request(
         };
         let result = tokio::select! {
             result = call => result,
-            _ = host.token().cancelled() => return Err("已停止回答；已输出内容和已完成操作保留".into()),
+            _ = host.token().cancelled() => return Err(crate::app_error::cancelled().into()),
             _ = tokio::time::sleep_until(deadline) => return Err("本轮已达到 20 分钟时限；已完成操作保留".into()),
         };
         if let Some(error) = persistence_error {
-            return Err(error);
+            return Err(error.into());
         }
         match result {
             Ok(response) => return Ok(response),
@@ -82,19 +107,19 @@ pub async fn request(
                     && crate::assistant::failure::context_overflow(&error)
                 {
                     host.record("request/context-overflow", json!({"attempt":attempt + 1}))?;
-                    return Err("CONTEXT_WINDOW_EXCEEDED".into());
+                    return Err(RequestError::ContextOverflow);
                 }
                 // Only retry an uncommitted model request, never an executed tool or visible prefix.
                 if attempt < 2 && session.text.len() == prefix && retryable(&error) {
                     host.record("request/retry", json!({"attempt":attempt + 2}))?;
                     tokio::select! {
                         _ = tokio::time::sleep(std::time::Duration::from_millis(500 * (1 << attempt))) => {},
-                        _ = host.token().cancelled() => return Err("已停止回答".into()),
+                        _ = host.token().cancelled() => return Err(crate::app_error::cancelled().into()),
                         _ = tokio::time::sleep_until(deadline) => return Err("本轮已达到 20 分钟时限；已完成操作保留".into()),
                     }
                     continue;
                 }
-                return Err(crate::assistant::failure::describe(&error.into(), key));
+                return Err(crate::assistant::failure::describe(&error.into(), key).into());
             }
         }
     }

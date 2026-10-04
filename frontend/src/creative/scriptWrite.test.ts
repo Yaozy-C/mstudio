@@ -14,7 +14,7 @@ const a = {
 };
 const b = { ...a, id: "b", title: "Pack", duration: 6 };
 test("agent creates, edits, inserts, reorders, deletes and replaces structured script", () => {
-  let p = applyOperations(newProject("Script"), 0, [
+  let p = applyOperations(newProject("Script"), [
     {
       op: "add_node",
       id: "screenplay",
@@ -24,7 +24,7 @@ test("agent creates, edits, inserts, reorders, deletes and replaces structured s
     },
   ]);
   const edit = (screenplay: object) => {
-    p = applyOperations(p, p.revision || 0, [
+    p = applyOperations(p, [
       { op: "update_node", id: "screenplay", screenplay },
     ]);
   };
@@ -82,7 +82,7 @@ test("invalid replacements and ambiguous deletions fail without partial mutation
 });
 
 test("screen text roundtrips separately, invalidates linked shots and preserves legacy basis", () => {
-  let p = applyOperations(newProject("AV script"), 0, [
+  let p = applyOperations(newProject("AV script"), [
     {
       op: "add_node",
       id: "screenplay",
@@ -94,7 +94,7 @@ test("screen text roundtrips separately, invalidates linked shots and preserves 
   p = splitParagraph(p, "screenplay", "a", 1);
   expect(scriptChanged(p, p.nodes[1])).toBe(false);
   const edit = (paragraph: object) => {
-    p = applyOperations(p, p.revision || 0, [
+    p = applyOperations(p, [
       {
         op: "update_node",
         id: "screenplay",

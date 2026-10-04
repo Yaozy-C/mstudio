@@ -13,7 +13,7 @@ pub async fn execute_control(host: &ProjectHost, call: &ToolCall) -> Value {
     let result = match call.function.name.as_str() {
         "mstudio_list_agents" => list_agents(host, &call.function.arguments),
         "mstudio_interrupt_agent" => interrupt_agent(host, &call.function.arguments),
-        "mstudio_send_message" => send_message(host, &call.function.arguments),
+        "mstudio_send_message" => send_message(host, call),
         _ => Err("Unknown subagent control tool".into()),
     };
     result.unwrap_or_else(|error| json!({"error":error,"code":"SUBAGENT_CONTROL_FAILED"}))
@@ -69,7 +69,8 @@ fn interrupt_agent(host: &ProjectHost, args: &Value) -> Result<Value, String> {
     }
     Ok(json!({"ok":true,"agentId":id}))
 }
-fn send_message(host: &ProjectHost, args: &Value) -> Result<Value, String> {
+fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
+    let args = &call.function.arguments;
     let id = args["agentId"].as_str().ok_or("Missing child agent ID")?;
     let message = args["message"]
         .as_str()
@@ -82,11 +83,12 @@ fn send_message(host: &ProjectHost, args: &Value) -> Result<Value, String> {
         let db = store.db.lock().unwrap();
         db.execute(
             "INSERT INTO subagent_inbox(child_id,text,source) VALUES(?1,?2,?3)",
-            rusqlite::params![
-                id,
-                message,
-                super::super::mailbox::agent_source(&parent.profile.id, &parent.turn).to_string()
-            ],
+            rusqlite::params![id, message, {
+                let mut source =
+                    super::super::mailbox::agent_source(&parent.profile.id, &parent.turn);
+                source["callId"] = json!(call.id.as_str());
+                source.to_string()
+            }],
         )
         .map_err(|e| e.to_string())?;
         db.last_insert_rowid()

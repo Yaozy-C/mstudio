@@ -38,6 +38,7 @@ export function contentChanged(before: Project, after: Project): boolean {
   if (
     !sameExcept(before, after, [
       "revision",
+      "storageVersion",
       "updated",
       "viewport",
       "nodes",

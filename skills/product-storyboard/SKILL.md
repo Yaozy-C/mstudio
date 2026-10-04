@@ -15,7 +15,7 @@ Separate explicit requests, product facts and exploratory assumptions using the 
 
 ## Scope and reading routes
 
-For a full film, read the complete current script and existing shots. For a local revision, start with the target shot, its script section and relevant original evidence; read neighboring shots only for a concrete continuity dependency. Use [project state](references/project-state.md) to recover decisions and [facts](references/brief-and-facts.md) for factual gaps. Reuse complete, unchanged tool results. Use returned IDs and pagination offsets; a project revision refreshes affected objects, not the entire project. Historical tasks do not extend the current request.
+For a full film, read the complete current script and existing shots. For a local revision, start with the target shot, its script section and relevant original evidence; read neighboring shots only for a concrete continuity dependency. Use [project state](references/project-state.md) to recover decisions and [facts](references/brief-and-facts.md) for factual gaps.
 
 | Decision | Read |
 |---|---|
@@ -34,10 +34,6 @@ Give the artist the necessary frame moments and selected design. Text-only tasks
 
 Verify saved changes and return the affected IDs, changes and relevant unknowns. Use the [production handoff](assets/production-brief-template.md) for a production request without copying information already in the project.
 
-## Video generation authorization
+## Production handoff
 
-Follow the user's current authorization and Mstudio execution mode; do not add another approval workflow. A request for a plan, storyboard or prompt does not authorize video generation. An explicit generation request authorizes tasks for the specified objects, inputs and model. Respect any explicit agreement to review a particular version first; do not ask again for authorization already covering the same scope. Distinguish creation, submission, completion and visual inspection of a task.
-
-[Production](../product-video-production/SKILL.md) executes video. Change the implementation route when necessary without silently deleting core events. Edit only fields allowed by the current role; route work outside that role through the coordinator.
-
-Detailed role scope and execution methods: [role methods](references/role-methods.md). Read only when relevant.
+[Production](../product-video-production/SKILL.md) implements video. Preserve essential events while revising provisional implementation choices. Give asset preparation only missing shared identity needs; give the artist the selected moments, landmarks and actual references for scene frames.

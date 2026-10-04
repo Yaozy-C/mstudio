@@ -5,7 +5,8 @@ import { StudioSidebar, type SettingsTab } from "./StudioSidebar";
 import { useEffect, useState } from "react";
 import { Plus, ArrowUpRight, FilmSlate } from "@phosphor-icons/react";
 import { bridge, native, mediaUrl } from "../bridge";
-import { newProject, type Project, type ProjectEntry } from "../model";
+import { type Project, type ProjectEntry } from "../model";
+import { NewProjectDialog } from "./NewProjectDialog";
 import { initPlugins } from "../plugins/runtime";
 import { Studio } from "./Studio";
 import { Settings } from "./Settings";
@@ -26,10 +27,7 @@ export function App() {
     () => sessionStorage.getItem("mstudio-storage-notice") || "",
   );
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
-  const [name, setName] = useState("");
   const refresh = () => {
     setLoading(true);
     return bridge<ProjectEntry[]>("list_projects")
@@ -49,22 +47,6 @@ export function App() {
     void refresh();
     void initPlugins().catch((e) => setError(String(e)));
   }, []);
-  async function create() {
-    if (!name.trim() || saving) return;
-    setSaving(true);
-    setCreateError("");
-    try {
-      const p = newProject(name.trim());
-      await bridge("create_project", { document: p });
-      setProject(p);
-      setCreating(false);
-      setName("");
-    } catch (e) {
-      setCreateError(String(e));
-    } finally {
-      setSaving(false);
-    }
-  }
   if (settings)
     return (
       <Settings
@@ -225,52 +207,13 @@ export function App() {
         </>
       )}
       {creating && (
-        <div
-          className="modal-backdrop"
-          onClick={() => {
-            if (!saving) setCreating(false);
+        <NewProjectDialog
+          onClose={() => setCreating(false)}
+          onCreated={(p) => {
+            setProject(p);
+            setCreating(false);
           }}
-        >
-          <form
-            className="modal small"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={(e) => {
-              e.preventDefault();
-              void create();
-            }}
-          >
-            <h2>{t("新建项目")}</h2>
-            <input
-              autoFocus
-              placeholder={t("例如：夏日出行 · 商品短片")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <p className="subtle">
-              {t("默认竖屏 1080 × 1920，可在项目内调整。")}
-            </p>
-            {createError && <ErrorNotice error={createError} />}
-            <footer>
-              <button
-                disabled={saving}
-                type="button"
-                onClick={() => {
-                  if (!saving) setCreating(false);
-                }}
-              >
-                {t("取消")}
-              </button>
-              <AsyncButton
-                type="submit"
-                busy={saving}
-                className="primary"
-                disabled={!name.trim()}
-              >
-                {t("创建项目")} <ArrowUpRight />
-              </AsyncButton>
-            </footer>
-          </form>
-        </div>
+        />
       )}
     </div>
   );

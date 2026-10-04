@@ -1,3 +1,4 @@
+import { parseUrl } from "../parseUrl";
 /** Business input is independent of vendor JSON. Reference roles stay explicit. */
 export type ModelInput = {
   kind: "image" | "video" | "audio";
@@ -39,7 +40,7 @@ function create(
           );
         let valid = false;
         try {
-          const url = new URL(input.url);
+          const url = parseUrl(input.url);
           valid =
             ["https:", "http:"].includes(url.protocol) &&
             !url.username &&

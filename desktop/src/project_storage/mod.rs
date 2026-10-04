@@ -123,6 +123,7 @@ pub fn remove(store: &Store, id: &str) -> Result<()> {
     }
     crate::database::blobs::collect(&tx)?;
     tx.commit()?;
+    store.project_changed(id);
     cleanup::run(&db, &store.media_root(), Some(id))?;
     cleanup::run(&db, &store.media_root(), Some("media-cache"))
 }

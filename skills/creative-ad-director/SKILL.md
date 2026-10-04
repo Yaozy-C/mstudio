@@ -24,4 +24,4 @@ This is a professional reference library, not a second production workflow. Read
 
 [Scriptwriting](../ad-script/SKILL.md) owns script fields, [storyboard direction](../product-storyboard/SKILL.md) owns shot fields and design handoff, [the artist](../storyboard-art/SKILL.md) owns images, and [production](../product-video-production/SKILL.md) owns model tasks and footage selection.
 
-Use mstudio_models for available model capabilities. Do not invent parameters or switch services by default. Distinguish written design, actual frames, motion and sound checks; submission success does not establish output quality. Generation follows [current authorization](../product-storyboard/SKILL.md#video-generation-authorization).
+Use supplied current model capabilities; query mstudio_models only for missing or changed guidance. Do not invent parameters or switch services by default. Distinguish written design, actual frames, motion and sound checks; submission success does not establish output quality. Generation uses the scoped [production handoff](../product-storyboard/SKILL.md#production-handoff).

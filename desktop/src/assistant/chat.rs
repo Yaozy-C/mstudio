@@ -244,6 +244,7 @@ async fn execute(
         turn: turn.clone(),
         prompt: prompt.clone(),
         token: pending.token.clone(),
+        deadline: tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60),
     };
     let answer = agent::complete_with_resume(
         &profile,

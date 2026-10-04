@@ -6,6 +6,7 @@ import { promptStale } from "../creative/prompt";
 import { tracksOf } from "../timeline/document";
 import { framesOf } from "../production/frames";
 import { runsOf } from "../production/requestTask";
+import { taskOutcome } from "../production/taskOutcome";
 const offsetOf = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
 export function inspectProject(p: Project, args: Record<string, unknown>) {
@@ -55,6 +56,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
           (!args.status || t.status === args.status),
       )
       .map((t) => ({
+        continuation: taskOutcome(t).continuation,
         id: t.key,
         turnId: t.turnId,
         kind: t.kind,
@@ -95,7 +97,11 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   if (page && Array.isArray(args.fields)) {
     page = page.map((item) => {
       const source = item as Record<string, unknown>;
-      const keep = new Set(["id", ...(args.fields as string[])]);
+      const keep = new Set([
+        "id",
+        ...(args.fields as string[]),
+        ...(args.section === "generation" ? ["status", "continuation"] : []),
+      ]);
       return {
         ...Object.fromEntries(
           Object.entries(source).filter(([key]) => keep.has(key)),

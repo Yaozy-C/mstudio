@@ -1,3 +1,4 @@
+import { mergeValue } from "./domain/merge";
 import { commandError } from "./errors/commands";
 import { invoke, convertFileSrc, isTauri } from "@tauri-apps/api/core";
 import type { Project, ProjectEntry } from "./model";
@@ -24,18 +25,28 @@ export async function bridge<T>(
   if (command === "list_projects")
     return JSON.parse(localStorage.getItem("mstudio-preview") || "[]") as T;
   if (command === "save_project" || command === "create_project") {
-    const p = args!.document as Project;
+    let p = args!.document as Project;
     const entries = await bridge<ProjectEntry[]>("list_projects");
     const exists = entries.some((e) => e.id === p.id);
     if (command === "save_project" && !exists) throw new Error("项目已删除");
     if (command === "create_project" && exists) throw new Error("项目已存在");
+    if (command === "save_project")
+      p = mergeValue(
+        args!.base,
+        p,
+        entries.find((e) => e.id === p.id)!.document,
+      ) as Project;
     const next = [
       { id: p.id, name: p.name, updated: Date.now() / 1000, document: p },
       ...entries.filter((e) => e.id !== p.id),
     ];
     localStorage.setItem("mstudio-preview", JSON.stringify(next));
-    return undefined as T;
+    return p as T;
   }
+  if (command === "get_project")
+    return (await bridge<ProjectEntry[]>("list_projects")).find(
+      (p) => p.id === args!.projectId,
+    )!.document as T;
   if (command === "delete_project") {
     const entries = await bridge<ProjectEntry[]>("list_projects");
     localStorage.setItem(
@@ -55,10 +66,10 @@ export async function bridge<T>(
   );
 }
 let pending: Promise<unknown> = Promise.resolve();
-export function saveProject(document: Project) {
+export function saveProject(document: Project, base: Project) {
   const task = pending
     .catch(() => {})
-    .then(() => bridge<void>("save_project", { document }));
+    .then(() => bridge<Project>("save_project", { document, base }));
   pending = task;
   return task;
 }

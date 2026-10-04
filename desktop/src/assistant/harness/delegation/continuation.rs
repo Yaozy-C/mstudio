@@ -117,9 +117,7 @@ pub(super) fn start_continuation(
     let previous_revision = binding["revision"].clone();
     binding["revision"] = json!(profile.revision);
     let snapshot = crate::assistant::task_context::reference_snapshot(snapshot);
-    let mut current = vec![Message::user(format!(
-        "Current project reference data:{snapshot}"
-    ))];
+    let mut current = vec![super::super::context_source::snapshot(snapshot)];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut current);
     messages.extend(current);
     let user_evidence = crate::assistant::generation_context::request(
@@ -160,6 +158,18 @@ pub(super) fn start_continuation(
     )
     .map_err(|e| e.to_string())?;
     store.db.lock().unwrap().execute("UPDATE subagent_runs SET last_turn=?2,profile=?4,notified=0,updated=unixepoch() WHERE id=?1 AND last_turn=?3",rusqlite::params![id,new_turn,last_turn,serde_json::to_string(&profile).map_err(|e|e.to_string())?]).map_err(|e|e.to_string())?;
+    let source: String = store.db.lock().unwrap().query_row("SELECT source FROM subagent_inbox WHERE child_id=?1 AND consumed=0 ORDER BY seq LIMIT 1",[id],|r|r.get(0)).map_err(|e|e.to_string())?;
+    let source: Value = serde_json::from_str(&source).map_err(|e| e.to_string())?;
+    crate::assistant::child_activity::start(
+        &store.db.lock().unwrap(),
+        &parent.project,
+        &new_turn,
+        id,
+        source["senderTurnId"].as_str().unwrap_or(&parent.turn),
+        source["callId"].as_str().unwrap_or(""),
+        &profile.id,
+    )
+    .map_err(|e| e.to_string())?;
     let mut tool = parent.clone();
     tool.profile = profile;
     tool.skill_setting = profiles::skill_setting(&tool.profile);
@@ -167,6 +177,8 @@ pub(super) fn start_continuation(
     tool.prompt = user_evidence;
     let token = CancellationToken::new();
     tool.token = token.clone();
+    tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
+    let deadline = tool.deadline;
     active().lock().unwrap().insert(
         id.into(),
         ActiveRun {
@@ -189,14 +201,7 @@ pub(super) fn start_continuation(
     let child_id = id.to_owned();
     let generation = new_turn.clone();
     tokio::spawn(async move {
-        let answer = drive_child(
-            &child,
-            &route,
-            &key,
-            messages,
-            tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60),
-        )
-        .await;
+        let answer = drive_child(&child, &route, &key, messages, deadline).await;
         settle(&child, &child_id, &answer, false);
         remove_active(&child_id, &generation);
         wake_pending(&child, &child_id);

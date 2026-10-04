@@ -106,6 +106,7 @@ export type BoardNode = {
 export type Project = {
   production?: import("./production/types").ProductionState;
   revision?: number;
+  storageVersion?: number;
   id: string;
   name: string;
   assets: Asset[];

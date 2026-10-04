@@ -5,19 +5,26 @@ mod budget;
 #[cfg(test)]
 mod content_storage_tests;
 pub(crate) mod context_boundary;
+pub(crate) mod context_source;
 pub mod delegation;
 mod driver;
+mod generation_tool;
+#[cfg(test)]
+mod generation_tool_tests;
 pub(crate) mod handoff;
 mod image_read;
 mod mailbox;
 mod metering;
 mod model;
+mod operation_tools;
 mod outcomes;
 mod registry;
 mod scheduler;
-mod schema;
+pub(crate) mod schema;
+mod schema_definition;
 pub mod session;
 mod session_events;
+mod session_recovery;
 pub(crate) mod session_selection;
 mod stored_image;
 #[cfg(test)]
@@ -33,6 +40,9 @@ use std::future::Future;
 use tokio_util::sync::CancellationToken;
 
 pub trait Host: Sync {
+    fn deadline(&self) -> Option<tokio::time::Instant> {
+        None
+    }
     fn token(&self) -> &CancellationToken;
     fn result_turn(&self) -> Option<&str> {
         None

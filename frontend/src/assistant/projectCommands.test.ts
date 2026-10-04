@@ -1,13 +1,11 @@
 import { expect, test } from "bun:test";
 import { newProject } from "../model";
 import { applyOperations, inspectProject } from "./projectCommands";
-test("agent command batch validates atomically, rejects stale edits and cannot import arbitrary files", () => {
+test("agent command batch validates atomically and cannot import arbitrary files", () => {
   const p = newProject("film");
+
   expect(() =>
-    applyOperations(p, 1, [{ op: "set_brief", text: "stale" }]),
-  ).toThrow("工程已变化");
-  expect(() =>
-    applyOperations(p, 0, [
+    applyOperations(p, [
       { op: "add_node", id: "text", kind: "text", title: "script" },
       {
         op: "add_node",
@@ -19,10 +17,10 @@ test("agent command batch validates atomically, rejects stale edits and cannot i
     ]),
   ).toThrow("已有素材");
   expect(p.nodes).toHaveLength(0);
-  const next = applyOperations(p, 0, [
+  const next = applyOperations(p, [
     { op: "add_node", id: "script", kind: "text", title: "剧本", text: "短片" },
   ]);
-  expect(() => applyOperations(p, 0, [{ op: "connect" }])).toThrow();
+  expect(() => applyOperations(p, [{ op: "connect" }])).toThrow();
   expect(
     inspectProject(next, { nodeIds: ["script"], fields: ["text"] }).details?.[0]
       .text,
@@ -30,7 +28,7 @@ test("agent command batch validates atomically, rejects stale edits and cannot i
 });
 test("Agent starts an empty project with ordinary cards and revises one without duplicating the rest", () => {
   const empty = newProject("旅行短片");
-  const drafted = applyOperations(empty, inspectProject(empty, {}).revision, [
+  const drafted = applyOperations(empty, [
     {
       op: "set_creation",
       intent: "30 秒轻快旅行短片",
@@ -79,11 +77,9 @@ test("Agent starts an empty project with ordinary cards and revises one without 
   ]);
   expect(drafted.nodes.every((n) => !n.resultAssetId)).toBe(true);
   expect(drafted.creation?.intent).toBe("30 秒轻快旅行短片");
-  const revised = applyOperations(
-    drafted,
-    inspectProject(drafted, {}).revision,
-    [{ op: "update_node", id: "shot-2", text: "傍晚海边行走" }],
-  );
+  const revised = applyOperations(drafted, [
+    { op: "update_node", id: "shot-2", text: "傍晚海边行走" },
+  ]);
   expect(revised.nodes).toHaveLength(3);
   expect(revised.nodes.slice(0, 2)).toEqual(drafted.nodes.slice(0, 2));
   expect(revised.nodes[2]).toEqual({
@@ -99,7 +95,7 @@ test("Agent starts an empty project with ordinary cards and revises one without 
 });
 
 test("reorders and inserts shots atomically, validating only the final order", () => {
-  const p = applyOperations(newProject("Reorder"), 0, [
+  const p = applyOperations(newProject("Reorder"), [
     { op: "add_node", id: "screenplay", kind: "screenplay", title: "Plan" },
     ...Array.from({ length: 7 }, (_, i) => ({
       op: "add_node",
@@ -109,7 +105,7 @@ test("reorders and inserts shots atomically, validating only the final order", (
       shot: { screenplayId: "screenplay", order: i + 1, duration: 2 },
     })),
   ]);
-  const next = applyOperations(p, 0, [
+  const next = applyOperations(p, [
     {
       op: "add_node",
       id: "cta",
@@ -132,9 +128,7 @@ test("reorders and inserts shots atomically, validating only the final order", (
   expect(next.nodes.find((n) => n.id === "s4")?.shot?.order).toBe(8);
   expect(p.nodes.find((n) => n.id === "s4")?.shot?.order).toBe(4);
   expect(() =>
-    applyOperations(p, 0, [
-      { op: "update_node", id: "s4", shot: { order: 7 } },
-    ]),
+    applyOperations(p, [{ op: "update_node", id: "s4", shot: { order: 7 } }]),
   ).toThrow("相同顺序");
   expect(p.nodes).toHaveLength(8);
 });

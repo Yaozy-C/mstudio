@@ -1,6 +1,6 @@
 # Convert shot design into a video prompt
 
-Required before every prompt: read [animation principles](animation-principles.md) in full. For images, translate relevant principles into the selected visible pose, staging, support, weight and anticipation/result state; for videos, into observable motion and performance. Apply the selected model’s injected syntax and constraints separately; this guide remains model-independent.
+Use the selected model’s supplied syntax and capabilities. For difficult weight, contact or timing problems, consult [animation principles](animation-principles.md); apply only principles relevant to this event.
 
 Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Examples are design illustrations, not tested generation evidence.
 
@@ -10,7 +10,7 @@ A script section describes a dramatic change; a shot describes one viewpoint; a 
 
 ## Design before conversion
 
-Read the selected [shot constraints](cinematography.md#shot-constraints-and-handoff) and concrete [action principles](animation-principles.md). Preserve the viewing experience and essential events while repairing execution. Compare actual reference geometry and starting support with the design; director text does not prove image content. Return spatial design conflicts to the director with specific evidence. Resolve input/wording issues within production without reopening the concept.
+Use the supplied shot constraints; consult [shot grammar](cinematography.md#shot-constraints-and-handoff) when the camera or staging remains ambiguous. Preserve the viewing experience and essential events while repairing execution. Compare actual reference geometry and starting support with the design; director text does not prove image content. Return spatial design conflicts to the director with specific evidence. Resolve input/wording issues within production without reopening the concept.
 
 The model text carries the current scene relationships, key change, framing/camera/cuts that show it, necessary sound and identity constraints. Do not concatenate all storyboard columns. Separate subject movement from camera movement. Detail should remove ambiguity; brevity is not the goal if it deletes essential relationships.
 
@@ -52,3 +52,5 @@ Inspect submitted prompt, appended templates, reference roles/order, mode and du
 A prompt-only request ends with saving. Existing same-scope authorization remains valid. An authorized test specifies concrete questions such as whether the matching angle appears or contact/release remains continuous, without a universal resolution/duration. Retain, repair or change route based on actual output, not prompt completeness.
 
 Hand off shot/segment ID, intended change, essential event, inputs/order, actual mode, final prompt and acceptance points in existing records.
+
+For live-action reactions and dialogue, read [naturalistic performance](naturalistic-performance.md) when needed.

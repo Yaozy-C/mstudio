@@ -108,11 +108,17 @@ impl Rpc {
             .await?;
         loop {
             let event = self.read_wire().await?;
-            if event["id"] == id {
+            if event.get("method").is_none() && event["id"] == id {
                 if let Some(error) = event.get("error") {
                     bail!("Codex: {}", error["message"]);
                 }
                 return Ok(event["result"].clone());
+            }
+            // A dynamic tool call may arrive before turn/start's response.
+            // Server request IDs have their own namespace and can equal our ID.
+            if event["method"] == "item/tool/call" {
+                self.pending.push_back(event);
+                continue;
             }
             self.decline(&event).await?;
             if event.get("id").is_none() {
@@ -134,6 +140,30 @@ impl Rpc {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn early_dynamic_call_is_not_declined_or_mistaken_for_rpc_response() {
+        use std::os::unix::fs::PermissionsExt;
+        let path = std::env::temp_dir().join(format!("codex-early-{}", mstudio::media::id()));
+        std::fs::write(&path, r#"#!/bin/sh
+read -r request
+printf '%s\n' '{"id":1,"result":{}}'
+read -r initialized
+read -r request
+printf '%s\n' '{"id":2,"method":"item/tool/call","params":{"tool":"echo","callId":"c","arguments":{}}}'
+printf '%s\n' '{"id":2,"result":{"turn":{"id":"t"}}}'
+read -r response
+"#).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let mut rpc = Rpc::connect(&path, "--stdio", false).await.unwrap();
+        let result = rpc.call("turn/start", json!({})).await.unwrap();
+        assert_eq!(result["turn"]["id"], "t");
+        let event = rpc.next().await.unwrap();
+        assert_eq!(event["method"], "item/tool/call");
+        assert_eq!(event["params"]["callId"], "c");
+        rpc.stop().await;
+        std::fs::remove_file(path).unwrap();
+    }
     #[cfg(unix)]
     #[tokio::test]
     async fn supports_listen_transport_when_legacy_flag_is_rejected() {

@@ -1,3 +1,4 @@
+import { DomainError } from "../domain/domainError";
 import { checkedFrames } from "./checkedFrames";
 import { writeScript } from "./scriptWrite";
 import { paragraphBasis } from "./script";
@@ -69,13 +70,22 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
         ? old.screenplayId
         : text(v.screenplayId, 80);
     if (!p.nodes.some((n) => n.id === screenplayId && n.kind === "screenplay"))
-      throw new Error("请先创建脚本，再添加对应镜头");
+      throw new DomainError(
+        "SCREENPLAY_NOT_FOUND",
+        `Shot ${node.id} references absent screenplay ${screenplayId}.`,
+        { nodeId: node.id, screenplayId },
+      );
     const scriptId =
       v.scriptId === undefined ? old?.scriptId : text(v.scriptId, 100);
     const source = p.nodes
       .find((n) => n.id === screenplayId)
       ?.screenplay?.script?.find((s) => s.id === scriptId);
-    if (scriptId && !source) throw new Error("脚本段落不属于当前脚本");
+    if (scriptId && !source)
+      throw new DomainError(
+        "PARAGRAPH_NOT_FOUND",
+        `Shot ${node.id} references paragraph ${scriptId}, which is absent from screenplay ${screenplayId}.`,
+        { nodeId: node.id, screenplayId, paragraphId: scriptId },
+      );
     const order = v.order ?? old?.order,
       duration = v.duration ?? old?.duration;
     if (

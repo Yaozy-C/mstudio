@@ -32,7 +32,9 @@ fn permissions_supply_data_semantics_without_assigning_unrelated_professional_ro
         assert!(!system.contains("Script editing:"));
         assert!(!system.contains("Shot editing:"));
         assert!(!system.contains("Own selection of existing media"));
-        assert!(system.contains("Verify complete saved-value receipts directly"));
+        assert!(system.contains("Verify complete savedValues[].values"));
+        assert!(system.contains("waiting_user"));
+        assert!(system.contains("mstudio_await_generation(taskKeys)"));
         assert!(system.contains("recheck graded pixels and transition composites"));
     }
     let system = system(

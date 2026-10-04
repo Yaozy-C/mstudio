@@ -19,7 +19,7 @@ fn transaction(
         tx.commit()?;
         Ok(())
     })()
-    .map_err(|e| e.to_string())
+    .map_err(|e| crate::app_error::wire(e, "VALIDATION_FAILED", "model_settings"))
 }
 
 #[tauri::command]
@@ -96,13 +96,18 @@ pub(super) async fn fetch_models(
             .header("anthropic-version", "2023-06-01"),
         _ => client.get(format!("{endpoint}/models")).bearer_auth(key),
     };
-    let mut response = request
-        .send()
-        .await
-        .map_err(|_| "连接失败，请检查 API 地址和网络")?;
+    let mut response = request.send().await.map_err(|_| {
+        crate::app_error::AppError::new("NETWORK_ERROR", "model_discovery", "Connection failed")
+            .to_string()
+    })?;
     if !response.status().is_success() {
         return Err(match response.status().as_u16() {
-            401 | 403 => "认证失败，请检查 API Key 和权限".into(),
+            401 | 403 => crate::app_error::AppError::http(
+                response.status().as_u16(),
+                "model_discovery",
+                "Authentication rejected",
+            )
+            .to_string(),
             404 | 405 => "服务未提供 /models 接口，可保存后在 Agent 中验证对话".into(),
             code => format!("服务返回 HTTP {code}，请检查连接配置"),
         });

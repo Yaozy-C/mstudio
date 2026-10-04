@@ -34,6 +34,10 @@ base64 = "0.22"
 sha2 = "0.10"
 flate2 = "1"
 futures = "0.3"
+rquickjs = "=0.14.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json"] }
+tracing-appender = "0.2"
 
 rig-http = { package = "reqwest", version = "0.13", default-features = false, features = ["rustls"] }
 

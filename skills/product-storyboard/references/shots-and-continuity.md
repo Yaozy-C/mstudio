@@ -10,7 +10,7 @@ For important action, track source/initial support, path, necessary contact or b
 
 ## State and dependency record
 
-Assign simple IDs to the product, people, scene and important props. Record only facts that affect continuity.
+Reference existing project asset IDs and shot IDs for products, people, scenes and props. Describe continuity facts in the current shot and reference purposes; do not create a parallel subject or view registry.
 
 | Asset | Stable properties | Permitted state changes |
 |---|---|---|

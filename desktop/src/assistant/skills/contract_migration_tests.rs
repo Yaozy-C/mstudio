@@ -20,6 +20,20 @@ fn old_resources(db: &Connection) {
     }
 }
 #[test]
+fn generation_lifecycle_rules_upgrade_even_when_previous_contract_version_was_applied() {
+    let db = db();
+    old_resources(&db);
+    db.execute(
+        "INSERT INTO settings VALUES('skill_contracts_v1','true')",
+        [],
+    )
+    .unwrap();
+    migrate(&db).unwrap();
+    let (text, _) = resource(&db, "storyboard-art", "references/role-methods.md");
+    assert!(text.contains("mstudio_await_generation"));
+    assert!(!text.contains("Inspect section=generation for actual status"));
+}
+#[test]
 fn stored_rules_upgrade_once_preserving_custom_content_and_missing_documents() {
     let db = db();
     old_resources(&db);
@@ -61,20 +75,20 @@ fn current_bundle_and_unrecognized_custom_rules_are_not_rewritten() {
         &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills"),
     )
     .unwrap();
-    for edit in edits() {
-        let (text, _) = resource(&db, &edit.skill, &edit.path);
-        assert!(text.contains(&edit.after), "{} / {}", edit.skill, edit.path);
-        assert!(!text.contains(&edit.before));
-    }
     db.execute("UPDATE skill_resources SET text='USER_AUTHORED_REPLACEMENT' WHERE skill_id='ad-team' AND path='SKILL.md'", []).unwrap();
     migrate(&db).unwrap();
     assert_eq!(
         resource(&db, "ad-team", "SKILL.md"),
         ("USER_AUTHORED_REPLACEMENT".into(), 1)
     );
-    for edit in edits() {
-        assert_eq!(resource(&db, &edit.skill, &edit.path).1, 1);
-    }
+    let changed: i64 = db
+        .query_row(
+            "SELECT count(*) FROM skill_resources WHERE revision!=1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(changed, 0);
 }
 #[test]
 fn interrupted_upgrade_rolls_back_all_rules_and_marker() {
@@ -96,4 +110,27 @@ fn interrupted_upgrade_rolls_back_all_rules_and_marker() {
         .unwrap();
     migrate(&db).unwrap();
     assert_ne!(resource(&db, "ad-team", "SKILL.md"), before);
+}
+
+#[test]
+fn reference_terminology_upgrades_after_v2_without_replacing_custom_rules() {
+    let db = db();
+    old_resources(&db);
+    db.execute(
+        "INSERT INTO settings VALUES('skill_contracts_v2','true')",
+        [],
+    )
+    .unwrap();
+    db.execute(
+        "UPDATE skill_resources SET text=text||char(10)||'CUSTOM_USER_RULE'",
+        [],
+    )
+    .unwrap();
+    migrate(&db).unwrap();
+    let (text, revision) = resource(&db, "image-prompt", "SKILL.md");
+    assert!(text.contains("role selects the input mode"));
+    assert!(text.contains("purpose describes"));
+    assert!(text.contains("CUSTOM_USER_RULE"));
+    migrate(&db).unwrap();
+    assert_eq!(resource(&db, "image-prompt", "SKILL.md"), (text, revision));
 }

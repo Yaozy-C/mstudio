@@ -17,7 +17,7 @@ pub async fn recover(
         Ok(false)
     };
     if host.token().is_cancelled() {
-        return Err("已停止回答；已完成操作保留".into());
+        return Err(crate::app_error::cancelled());
     }
     if let Err(error) = result {
         host.record(
@@ -113,6 +113,7 @@ async fn compact_with_retain(
     let mut history = vec![session.messages[0].clone()];
     history.extend(old.iter().cloned());
     history.push(Message::user("Summarize the earlier conversation into concise continuation context. Preserve the original current user request, goal, target/task IDs, permitted scope and completion criteria. Distinguish explicit user decisions, existing designs and assistant proposals; do not turn historical todos into current tasks. Retain useful read locations (objects, fields, pages), findings, revisions, asset IDs and retrievable tool-result references (turnId/callId). Do not copy stale project snapshots; fresh project state is supplied separately. For images preserve actual observations and reopenable references, without substituting text for pixel verification. Record saved actions, results, exact failure causes, missing evidence and next steps to avoid repeated research or writes. Do not repeat complete rules still present; summarize removed rules only as needed and do not claim their full text remains available. Remove unrelated shot todos, duplicate outputs and long discussion. Add no goals, assumptions or invented IDs. Preserve quoted user wording and requested content language. Output only the summary; execute no tools."));
+    crate::assistant::harness::context_source::wire(&mut history);
     let request = CompletionRequest {
         model: None,
         preamble: None,
@@ -128,7 +129,7 @@ async fn compact_with_retain(
     };
     let response = match tokio::select! {
         result = model.completion(request) => result,
-        _ = host.token().cancelled() => { host.record("compaction/end", json!({"status":"cancelled"}))?; return Err("已停止回答；已完成操作保留".into()); },
+        _ = host.token().cancelled() => { host.record("compaction/end", json!({"status":"cancelled"}))?; return Err(crate::app_error::cancelled()); },
         _ = tokio::time::sleep(std::time::Duration::from_secs(240)) => { host.record("compaction/end", json!({"status":"timeout"}))?; return Err("压缩旧对话超时；已完成操作保留".into()); },
     } {
         Ok(response) => response,

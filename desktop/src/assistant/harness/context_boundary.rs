@@ -91,9 +91,7 @@ mod tests {
     use crate::{assistant::harness::session, database::Store};
     use serde_json::json;
     fn snapshot(rev: u32) -> Message {
-        Message::user(format!(
-            "当前工程快照（参考数据；更多内容请按需 inspect）：\n{{\"revision\":{rev}}}"
-        ))
+        super::super::context_source::snapshot(json!({"revision":rev}))
     }
     #[test]
     fn completed_memory_pairs_are_retired_without_touching_other_calls_or_pending_work() {
@@ -162,7 +160,7 @@ mod tests {
             ]
         );
         let mut repaired = vec![projected.last().unwrap().clone()];
-        session::repair_pending(&mut repaired);
+        session::repair_pending(&mut repaired, |_| None);
         let unknown = repaired.clone();
         retire_memory_calls(&mut repaired);
         assert_eq!(repaired, unknown);
@@ -195,7 +193,7 @@ mod tests {
             snapshot(1),
             Message::user("不能改变镜头动作"),
             Message::assistant("已保存"),
-            Message::user("当前工程参考数据：{\"revision\":2}"),
+            snapshot(2),
         ];
         let mut additions = vec![snapshot(3), Message::user("改为1.5秒")];
         refresh_snapshot(&mut history, &mut additions);
@@ -236,28 +234,5 @@ mod tests {
         assert_eq!(serde_json::to_value(&history).unwrap(), before);
         drop(store);
         std::fs::remove_dir_all(dir).unwrap();
-    }
-}
-
-#[cfg(test)]
-mod language_upgrade_tests {
-    use super::*;
-    #[test]
-    fn english_snapshot_replaces_legacy_snapshot_without_dropping_user_content() {
-        let user = Message::user("保持中文对白和品牌名称");
-        let mut history = vec![
-            Message::user("当前工程快照（参考数据；更多内容请按需 inspect）：\n{\"revision\":1}"),
-            user.clone(),
-        ];
-        let fresh = Message::user(
-            "Current project snapshot (reference data; inspect more details as needed):\n{\"revision\":2}",
-        );
-        let mut additions = vec![fresh.clone()];
-        refresh_snapshot(&mut history, &mut additions);
-        assert!(additions.is_empty());
-        assert_eq!(
-            serde_json::to_value(&history).unwrap(),
-            serde_json::to_value(vec![fresh, user]).unwrap()
-        );
     }
 }

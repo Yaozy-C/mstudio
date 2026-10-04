@@ -18,7 +18,7 @@ const task: ProductionTask = {
 };
 test("editing an unsubmitted task changes its prompt without submitting", () => {
   const p = saveTask(fixture(), task);
-  const next = applyOperations(p, p.revision ?? 0, [
+  const next = applyOperations(p, [
     { op: "update_generation", taskKey: task.key, text: "掀盖" },
   ]);
   expect(next.production!.drafts![task.key]).toEqual({
@@ -101,7 +101,7 @@ test("explicit regenerate resets the existing task once with new prompt and the 
     },
   };
   const ops = [{ op: "regenerate_generation", taskKey: task.key }];
-  const next = applyOperations(p, p.revision ?? 0, ops, context);
+  const next = applyOperations(p, ops, context);
   const run = next.production!.drafts![task.key];
   expect(run).toMatchObject({
     key: task.key,
@@ -120,16 +120,16 @@ test("explicit regenerate resets the existing task once with new prompt and the 
   );
   expect(run.turnId).toBe(original.turnId);
   expect(run.createdAt).toBe(original.createdAt);
-  expect(applyOperations(next, next.revision ?? 0, ops, context)).toEqual(next);
+  expect(applyOperations(next, ops, context)).toEqual(next);
   expect(() => regenerationDraft({ ...task, status: "UNKNOWN" })).toThrow();
 });
-test("invalid prompt and stale revisions do not change task records", () => {
+test("invalid prompts do not change task records", () => {
   const p = saveTask(fixture(), task);
   expect(() => editTaskPrompt(p, task.key, " ")).toThrow();
   expect(() => editTaskPrompt(p, "missing", "x")).toThrow();
   expect(() =>
-    applyOperations(p, -1, [
-      { op: "update_generation", taskKey: task.key, text: "x" },
+    applyOperations(p, [
+      { op: "update_generation", taskKey: task.key, text: " " },
     ]),
   ).toThrow();
   expect(p.production!.drafts![task.key]).toEqual(task);
@@ -162,7 +162,7 @@ test("explicit generation reuses an unsubmitted hidden task and respects executi
       turn: { projectId: p.id, models: { execution }, instruction: "重新生成" },
     };
     const ops = [{ op: "regenerate_generation", taskKey: task.key }];
-    const next = applyOperations(p, p.revision ?? 0, ops, context);
+    const next = applyOperations(p, ops, context);
     expect(Object.keys(next.production!.drafts!)).toEqual([task.key]);
     expect(next.production!.drafts![task.key]).toMatchObject({
       inputs: task.inputs,
@@ -171,9 +171,7 @@ test("explicit generation reuses an unsubmitted hidden task and respects executi
       hiddenFromList: false,
       status: execution === "automatic" ? "READY" : "AWAITING_CONFIRMATION",
     });
-    expect(applyOperations(next, next.revision ?? 0, ops, context)).toEqual(
-      next,
-    );
+    expect(applyOperations(next, ops, context)).toEqual(next);
   }
 });
 

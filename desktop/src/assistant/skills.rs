@@ -3,6 +3,7 @@ mod metadata;
 use metadata::{model_catalog, model_metadata};
 mod prompt_migration;
 mod prompt_scope;
+mod resource_upgrade;
 pub mod storage;
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
@@ -83,6 +84,7 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     prompt_migration::migrate(&db)?;
     prompt_scope::install(&db)?;
     contract_migration::migrate(&db)?;
+    resource_upgrade::migrate(&db, &root(app)?)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {
@@ -178,7 +180,7 @@ pub fn guidance(catalog: &Value) -> String {
         })
         .collect();
     format!(
-        "Enabled Mstudio Skills: {}. CORE.md bodies below are already loaded from the application database. Apply fully injected dependencies for assigned prompt-authoring Skills; other roles do not inherit prompt-authoring duties. Choose additional reading by the current task and Skill description, not merely role assignment. Read explicitly requested Skills unless their current full text is already present. Use mstudio_read_skill for SKILL.md or references only when core rules are insufficient; ordinary questions need no Skill read. Follow nextOffset to finish a needed document, then load only relevant references. A read receipt or summary is not the full rule text. Paths are relative to the Skill root; permitted cross-Skill links are supported. mstudio_skills lists resources. Database bodies are authoritative; bundled files seed defaults and are independent of Codex. Apply product/market preferences only to relevant tasks. Map document/revision/review instructions to existing project objects, references and chat; do not invent files, fields or approval panels. Store shot design in the shot node's top-level text, timing in shot.duration and frames in shot.frames. Hand off source choices using shot/asset IDs and ranges; edit clips with trimIn/trimOut/start/speed. Without file or shell tools, use project records instead of creating PROJECT.md/review.json or running scripts. Without motion/audio evidence, state what remains unchecked. A new brief does not inherit an old story or approval, while current explicit authorization remains valid. Do not claim unavailable browsing, generation, delegation or file operations; report concrete gaps and continue supported work. Reading Skills does not submit paid generation tasks.",
+        "Enabled Mstudio Skills: {}. CORE.md bodies below are already loaded from the application database. Apply fully injected dependencies for assigned prompt-authoring Skills; other roles do not inherit prompt-authoring duties. Choose additional reading by the current task and Skill description, not merely role assignment. Read explicitly requested Skills unless their current full text is already present. Use mstudio_read_skill for SKILL.md or references only when core rules are insufficient; ordinary questions need no Skill read. Follow nextOffset to finish a needed document, then load only relevant references. A read receipt or summary is not the full rule text. Paths are relative to the Skill root; permitted cross-Skill links are supported. mstudio_skills lists resources. Database bodies are authoritative; bundled files seed defaults and are independent of Codex. Apply product/market preferences only to relevant tasks. Map document/revision/review instructions to existing project objects, references and chat; do not invent files, fields or approval panels. Use the current role’s tool schemas for all write parameters. Project record paths and legacy operation examples in Skills are data descriptions, not tool argument schemas or permission grants. Hand off source choices using shot/asset IDs and ranges. Without file or shell tools, use project records instead of creating PROJECT.md/review.json or running scripts. Without motion/audio evidence, state what remains unchecked. A new brief does not inherit an old story or approval, while current explicit authorization remains valid. Do not claim unavailable browsing, generation, delegation or file operations; report concrete gaps and continue supported work. Reading Skills does not submit paid generation tasks.",
         json!(available)
     ) + "\nAlready loaded core rules (do not reread unchanged bodies):\n"
         + &core.join("\n\n")

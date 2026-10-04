@@ -77,10 +77,7 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
         if let Err(error) = update {
             eprintln!("subagent settlement failed: {error}");
         }
-        let _ = journal::append(
-            &store,
-            &tool.project,
-            &tool.turn,
+        let _ = child.record(
             "subagent/settled",
             json!({"childId":id,"status":status,"stopReason":stop_reason(answer, child),"output":output}),
         );

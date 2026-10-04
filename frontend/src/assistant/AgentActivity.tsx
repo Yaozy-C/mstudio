@@ -6,6 +6,8 @@ import { listen } from "@tauri-apps/api/event";
 import { bridge, native } from "../bridge";
 import { activityRows, type ActivityEvent } from "./activityRows";
 import type { AgentProfile } from "../agents/catalog";
+import { useChildActivity } from "./childActivity";
+import { ChildAgentActivity } from "./ChildAgentActivity";
 type Event = ActivityEvent;
 type Progress = {
   projectId: string;
@@ -95,6 +97,9 @@ export function AgentActivity({
       clearTimeout(timer);
     };
   }, [projectId, turnId, open, revision, running]);
+  const { children, error: childError } = useChildActivity(projectId, turnId);
+  const activeChildren = children.filter((c) => c.state === "running");
+  const childName = (id: string) => agents.find((a) => a.id === id)?.name || id;
   const rows = activityRows(events);
   const scripts = new Map<string, { id: string; title: string }>();
   for (const event of [...events].sort((a, b) => a.seq - b.seq)) {
@@ -111,11 +116,20 @@ export function AgentActivity({
   }
   return (
     <>
-      {running && (
+      {running && !activeChildren.length && (
         <StatusMessage className="agent-run-status">
           {status || t("正在处理任务…")}
         </StatusMessage>
       )}
+      {!open &&
+        activeChildren.map((child) => (
+          <ChildAgentActivity
+            key={child.turnId}
+            child={child}
+            name={childName(child.agentId)}
+          />
+        ))}
+      {childError && <ErrorNotice error={childError} />}
       {[...scripts.values()].map((s) => (
         <div className="agent-script-receipt" key={s.id}>
           <span>
@@ -173,8 +187,28 @@ export function AgentActivity({
                     .join(" · ")}
             </span>
             <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
+            {children
+              .filter((c) => c.callId === r.callId)
+              .map((child) => (
+                <ChildAgentActivity
+                  key={child.turnId}
+                  child={child}
+                  name={childName(child.agentId)}
+                  showTools
+                />
+              ))}
           </div>
         ))}
+        {children
+          .filter((c) => !rows.some((r) => r.callId === c.callId))
+          .map((child) => (
+            <ChildAgentActivity
+              key={child.turnId}
+              child={child}
+              name={childName(child.agentId)}
+              showTools
+            />
+          ))}
         {!events.length && !error && <p>{t("尚无执行记录。")}</p>}
       </details>
     </>

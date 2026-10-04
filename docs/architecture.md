@@ -1,6 +1,6 @@
 # 架构
 
-Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。前端管理脚本、画布和剪辑状态，经 Tauri IPC 调用本机 Rust 服务。SQLite 保存工程、对话、任务与模型配置；Cordis 管理前端插件生命周期。
+Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。前端维护交互草稿，后端是工程持久化与任务执行的唯一入口，经 Tauri IPC 同步。SQLite 保存工程、对话、任务与模型配置；Cordis 管理前端插件生命周期。
 
 ## 核心边界
 
@@ -16,6 +16,34 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 素材记录与时间线片段分离，片段引用素材 ID 并保存开始位置、裁切、速度和变换。图片作为默认三秒的画面片段插入，可继续调整。拖入指定画面轨道时按项目帧率对齐。
 
 工程自动保存在 SQLite；导入的媒体、代理、导出和生成文件位于应用数据目录。原始用户文件不因项目删除而被删除。项目操作通过统一变更入口支持当前会话撤销。
+
+## 工程工具与生成执行
+
+`frontend/src/domain/operationContract.ts` 定义每项操作的封闭参数对象；构建时生成 Rust 使用的 schema。模型看到的字段和执行前校验使用同一份契约，`oneOf`、nullable、数组长度与数字约束均受校验；不支持的 schema 关键字拒绝执行。验证一次返回字段路径列表。生成参数属于 `parameters`，转场时长属于 `set_transition.duration`，选定模型的参数能力与预设默认值随模型规则一起返回。
+
+生成操作按图片、视频和独立参考资产分支声明。资产角色只暴露要求 `generationPurpose=asset` 和显式 `references` 的独立图片分支；视频组合 `mode` 不出现在图片参数中。模式、引用角色、状态、比例和分辨率使用有限值约束，比例与分辨率集合和模型适配器共用来源。模型说明使用 `inputDescription` 描述输入语义，避免把 `mode:image` 混入工具参数。联合类型校验根据已知判别字段定位分支，一次返回可定位的缺失、非法值和多余字段；不纠正字段别名或静默忽略参数。
+
+Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与条件阅读路径。提示词角色默认加载对应入口与写作指南；动作教程、真人表演、皮肤和环境光线案例按需读取，角色方法不再维护重复副本。公共保存、查询和任务生命周期规则由运行时维护。已有安装通过一次性事务更新已识别的默认正文、移除已合并的默认文档，并保留自定义正文、角色权限和启停状态；剪辑角色已知的强制复查句单独替换为完整回执验收。数据库仍是用户可编辑规则的事实来源。
+
+`desktop/src/project_service` 管理读取、授权、对象观察、事务和回执。纯 TypeScript 领域函数在构建时由 Bun 编译为嵌入包，由受内存、栈和时间限制的 QuickJS 执行；不需要随应用携带 Node/Bun，不暴露 DOM、文件或网络。界面与后端复用纯领域规则，不维护 Rust/TypeScript 两套业务实现。已删除 WebView 工具执行事件、回调和 30 秒应答超时路径。
+
+读取和宿主快照建立本轮对象观察，写入检查实际改变的已有对象及操作依赖，失败返回准确目标与读取参数。成功后刷新相关观察，并在同一 SQLite 事务保存工程与 `project_executions` 回执。相同执行编号的重放返回原回执；编号复用不同参数会被拒绝。重启恢复优先读取回执，避免把已保存修改误报为未知结果。工程快照带宿主来源元数据，持久化保留来源；供应商请求移除该内部元数据。用户文本前缀不参与快照识别。
+
+界面自动保存提交基线与草稿，由后端对最新工程做三方合并：独立对象/字段合并，重叠编辑明确冲突。存储版本阻止乱序通知覆盖较新内容。`project-changed` 只通知界面刷新，没有执行职责。
+
+保存的 `READY` 制作任务就是持久待执行队列。`production_queue` 跨项目按最多两个提交槽认领任务；上传与远端提交由应用持有。上传结束再次核查任务状态，取消后不会继续提交。`jobs::reserve` 在网络请求前保存提交编号；重启仅恢复没有远端占位记录的准备任务，有占位记录的任务沿用原 job 查询，绝不因超时自动创建新付费请求。远端本身不保证 exactly-once，`UNKNOWN` 保留这种不确定性。
+
+后台 job 状态和已下载结果通过同一领域服务写回工程，页面关闭不阻止落盘。旧的页面生成扫描器、提交器、上传恢复和结果写回器均已删除。测试覆盖参数失败零写入、回执重放、并发合并/冲突、来源识别、跨重启队列恢复、取消准备和多结果幂等收取。
+
+素材查询按 `jobs.asset/assets` 中的实际素材 ID 关联来源，返回原始提交 Prompt、模型和引用；不解析文件名，不用当前可编辑草稿代替原始请求。只展开请求的文本字段，媒体二进制与服务凭据不进入查询结果；原始文字和批量来源继续分页。
+
+子 Agent 的执行进度以项目、父轮次、调用 ID 和子轮次关联。公开阶段、当前工具、最近进展和耗时投影到 `agent_child_activity`，由真实事件推送刷新，展开后读取该子轮次的操作记录。取消、失败、完成和重启中断分别显示，历史轮次不会跟随同一个子会话的后续任务变化。过程文字保留在会话记录与进度中；完成回传只使用最后一条无工具调用的模型回复，完整结论在输出限额内直接交给父 Agent。
+
+编辑回执的 `savedValues[].values` 返回请求字段的实际保存值，包括图片/视频提示词、分镜图和引用；数组返回合并后的完整值。生成回执与查询共用 `taskOutcome`，提供 `status`、实际 `resultAssetIds` 和 `continuation`：等待用户、等待后台、结果可检查、已结束。委派返回时刷新任务事实，长输出卸载保留这些控制字段。Prompt 和 Skill 直接使用完整回执，等待确认时报告用户动作，不重复查询。
+
+后续检查确实依赖后台结果时，Agent 使用 `mstudio_await_generation`。工具先订阅提交事件再读取持久任务，后台状态写入、导入结果、取消、暂停、删除都会唤醒等待；无关项目事件不触发重读。等待期间没有模型轮询或远端查询，只由原有后台 worker 管理远端状态。确认阻塞立即返回，后台任务在收到实际结果、失败或需要用户动作时返回；共享本轮取消信号与时限。重启后中断的等待从持久任务恢复事实，不重新提交生成。普通回复和独立工作仍由通用 Agent 循环处理，不按读取次数截断。
+
+设计对照：[DSH 工具契约](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/tools/src/schema.ts)、[观察策略](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/fs/fs-observation-policy/src/index.ts)、[工具调度](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/agent-loop/src/tool-calls.ts)。工程对象、SQLite 事务和媒体任务队列是 Mstudio 的领域实现。
 
 ## 预览与导出
 
@@ -43,7 +71,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 参考：[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)、[Deep Agents](https://www.langchain.com/blog/context-management-for-deepagents)。
 
-编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。工程编辑版本忽略画布视口、卡片位置与尺寸变化，内容修改仍使用严格版本检查。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。同一子任务连续三次修改遇到相同错误会停止重复尝试，读取操作不会清零计数，成功修改才清零；16 步上限保留，以 `step-limit` 返回给统筹。
+编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。宿主按本轮实际提供的对象保存内容哈希，忽略节点布局与任务执行遥测；不再要求模型携带工程 revision。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。同一子任务连续三次修改遇到相同错误会停止重复尝试，读取操作不会清零计数，成功修改才清零。通用执行循环不设固定轮数上限，也不按媒体任务数量扩容；工具执行后继续请求模型，直到正常完成、取消或发生错误。
 
 ### GES Canvas 预览
 
@@ -106,3 +134,5 @@ excluded from cleanup. Cleanup runs at startup and hourly while the app remains 
 settlement immediately folds recovery state. Referenced media use the existing blob
 ownership and post-commit file cleanup. Migration v4 compacts existing data without a
 retained backup. No cleanup path sends model requests or replays tool side effects.
+
+模型侧按任务注册独立工具，不再暴露 `mstudio_edit.operations`：视频/图片生成、镜头提示词、任务提示词、剧本和镜头结构各自使用独立参数。角色权限同时裁剪工具与字段；宿主将参数转换为既有内部操作，复用事务、权限和回执恢复。镜头重排用 `mstudio_update_shots(items)` 原子提交。界面及恢复流程识别新工具名，并兼容历史回执。内部操作参数仍在操作分支及字段本身声明用途、层级、单位、枚举和省略语义。`update_node.shot.prompt/framePrompt` 保存镜头草稿，`request_generation.text` 和 `update_generation.text` 写生成任务提示词，互不隐式覆盖。图片与视频分支分别展示参数；媒体能力查询与操作契约复用 `parameterSchema`，执行侧仍按所选模型校验，不把镜头时长或工程导出规格当作生成规格。

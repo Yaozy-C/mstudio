@@ -20,6 +20,7 @@ fn verify_existing_sessions_and_chat_survive_cleanup() {
     db.execute_batch("PRAGMA foreign_keys=ON").unwrap();
     let location = crate::storage::load(&db, &root).unwrap();
     let store = Store {
+        project_events: tokio::sync::broadcast::channel(64).0,
         root: root.clone(),
         db: Mutex::new(db),
         files: Default::default(),

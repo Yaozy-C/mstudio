@@ -6,6 +6,7 @@ mod canvas_inputs;
 mod caption_animation;
 mod creation_commands;
 mod database;
+mod diagnostics;
 mod ges_engine;
 mod ges_runtime;
 mod imports;
@@ -23,6 +24,8 @@ mod preview_process;
 mod preview_protocol;
 mod preview_session;
 mod preview_worker;
+mod production_queue;
+mod project_service;
 mod project_storage;
 mod projects;
 mod reference_commands;
@@ -48,10 +51,22 @@ fn main() {
     }
     tauri::Builder::default()
         .setup(|app| {
+            match app
+                .path()
+                .app_log_dir()
+                .ok()
+                .and_then(|path| diagnostics::init(&path).ok())
+            {
+                Some(guard) => {
+                    app.manage(guard);
+                }
+                None => eprintln!("Operational diagnostic logging unavailable"),
+            }
             let store = database::Store::open(app.path().app_data_dir()?)?;
             storage::allow(app.handle(), &store.media_root())?;
             app.manage(store);
             assistant::skills::initialize(app.handle())?;
+            production_queue::start(app.handle().clone());
             job_worker::start(app.handle().clone());
             database::history_cleanup::start(app.handle().clone());
             Ok(())
@@ -96,8 +111,7 @@ fn main() {
             assistant::skills::save_creative_skill,
             assistant::journal::agent_events,
             assistant::journal::agent_turn_events,
-            assistant::tools::agent_tool_result,
-            assistant::tools::agent_tool_active,
+            assistant::child_activity::agent_child_activity,
             assistant::assistant_chat,
             assistant::media_prompt::prepare_media_prompt,
             assistant::pending::cancel_assistant,
@@ -126,6 +140,7 @@ fn main() {
             job_download::import_job_result,
             projects::list_projects,
             projects::save_project,
+            project_service::get_project,
             projects::create_project,
             projects::delete_project,
             projects::get_settings,

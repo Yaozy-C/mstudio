@@ -89,7 +89,11 @@ pub async fn reset(app: &tauri::AppHandle, id: &str) -> Result<()> {
     let store = app.state::<Store>();
     let mut job = jobs::get(&store, id)?;
     job.as_object_mut().unwrap().remove("sync");
-    jobs::save(&store, &job)
+    jobs::save(&store, &job)?;
+    if let Some(project) = job["projectId"].as_str() {
+        crate::project_service::notify(app, project);
+    }
+    Ok(())
 }
 async fn record(
     app: &tauri::AppHandle,
@@ -101,7 +105,11 @@ async fn record(
     let store = app.state::<Store>();
     let mut job = jobs::get(&store, id)?;
     update_sync(&mut job, stage, error, now());
-    jobs::save(&store, &job)
+    jobs::save(&store, &job)?;
+    if let Some(project) = job["projectId"].as_str() {
+        crate::project_service::notify(app, project);
+    }
+    Ok(())
 }
 fn update_sync(job: &mut Value, stage: Work, error: Option<anyhow::Error>, time: u64) {
     // A concurrent manual recovery may already have completed this operation.

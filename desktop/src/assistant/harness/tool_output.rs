@@ -10,15 +10,13 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     let limit = if (call.function.name == "mstudio_inspect"
         && matches!(
             call.function.arguments["section"].as_str(),
-            Some("clips" | "assets" | "tracks" | "captions")
+            Some("clips" | "assets" | "tracks" | "captions" | "generation")
         ))
-        || (call.function.name == "mstudio_edit" && value.get("savedClips").is_some())
-        || (call.function.name == "mstudio_delegate"
-            && value["changes"].as_array().is_some_and(|changes| {
-                changes
-                    .iter()
-                    .any(|change| change["result"].get("savedClips").is_some())
-            })) {
+        || call.function.name == "mstudio_await_generation"
+        || (super::operation_tools::is_edit(&call.function.name)
+            && value.get("savedClips").is_some())
+        || call.function.name == "mstudio_delegate"
+    {
         14_000
     } else {
         LIMIT
@@ -26,33 +24,26 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     if value.get("__offloadedImage").is_some() {
         return json!({"ok":true,"imageId":value["imageId"]});
     }
-    if call.function.name == "mstudio_delegate"
-        && value["answer"]
-            .as_str()
-            .is_some_and(|s| s.chars().count() > 600)
-        && value.to_string().chars().count() <= limit
-    {
-        let mut view = value.clone();
-        view["answer"] = json!(
-            value["answer"]
-                .as_str()
-                .unwrap()
-                .chars()
-                .take(600)
-                .collect::<String>()
-        );
-        view["answerTruncated"] = json!(true);
-        view["resultRef"] = json!(call.id);
-        view["turnId"] = json!(turn);
-        view["readWith"] = json!(
-            "Read the full explanation with mstudio_read_result(callId=resultRef, turnId=turnId, offset=0); omitted content may include design rationale or remaining work."
-        );
-        return view;
-    }
     if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= limit {
         return value.clone();
     }
     let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0) for this task; supply turnId for another task.","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
+    if let Some(answer) = value["answer"]
+        .as_str()
+        .filter(|s| s.chars().count() <= LIMIT)
+    {
+        result["answer"] = json!(answer);
+    }
+    // Task state is control information, not optional transcript detail.
+    for field in ["generationTasks", "updatedTasks"] {
+        if let Some(tasks) = value[field].as_array() {
+            result[field] = json!(tasks.iter().take(30).map(|task| json!({
+                "id":task["id"],"status":task["status"],"continuation":task["continuation"],
+                "targetId":task["targetId"],"resultAssetIds":task["resultAssetIds"],"error":task["error"]
+            })).collect::<Vec<_>>());
+            result[format!("{field}Complete")] = json!(tasks.len() <= 30);
+        }
+    }
     // Never turn an applied edit or a real error into a synthetic failure.
     for key in [
         "ok",
@@ -61,6 +52,13 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         "childId",
         "status",
         "applied",
+        "stage",
+        "outcome",
+        "waitEnded",
+        "executionId",
+        "issues",
+        "conflicts",
+        "recovery",
         "revision",
         "code",
         "error",
@@ -120,6 +118,11 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
 pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: usize) -> Value {
     let raw = (|| -> anyhow::Result<Value> {
         let db = store.db.lock().unwrap();
+        if let Some(receipt) =
+            crate::project_service::receipts::read(&db, project, &format!("{turn}:{call}"))?
+        {
+            return Ok(receipt);
+        }
         let (seq,raw): (i64,String) = db.query_row("SELECT seq,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1", rusqlite::params![project,turn,call],|r|Ok((r.get(0)?,r.get(1)?)))?;
         Ok(crate::database::blobs::event(&db, seq, &raw)?["value"].take())
     })();
@@ -167,7 +170,7 @@ mod tests {
         let delegated = json!({"answer":"a".repeat(900),"changes":[{"result":{"applied":true,"savedClips":receipt}}]});
         let view = project(&delegate, &delegated, Some("t"));
         assert_eq!(view["changes"][0]["result"]["savedClips"], receipt);
-        assert_eq!(view["answerTruncated"], true);
+        assert_eq!(view["answer"], delegated["answer"]);
     }
     #[test]
     fn large_success_and_errors_keep_identity_and_can_be_read_back() {
@@ -232,7 +235,7 @@ mod tests {
 
 #[cfg(test)]
 #[test]
-fn delegation_view_keeps_receipts_and_points_to_complete_design() {
+fn delegation_view_keeps_the_complete_conclusion_and_receipts() {
     use rig_core::message::ToolFunction;
     let call = ToolCall::from_wire(
         "delegate-1",
@@ -241,11 +244,9 @@ fn delegation_view_keeps_receipts_and_points_to_complete_design() {
             arguments: json!({}),
         },
     );
-    let value = json!({"ok":true,"answer":"设计理由".repeat(300),"changes":[{"result":{"applied":true,"revision":7,"savedValues":[{"id":"s4","shot":{"duration":1.5}}]}}]});
+    let value = json!({"ok":true,"answer":"设计理由".repeat(300),"changes":[{"result":{"applied":true,"revision":7,"savedValues":[{"id":"s4","exists":true,"complete":true,"values":{"shot":{"duration":1.5}}}]}}]});
     let view = project(&call, &value, Some("turn-1"));
     assert_eq!(view["changes"], value["changes"]);
-    assert_eq!(view["answerTruncated"], true);
-    assert_eq!(view["resultRef"], "delegate-1");
-    assert_eq!(view["turnId"], "turn-1");
+    assert_eq!(view, value);
     assert_eq!(value["answer"].as_str().unwrap().chars().count(), 1200);
 }

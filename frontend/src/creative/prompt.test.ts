@@ -10,12 +10,9 @@ const saveShotPrompt = (
   p: ReturnType<typeof newProject>,
   id: string,
   prompt: string,
-) =>
-  applyOperations(p, p.revision ?? 0, [
-    { op: "update_node", id, shot: { prompt } },
-  ]);
+) => applyOperations(p, [{ op: "update_node", id, shot: { prompt } }]);
 function fixture() {
-  return applyOperations(newProject("film"), 0, [
+  return applyOperations(newProject("film"), [
     {
       op: "add_node",
       id: "screenplay",
@@ -75,7 +72,7 @@ test("script and screenplay edits flag a saved prompt without overwriting it; ca
   const q = editShotText(p, "shot", "action", "慢慢打开包");
   expect(promptStale(q, q.nodes[1])).toBe(true);
   expect(q.nodes[1].shot?.prompt).toBe(p.nodes[1].shot?.prompt);
-  const r = applyOperations(p, 0, [
+  const r = applyOperations(p, [
     {
       op: "update_node",
       id: "screenplay",
@@ -83,16 +80,14 @@ test("script and screenplay edits flag a saved prompt without overwriting it; ca
     },
   ]);
   expect(promptStale(r, r.nodes[1])).toBe(true);
-  const moved = applyOperations(p, 0, [
-    { op: "update_node", id: "shot", x: 400 },
-  ]);
+  const moved = applyOperations(p, [{ op: "update_node", id: "shot", x: 400 }]);
   expect(promptStale(moved, moved.nodes[1])).toBe(false);
   const fresh = saveShotPrompt(q, "shot", "New slow action, same camera.");
   expect(promptStale(fresh, fresh.nodes[1])).toBe(false);
 });
 test("Agent writes the same prompt field, validates it atomically, and clears stale state against the new script", () => {
   const p = saveShotPrompt(fixture(), "shot", "Old prompt.");
-  const q = applyOperations(p, 0, [
+  const q = applyOperations(p, [
     {
       op: "update_node",
       id: "shot",
@@ -104,7 +99,7 @@ test("Agent writes the same prompt field, validates it atomically, and clears st
   expect(q.nodes[1].shot?.dialogue).toBe("Let's pack.");
   expect(q.nodes[1].shot?.prompt).toBe("Push in as hands open the bag.");
   expect(() =>
-    applyOperations(q, 0, [
+    applyOperations(q, [
       { op: "update_node", id: "shot", shot: { prompt: "x".repeat(12001) } },
     ]),
   ).toThrow();

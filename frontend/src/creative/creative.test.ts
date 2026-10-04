@@ -22,7 +22,6 @@ function fixture() {
       ...newProject("film"),
       assets: [asset("a"), asset("b"), asset("c", 0.1)],
     },
-    0,
     [
       {
         op: "add_node",
@@ -65,7 +64,7 @@ function fixture() {
 }
 test("one screenplay owns paired shots; partial edits keep dialogue, identity and mark existing visuals stale", () => {
   const p = fixture();
-  const q = applyOperations(p, 0, [
+  const q = applyOperations(p, [
     { op: "update_node", id: "s1", text: "Open faster" },
   ]);
   expect(q.nodes[1].shot?.dialogue).toBe("Let's pack");
@@ -88,15 +87,17 @@ test("reject invalid associations and duplicate shot order atomically", () => {
     { frames: [{ assetId: "a", title: "frame" }] },
   ]) {
     expect(() =>
-      applyOperations(p, 0, [
+      applyOperations(p, [
         { op: "update_node", id: "s1", text: "changed", shot },
       ]),
     ).toThrow();
     expect(JSON.stringify(p)).toBe(original);
   }
-  expect(() =>
-    applyOperations(p, 12, [{ op: "remove_node", id: "s1" }]),
-  ).toThrow();
+  expect(
+    applyOperations(p, [{ op: "remove_node", id: "s1" }]).nodes.some(
+      (n) => n.id === "s1",
+    ),
+  ).toBe(false);
 });
 test("assembly matches planned durations and does not duplicate already edited shots", () => {
   const p = assembleScreenplay(fixture(), "screenplay");
@@ -112,7 +113,7 @@ test("generation results stay under their shot and never silently replace chosen
   expect(q.nodes).toHaveLength(p.nodes.length);
   expect(q.nodes[1].resultAssetId).toBe("a");
   expect(q.nodes[1].shot?.takes?.at(-1)?.basis).toBe(shotBasis(node));
-  const revised = applyOperations(q, 0, [
+  const revised = applyOperations(q, [
     { op: "update_node", id: "s1", text: "faster" },
   ]);
   expect(chooseTake(revised, "s1", "new").nodes[1].shot?.visualChanged).toBe(
@@ -161,7 +162,7 @@ test("replace a split shot without changing timings, captions, other shots or or
 test("choosing a new video does not pretend an old storyboard image has updated", () => {
   let p = fixture();
   p = { ...p, assets: [...p.assets, { ...asset("frame"), kind: "image" }] };
-  p = applyOperations(p, 0, [
+  p = applyOperations(p, [
     {
       op: "update_node",
       id: "s1",
@@ -169,7 +170,7 @@ test("choosing a new video does not pretend an old storyboard image has updated"
     },
   ]);
   const originalFrames = p.nodes[1].shot!.frames;
-  p = applyOperations(p, 0, [
+  p = applyOperations(p, [
     { op: "update_node", id: "s1", text: "different action" },
   ]);
   p = addShotResult(p, asset("fresh"), "s1", p.nodes[1]);

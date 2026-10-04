@@ -126,5 +126,6 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         job["asset"] = value;
     }
     jobs::save(&store, &job)?;
+    crate::project_service::notify(app, &project);
     Ok(asset)
 }

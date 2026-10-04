@@ -1,4 +1,5 @@
 import { t } from "../i18n";
+import type { ComponentPropsWithRef } from "react";
 import {
   FileText,
   FilmStrip,
@@ -14,15 +15,25 @@ export function MediaTile({
   selected,
   select,
   preview,
+  onContextMenu,
+  className,
+  ...props
 }: {
   asset: Asset;
   scope: "project" | "global";
   selected: boolean;
   select: (id: string) => void;
   preview: (id: string) => void;
-}) {
+} & ComponentPropsWithRef<"article">) {
   return (
-    <article className="media-item" onContextMenu={() => select(a.id)}>
+    <article
+      {...props}
+      className={["media-item", className].filter(Boolean).join(" ")}
+      onContextMenu={(event) => {
+        select(a.id);
+        onContextMenu?.(event);
+      }}
+    >
       <button
         className="media-thumbnail"
         draggable={scope === "project" && !a.missing}

@@ -12,15 +12,36 @@ const actions: Record<string, string> = {
   read_skill: "读取创作规则",
   history: "查阅对话",
   models: "检查可用模型",
+  read_image: "读取素材画面",
+  reopen_image: "重新读取素材画面",
+  read_result: "读取完整结果",
+  await_generation: "等待生成结果",
   memory: "整理项目记忆",
   delegate: "委派专业 Agent",
   plan: "安排交付清单",
 };
 const operations: Record<string, string> = {
+  generate_image: "生成图片",
+  generate_video: "生成视频",
+  generate_reference_image: "生成参考图片",
+  set_video_prompt: "修改视频提示词",
+  set_image_prompt: "修改图片提示词",
+  set_shot_frames: "设置分镜图片",
+  update_shot: "修改镜头",
+  update_shots: "批量修改镜头",
+  update_screenplay: "修改剧本",
+  upsert_references: "添加或更新参考素材",
+  replace_references: "替换参考素材",
+  remove_references: "移除参考素材",
   request_generation: "安排媒体生成",
   update_generation: "修改任务描述",
   regenerate_generation: "重新生成",
   add_node: "添加内容",
+  add_shot: "添加镜头",
+  add_screenplay: "添加剧本",
+  add_asset: "添加素材",
+  add_text: "添加文本",
+  add_note: "添加备注",
   update_node: "修改内容",
   remove_node: "删除内容",
   choose_take: "选用镜头",
@@ -42,6 +63,7 @@ export function activityRows(events: ActivityEvent[]) {
       status?: string;
       stopReason?: string;
       generationTasks?: unknown[];
+      issues?: { path: string; message: string }[];
     };
   };
   return events
@@ -67,7 +89,7 @@ export function activityRows(events: ActivityEvent[]) {
                 ) ?? [],
               ),
             ].join("、") || "修改项目"
-          : (actions[action ?? ""] ?? "执行操作");
+          : (actions[action ?? ""] ?? operations[action ?? ""] ?? "执行操作");
       const limited =
         action === "delegate" && result?.result?.stopReason === "step-limit";
       const completed = events.some(
@@ -77,6 +99,7 @@ export function activityRows(events: ActivityEvent[]) {
       );
       return {
         id: e.seq,
+        callId: p.callId,
         title,
         agentId:
           action === "delegate"
@@ -90,7 +113,12 @@ export function activityRows(events: ActivityEvent[]) {
               : "专业 Agent 达到步数上限，已完成的修改保留，待统筹处理"
             : undefined) ??
           (result?.result?.error
-            ? activityError(result.result.error)
+            ? [
+                activityError(result.result.error),
+                ...(result.result.issues ?? []).map(
+                  (issue) => `${issue.path}: ${issue.message}`,
+                ),
+              ].join("\n")
             : undefined) ??
           (!result
             ? "执行中"

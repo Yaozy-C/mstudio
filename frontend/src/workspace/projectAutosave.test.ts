@@ -27,6 +27,7 @@ test("opening does not write; a burst of edits saves only the latest after 1.5 s
   const states: string[] = [];
   const save = createProjectAutosave(p, async (value) => {
     writes.push(value);
+    return value;
   });
   save.subscribe(() => states.push(save.getStatus()));
   await tick(5000);
@@ -53,6 +54,7 @@ test("manual or exit flush writes now, cancels the pending timer and shares in-f
   const save = createProjectAutosave(p, async (value) => {
     writes.push(value);
     await gate.promise;
+    return value;
   });
   const first = { ...p, brief: "first" };
   save.update(first);
@@ -77,6 +79,7 @@ test("edits during slow autosave start a fresh debounce and older completion can
   const save = createProjectAutosave(p, async (value) => {
     writes.push(value);
     if (writes.length === 1) await gate.promise;
+    return value;
   });
   save.update({ ...p, brief: "first" });
   await tick(1500);
@@ -103,6 +106,7 @@ test("an idle save waiting behind a slow write takes the newest snapshot without
   const save = createProjectAutosave(p, async (value) => {
     writes.push(value);
     if (writes.length === 1) await gate.promise;
+    return value;
   });
   save.update({ ...p, brief: "first" });
   await tick(1500);
@@ -121,8 +125,9 @@ test("an idle save waiting behind a slow write takes the newest snapshot without
 test("failed saves stay dirty and flush retries the latest data instead of reporting success", async () => {
   const p = newProject("failure");
   let attempts = 0;
-  const save = createProjectAutosave(p, async () => {
+  const save = createProjectAutosave(p, async (value) => {
     if (++attempts === 1) throw new Error("disk full");
+    return value;
   });
   save.update({ ...p, brief: "keep me" });
   await expect(save.flush()).rejects.toThrow("disk full");

@@ -1,0 +1,36 @@
+.agent-child-activity {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-left: 2px solid var(--desk-rule);
+  color: var(--desk-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.agent-child-activity[data-state="running"] {
+  border-left-color: var(--desk-accent);
+}
+.agent-child-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.agent-child-heading strong {
+  color: var(--desk-text);
+  font-weight: 500;
+}
+.agent-child-heading span {
+  font-variant-numeric: tabular-nums;
+}
+.agent-child-phase {
+  margin-top: 4px;
+}
+.agent-child-note {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.agent-child-activity details {
+  margin-top: 8px;
+}

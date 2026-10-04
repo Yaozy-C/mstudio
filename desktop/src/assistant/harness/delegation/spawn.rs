@@ -139,9 +139,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &parent.turn,
         &refs,
     );
-    let mut reference = vec![Message::user(format!(
-        "Current project reference data:{reference}"
-    ))];
+    let mut reference = vec![super::super::context_source::snapshot(reference)];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
     let instruction = format!(
@@ -177,6 +175,16 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         "source":super::super::mailbox::agent_source(&parent.profile.id, &parent.turn),
         "profile":tool.profile
     })).map_err(|e| e.to_string())?;
+    crate::assistant::child_activity::start(
+        &store.db.lock().unwrap(),
+        &parent.project,
+        &child_turn,
+        &child_id,
+        &parent.turn,
+        call.id.as_str(),
+        id,
+    )
+    .map_err(|e| e.to_string())?;
     tool.turn = child_turn.clone();
     // Keep the immutable user evidence; a delegated task is not a user quote.
     tool.prompt = original["prompt"].as_str().unwrap_or(&parent.prompt).into();
@@ -186,6 +194,12 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         host.token.clone()
     };
     tool.token = token.clone();
+    tool.deadline = if background {
+        tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
+    } else {
+        route.deadline
+    };
+    let deadline = tool.deadline;
     let child = ChildHost {
         inner: ProjectHost {
             media_profile: child_profile.clone(),
@@ -209,14 +223,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         let spawned_id = child_id.clone();
         let generation = child_turn.clone();
         tokio::spawn(async move {
-            let answer = drive_child(
-                &child,
-                &child_profile,
-                &child_key,
-                messages,
-                tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60),
-            )
-            .await;
+            let answer = drive_child(&child, &child_profile, &child_key, messages, deadline).await;
             settle(&child, &spawned_id, &answer, false);
             remove_active(&spawned_id, &generation);
             wake_pending(&child, &spawned_id);

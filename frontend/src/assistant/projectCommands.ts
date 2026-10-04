@@ -63,12 +63,9 @@ function clipPatch(clip: Clip, op: Operation, p: Project) {
 }
 export function applyOperations(
   p: Project,
-  revision: number,
   raw: unknown,
   context?: GenerationCommandContext,
 ): Project {
-  if (revision !== (p.revision || 0))
-    throw new Error("工程已变化，请重新 inspect 后使用最新 revision");
   if (
     !Array.isArray(raw) ||
     !raw.length ||

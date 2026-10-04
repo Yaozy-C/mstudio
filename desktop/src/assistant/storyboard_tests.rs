@@ -1,5 +1,5 @@
 use super::{permissions, profiles, tool_schema};
-use serde_json::json;
+use serde_json::{Value, json};
 
 #[test]
 fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
@@ -9,7 +9,12 @@ fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
         .unwrap();
     profiles::validate(&artist).unwrap();
     let doc = json!({"nodes":[{"id":"s","kind":"shot"},{"id":"p","kind":"screenplay"}]});
-    let check = |op| permissions::validate(&artist, &json!({"operations":[op]}), &doc).is_ok();
+    let check = |op: Value| {
+        let args = json!({"action":"edit","operations":[op]});
+        crate::assistant::harness::schema::issues(&tool_schema::for_profile(&artist), &args)
+            .is_empty()
+            && permissions::validate(&artist, &args, &doc).is_ok()
+    };
     assert!(check(
         json!({"op":"update_node","id":"s","shot":{"framePrompt":"Wide shot","frames":[{"assetId":"image","title":"S01-A"}]}})
     ));
@@ -29,9 +34,13 @@ fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
         assert!(!check(op));
     }
     assert_eq!(
-        tool_schema::for_profile(&artist)["properties"]["operations"]["items"]["properties"]["mediaKind"]
-            ["enum"],
-        json!(["image"])
+        tool_schema::for_profile(&artist)["properties"]["operations"]["items"]["oneOf"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["properties"]["op"]["const"] == "request_generation")
+            .unwrap()["properties"]["mediaKind"]["const"],
+        json!("image")
     );
     let mut revoked = artist;
     revoked.tool_ids.retain(|id| id != "media-generation");
@@ -148,7 +157,12 @@ fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
     profiles::validate(&agent).unwrap();
     let doc = json!({"nodes":[{"id":"asset","kind":"asset"},{"id":"shot","kind":"shot"}],
         "production":{"drafts":{"asset-task":{"kind":"image","generationPurpose":"asset"},"frame":{"kind":"image"}}}});
-    let check = |op| permissions::validate(&agent, &json!({"operations":[op]}), &doc).is_ok();
+    let check = |op: Value| {
+        let args = json!({"action":"edit","operations":[op]});
+        crate::assistant::harness::schema::issues(&tool_schema::for_profile(&agent), &args)
+            .is_empty()
+            && permissions::validate(&agent, &args, &doc).is_ok()
+    };
     assert!(check(
         json!({"op":"add_node","id":"new","kind":"asset","assetId":"image","title":"Character","text":"ready"})
     ));

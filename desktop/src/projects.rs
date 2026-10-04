@@ -37,7 +37,9 @@ pub fn write_document(store: &Store, mut document: Value, create: bool) -> Resul
         return Err("项目已删除，不能继续保存".into());
     }
     crate::project_storage::remember(&tx, id, &document).map_err(|e| e.to_string())?;
-    tx.commit().map_err(|e| e.to_string())
+    tx.commit().map_err(|e| e.to_string())?;
+    store.project_changed(id);
+    Ok(())
 }
 #[tauri::command]
 pub async fn create_project(store: State<'_, Store>, document: Value) -> Result<(), String> {
@@ -45,10 +47,40 @@ pub async fn create_project(store: State<'_, Store>, document: Value) -> Result<
     write_document(&store, document, true)
 }
 #[tauri::command]
-pub async fn save_project(store: State<'_, Store>, document: Value) -> Result<(), String> {
+pub async fn save_project(
+    store: State<'_, Store>,
+    mut document: Value,
+    mut base: Value,
+) -> Result<Value, String> {
     let _guard = store.files.clone().read_owned().await;
-    write_document(&store, document, false)
+    store.normalize_paths(&mut document);
+    store.normalize_paths(&mut base);
+    save_merged(&store, document, base).map_err(|e| e.to_string())
 }
+pub fn save_merged(store: &Store, document: Value, base: Value) -> anyhow::Result<Value> {
+    let id = document["id"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("Missing project ID"))?;
+    anyhow::ensure!(base["id"] == document["id"], "Project identity mismatch");
+    let mut db = store.db.lock().unwrap();
+    let tx = db.transaction()?;
+    let current = crate::project_service::load(&tx, id)?;
+    let result = crate::project_service::runtime::execute(
+        serde_json::json!({"action":"merge","base":base,"document":document,"current":current}),
+    )?;
+    anyhow::ensure!(
+        result.get("error").is_none(),
+        "{}",
+        result["error"].as_str().unwrap_or("Project merge failed")
+    );
+    let document = result["document"].clone();
+    crate::project_service::persist(&tx, &current, &document)?;
+    let saved = crate::project_service::load(&tx, id)?;
+    tx.commit()?;
+    store.project_changed(id);
+    Ok(saved)
+}
+
 #[tauri::command]
 pub async fn delete_project(app: tauri::AppHandle, id: String) -> Result<(), String> {
     use tauri::Manager;

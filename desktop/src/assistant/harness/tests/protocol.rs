@@ -181,7 +181,14 @@ async fn openai_stream_pairs_tool_call_ids_and_commits_visible_prefix() {
     )
     .await;
     server.join().unwrap();
-    assert_eq!(result.unwrap(), "先检查。\n\n完成。");
+    assert_eq!(result.unwrap(), "完成。");
+    assert!(
+        host.events
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|(kind, value)| kind == "assistant/partial" && value["delta"] == "先检查。")
+    );
     let events = host.events.lock().unwrap();
     assert!(
         events

@@ -1,3 +1,4 @@
+mod access;
 #[cfg(test)]
 mod audit_tests;
 pub mod blobs;
@@ -36,6 +37,7 @@ pub struct Store {
     pub db: Mutex<Connection>,
     pub files: std::sync::Arc<tokio::sync::RwLock<()>>,
     pub imports: Mutex<()>,
+    pub project_events: tokio::sync::broadcast::Sender<String>,
     pub location: std::sync::RwLock<crate::storage::Location>,
 }
 impl Store {
@@ -59,6 +61,7 @@ impl Store {
         crate::models::init(&db)?;
         crate::model_adapters::prompt_rules::init(&db)?;
         crate::project_storage::init(&db)?;
+        crate::project_service::init(&db)?;
         crate::asset_library::init(&db)?;
         crate::project_storage::direct_references::migrate(&db, &root)?;
         crate::job_recovery::recover_interrupted_submissions(&db)?;
@@ -78,11 +81,15 @@ impl Store {
             db: Mutex::new(db),
             files: Default::default(),
             imports: Mutex::new(()),
+            project_events: tokio::sync::broadcast::channel(64).0,
             location: std::sync::RwLock::new(location),
         })
     }
     pub fn media_root(&self) -> PathBuf {
         self.location.read().unwrap().directory.clone()
+    }
+    pub fn project_changed(&self, id: &str) {
+        let _ = self.project_events.send(id.to_owned());
     }
     pub fn normalize_paths(&self, value: &mut Value) {
         let location = self.location.read().unwrap();

@@ -1,5 +1,4 @@
 import { normalizeTaskPrompt } from "./taskPrompt";
-import { issue } from "../errors/catalog";
 import { materializeFrameCards } from "./frameCards";
 import { resultOrigin } from "./resultOrigin";
 import { uid, type Asset, type Project } from "../model";
@@ -19,25 +18,6 @@ export function saveTask(p: Project, task: ProductionTask): Project {
       },
     },
   };
-}
-export function recoverUploads(p: Project): Project {
-  return Object.values(p.production?.drafts ?? {}).reduce(
-    (next, t) =>
-      ["UPLOADING", "READY", "SUBMITTING"].includes(t.status ?? "")
-        ? saveTask(next, {
-            ...t,
-            status:
-              t.status === "SUBMITTING" ? "UNKNOWN" : "AWAITING_CONFIRMATION",
-            error:
-              t.status === "SUBMITTING"
-                ? JSON.stringify(issue("SUBMISSION_UNKNOWN"))
-                : "上次操作未提交，请确认后继续",
-          })
-        : normalizeTaskPrompt(t) !== t
-          ? saveTask(next, normalizeTaskPrompt(t))
-          : next,
-    p,
-  );
 }
 export function jobStatus(
   p: Project,
