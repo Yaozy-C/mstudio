@@ -31,7 +31,9 @@ fn asset_tool_contract_rejects_all_errors_before_saving_and_corrected_call_commi
             .len(),
         1
     );
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn outbox_claim_survives_restart_but_reserved_remote_jobs_are_never_resubmitted() {
@@ -88,7 +90,9 @@ fn outbox_claim_survives_restart_but_reserved_remote_jobs_are_never_resubmitted(
         )
         .unwrap()
     );
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn generation_duration_is_validated_against_the_selected_model_before_saving() {
@@ -156,5 +160,7 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
         request["uploaded"] = json!([{"assetId":"image","kind":"image","url":url}]);
         assert!(runtime::execute(request).unwrap().get("error").is_some());
     }
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }

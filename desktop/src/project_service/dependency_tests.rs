@@ -56,7 +56,9 @@ fn changed_paragraph_rejects_entire_shot_batch_before_domain_validation() {
         json!({"nodeId":"shot","screenplayId":"script","paragraphId":"paragraph"})
     );
     assert_eq!(load(&store.db.lock().unwrap(), "p").unwrap(), saved);
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn a_new_screenplay_and_shot_can_be_created_in_one_batch() {
@@ -68,7 +70,9 @@ fn a_new_screenplay_and_shot_can_be_created_in_one_batch() {
         json!({"action":"edit","operations":[script(),shot()]}),
     );
     assert_eq!(result["applied"], true, "{result}");
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn deleted_screenplay_is_stale_but_absence_can_be_observed() {
@@ -106,5 +110,7 @@ fn deleted_screenplay_is_stale_but_absence_can_be_observed() {
         json!({"action":"edit","operations":[shot()]}),
     );
     assert_eq!(result["code"], "SCREENPLAY_NOT_FOUND", "{result}");
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }

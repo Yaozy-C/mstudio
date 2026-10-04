@@ -33,7 +33,9 @@ fn native_kernel_executes_without_ui_and_receipt_retry_is_idempotent() {
     assert_eq!(result["outcome"], "committed", "{result}");
     assert_eq!(result, call(&store, &profile, "write", args));
     assert_eq!(load(&store.db.lock().unwrap(), "p").unwrap()["revision"], 1);
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn all_argument_errors_are_reported_before_any_effect() {
@@ -54,7 +56,9 @@ fn all_argument_errors_are_reported_before_any_effect() {
     assert!(paths.contains(&"$.operations[1].duration"), "{result}");
     assert!(paths.contains(&"$.operations[1].text"), "{result}");
     assert_eq!(load(&store.db.lock().unwrap(), "p").unwrap(), doc);
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
 fn unrelated_edits_merge_but_target_conflicts_return_a_narrow_read() {
@@ -85,7 +89,9 @@ fn unrelated_edits_merge_but_target_conflicts_return_a_narrow_read() {
     let failed = call(&store, &profile, "conflict", edit);
     assert_eq!(failed["conflicts"][0]["code"], "TARGET_CHANGED", "{failed}");
     assert_eq!(failed["conflicts"][0]["inspect"], json!({"nodeIds":["a"]}));
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]
@@ -130,5 +136,7 @@ fn supplied_snapshot_observations_and_lost_tool_acknowledgement_survive_replay()
             .unwrap()
             .is_none()
     );
-    std::fs::remove_dir_all(&store.root).unwrap();
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
 }
