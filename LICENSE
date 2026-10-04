@@ -1,21 +1,32 @@
-MIT License
+Mstudio Proprietary License Notice
 
-Copyright (c) 2026 Yaozy-C and Mstudio contributors
+Copyright (c) 2026 Yaozy-C. All rights reserved in project-owned changes
+first published after the licensing transition described below.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Scope and transition
+This notice applies to project-owned changes first published after commit
+f729b0d2f861fbe6e86f4e53e28445e35cb9d1da, beginning with the commit introducing
+this notice. Previously published MIT-licensed code remains available under
+its original terms, reproduced in LICENSE-MIT-LEGACY. This notice does not
+revoke, replace or restrict rights already granted under that license.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Permission for new proprietary material
+Except as permitted by applicable law, the hosting platform's applicable
+terms, or a separate written license from the copyright holder, no permission
+is granted to use, copy, modify, distribute, sublicense or sell the new
+proprietary material. Access to this repository alone is not a commercial
+license. Use and distribution of commercial releases are governed by the
+separate agreement supplied with that release.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. Third-party materials
+Third-party code, external contributions licensed under other terms, libraries,
+assets and trademarks retain their respective owners and licenses. See
+THIRD_PARTY_NOTICES.md and the notices accompanying the actual distribution.
+Nothing in this notice limits rights or obligations under those licenses.
+
+4. Disclaimer
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, AND EXCEPT AS PROVIDED IN
+A SEPARATE APPLICABLE AGREEMENT, THE MATERIAL IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. THE COPYRIGHT HOLDER
+IS NOT LIABLE FOR CLAIMS, DAMAGES OR OTHER LIABILITY ARISING FROM ITS USE.

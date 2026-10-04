@@ -161,4 +161,4 @@ AI 生成仍可能出现物体错误、动作不自然和前后不一致，需�
 
 欢迎通过 [贡献指南](CONTRIBUTING.md) 参与。报告问题时，请提供系统版本、复现步骤和脱敏后的错误信息；安全问题请参见 [安全说明](SECURITY.md)。
 
-本项目采用 [MIT License](LICENSE)。第三方依赖和品牌图标见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+从提交 `f729b0d` 之后首次发布的项目自有新增修改采用[专有许可声明](LICENSE)，商业版本按另行提供的许可协议使用。历史 MIT 代码的授权继续有效，见 [历史 MIT 许可](LICENSE-MIT-LEGACY)。第三方依赖和品牌图标见 [第三方声明](THIRD_PARTY_NOTICES.md)。

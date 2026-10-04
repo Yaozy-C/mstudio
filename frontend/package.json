@@ -39,7 +39,7 @@
     "assistant-stream": "0.3.41",
     "assistant-cloud": "0.1.43"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Yaozy-C/mstudio.git"

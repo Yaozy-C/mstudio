@@ -182,4 +182,4 @@ Start with the [development guide](docs/development.md) and [architecture guide]
 
 ## License
 
-Mstudio is released under the [MIT License](LICENSE). Third-party libraries and brand assets retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Packaging the application does not replace the redistribution obligations of FFmpeg, GStreamer or their dependencies.
+New project-owned changes after commit `f729b0d` are proprietary; see [LICENSE](LICENSE). Commercial releases require a separate license. Previously published MIT code retains its original rights; see [LICENSE-MIT-LEGACY](LICENSE-MIT-LEGACY). Third-party libraries and brand assets retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Packaging the application does not replace the redistribution obligations of FFmpeg, GStreamer or their dependencies.

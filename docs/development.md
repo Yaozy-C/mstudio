@@ -81,7 +81,7 @@ sh scripts/bundle.sh
 
 生成仅支持 Apple Silicon、macOS 26.0 及以上的 `Mstudio.app`。包内携带 FFmpeg、ffprobe、GES 及其传递动态库，用户无需安装 Homebrew。安装版只从 `Contents/Resources/gstreamer/bin` 启动媒体工具；源码开发仍使用本机工具。打包会检查 arm64、动态库闭包、临时签名，并在中文空格路径及无 Homebrew PATH 的环境执行编码、探测、抽帧、应用素材导入和真实 GES 寻帧解码。可单独运行 `python3 scripts/check-macos-bundle.py Mstudio.app`。此验证不替代另一台干净 Mac 上的界面、声音和完整项目验收。
 
-此脚本更新本地生成的应用包，不发布 GitHub Release。仓库的 MIT 许可不替代 FFmpeg、GES 及其传递依赖的许可；发布二进制前需核对实际依赖构建配置、保留其完整许可和所需材料。当前 bundler 复制 SDK 中可用的许可文件，不代表已经收集所有第三方分发材料。
+此脚本更新本地生成的应用包，不发布 GitHub Release。仓库的专有许可声明及历史 MIT 许可不替代 FFmpeg、GES 及其传递依赖的许可；发布二进制前需核对实际依赖构建配置、保留其完整许可和所需材料。当前 bundler 复制 SDK 中可用的许可文件，不代表已经收集所有第三方分发材料。
 
 ## Windows 状态
 
