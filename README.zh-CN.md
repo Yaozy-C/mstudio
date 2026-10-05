@@ -13,11 +13,11 @@ mstudio 是一个由 Agent 参与创作和操作的桌面视频工作室。你�
 
 ## 产品宣传视频
 
-[![观看中文版产品宣传视频：从脑海，到银幕](assets/videos/product-intro-zh-CN.jpg)](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-zh-CN.mp4)
+https://github.com/user-attachments/assets/243d7e80-05c7-4299-9719-ac7fa519b7ac
 
-**[中文视频 · MP4](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-zh-CN.mp4)** · [English version](README.md#product-video)
+**[下载原片 · 1080p / 60 帧](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-zh-CN.mp4)** · [English version](README.md#product-video)
 
-56 秒 · 1080p · 60 帧。点击封面打开或下载视频。这支内测宣传片展示多 Agent、剪辑、字幕、调色与转场，包含真实界面和已标注的动画示意；部分品牌画面使用 AI 生成素材。
+56 秒，点击上方播放器即可在线观看；下载链接提供 1080p / 60 帧原片。这支内测宣传片展示多 Agent、剪辑、字幕、调色与转场，包含真实界面和已标注的动画示意；部分品牌画面使用 AI 生成素材。
 
 ## Agent 怎样参与创作
 

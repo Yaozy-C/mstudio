@@ -18,11 +18,11 @@ We call this **Vibe Video**: direct the work through conversation, see the chang
 
 ## Product video
 
-[![Watch the English product video — From mind to motion](assets/videos/product-intro-en.jpg)](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-en.mp4)
+https://github.com/user-attachments/assets/90fc2a0e-a14b-4b60-bfbe-c38f89823edc
 
-**[English video · MP4](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-en.mp4)** · [中文版](README.zh-CN.md#产品宣传视频)
+**[Download original · 1080p / 60 fps](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-en.mp4)** · [中文版](README.zh-CN.md#产品宣传视频)
 
-56 seconds · 1080p · 60 fps. Click the cover to open or download the video. A private-beta introduction to the Agent team, editing, captions, color and transitions, combining actual interface captures with labeled animated demonstrations. Some brand visuals are AI-generated.
+56 seconds. Play directly above; the download link provides the original 1080p / 60 fps file. A private-beta introduction to the Agent team, editing, captions, color and transitions, combining actual interface captures with labeled animated demonstrations. Some brand visuals are AI-generated.
 
 ## How Agents work
 
