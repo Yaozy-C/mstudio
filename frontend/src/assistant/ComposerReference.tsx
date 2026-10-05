@@ -1,5 +1,6 @@
 import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
+import { isSelectableAsset } from "../workspace/assetLibrary";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { FrameRole } from "../production/frameInputs";
 import { useEffect, useState } from "react";
@@ -68,7 +69,7 @@ export function ComposerReference({
   }, [open, scope]);
   const assets = (scope === "project" ? project.assets : globalAssets).filter(
     (a) =>
-      !a.missing &&
+      (scope === "project" ? isSelectableAsset(a) : !a.missing) &&
       (a.kind === "image" ||
         (!role &&
           (canvas.composerMode === "agent" ||

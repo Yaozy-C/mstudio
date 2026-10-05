@@ -38,10 +38,7 @@ pub fn validate(input: &Value) -> Result<()> {
     // Legacy model presets may contain n; native tool calls determine outputs.
     if let Some(images) = input.get("image") {
         let images = images.as_array().context("image 必须为内嵌图片数组")?;
-        ensure!(
-            !images.is_empty() && images.len() <= 5,
-            "编辑需要 1–5 张参考图片"
-        );
+        ensure!(!images.is_empty(), "编辑至少需要 1 张参考图片");
         let mut total = 0;
         for image in images {
             let url = image.as_str().context("参考图片格式无效")?;
@@ -66,10 +63,19 @@ pub fn turn_input(input: &Value, root: &Path) -> Result<Value> {
         std::fs::write(&path, bytes)?;
         references.push(json!({"type":"localImage","path":path}));
     }
+    let paths: Vec<_> = references.iter().map(|item| item["path"].clone()).collect();
     let prompt = format!(
         "Use the native image_gen.imagegen tool to fulfill the user request. Call it as many times as needed for the requested images. Return separate images when requested. Do not use API keys, HTTP clients, other providers, shell drawing, or SVG. If the tool is unavailable, report the error. The user image description follows:\n{}",
         input["prompt"].as_str().unwrap()
     );
+    let prompt = if paths.is_empty() {
+        prompt
+    } else {
+        format!(
+            "{prompt}\nReference image paths: {}. Include all these paths in referenced_image_paths when calling image_gen.imagegen; do not use num_last_images_to_include or drop references.",
+            json!(paths)
+        )
+    };
     let mut items = vec![json!({"type":"text","text":prompt})];
     items.extend(references);
     Ok(json!(items))
@@ -103,6 +109,32 @@ pub fn image_result(item: &Value) -> Result<Option<Value>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn all_references_are_forwarded_by_path_without_a_five_image_cap() {
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("codex-refs-{}-{stamp}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let input =
+            json!({"prompt":"Use every reference", "image":vec!["data:image/png;base64,YQ==";12]});
+        let items = turn_input(&input, &root).unwrap();
+        assert_eq!(items.as_array().unwrap().len(), 13);
+        assert!(
+            items[0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("reference-11.png")
+        );
+        assert!(
+            items[0]["text"]
+                .as_str()
+                .unwrap()
+                .contains("referenced_image_paths")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn rejects_unsupported_controls_instead_of_silently_ignoring_them() {
         assert!(validate(&json!({"prompt":"hello","model":"codex-image","n":1})).is_ok());

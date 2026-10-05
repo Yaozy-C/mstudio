@@ -167,6 +167,14 @@ export function applyOperations(
         if (!source) throw new Error("任务不存在");
         if (source.lastRegenerationId === actionId) break;
         const task = regenerationDraft(source);
+        if (
+          task.inputs.some((r) =>
+            next.assets.some(
+              (a) => a.id === r.assetId && a.inLibrary === false,
+            ),
+          )
+        )
+          throw new Error("参考素材已从素材库移除，请移除该参考或先恢复素材");
         task.lastRegenerationId = actionId;
         task.status =
           context.turn.models.execution === "automatic" && task.modelId
@@ -187,6 +195,8 @@ export function applyOperations(
       case "append_clip": {
         const asset = next.assets.find((a) => a.id === op.assetId);
         if (!asset) throw new Error("素材不存在");
+        if (asset.inLibrary === false)
+          throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
         next = appendAsset(next, asset);
         const clip = clipPatch(next.clips.at(-1)!, op, next);
         next = {

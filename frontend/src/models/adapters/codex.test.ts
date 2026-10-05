@@ -2,6 +2,18 @@ import { expect, test } from "bun:test";
 import { modelAdapter } from ".";
 import { validateMediaModel } from "../mediaRegistry";
 import { modelLibrary } from "../catalogSpecs";
+test("Codex passes more than five reference images without truncation", () => {
+  const inputs = Array.from({ length: 12 }, () => ({
+    kind: "image" as const,
+    role: "reference" as const,
+    url: "data:image/png;base64,YQ==",
+  }));
+  const result = modelAdapter("codex-image", "codex://local/images").encode({
+    prompt: "Use every reference",
+    inputs,
+  });
+  expect(result.image).toHaveLength(12);
+});
 test("Codex is selectable without an API service and uses Images payload fields", () => {
   const spec = modelLibrary.find((s) => s.id === "codex-image")!;
   expect(spec.endpoint).toBe("codex://local/images");

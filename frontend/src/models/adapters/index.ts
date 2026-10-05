@@ -136,7 +136,6 @@ export function modelAdapter(provider: string, endpoint: string): ModelAdapter {
       "codex-image",
       [{ key: "image", kind: "image", role: "reference", multiple: true }],
       ({ inputs = [] }) => {
-        if (inputs.length > 5) throw new Error("Codex 最多 5 张参考图");
         if (
           inputs.some(
             (i) => !/^data:image\/(png|jpeg|webp);base64,/.test(i.url),

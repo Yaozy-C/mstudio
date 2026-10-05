@@ -4,6 +4,19 @@ import { createTask } from "./tasks";
 import { addTaskReference, supportsReference } from "./referenceSelection";
 import { saveTask } from "./document";
 import { inputFor } from "./request";
+import { collectAsset, uncollectAsset } from "../workspace/assetLibrary";
+
+test("removed assets cannot be picked again until restored, while generated images remain selectable", () => {
+  const p = uncollectAsset(fixture(), "a");
+  const removed = p.assets.find((a) => a.id === "a")!;
+  expect(supportsReference(removed)).toBe(false);
+  expect(() => addTaskReference(createTask(p, [], "image"), removed)).toThrow();
+  expect(p.assets.find((a) => a.id === "a")?.path).toBe("/a");
+  expect(supportsReference({ ...asset("generated"), generated: true })).toBe(
+    true,
+  );
+  expect(supportsReference(collectAsset(p, removed).assets[0])).toBe(true);
+});
 
 test("task reference edits stay local until saved and reach model input", () => {
   const p = fixture(),

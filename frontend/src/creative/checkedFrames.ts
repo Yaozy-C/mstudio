@@ -1,7 +1,11 @@
 import type { Project } from "../model";
 import type { Frame } from "../production/types";
 
-export function checkedFrames(p: Project, raw: unknown): Frame[] {
+export function checkedFrames(
+  p: Project,
+  raw: unknown,
+  existing: Frame[] = [],
+): Frame[] {
   if (!Array.isArray(raw) || raw.length > 50)
     throw new Error("每个镜头最多 50 张分镜图");
   const frames = raw.map((value) => {
@@ -14,6 +18,11 @@ export function checkedFrames(p: Project, raw: unknown): Frame[] {
     )
       throw new Error("分镜图仅支持 assetId、title、prompt");
     const { assetId, title, prompt } = value;
+    if (
+      p.assets.some((a) => a.id === assetId && a.inLibrary === false) &&
+      !existing.some((f) => f.assetId === assetId)
+    )
+      throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
     if (
       typeof assetId !== "string" ||
       !p.assets.some((a) => a.id === assetId && a.kind === "image")

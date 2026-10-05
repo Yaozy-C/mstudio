@@ -12,11 +12,17 @@ const number = (v: unknown): number => {
     throw new Error("数值字段无效");
   return v;
 };
-export function checkedReferences(p: Project, raw: unknown): Reference[] {
+export function checkedReferences(
+  p: Project,
+  raw: unknown,
+  existing: Reference[] = [],
+): Reference[] {
   if (!Array.isArray(raw) || raw.length > 12) throw new Error("参考数量无效");
   const refs = raw.map((r: Record<string, unknown>) => {
     if (!r || typeof r !== "object") throw new Error("参考格式无效");
     const a = p.assets.find((a) => a.id === r.assetId);
+    if (a?.inLibrary === false && !existing.some((ref) => ref.assetId === a.id))
+      throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
     if (!a || a.kind === "audio")
       throw new Error("只能选择项目中的图片或视频参考");
     const out: Reference = { assetId: a.id, purpose: text(r.purpose, 400) };
@@ -33,6 +39,15 @@ export function checkedReferences(p: Project, raw: unknown): Reference[] {
   return refs;
 }
 export function nodeExtras(p: Project, node: BoardNode, op: Op) {
+  const previous = p.nodes.find((n) => n.id === node.id);
+  for (const field of ["assetId", "resultAssetId"] as const) {
+    if (
+      op[field] !== undefined &&
+      op[field] !== previous?.[field] &&
+      p.assets.some((a) => a.id === op[field] && a.inLibrary === false)
+    )
+      throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
+  }
   if (op.assetId !== undefined) {
     const id = text(op.assetId, 100);
     if (node.kind !== "asset" || !p.assets.some((a) => a.id === id))
@@ -40,7 +55,10 @@ export function nodeExtras(p: Project, node: BoardNode, op: Op) {
     node = { ...node, assetId: id };
   }
   if (op.references !== undefined)
-    node = { ...node, references: checkedReferences(p, op.references) };
+    node = {
+      ...node,
+      references: checkedReferences(p, op.references, previous?.references),
+    };
   if (op.resultAssetId !== undefined) {
     const id = text(op.resultAssetId, 100);
     if (!p.assets.some((a) => a.id === id))
@@ -100,7 +118,7 @@ export function creationOperation(p: Project, op: Op): Project | null {
                   : ref,
               )
             : op.references;
-        const incoming = checkedReferences(p, raw);
+        const incoming = checkedReferences(p, raw, node.references);
         if (mode === "replace") references = incoming;
         else {
           const merged = new Map(

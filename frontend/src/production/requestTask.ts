@@ -160,6 +160,15 @@ export function requestTask(
       ...inputs,
     ];
   }
+  if (
+    task.inputs.some((r) =>
+      p.assets.some((a) => a.id === r.assetId && a.inLibrary === false),
+    )
+  )
+    throw failure(
+      "VALIDATION_FAILED",
+      "参考素材已从素材库移除，请移除该参考或先恢复素材",
+    );
   const selectedModelId = turn.models[kind] || "";
   if (
     op.mediaModelId !== undefined &&

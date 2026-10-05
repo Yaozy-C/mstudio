@@ -2,6 +2,7 @@ import { batchSummary } from "../production/batch";
 import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
 import type { Project } from "../model";
+import { isSelectableAsset } from "../workspace/assetLibrary";
 import { promptStale } from "../creative/prompt";
 import { tracksOf } from "../timeline/document";
 import { framesOf } from "../production/frames";
@@ -24,16 +25,16 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     text: value.slice(textOffset, textOffset + max),
     nextTextOffset: value.length > textOffset + max ? textOffset + max : null,
   });
-  const assets = p.assets.map(
-    ({ id, name, kind, duration, width, height }) => ({
+  const assets = p.assets
+    .filter(isSelectableAsset)
+    .map(({ id, name, kind, duration, width, height }) => ({
       id,
       name: name.slice(0, 100),
       kind,
       duration,
       width,
       height,
-    }),
-  );
+    }));
   const creation = p.creation;
   const captions = (p.captions ?? []).map((c) => ({
     ...c,
