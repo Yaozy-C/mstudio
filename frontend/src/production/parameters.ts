@@ -118,6 +118,8 @@ export function taskParameters(
   model: MediaModel,
   value: GenerationParameters = {},
 ): Record<string, unknown> {
+  // Codex manages output settings; inherited task overrides must not block it.
+  if (model.plugin === "codex-image") return {};
   const fields = parameterFields(model);
   const { aspectRatio, resolution, duration, width, height } = value;
   if (aspectRatio && !fields.ratios.includes(aspectRatio))

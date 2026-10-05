@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { X } from "@phosphor-icons/react";
 import type { Project } from "../model";
+import { isSelectableAsset } from "../workspace/assetLibrary";
 import { mediaUrl } from "../bridge";
 import type { MediaModel } from "../models/mediaRegistry";
 import { modelAdapter } from "../models/adapters";
@@ -54,7 +55,9 @@ export function GenerationSettings({
     draft.kind === "video" &&
     adapter?.fields.some((f) => f.role === "first-frame");
   const tail = frames && adapter?.fields.some((f) => f.role === "last-frame");
-  const assets = project.assets.filter((a) => a.kind === "image" && !a.missing);
+  const assets = project.assets.filter(
+    (a) => a.kind === "image" && isSelectableAsset(a),
+  );
   function frame(role: "first-frame" | "last-frame", assetId: string) {
     const inputs = draft.inputs.filter(
       (r) => r.role !== role && (!assetId || r.assetId !== assetId),

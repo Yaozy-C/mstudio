@@ -40,7 +40,7 @@ export const modelLibrary: ModelSpec[] = [
     name: "GPT Image 2.5 · Codex（型号未验证）",
     provider: "OpenAI / 本机 Codex",
     kind: "image",
-    inputs: ["文本", "最多 5 张参考图"],
+    inputs: ["文本", "参考图片"],
     outputs: ["PNG"],
     note: "使用 Codex 原生生图。底层型号由 Codex 决定，无法保证或选择 Image 2.5。",
     source: "https://learn.chatgpt.com/docs/app-server",

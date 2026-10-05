@@ -112,7 +112,9 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
         order,
         duration,
         frames:
-          v.frames === undefined ? old?.frames : checkedFrames(p, v.frames),
+          v.frames === undefined
+            ? old?.frames
+            : checkedFrames(p, v.frames, old?.frames),
         framePrompt:
           v.framePrompt === undefined
             ? old?.framePrompt

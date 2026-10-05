@@ -1,11 +1,12 @@
 import type { Asset } from "../model";
+import { isSelectableAsset } from "../workspace/assetLibrary";
 import { modelAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
 import type { ProductionTask } from "./types";
 
 export function supportsReference(asset: Asset, model?: MediaModel) {
   return (
-    !asset.missing &&
+    isSelectableAsset(asset) &&
     ["image", "video"].includes(asset.kind) &&
     (!model ||
       modelAdapter(model.plugin, model.endpoint).fields.some(

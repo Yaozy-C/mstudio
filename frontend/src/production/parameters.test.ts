@@ -7,6 +7,33 @@ import {
 } from "./parameters";
 import { inputFor } from "./request";
 
+test("Codex submits without inherited output parameters", () => {
+  const m = model("codex://local/images", "image");
+  m.plugin = "codex-image";
+  const result = inputFor(
+    fixture(),
+    {
+      key: "codex-task",
+      kind: "image",
+      mode: "multi",
+      modelId: m.id,
+      prompt: "生成背包产品图",
+      parameters: {
+        aspectRatio: "9:16",
+        resolution: "2K",
+        width: 1024,
+        height: 1536,
+        duration: 8,
+      },
+      inputs: [],
+    },
+    m,
+  );
+  expect(result.prompt).toBe("生成背包产品图");
+  for (const key of ["aspect_ratio", "resolution", "image_size", "duration"])
+    expect(result[key]).toBeUndefined();
+});
+
 test("Gemini overrides preserve the model's other generation settings", () => {
   const m = model("gemini", "image");
   m.plugin = "gemini-native";
