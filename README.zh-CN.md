@@ -11,6 +11,14 @@ mstudio 是一个由 Agent 参与创作和操作的桌面视频工作室。你�
 
 > **平台支持**：macOS 应用包面向 Apple Silicon、macOS 26.0 及以上版本。仓库提供 Windows 10/11 x64 安装包构建流程，仍需实机体验验证；Linux 暂不支持桌面原生预览。构建说明见[开发指南](docs/development.md)，使用条款见[许可声明](LICENSE)。
 
+## 产品宣传视频
+
+[![观看中文版产品宣传视频：从脑海，到银幕](assets/videos/product-intro-zh-CN.jpg)](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-zh-CN.mp4)
+
+**[中文视频 · MP4](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-zh-CN.mp4)** · [English version](README.md#product-video)
+
+56 秒 · 1080p · 60 帧。点击封面打开或下载视频。这支内测宣传片展示多 Agent、剪辑、字幕、调色与转场，包含真实界面和已标注的动画示意；部分品牌画面使用 AI 生成素材。
+
 ## Agent 怎样参与创作
 
 把目标交给**项目统筹**，或用 `$` 直接选择专业角色；用 `@` 引用要处理的脚本、镜头、素材或时间线片段。Agent 读取项目上下文后，通过被授权的工具把修改保存回同一个项目。

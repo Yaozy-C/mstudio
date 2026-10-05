@@ -8,13 +8,21 @@ An Agent-powered desktop video studio. Describe what you want to make, and work 
 
 We call this **Vibe Video**: direct the work through conversation, see the changes in your project, and refine the result together. Bring your own models, configure the creative team, and keep the work on your computer.
 
-[How Agents work](#how-agents-work) · [Quick start](#quick-start) · [Features](#features) · [Development](#development) · [Contributing](CONTRIBUTING.md) · [Report a bug](https://github.com/Yaozy-C/mstudio/issues)
+[Product video](#product-video) · [How Agents work](#how-agents-work) · [Quick start](#quick-start) · [Features](#features) · [Development](#development) · [Contributing](CONTRIBUTING.md) · [Report a bug](https://github.com/Yaozy-C/mstudio/issues)
 
 ![Mstudio Agent workspace beside a script, with a script reference and a focused revision request](assets/screenshots/agent-workspace.jpg)
 
 *Actual desktop interface. A script is attached to an example revision request; the request is an unsent draft, not a completed Agent run.*
 
 > **Platform support.** The macOS bundle targets Apple Silicon and macOS 26.0 or later. The repository includes a Windows 10/11 x64 installer workflow; physical device validation is still required. Linux native desktop preview is not supported. See the [development guide](docs/development.md) for build instructions and platform details, and [LICENSE](LICENSE) for usage terms.
+
+## Product video
+
+[![Watch the English product video — From mind to motion](assets/videos/product-intro-en.jpg)](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-en.mp4)
+
+**[English video · MP4](https://github.com/Yaozy-C/mstudio/releases/download/product-videos-2026-10/mstudio-product-intro-en.mp4)** · [中文版](README.zh-CN.md#产品宣传视频)
+
+56 seconds · 1080p · 60 fps. Click the cover to open or download the video. A private-beta introduction to the Agent team, editing, captions, color and transitions, combining actual interface captures with labeled animated demonstrations. Some brand visuals are AI-generated.
 
 ## How Agents work
 
