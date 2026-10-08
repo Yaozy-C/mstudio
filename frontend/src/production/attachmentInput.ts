@@ -50,7 +50,7 @@ export function attachmentInput(
     ...(asset.kind === "video"
       ? {
           start: clip?.trimIn ?? 0,
-          end: clip?.trimOut ?? Math.min(5, asset.duration),
+          end: clip?.trimOut ?? asset.duration,
         }
       : {}),
   };

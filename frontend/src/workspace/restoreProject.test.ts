@@ -22,10 +22,10 @@ test("restoring snapshots preserves concurrent assets and respects removed asset
     revision: 5,
   };
   const undone = restoreProject(original, deleted);
-  expect(undone.assets).toEqual(original.assets);
-  expect(undone.revision).toBe(6);
+  expect(undone.assets.map((a) => a.id)).toEqual(["b"]);
+  expect(undone.revision).toBe(5);
   const concurrent = { ...undone, assets: [...undone.assets, asset("new")] };
   const redone = restoreProject(deleted, concurrent);
   expect(redone.assets.map((a) => a.id)).toEqual(["b", "new"]);
-  expect(redone.revision).toBe(7);
+  expect(redone.revision).toBe(5);
 });

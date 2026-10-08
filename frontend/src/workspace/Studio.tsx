@@ -13,8 +13,7 @@ import { CreationPanel } from "../creation/CreationPanel";
 import { StudioNodeEditor } from "./StudioNodeEditor";
 import { useAttachments } from "../assistant/useAttachments";
 import { StudioAgent } from "./StudioAgent";
-import { removeNodes } from "../canvas/removeNodes";
-import { uncollectAsset } from "./assetLibrary";
+import { deleteAssets, deleteCanvasNodes } from "./deleteAssets";
 import { useMissingAssets } from "./useMissingAssets";
 import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
@@ -127,10 +126,11 @@ export function Studio({ initial, onBack }: StudioProps) {
         ? canvas.items
             .filter((n) => canvas.selected.includes(n.key))
             .forEach(canvas.remove)
-        : change((p) => ({
-            ...removeNodes(p, nodeId ? [nodeId] : []),
-            clips: p.clips.filter((c) => c.id !== clipId),
-          })),
+        : change((p) =>
+            activeView === "film"
+              ? { ...p, clips: p.clips.filter((c) => c.id !== clipId) }
+              : deleteCanvasNodes(p, nodeId ? [nodeId] : []),
+          ),
   });
   const sidebarWidths = useSidebarWidths({
     ...panels,
@@ -215,7 +215,7 @@ export function Studio({ initial, onBack }: StudioProps) {
               const ref = effectReference(asset, clipId, nodeId);
               requestCreativeTask(effectAgentTask(effect, ref));
             }}
-            onRemove={(a) => change((p) => uncollectAsset(p, a.id))}
+            onRemove={(a) => change((p) => deleteAssets(p, [a.id]))}
             onReference={(a) => {
               if (canvas.task && activeView === "storyboard")
                 canvas.attach({ kind: "asset", id: a.id });

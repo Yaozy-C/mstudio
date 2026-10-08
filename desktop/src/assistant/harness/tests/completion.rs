@@ -228,3 +228,61 @@ async fn final_answer_excludes_progress_but_keeps_the_exact_model_transcript() {
             .any(|(kind, v)| kind == "assistant/partial" && v["delta"] == "正在核对")
     );
 }
+
+#[tokio::test]
+async fn commentary_is_folded_and_final_text_replaces_live_progress() {
+    use rig_core::message::{AdditionalParams, Text};
+    let host = TestHost::default();
+    let model = TestModel::default();
+    model.responses.lock().unwrap().extend([
+        Ok(reply(vec![
+            AssistantContent::text("读取一次"),
+            AssistantContent::ToolCall(call("read", "read", json!({}))),
+        ])),
+        Ok(reply(vec![
+            AssistantContent::Text(Text {
+                text: "准备保存".into(),
+                additional_params: AdditionalParams::from_entries([("phase", json!("commentary"))]),
+            }),
+            AssistantContent::Text(Text {
+                text: "分镜已保存".into(),
+                additional_params: AdditionalParams::from_entries([(
+                    "phase",
+                    json!("final_answer"),
+                )]),
+            }),
+        ])),
+    ]);
+    let answer = run(
+        &model,
+        &profile(),
+        &host,
+        Session::new(vec![Message::user("写分镜")]),
+        false,
+        "",
+    )
+    .await
+    .unwrap();
+    assert_eq!(answer, "分镜已保存");
+    let events = host.events.lock().unwrap();
+    let progress: Vec<_> = events
+        .iter()
+        .filter(|(k, _)| k == "assistant/progress")
+        .map(|(_, v)| v["text"].as_str().unwrap())
+        .collect();
+    assert_eq!(progress, ["读取一次", "准备保存"]);
+    assert_eq!(
+        events
+            .iter()
+            .rev()
+            .find(|(k, _)| k == "assistant/partial")
+            .unwrap()
+            .1["text"],
+        "分镜已保存"
+    );
+    assert!(
+        events
+            .iter()
+            .any(|(k, v)| k == "assistant/partial" && v["text"] == "")
+    );
+}

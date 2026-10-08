@@ -95,8 +95,19 @@ pub fn usage_total(profile: &Profile, usage: &rig_core::completion::Usage) -> u6
     base.max(usage.total_tokens)
 }
 pub fn anchor_request(session: &mut Session, request_header: serde_json::Value, usage: u64) {
+    anchor_prefix(session, request_header, usage, session.messages.len());
+}
+fn anchor_prefix(
+    session: &mut Session,
+    request_header: serde_json::Value,
+    usage: u64,
+    message_count: usize,
+) {
     let tools = &request_header["tools"];
-    let estimated = session.messages.iter().map(tokens).sum::<usize>()
+    let estimated = session.messages[..message_count]
+        .iter()
+        .map(tokens)
+        .sum::<usize>()
         + if tools.as_array().is_none_or(|v| v.is_empty()) {
             0
         } else {
@@ -107,6 +118,45 @@ pub fn anchor_request(session: &mut Session, request_header: serde_json::Value, 
         estimated,
         baseline: estimated.max(usage as usize),
     });
+}
+pub fn anchor_response(
+    session: &mut Session,
+    profile: &Profile,
+    request_header: serde_json::Value,
+    raw: &serde_json::Value,
+    usage: u64,
+) {
+    if profile.adapter != "codex" {
+        anchor_request(session, request_header, usage);
+        return;
+    }
+    let report = &raw["tokenUsage"];
+    if let Some(window) = report["modelContextWindow"].as_u64().filter(|n| *n > 0) {
+        session.provider_context_window = usize::try_from(window).ok();
+    }
+    // Native usage can arrive after a tool result. Anchor to the measured prefix,
+    // and never use cumulative billing totals as the current context size.
+    if let Some(usage) = report["last"]["totalTokens"].as_u64().filter(|n| *n > 0) {
+        let count = raw["contextMessageCount"]
+            .as_u64()
+            .and_then(|n| usize::try_from(n).ok())
+            .unwrap_or(session.messages.len());
+        if count <= session.messages.len() {
+            anchor_prefix(session, request_header, usage, count);
+        }
+    }
+}
+pub fn context_window(session: &Session, profile: &Profile) -> Option<usize> {
+    match (profile.context_window(), session.provider_context_window) {
+        (Some(configured), Some(reported)) => Some(configured.min(reported)),
+        (configured, reported) => configured.or(reported),
+    }
+}
+pub fn input_budget(session: &Session, profile: &Profile) -> Option<usize> {
+    context_window(session, profile).map(|n| n.saturating_mul(4) / 5)
+}
+pub fn over_budget(session: &Session, profile: &Profile, host: &impl Host) -> bool {
+    input_budget(session, profile).is_some_and(|limit| pressure(session, profile, host) > limit)
 }
 pub fn pressure(session: &Session, profile: &Profile, host: &impl Host) -> usize {
     let estimated = raw_pressure(session, host);
@@ -142,19 +192,23 @@ pub fn prune_tool_results(session: &mut Session, host: &impl Host) -> Result<boo
             let UserContent::ToolResult(result) = part else {
                 continue;
             };
+            // Activated instructions must remain readable, not turn into a head/tail fragment.
+            if result.name == "mstudio_read_skill" {
+                continue;
+            }
             for item in &mut result.content {
                 let ToolResultContent::Text(text) = item else {
                     continue;
                 };
-                if text.text.chars().count() <= 6000 {
+                if text.text.chars().count() <= 8192 {
                     continue;
                 }
-                let head: String = text.text.chars().take(2500).collect();
+                let head: String = text.text.chars().take(4096).collect();
                 let tail: String = text
                     .text
                     .chars()
                     .rev()
-                    .take(1000)
+                    .take(1024)
                     .collect::<String>()
                     .chars()
                     .rev()

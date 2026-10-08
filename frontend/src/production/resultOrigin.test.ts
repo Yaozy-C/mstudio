@@ -130,3 +130,18 @@ test("overview generation stays near visible content instead of the remote viewp
   expect(pos.y).toBeLessThan(1000);
   expect(p).toEqual(before);
 });
+
+test("unattached results use the live view without changing the saved project viewport", () => {
+  const p = fixture();
+  p.nodes = [];
+  const before = structuredClone(p);
+  const view = { x: -1800, y: -500, scale: 0.5 };
+  const position = resultPlacement(
+    p,
+    { ...task(), inputs: [] },
+    undefined,
+    view,
+  );
+  expect(position).toEqual({ x: 3664, y: 1160 });
+  expect(p).toEqual(before);
+});

@@ -11,6 +11,7 @@ pub struct ProjectHost {
     pub media_profile: crate::assistant::config::Profile,
     pub token: CancellationToken,
     pub delegation: Option<super::delegation::Context>,
+    pub loaded_tools: super::tool_loading::LoadedTools,
 }
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
@@ -32,7 +33,7 @@ const ACTIONS: &[(&str, &str, &[&str])] = &[
     ),
     (
         "read_skill",
-        "Read an enabled Skill or permitted reference. Batch independent files; follow nextOffset pages sequentially.",
+        "Read the complete text of an enabled Skill or permitted reference. Reuse loaded text; read references for concrete missing information and batch independent reads.",
         &["skill", "path", "offset"],
     ),
     (
@@ -87,23 +88,8 @@ impl ProjectHost {
             .then_some(action)
     }
 }
-impl Host for ProjectHost {
-    fn deadline(&self) -> Option<tokio::time::Instant> {
-        self.tool.as_ref().map(|t| t.deadline)
-    }
-    fn result_turn(&self) -> Option<&str> {
-        self.tool.as_ref().map(|t| t.turn.as_str())
-    }
-    fn token(&self) -> &CancellationToken {
-        &self.token
-    }
-    fn record(&self, kind: &str, value: Value) -> Result<(), String> {
-        match &self.tool {
-            Some(t) => t.record(kind, value),
-            None => Ok(()),
-        }
-    }
-    fn definitions(&self) -> Vec<ToolDefinition> {
+impl ProjectHost {
+    pub(super) fn available_definitions(&self) -> Vec<ToolDefinition> {
         let Some(t) = &self.tool else { return vec![] };
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
@@ -181,6 +167,26 @@ impl Host for ProjectHost {
         }
         definitions
     }
+}
+impl Host for ProjectHost {
+    fn deadline(&self) -> Option<tokio::time::Instant> {
+        self.tool.as_ref().map(|t| t.deadline)
+    }
+    fn result_turn(&self) -> Option<&str> {
+        self.tool.as_ref().map(|t| t.turn.as_str())
+    }
+    fn token(&self) -> &CancellationToken {
+        &self.token
+    }
+    fn record(&self, kind: &str, value: Value) -> Result<(), String> {
+        match &self.tool {
+            Some(t) => t.record(kind, value),
+            None => Ok(()),
+        }
+    }
+    fn definitions(&self) -> Vec<ToolDefinition> {
+        self.loaded_tools.definitions(self.available_definitions())
+    }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         // Project reads are barriers relative to edits; execution is native and transactional.
         // Skill files/history/catalog are independent reads; memory mutations are exclusive.
@@ -207,6 +213,11 @@ impl Host for ProjectHost {
         let Some(t) = &self.tool else {
             return json!({"error":"Tool unavailable", "code":"UNKNOWN_TOOL"});
         };
+        if call.function.name == super::tool_loading::LOAD {
+            return self
+                .loaded_tools
+                .load(&self.available_definitions(), &call.function.arguments);
+        }
         if call.function.name == "mstudio_delegate" {
             return super::delegation::execute(self, call).await;
         }
@@ -228,13 +239,9 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     if let Some(decoded) =
         super::operation_tools::decode(&t.profile, &call.function.name, args.clone())
     {
-        return match decoded {
-            Ok(args) => {
-                t.execute(args, format!("{}:{}", t.turn, call.id.as_str()))
-                    .await
-            }
-            Err(error) => error,
-        };
+        return t
+            .execute(decoded, format!("{}:{}", t.turn, call.id.as_str()))
+            .await;
     }
 
     if call.function.name == "mstudio_await_generation" {

@@ -14,7 +14,7 @@ pub(super) fn http_client(timeout: Duration) -> Result<rig_http::Client, String>
 
 pub fn builder(profile: &Profile, key: &str) -> Result<AgentBuilder, String> {
     if profile.adapter == "codex" {
-        return Ok(AgentBuilder::new(super::codex_provider::CodexModel(
+        return Ok(AgentBuilder::new(super::codex_provider::CodexModel::new(
             profile.model.clone(),
         )));
     }

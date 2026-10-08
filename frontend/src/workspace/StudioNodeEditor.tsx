@@ -1,8 +1,9 @@
 import { CanvasPreview } from "../production/CanvasPreview";
 import { productionItems } from "../production/items";
 import { NodeEditor } from "../canvas/NodeEditor";
+import { canvasViewport } from "../canvas/viewportMemory";
 import type { Asset, BoardNode, Project } from "../model";
-import { removeNodes } from "../canvas/removeNodes";
+import { deleteCanvasNodes } from "./deleteAssets";
 export function StudioNodeEditor({
   node,
   project,
@@ -40,11 +41,11 @@ export function StudioNodeEditor({
     <NodeEditor
       node={node}
       asset={asset}
-      view={project.viewport}
+      view={canvasViewport(project)}
       onClose={close}
       onReference={() => reference(node.id)}
       onRemove={() => {
-        change((p) => removeNodes(p, [node.id]));
+        change((p) => deleteCanvasNodes(p, [node.id]));
         close();
       }}
       onAdd={() => {

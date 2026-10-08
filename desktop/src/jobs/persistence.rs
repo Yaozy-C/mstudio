@@ -64,6 +64,7 @@ fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
     let tx = db.transaction()?;
     let mut value = job.clone();
     store.normalize_paths(&mut value);
+    crate::project_storage::delete_media::sanitize_job(&tx, &mut value)?;
     let id = job["id"].as_str().context("缺少任务 ID")?;
     let sql = if reserve {
         "INSERT OR IGNORE INTO jobs SELECT ?1,?2,'{}' WHERE EXISTS(SELECT 1 FROM projects WHERE id=?2)"
@@ -80,7 +81,7 @@ fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
         crate::database::blobs::collect(&tx)?;
         // Provider facts remain durable even if project rendering fails. Startup
         // recovery and subsequent job updates retry document reconciliation.
-        if let Err(_error) = crate::project_service::production::sync_job(&tx, job) {
+        if let Err(_error) = crate::project_service::production::sync_job(&tx, &value) {
             tracing::warn!(event = "job_reconciliation_failed");
         }
     }

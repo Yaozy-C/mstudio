@@ -145,7 +145,7 @@
 .radix-themes .agent-composer:focus-within {
   border-color: var(--desk-muted);
 }
-.radix-themes :is(.agent-message > small, .agent-model-label, .save-state) {
+.radix-themes :is(.agent-model-label, .save-state) {
   color: var(--desk-muted);
   font-size: 12px;
 }

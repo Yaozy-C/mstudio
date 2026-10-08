@@ -1,33 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fitView } from "../canvas/fit";
 import { useViewport } from "../canvas/useViewport";
 import type { Project } from "../model";
-import type { ChangeProject } from "./types";
 import type { ProductionController } from "./useProduction";
 import { productionShots } from "./items";
 export function useProductionViewport(
   project: Project,
-  change: ChangeProject,
   items: ProductionController["items"],
   focus: ProductionController["focus"],
   shots: ReturnType<typeof productionShots>,
 ) {
   const root = useRef<HTMLDivElement>(null);
-  const storeView = useCallback(
-    (fn: (p: Project) => Project) =>
-      change(
-        (p) => ({
-          ...p,
-          production: { ...p.production, viewport: fn(p).viewport },
-        }),
-        false,
-      ),
-    [change],
-  );
-  const { view, latest, update } = useViewport(
-    project.production?.viewport ?? project.viewport,
-    storeView,
-  );
+  const { view, latest, update, hasSavedView } = useViewport(project);
   const setView = (
     value:
       Project["viewport"] | ((v: Project["viewport"]) => Project["viewport"]),
@@ -96,7 +80,7 @@ export function useProductionViewport(
     });
   }
   useEffect(() => {
-    if (focus.tick || !project.production?.viewport) fit();
+    if (focus.tick || !hasSavedView) fit();
   }, [focus]);
   useEffect(() => {
     const el = root.current!;

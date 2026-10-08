@@ -52,7 +52,17 @@ pub async fn save_project(
     mut document: Value,
     mut base: Value,
 ) -> Result<Value, String> {
-    let _guard = store.files.clone().read_owned().await;
+    let deleting = document["removedAssetIds"] != base["removedAssetIds"];
+    let _read = if deleting {
+        None
+    } else {
+        Some(store.files.clone().read_owned().await)
+    };
+    let _write = if deleting {
+        Some(store.files.clone().write_owned().await)
+    } else {
+        None
+    };
     store.normalize_paths(&mut document);
     store.normalize_paths(&mut base);
     save_merged(&store, document, base).map_err(|e| e.to_string())
@@ -78,6 +88,7 @@ pub fn save_merged(store: &Store, document: Value, base: Value) -> anyhow::Resul
     let saved = crate::project_service::load(&tx, id)?;
     tx.commit()?;
     store.project_changed(id);
+    crate::project_storage::resume_cleanup(&db, &store.media_root())?;
     Ok(saved)
 }
 

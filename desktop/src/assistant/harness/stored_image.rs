@@ -11,6 +11,9 @@ pub fn read(db: &Connection, project: &str, id: &str) -> Value {
         Ok(value["offloads"][index]["image"].take())
     })();
     match result {
+        Ok(image) if image["deleted"] == true => {
+            json!({"error":"图片已删除","code":"IMAGE_DELETED"})
+        }
         Ok(image) => json!({"ok":true,"imageId":id,"__offloadedImage":image}),
         Err(error) => {
             let code = match error.downcast_ref::<rusqlite::Error>() {

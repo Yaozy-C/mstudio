@@ -1,7 +1,11 @@
+import { deleteAssets } from "../workspace/deleteAssets";
+import { removeNodes } from "../canvas/removeNodes";
+import { type ComposerMode, referenceIssue } from "./referenceMode";
 import { changeBatch } from "./batch";
 import { useTaskPanel } from "./useTaskPanel";
 import type { AttachmentDraft } from "../assistant/useAttachments";
 import { resultPlacement } from "./resultPlacement";
+import { canvasViewport } from "../canvas/viewportMemory";
 import { preparePrompt } from "./preparePrompt";
 import { directTask, acceptDirectTask } from "./directTask";
 import { setFrameInput, type FrameRole } from "./frameInputs";
@@ -43,9 +47,7 @@ export function useProduction(
     ],
   );
   const { items, measure } = useCardLayout(rawItems, project);
-  const [composerMode, setComposerMode] = useState<"agent" | "image" | "video">(
-    "agent",
-  );
+  const [composerMode, setComposerMode] = useState<ComposerMode>("agent");
   const [selection, setSelection] = useState<string[]>([]);
   const selected = selection.filter((id) => items.some((n) => n.key === id));
   const key = taskKey([]);
@@ -167,23 +169,22 @@ export function useProduction(
       },
     }));
   const remove = (item: ProductionItem) => {
-    change((p) => ({
-      ...p,
-      production: {
-        ...p.production,
-        hidden: [...(p.production?.hidden ?? []), item.key],
-      },
-    }));
+    change((p) =>
+      item.assetId
+        ? deleteAssets(p, [item.assetId])
+        : removeNodes(p, [item.nodeId ?? item.ownerId ?? ""]),
+    );
     choose(selected.filter((id) => id !== item.key));
   };
   return {
     composerMode,
-    setComposerMode: (mode: "agent" | "image" | "video") => {
+    setComposerMode: (mode: ComposerMode) => {
       setComposerMode(mode);
-      if (mode !== "agent" && mode !== task.kind)
+      const kind = mode === "reference" ? "video" : mode;
+      if (kind !== "agent" && kind !== task.kind)
         update({
-          kind: mode,
-          modelId: get().production?.models?.[mode] ?? "",
+          kind,
+          modelId: get().production?.models?.[kind] ?? "",
           parameters: {},
         });
     },
@@ -194,29 +195,39 @@ export function useProduction(
       const model = media.models.find((m) => m.id === modelId);
       if (!model) throw new Error("请先选择生成模型");
       if (!native) throw new Error("请在桌面应用中生成");
+      const directReference = composerMode === "reference";
+      if (directReference) {
+        const issue = referenceIssue(current, model);
+        if (issue) throw new Error(issue);
+      }
       // Validate before spending a prompt-preparation request.
       directTask(get(), current, model, "validation");
       await flush();
-      const prepared = await preparePrompt(bridge, project.id, {
-        ...current,
-        modelId: model.id,
-      });
+      const prepared = await preparePrompt(
+        bridge,
+        project.id,
+        {
+          ...current,
+          modelId: model.id,
+        },
+        directReference,
+      );
       if (!active() || get().id !== project.id)
         throw new Error("已停止提示词整理，尚未提交生成任务");
-      if (
-        JSON.stringify(get().production?.drafts?.[key] ?? task) !==
-        JSON.stringify(current)
-      )
-        throw new Error("输入内容已变化，请重新发送");
       const bounds = document
         .querySelector(".creation-canvas")
         ?.getBoundingClientRect();
-      prepared.position = resultPlacement(get(), prepared, bounds);
+      prepared.position = resultPlacement(
+        get(),
+        prepared,
+        bounds,
+        canvasViewport(get()),
+      );
       const run = directTask(get(), prepared, model, crypto.randomUUID());
       run.instruction = current.prompt;
       change((p) => acceptDirectTask(p, current, run), false);
       setSelection([]);
-      setComposerMode(run.kind);
+      setComposerMode(directReference ? "reference" : run.kind);
       return run;
     },
     ...taskPanel,

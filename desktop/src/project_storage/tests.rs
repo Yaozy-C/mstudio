@@ -3,11 +3,11 @@ use crate::{jobs, projects::write_document};
 use serde_json::json;
 use std::path::PathBuf;
 
-struct Fixture {
-    store: Store,
+pub(super) struct Fixture {
+    pub(super) store: Store,
 }
 impl Fixture {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let root = std::env::temp_dir().join(format!("mstudio-delete-{}", mstudio::media::id()));
         let store = Store::open(root).unwrap();
         for id in ["one", "two"] {
@@ -26,7 +26,7 @@ impl Fixture {
         std::fs::write(&path, b"fixture").unwrap();
         path
     }
-    fn asset(&self, id: &str) -> Asset {
+    pub(super) fn asset(&self, id: &str) -> Asset {
         let asset = Asset {
             missing: false,
             generated: false,
@@ -49,7 +49,7 @@ impl Fixture {
         save_asset(&self.store, "one", &asset).unwrap();
         asset
     }
-    fn count(&self, table: &str) -> i64 {
+    pub(super) fn count(&self, table: &str) -> i64 {
         self.store
             .db
             .lock()

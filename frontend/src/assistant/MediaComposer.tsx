@@ -1,3 +1,4 @@
+import { referenceIssue } from "../production/referenceMode";
 import { t, useLanguage } from "../i18n";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -37,6 +38,7 @@ export function MediaComposer({
     };
   }, []);
   const task = canvas.task;
+  const referenceMode = canvas.composerMode === "reference";
   const model = canvas.media.models.find(
     (m) =>
       m.id ===
@@ -46,8 +48,8 @@ export function MediaComposer({
   const { dragging, ...files } = useComposerFiles(draft, (refs) =>
     refs.forEach((ref) => canvas.attach(ref)),
   );
-  let issue = "";
-  if (task && model) {
+  let issue = referenceMode && task ? referenceIssue(task, model) : "";
+  if (task && model && !issue) {
     try {
       inputFor(
         project,
@@ -63,6 +65,7 @@ export function MediaComposer({
   async function send() {
     if (blocked || submitting.current) return;
     submitting.current = true;
+    setError("");
     setPreparing(true);
     try {
       await canvas.execute(() => active.current);
@@ -78,7 +81,14 @@ export function MediaComposer({
     <div className="agent-input-area">
       {preparing && (
         <p className="agent-attachment-hint" role="status">
-          {t("正在理解素材并整理提示词…")}
+          {referenceMode
+            ? t("正在提交参考生成…")
+            : t("正在理解素材并整理提示词…")}
+        </p>
+      )}
+      {referenceMode && !preparing && (
+        <p className="agent-attachment-hint">
+          {t("参考视频与描述直接用于生成，可添加图片指定商品或人物。")}
         </p>
       )}
       {issue && (
@@ -117,9 +127,11 @@ export function MediaComposer({
             rows={3}
             value={task?.prompt ?? ""}
             placeholder={
-              task?.kind === "video"
-                ? t("描述动作、运镜和变化…")
-                : t("描述想生成的画面…")
+              referenceMode
+                ? t("描述要保留的动作、运镜，以及要替换的主体或场景…")
+                : task?.kind === "video"
+                  ? t("描述动作、运镜和变化…")
+                  : t("描述想生成的画面…")
             }
             onChange={(e) => canvas.update({ prompt: e.target.value })}
             onKeyDown={(e) => {

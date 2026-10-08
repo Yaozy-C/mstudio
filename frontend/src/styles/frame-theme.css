@@ -80,20 +80,6 @@ input[type="range"] {
   background: transparent;
   font-weight: 600;
 }
-.radix-themes .agent-message.user {
-  background: transparent;
-  border-radius: 0;
-  padding: 10px 0;
-}
-.radix-themes .agent-message {
-  font-size: 14px;
-  line-height: 1.75;
-}
-.radix-themes .agent-message > small {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--desk-muted);
-}
 .radix-themes .agent-context {
   border-left: 3px solid var(--desk-accent);
   margin: 16px 20px;

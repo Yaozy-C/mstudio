@@ -1,4 +1,5 @@
-import { StatusMessage } from "../ui/AsyncState";
+import { CaretRight, ListChecks } from "@phosphor-icons/react";
+import { StatusIcon } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
@@ -13,7 +14,7 @@ type Progress = {
   projectId: string;
   turnId: string;
   kind: string;
-  payload?: { step?: number; action?: string };
+  payload?: { step?: number; action?: string; text?: string };
 };
 const actions: Record<string, string> = {
   inspect: "读取项目",
@@ -47,23 +48,25 @@ export function AgentActivity({
       ({ payload: e }) => {
         if (!active || e.projectId !== projectId || e.turnId !== turnId) return;
         setStatus(
-          e.kind === "turn/end"
-            ? ""
-            : e.kind === "step/start"
-              ? t("第 {v0} 步 · 正在思考", { v0: e.payload?.step })
-              : e.kind === "tool/start"
-                ? actions[e.payload?.action || ""] || t("执行操作")
-                : e.kind === "memory/result"
-                  ? t("整理项目记忆")
-                  : e.kind === "request/retry"
-                    ? t("模型请求暂时失败，正在重试当前请求…")
-                    : e.kind === "request/start"
-                      ? t("正在等待模型响应…")
-                      : e.kind === "assistant/partial"
-                        ? t("正在回答…")
-                        : e.kind === "tool/call"
-                          ? t("正在执行工具…")
-                          : t("核查结果"),
+          e.kind === "assistant/progress"
+            ? e.payload?.text || ""
+            : e.kind === "turn/end"
+              ? ""
+              : e.kind === "step/start"
+                ? t("第 {v0} 步 · 正在思考", { v0: e.payload?.step })
+                : e.kind === "tool/start"
+                  ? actions[e.payload?.action || ""] || t("执行操作")
+                  : e.kind === "memory/result"
+                    ? t("整理项目记忆")
+                    : e.kind === "request/retry"
+                      ? t("模型请求暂时失败，正在重试当前请求…")
+                      : e.kind === "request/start"
+                        ? t("正在等待模型响应…")
+                        : e.kind === "assistant/partial"
+                          ? t("正在回答…")
+                          : e.kind === "tool/call"
+                            ? t("正在执行工具…")
+                            : t("正在处理任务…"),
         );
         if (e.kind !== "assistant/partial") setRevision((v) => v + 1);
       },
@@ -116,11 +119,6 @@ export function AgentActivity({
   }
   return (
     <>
-      {running && !activeChildren.length && (
-        <StatusMessage className="agent-run-status">
-          {status || t("正在处理任务…")}
-        </StatusMessage>
-      )}
       {!open &&
         activeChildren.map((child) => (
           <ChildAgentActivity
@@ -152,64 +150,87 @@ export function AgentActivity({
         onToggle={(e) => setOpen(e.currentTarget.open)}
       >
         <summary>
-          {rows.length
-            ? t("已记录 {v0} 项操作", { v0: rows.length })
-            : running
-              ? t("正在执行")
-              : t("执行记录")}
-        </summary>
-        {error && <ErrorNotice error={error} />}
-        {events
-          .filter((e) => e.kind === "skill/loaded")
-          .map((e) => {
-            const rule = e.payload as { skill: string; path: string };
-            return (
-              <div className="agent-activity-row" key={`skill-${e.seq}`}>
-                <span>{t("已加载规则")}</span>
-                <small>
-                  {rule.skill} · {rule.path}
-                </small>
-              </div>
-            );
-          })}
-        {rows.map((r) => (
-          <div className="agent-activity-row" key={r.id}>
-            <span>
-              {r.agentId
-                ? t("委派给 {v0}", {
-                    v0:
-                      agents.find((agent) => agent.id === r.agentId)?.name ||
-                      r.agentId,
-                  })
-                : r.title
-                    .split("、")
-                    .map((part) => t(part))
-                    .join(" · ")}
+          {running ? (
+            <StatusIcon kind="loading" size={16} />
+          ) : (
+            <ListChecks size={16} aria-hidden="true" />
+          )}
+          <span className="agent-activity-label">
+            {running ? status || t("正在处理任务…") : t("执行过程")}
+          </span>
+          {rows.length > 0 && (
+            <span className="agent-activity-count">
+              {t("{v0} 个步骤", { v0: rows.length })}
             </span>
-            <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
-            {children
-              .filter((c) => c.callId === r.callId)
-              .map((child) => (
-                <ChildAgentActivity
-                  key={child.turnId}
-                  child={child}
-                  name={childName(child.agentId)}
-                  showTools
-                />
-              ))}
-          </div>
-        ))}
-        {children
-          .filter((c) => !rows.some((r) => r.callId === c.callId))
-          .map((child) => (
-            <ChildAgentActivity
-              key={child.turnId}
-              child={child}
-              name={childName(child.agentId)}
-              showTools
-            />
+          )}
+          <CaretRight
+            className="agent-activity-chevron"
+            size={14}
+            aria-hidden="true"
+          />
+        </summary>
+        <div className="agent-activity-content">
+          {error && <ErrorNotice error={error} />}
+          {events
+            .filter((event) => event.kind === "assistant/progress")
+            .sort((a, b) => a.seq - b.seq)
+            .map((event) => (
+              <p className="agent-progress-note" key={event.seq}>
+                {(event.payload as { text: string }).text}
+              </p>
+            ))}
+          {events
+            .filter((e) => e.kind === "skill/loaded")
+            .map((e) => {
+              const rule = e.payload as { skill: string; path: string };
+              return (
+                <div className="agent-activity-row" key={`skill-${e.seq}`}>
+                  <span>{t("已加载规则")}</span>
+                  <small>
+                    {rule.skill} · {rule.path}
+                  </small>
+                </div>
+              );
+            })}
+          {rows.map((r) => (
+            <div className="agent-activity-row" key={r.id}>
+              <span>
+                {r.agentId
+                  ? t("委派给 {v0}", {
+                      v0:
+                        agents.find((agent) => agent.id === r.agentId)?.name ||
+                        r.agentId,
+                    })
+                  : r.title
+                      .split("、")
+                      .map((part) => t(part))
+                      .join(" · ")}
+              </span>
+              <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
+              {children
+                .filter((c) => c.callId === r.callId)
+                .map((child) => (
+                  <ChildAgentActivity
+                    key={child.turnId}
+                    child={child}
+                    name={childName(child.agentId)}
+                    showTools
+                  />
+                ))}
+            </div>
           ))}
-        {!events.length && !error && <p>{t("尚无执行记录。")}</p>}
+          {children
+            .filter((c) => !rows.some((r) => r.callId === c.callId))
+            .map((child) => (
+              <ChildAgentActivity
+                key={child.turnId}
+                child={child}
+                name={childName(child.agentId)}
+                showTools
+              />
+            ))}
+          {!events.length && !error && <p>{t("尚无执行记录。")}</p>}
+        </div>
       </details>
     </>
   );

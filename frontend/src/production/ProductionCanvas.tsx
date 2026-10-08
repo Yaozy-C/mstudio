@@ -35,7 +35,7 @@ export function ProductionCanvas({
     [project.clips],
   );
   const { root, view, latest, setView, size, fit, zoom } =
-    useProductionViewport(project, change, items, focus, shots);
+    useProductionViewport(project, items, focus, shots);
   const visible = visibleItems(items, view, size);
   const areas = useMemo(() => shotAreas(shots, items), [shots, items]);
   const collect = useCallback(

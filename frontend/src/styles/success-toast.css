@@ -1,0 +1,35 @@
+.success-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(440px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 8px;
+  background: var(--desk-surface);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 14%);
+  color: var(--desk-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.success-toast > svg {
+  flex: none;
+  margin-top: 1px;
+}
+.success-toast > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.success-toast button {
+  flex: none;
+  display: flex;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}

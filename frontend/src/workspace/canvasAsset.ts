@@ -1,4 +1,5 @@
 import { uid, type Asset, type BoardNode, type Project } from "../model";
+import { canvasViewport } from "../canvas/viewportMemory";
 export function canvasAsset(asset: Asset, index: number): BoardNode {
   return {
     id: uid(),
@@ -15,13 +16,12 @@ export function canvasNote(
   kind: "text" | "shot",
   text: string,
 ): BoardNode {
+  const view = canvasViewport(project);
   return {
     id: uid(),
     kind,
-    x:
-      (Math.max(330, window.innerWidth / 2 - 180) - project.viewport.x) /
-      project.viewport.scale,
-    y: (160 - project.viewport.y) / project.viewport.scale,
+    x: (Math.max(330, window.innerWidth / 2 - 180) - view.x) / view.scale,
+    y: (160 - view.y) / view.scale,
     title:
       kind === "shot"
         ? `镜头 ${project.nodes.filter((n) => n.kind === "shot").length + 1}`

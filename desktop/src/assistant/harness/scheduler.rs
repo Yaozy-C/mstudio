@@ -83,9 +83,6 @@ async fn group(
                 if call.function.name == "mstudio_delegate" {
                     session.delegation_outcomes.observe(&canonical);
                 }
-                session
-                    .edit_progress
-                    .observe(&call.function.name, &canonical);
                 session.messages.push(message);
             }
             committed += 1;
@@ -98,7 +95,7 @@ async fn group(
     }
     failure.map_or(Ok(()), Err)
 }
-fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
+pub(super) fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
     let Some(definition) = definitions.iter().find(|d| d.name == call.function.name) else {
         return Some(json!({"error":"Tool not available to this Agent", "code":"UNKNOWN_TOOL"}));
     };

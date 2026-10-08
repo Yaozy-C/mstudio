@@ -67,3 +67,18 @@ test("failed request retains delivered prefix and always unsubscribes", async ()
   await expect(next).rejects.toThrow("connection lost");
   expect(f.closed()).toBe(true);
 });
+
+test("clears completed progress before streaming the final answer", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.emit("正在读取参考");
+  expect((await first).value).toBe("正在读取参考");
+  const reset = f.stream.next();
+  f.emit("");
+  expect((await reset).value).toBe("");
+  const final = f.stream.next();
+  f.resolve("已保存分镜");
+  expect((await final).value).toBe("已保存分镜");
+  expect((await f.stream.next()).done).toBe(true);
+});

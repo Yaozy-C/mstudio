@@ -188,6 +188,7 @@ pub(super) fn start_continuation(
     );
     let child = ChildHost {
         inner: ProjectHost {
+            loaded_tools: Default::default(),
             media_profile: route.clone(),
             tool: Some(tool),
             token,

@@ -1,4 +1,8 @@
 mod cleanup;
+pub mod delete_media;
+#[cfg(test)]
+mod delete_media_tests;
+mod deleted_media_events;
 pub mod direct_references;
 mod plan;
 #[cfg(test)]

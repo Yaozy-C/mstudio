@@ -8,6 +8,7 @@ export function resultPlacement(
   project: Project,
   task: ProductionTask,
   size = { width: 900, height: 650 },
+  view = project.production?.viewport ?? project.viewport,
 ) {
   const items = productionItems(project);
   const origin =
@@ -15,7 +16,6 @@ export function resultPlacement(
     items.find(
       (item) => item.kind === "script" && item.ownerId === task.ownerId,
     );
-  const view = project.production?.viewport ?? project.viewport;
   const left = (32 - view.x) / view.scale;
   const top = (80 - view.y) / view.scale;
   const right = (size.width - 32 - view.x) / view.scale;

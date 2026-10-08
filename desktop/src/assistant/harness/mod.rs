@@ -29,6 +29,7 @@ pub(crate) mod session_selection;
 mod stored_image;
 #[cfg(test)]
 mod tests;
+pub(crate) mod tool_loading;
 mod tool_output;
 
 use rig_core::{
@@ -60,4 +61,3 @@ pub use budget::compact_manual;
 pub(crate) use budget::tokens as estimate_message;
 pub use driver::run;
 pub use registry::ProjectHost;
-mod progress;

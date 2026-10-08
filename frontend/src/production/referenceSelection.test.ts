@@ -59,6 +59,52 @@ test("missing, incompatible, short and excessive references are rejected", () =>
   expect([video.role, video.start, video.end]).toEqual([
     "video-reference",
     0,
-    5,
+    20,
   ]);
+});
+
+test("video references retain full duration across pickers and selected canvas items", async () => {
+  const { attachmentInput } = await import("./attachmentInput");
+  const { productionItems } = await import("./items");
+  const p = fixture();
+  p.assets.find((a) => a.id === "v")!.duration = 17.033333;
+  p.nodes.push({
+    id: "video-card",
+    kind: "asset",
+    assetId: "v",
+    title: "Video",
+    text: "",
+    x: 0,
+    y: 0,
+  });
+  const task = createTask(p, [], "video");
+  const attached = attachmentInput(p, { kind: "asset", id: "v" })!;
+  const picked = addTaskReference(
+    task,
+    p.assets.find((a) => a.id === "v")!,
+  ).inputs![0];
+  const selected = createTask(
+    p,
+    productionItems(p).filter((i) => i.nodeId === "video-card"),
+    "video",
+  ).inputs[0];
+  for (const input of [attached, picked, selected]) {
+    expect(input.start).toBe(0);
+    expect(input.end).toBe(17.033333);
+  }
+  const m = model("minimax/h3/reference-to-video");
+  expect(() =>
+    inputFor(p, { ...task, prompt: "Follow reference", inputs: [attached] }, m),
+  ).toThrow("2–15");
+  expect(() =>
+    inputFor(
+      p,
+      {
+        ...task,
+        prompt: "Follow reference",
+        inputs: [{ ...attached, start: 2.1, end: 17 }],
+      },
+      m,
+    ),
+  ).not.toThrow();
 });

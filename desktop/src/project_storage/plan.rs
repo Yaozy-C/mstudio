@@ -45,6 +45,31 @@ fn asset_paths(value: &Value, paths: &mut HashMap<String, HashSet<PathBuf>>) {
 }
 
 pub fn build(db: &Connection, root: &Path, id: &str) -> Result<Plan> {
+    build_selected(db, root, id, None)
+}
+pub fn build_selected(
+    db: &Connection,
+    root: &Path,
+    id: &str,
+    selected: Option<&HashSet<String>>,
+) -> Result<Plan> {
+    let deleted: HashMap<String, HashSet<String>> = db
+        .prepare("SELECT id,document FROM projects")?
+        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?
+        .collect::<rusqlite::Result<Vec<_>>>()?
+        .into_iter()
+        .map(|(id, raw)| {
+            let document: Value = serde_json::from_str(&raw)?;
+            let ids = document["removedAssetIds"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .map(str::to_owned)
+                .collect();
+            Ok((id, ids))
+        })
+        .collect::<Result<_>>()?;
     let mut target = HashSet::new();
     let mut shared = HashSet::new();
     let mut global = db.prepare("SELECT asset_id FROM global_assets")?;
@@ -77,16 +102,27 @@ pub fn build(db: &Connection, root: &Path, id: &str) -> Result<Plan> {
                     .all(|c| c.is_ascii_alphanumeric() || c == b'-')
                 && let Some(path) = managed(root, &Path::new(base).join(request))?
             {
-                job_files.push((owner.clone(), path));
+                let results: Vec<String> = value["assets"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|a| a["id"].as_str().map(str::to_owned))
+                    .collect();
+                let complete = !results.is_empty()
+                    && results.len() >= value["outputCount"].as_u64().unwrap_or(1) as usize;
+                job_files.push((owner.clone(), path, results, complete));
             }
-            references(
-                &value,
-                if owner == id {
-                    &mut target
-                } else {
-                    &mut shared
-                },
-            );
+            let mut refs = HashSet::new();
+            references(&value, &mut refs);
+            if owner == id {
+                target.extend(refs);
+            } else {
+                shared.extend(
+                    refs.into_iter().filter(|asset| {
+                        !deleted.get(&owner).is_some_and(|ids| ids.contains(asset))
+                    }),
+                );
+            }
             asset_paths(&value, &mut paths);
         }
     }
@@ -103,13 +139,16 @@ pub fn build(db: &Connection, root: &Path, id: &str) -> Result<Plan> {
     for row in stmt.query_map([], |r| r.get::<_, String>(0))? {
         asset_paths(&serde_json::from_str::<Value>(&row?)?, &mut paths);
     }
-    target.retain(|asset| !shared.contains(asset));
+    target
+        .retain(|asset| !shared.contains(asset) && selected.is_none_or(|ids| ids.contains(asset)));
     let mut candidates = HashSet::new();
     let mut protected = HashSet::new();
-    for (owner, path) in job_files {
-        if owner == id {
+    for (owner, path, results, complete) in job_files {
+        if owner == id
+            && (selected.is_none() || (complete && results.iter().all(|a| target.contains(a))))
+        {
             candidates.insert(path);
-        } else {
+        } else if owner != id {
             protected.insert(path);
         }
     }
@@ -128,9 +167,9 @@ pub fn build(db: &Connection, root: &Path, id: &str) -> Result<Plan> {
     for row in stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
         let (owner, path) = row?;
         if let Some(path) = managed(root, Path::new(&path))? {
-            if owner == id {
+            if owner == id && selected.is_none() {
                 candidates.insert(path);
-            } else {
+            } else if owner != id {
                 protected.insert(path);
             }
         }

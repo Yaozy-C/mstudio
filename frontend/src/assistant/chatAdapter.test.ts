@@ -175,7 +175,7 @@ test("unselected agent uses coordinator and dismissed context stays absent", asy
 });
 
 test("media modes cannot invoke the Agent or consume its draft/context", async () => {
-  for (const mode of ["image", "video"] as const) {
+  for (const mode of ["image", "video", "reference"] as const) {
     const f = fixture(true);
     f.context.canvas!.composerMode = mode;
     f.thread.composer.setText("直接生成");

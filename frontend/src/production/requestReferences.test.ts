@@ -65,7 +65,7 @@ test("reference image tasks are standalone and require explicit inputs even with
     expect(() => requestTask(p, bad, context)).toThrow();
 });
 
-test("asset generation delivers a reusable library image that can be passed directly to a shot", () => {
+test("asset generation delivers a standalone canvas card and reusable library image", () => {
   const { p, context } = setup();
   let next = requestTask(
     p,
@@ -89,8 +89,16 @@ test("asset generation delivers a reusable library image that can be passed dire
     canvasGeneration: { task: run, x: 30, y: 40 },
   });
   expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBe(true);
-  expect(next.nodes.some((n) => n.assetId === image.id)).toBe(false);
-  expect(productionItems(next).some((n) => n.assetId === image.id)).toBe(false);
+  expect(next.nodes.filter((n) => n.assetId === image.id)).toHaveLength(1);
+  expect(
+    productionItems(next).find((n) => n.assetId === image.id),
+  ).toMatchObject({
+    kind: "reference",
+    x: 30,
+  });
+  expect(next.nodes.find((n) => n.id === "shot")).toEqual(
+    p.nodes.find((n) => n.id === "shot"),
+  );
   next = applyOperations(next, [
     {
       op: "set_references",

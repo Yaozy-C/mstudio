@@ -73,13 +73,13 @@ export function ComposerReference({
       (a.kind === "image" ||
         (!role &&
           (canvas.composerMode === "agent" ||
-            a.kind === "text" ||
-            a.kind === "document" ||
+            (canvas.composerMode !== "reference" &&
+              (a.kind === "text" || a.kind === "document")) ||
             (video && a.kind === "video")))) &&
       a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
   const nodes =
-    !role && scope === "project"
+    !role && canvas.composerMode !== "reference" && scope === "project"
       ? project.nodes.filter(
           (n) =>
             ["note", "text", "shot", "screenplay"].includes(n.kind) &&

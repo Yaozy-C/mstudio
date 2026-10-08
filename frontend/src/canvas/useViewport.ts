@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Project } from "../model";
-import { registerPendingEdit } from "../workspace/pendingEdits";
-export function useViewport(
-  initial: Project["viewport"],
-  onChange: (fn: (p: Project) => Project) => void,
-) {
-  const [view, setView] = useState(initial);
-  const latest = useRef(initial);
+import {
+  rememberedViewport,
+  rememberViewport,
+  persistViewport,
+} from "./viewportMemory";
+export function useViewport(project: Project) {
+  const [restored] = useState(
+    () => rememberedViewport(project.id) ?? project.production?.viewport,
+  );
+  const [view, setView] = useState(restored ?? project.viewport);
+  const latest = useRef(view);
   const dirty = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const frame = useRef(0);
@@ -14,32 +18,28 @@ export function useViewport(
     clearTimeout(timer.current);
     if (dirty.current) {
       dirty.current = false;
-      const viewport = latest.current;
-      onChange((p) => ({ ...p, viewport }));
+      persistViewport(project.id);
     }
-  }, [onChange]);
+  }, [project.id]);
   useEffect(() => {
-    latest.current = initial;
-    setView(initial);
-  }, [initial]);
-  useEffect(() => {
-    const off = registerPendingEdit(flush);
+    window.addEventListener("pagehide", flush);
     return () => {
       flush();
       cancelAnimationFrame(frame.current);
-      off();
+      window.removeEventListener("pagehide", flush);
     };
   }, [flush]);
   const update = useCallback(
     (next: Project["viewport"]) => {
       latest.current = next;
+      rememberViewport(project.id, next);
       dirty.current = true;
       cancelAnimationFrame(frame.current);
       frame.current = requestAnimationFrame(() => setView(latest.current));
       clearTimeout(timer.current);
       timer.current = setTimeout(flush, 180);
     },
-    [flush],
+    [project.id, flush],
   );
-  return { view, latest, update, flush };
+  return { view, latest, update, hasSavedView: !!restored };
 }

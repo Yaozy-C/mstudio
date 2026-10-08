@@ -8,19 +8,19 @@ use serde_json::{Value, json};
 
 pub struct Session {
     pub delegation_outcomes: super::outcomes::Outcomes,
-    pub edit_progress: super::progress::EditProgress,
     pub messages: Vec<Message>,
     pub text: String,
     pub usage_anchor: Option<super::budget::UsageAnchor>,
+    pub provider_context_window: Option<usize>,
 }
 impl Session {
     pub fn new(messages: Vec<Message>) -> Self {
         Self {
             delegation_outcomes: super::outcomes::Outcomes::from_messages(&messages),
-            edit_progress: Default::default(),
             messages,
             text: String::new(),
             usage_anchor: None,
+            provider_context_window: None,
         }
     }
     pub fn append(&mut self, host: &impl Host, message: Message) -> Result<(), String> {
@@ -34,6 +34,19 @@ impl Session {
         }
         self.text.push_str(delta);
         host.record("assistant/partial", json!({"text":self.text,"delta":delta}))
+    }
+    pub fn progress(&mut self, host: &impl Host, text: &str) -> Result<(), String> {
+        if !text.trim().is_empty() {
+            host.record("assistant/progress", json!({"text":text}))?;
+        }
+        self.replace_visible(host, "")
+    }
+    pub fn replace_visible(&mut self, host: &impl Host, text: &str) -> Result<(), String> {
+        if self.text != text {
+            self.text = text.into();
+            host.record("assistant/partial", json!({"text":self.text,"delta":""}))?;
+        }
+        Ok(())
     }
     pub fn replace_range(
         &mut self,

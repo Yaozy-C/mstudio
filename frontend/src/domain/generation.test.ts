@@ -74,3 +74,35 @@ test("partial outputs attach once and background errors retain received media", 
   expect(p.production?.drafts?.run.resultAssetIds).toEqual(["one", "two"]);
   expect(reconcileJob(p, job)).toEqual(p);
 });
+
+test("reconciling completed output repairs a stale receiving task without duplicating media", () => {
+  const task: ProductionTask = {
+    key: "run",
+    kind: "video",
+    mode: "multi",
+    prompt: "Keep",
+    inputs: [],
+    modelId: "video",
+    jobId: "job",
+    submissionId: "job",
+    turnId: "turn",
+    status: "RECEIVING",
+  };
+  const job: GeneratedJob = {
+    id: "job",
+    status: "COMPLETED",
+    outputCount: 1,
+    assets: [asset("done", "video")],
+    shot: { ...fixture().nodes[1], canvasGeneration: { task, x: 0, y: 0 } },
+  };
+  const completed = reconcileJob(saveTask(fixture(), task), job);
+  const stale = saveTask(completed, {
+    ...completed.production!.drafts!.run,
+    status: "RECEIVING",
+  });
+  const repaired = reconcileJob(stale, job);
+  expect(repaired.production!.drafts!.run.status).toBe("COMPLETED");
+  expect(repaired.production!.drafts!.run.resultAssetIds).toEqual(["done"]);
+  expect(repaired.assets).toEqual(completed.assets);
+  expect(repaired.nodes).toEqual(completed.nodes);
+});

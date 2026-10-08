@@ -63,6 +63,13 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 if let Some(fields) = fields {
                     properties.extend(fields);
                 }
+                if kind == "shot" {
+                    parameters["required"].as_array_mut().unwrap().extend([
+                        json!("screenplayId"),
+                        json!("order"),
+                        json!("duration"),
+                    ]);
+                }
                 add(
                     &mut out,
                     &format!("add_{kind}"),

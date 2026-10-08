@@ -90,7 +90,13 @@ pub async fn request(
                     "模型流在完成事件前中断".into(),
                 ));
             }
-            Ok(stream.into())
+            // Rig's stream conversion drops provider-specific terminal metadata.
+            let raw = stream
+                .response
+                .as_ref()
+                .map(|r| r.raw.clone())
+                .unwrap_or_default();
+            Ok(CompletionResponse::from(stream).with_raw(raw))
         };
         let result = tokio::select! {
             result = call => result,

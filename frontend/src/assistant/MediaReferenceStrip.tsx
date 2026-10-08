@@ -1,4 +1,6 @@
+import { isVideoMode } from "../production/referenceMode";
 import { ZoomableImage } from "../workspace/ZoomableImage";
+import { VideoReferenceRange } from "../production/VideoReferenceRange";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
 import { Dialog, Popover } from "@radix-ui/themes";
@@ -57,7 +59,7 @@ export function MediaReferenceStrip(props: {
     );
     canvas.update({
       inputs,
-      ...(canvas.composerMode === "video"
+      ...(isVideoMode(canvas.composerMode)
         ? {
             mode: inputs.some((r) => r.role === "last-frame")
               ? "ends"
@@ -145,6 +147,8 @@ export function MediaReferenceStrip(props: {
                   {ref.role === "edit"
                     ? t("修改这张")
                     : t(roleLabels[ref.role])}
+                  {a?.kind === "video" &&
+                    ` · ${(ref.start ?? 0).toFixed(2)}–${(ref.end ?? a.duration).toFixed(2)}s`}
                 </span>
               )}
               <button
@@ -172,8 +176,21 @@ export function MediaReferenceStrip(props: {
                   </button>
                 </Popover.Trigger>
                 <Popover.Content side="top" className="reference-options-menu">
+                  {a?.kind === "video" && (
+                    <VideoReferenceRange
+                      input={ref}
+                      duration={a.duration}
+                      change={(patch) =>
+                        canvas.update({
+                          inputs: task!.inputs.map((r) =>
+                            r.key === ref.key ? { ...r, ...patch } : r,
+                          ),
+                        })
+                      }
+                    />
+                  )}
                   {a?.kind === "image" &&
-                    (canvas.composerMode === "video"
+                    (isVideoMode(canvas.composerMode)
                       ? (["reference", "first-frame", "last-frame"] as const)
                       : (["reference", "edit"] as const)
                     ).map((role) => (

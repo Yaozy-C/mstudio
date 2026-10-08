@@ -12,15 +12,33 @@ use rig_core::{
 use serde_json::{Value, json};
 use std::time::Duration;
 
+mod connection;
+#[cfg(test)]
+mod continuation_tests;
+#[cfg(test)]
+mod loading_tests;
+mod output;
+#[cfg(test)]
+mod tests;
+mod usage;
+use connection::Connection;
+use std::sync::{Arc, Mutex};
+
 #[derive(Clone)]
-pub struct CodexModel(pub String);
+pub struct CodexModel {
+    model: String,
+    waiting: Arc<Mutex<Option<Connection>>>,
+}
+impl CodexModel {
+    pub fn new(model: String) -> Self {
+        Self {
+            model,
+            waiting: Arc::default(),
+        }
+    }
+}
 fn failure(error: impl std::fmt::Display) -> CompletionError {
-    let message = error.to_string();
-    CompletionError::ProviderError(if message.starts_with("Codex: ") {
-        message
-    } else {
-        format!("Codex: {message}")
-    })
+    CompletionError::ProviderError(format!("Codex: {error}"))
 }
 fn tool_frame(event: &Value, names: &[String]) -> Result<RawStreamingChoice, CompletionError> {
     let params = &event["params"];
@@ -48,206 +66,122 @@ impl CompletionModel for CodexModel {
         while let Some(frame) = stream.next().await {
             frame?;
         }
-        Ok(stream.into())
+        let raw = stream
+            .response
+            .as_ref()
+            .map(|r| r.raw.clone())
+            .unwrap_or_default();
+        Ok(CompletionResponse::from(stream).with_raw(raw))
     }
     async fn stream(
         &self,
         request: CompletionRequest,
     ) -> Result<StreamingCompletionResponse, CompletionError> {
         request.validate_message_content().map_err(failure)?;
-        let names: Vec<_> = request.tools.iter().map(|t| t.name.clone()).collect();
-        let tools: Vec<_> = request
-            .tools
-            .iter()
-            .map(|t| json!({"name":t.name,"description":t.description,"inputSchema":t.parameters}))
-            .collect();
-        let input = super::codex_input::turn_input(&request.chat_history).map_err(failure)?;
-        let setup = async {
-            let mut rpc = Rpc::start_text().await.map_err(failure)?;
-            let account = rpc
-                .call("account/read", json!({"refreshToken":false}))
-                .await
-                .map_err(failure)?;
-            if account["account"]["type"] != "chatgpt" {
-                return Err(failure("请在服务连接中登录 Codex"));
+        let waiting = self.waiting.lock().unwrap().take();
+        let connection = if let Some(mut connection) = waiting {
+            if let Some(result) = connection.continuation(&request) {
+                let result = output::tool_response(result).map_err(failure)?;
+                connection
+                    .rpc
+                    .send(json!({"id":connection.pending["id"],"result":result}))
+                    .await
+                    .map_err(failure)?;
+                connection
+                    .usage
+                    .continue_after_tool(request.chat_history.len());
+                connection.request = request;
+                connection.pending = Value::Null;
+                connection
+            } else {
+                // Context compaction, new input or changed tools starts a new native turn.
+                connection.rpc.stop().await;
+                Connection::start(&self.model, request).await?
             }
-            let started = rpc.call("thread/start", json!({
-                "model":self.0, "ephemeral":true, "cwd":std::env::temp_dir(),
-                "approvalPolicy":"untrusted", "sandbox":"read-only", "dynamicTools":tools,
-                "developerInstructions":format!("You are the conversation model for Mstudio. Continue the provided serialized conversation history. Use only the supplied dynamic tools; Mstudio executes them. Never use built-in tools, shell, filesystem, web, MCP or plugins. Answer the user's latest request. {}", request.preamble.as_deref().unwrap_or("")),
-                "config":{"features":{"shell_tool":false,"apply_patch_freeform":false},"web_search":"disabled"}
-            })).await.map_err(failure)?;
-            let thread = started["thread"]["id"]
-                .as_str()
-                .ok_or_else(|| failure("Codex 未返回会话"))?;
-            rpc.call(
-                "turn/start",
-                json!({"threadId":thread,"input":input,"outputSchema":request.output_schema}),
-            )
-            .await
-            .map_err(failure)?;
-            Ok::<_, CompletionError>(rpc)
+        } else {
+            Connection::start(&self.model, request).await?
         };
-        let rpc = tokio::time::timeout(Duration::from_secs(40), setup)
-            .await
-            .map_err(failure)??;
-        let frames =
-            futures::stream::try_unfold((rpc, 0_u8, names), |(mut rpc, stage, names)| async move {
-                if stage == 2 {
-                    return Ok(None);
-                }
-                if stage == 1 {
+        let owner = self.waiting.clone();
+        let frames = futures::stream::try_unfold(
+            (Some(connection), None::<StreamFinal>, owner),
+            |(mut connection, terminal, owner)| async move {
+                if let Some(terminal) = terminal {
                     return Ok(Some((
-                        RawStreamingChoice::FinalResponse(
-                            StreamFinal::new("codex", Default::default())
-                                .with_finish_reason(FinishReason::ToolCalls),
-                        ),
-                        (rpc, 2, names),
+                        RawStreamingChoice::FinalResponse(terminal),
+                        (None, None, owner),
                     )));
                 }
+                let Some(run) = connection.as_mut() else {
+                    return Ok(None);
+                };
                 loop {
-                    let event = tokio::time::timeout(Duration::from_secs(240), rpc.next())
+                    let event = tokio::time::timeout(Duration::from_secs(240), run.rpc.next())
                         .await
                         .map_err(failure)?
                         .map_err(failure)?;
+                    let params = &event["params"];
+                    // Ignore notifications for unrelated native threads/turns.
+                    if !run.accepts(params) {
+                        continue;
+                    }
                     match event["method"].as_str() {
+                        Some("thread/tokenUsage/updated") => {
+                            run.usage.observe(&params["tokenUsage"]);
+                        }
+                        Some("item/started") if params["item"]["type"] == "agentMessage" => {
+                            if let Some(frame) = output::text_start(&params["item"]) {
+                                return Ok(Some((frame, (connection, None, owner))));
+                            }
+                        }
                         Some("item/agentMessage/delta") => {
-                            if let Some(text) = event["params"]["delta"].as_str() {
+                            if let Some(text) = params["delta"].as_str() {
                                 return Ok(Some((
                                     RawStreamingChoice::Message(text.into()),
-                                    (rpc, 0, names),
+                                    (connection, None, owner),
                                 )));
                             }
                         }
                         Some("item/tool/call") => {
+                            let names = run
+                                .request
+                                .tools
+                                .iter()
+                                .map(|t| t.name.clone())
+                                .collect::<Vec<_>>();
                             let frame = tool_frame(&event, &names)?;
-                            // The outer harness executes this call with its normal permission checks.
-                            // The next request replays history including its tool result in a fresh thread.
-                            rpc.stop().await;
-                            return Ok(Some((frame, (rpc, 1, names))));
+                            if event.get("id").is_none() {
+                                return Err(failure("Codex 工具请求缺少响应 ID"));
+                            }
+                            run.pending = event;
+                            let terminal = run.usage.finish(FinishReason::ToolCalls);
+                            // Keep the native turn waiting; the harness executes and journals the tool.
+                            *owner.lock().unwrap() = connection.take();
+                            return Ok(Some((frame, (None, Some(terminal), owner))));
                         }
                         Some("turn/completed") => {
-                            rpc.stop().await;
-                            if event["params"]["turn"]["status"] != "completed" {
+                            run.rpc.stop().await;
+                            if params["turn"]["status"] != "completed" {
                                 return Err(failure(
-                                    event["params"]["turn"]["error"]["message"]
+                                    params["turn"]["error"]["message"]
                                         .as_str()
-                                        .unwrap_or("Codex 对话未完成，请重试"),
+                                        .unwrap_or("Codex 对话未完成"),
                                 ));
                             }
                             return Ok(Some((
                                 RawStreamingChoice::FinalResponse(
-                                    StreamFinal::new("codex", Default::default())
-                                        .with_finish_reason(FinishReason::Stop),
+                                    run.usage.finish(FinishReason::Stop),
                                 ),
-                                (rpc, 2, names),
+                                (None, None, owner),
                             )));
                         }
-                        _ => rpc.decline(&event).await.map_err(failure)?,
+                        _ => run.rpc.decline(&event).await.map_err(failure)?,
                     }
                 }
-            });
+            },
+        );
         Ok(StreamingCompletionResponse::stream(
             "codex",
             Box::pin(frames),
         ))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[tokio::test]
-    #[ignore = "uses local ChatGPT account for a short text completion"]
-    async fn live_codex_text() {
-        let rows = crate::models::codex_connection::model_list().await.unwrap();
-        let row = rows
-            .iter()
-            .find(|r| r["isDefault"] == true)
-            .unwrap_or(&rows[0]);
-        let model = CodexModel(row["id"].as_str().unwrap().into());
-        let result = model
-            .completion(
-                model
-                    .completion_request("Reply with exactly MSTUDIO_OK. Do not use tools.")
-                    .build(),
-            )
-            .await
-            .unwrap();
-        assert!(
-            serde_json::to_string(&result.choice)
-                .unwrap()
-                .contains("MSTUDIO_OK")
-        );
-    }
-    #[tokio::test]
-    #[ignore = "uses local ChatGPT account to verify one synthetic tool round trip"]
-    async fn live_codex_tool_round_trip() {
-        use rig_core::{
-            completion::ToolDefinition,
-            message::{AssistantContent, Message},
-        };
-        let rows = crate::models::codex_connection::model_list().await.unwrap();
-        let row = rows
-            .iter()
-            .find(|r| r["isDefault"] == true)
-            .unwrap_or(&rows[0]);
-        let model = CodexModel(row["id"].as_str().unwrap().into());
-        let mut request = model.completion_request("Call mstudio_test_echo once with value=hello. After receiving its result, reply with the result verbatim. Do not use any other tools.")
-            .tools(vec![ToolDefinition { name: "mstudio_test_echo".into(), description: "Return the test value".into(), parameters: json!({"type":"object","properties":{"value":{"type":"string"}},"required":["value"],"additionalProperties":false}) }]).build();
-        let first = model.completion(request.clone()).await.unwrap();
-        let call = first
-            .choice
-            .iter()
-            .find_map(|c| {
-                if let AssistantContent::ToolCall(c) = c {
-                    Some(c)
-                } else {
-                    None
-                }
-            })
-            .expect("expected dynamic tool call");
-        assert_eq!(call.function.name, "mstudio_test_echo");
-        let result = Message::tool_result(call.id.clone(), "mstudio_test_echo", "MSTUDIO_TOOL_OK");
-        request.chat_history.push(Message::Assistant {
-            id: None,
-            content: first.choice,
-        });
-        request.chat_history.push(result);
-        let second = model.completion(request).await.unwrap();
-        assert!(
-            serde_json::to_string(&second.choice)
-                .unwrap()
-                .contains("MSTUDIO_TOOL_OK")
-        );
-    }
-    #[tokio::test]
-    #[ignore = "uses local ChatGPT account to verify a synthetic image input"]
-    async fn live_codex_sees_native_image() {
-        use rig_core::message::{ImageMediaType, Message, UserContent};
-        let rows = crate::models::codex_connection::model_list().await.unwrap();
-        let row = rows
-            .iter()
-            .find(|r| r["isDefault"] == true)
-            .unwrap_or(&rows[0]);
-        let model = CodexModel(row["id"].as_str().unwrap().into());
-        let mut request = model.completion_request("Identify the dominant color of the attached image. Reply with one English color word only. Do not use tools.").build();
-        request.chat_history.push(Message::User { content: vec![UserContent::image_base64("iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAb0lEQVR4nO3PAQkAAAyEwO9feoshgnABdLep8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3IPanc8OLDQitxAAAAAElFTkSuQmCC", Some(ImageMediaType::PNG), None)] });
-        let response = model.completion(request).await.unwrap();
-        assert!(
-            serde_json::to_string(&response.choice)
-                .unwrap()
-                .to_lowercase()
-                .contains("red")
-        );
-    }
-    #[test]
-    fn only_registered_dynamic_tools_reach_the_harness() {
-        let mut event =
-            json!({"params":{"tool":"inspect_project","callId":"call-1","arguments":{}}});
-        assert!(tool_frame(&event, &["inspect_project".into()]).is_ok());
-        assert!(tool_frame(&event, &[]).is_err());
-        event["params"]["arguments"] = json!("invalid");
-        assert!(tool_frame(&event, &["inspect_project".into()]).is_err());
     }
 }

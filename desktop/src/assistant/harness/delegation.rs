@@ -110,6 +110,12 @@ impl Host for ChildHost {
         Ok(())
     }
     async fn execute(&self, call: &ToolCall) -> Value {
+        if call.function.name == super::tool_loading::LOAD {
+            return self.inner.loaded_tools.load(
+                &self.inner.available_definitions(),
+                &call.function.arguments,
+            );
+        }
         if call.function.name == "mstudio_read_image" {
             return self.inner.read_image(call).await;
         }

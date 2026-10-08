@@ -31,7 +31,14 @@ pub fn load(db: &Connection, id: &str) -> Result<Value> {
 }
 pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
     let id = before["id"].as_str().context("Missing project ID")?;
-    let mut after = after.clone();
+    let mut after = if before["removedAssetIds"]
+        .as_array()
+        .is_some_and(|ids| !ids.is_empty())
+    {
+        runtime::execute(json!({"action":"prune_deleted","document":after,"current":before}))?["document"].clone()
+    } else {
+        after.clone()
+    };
     after["storageVersion"] = json!(before["storageVersion"].as_u64().unwrap_or(0) + 1);
     let name = after["name"]
         .as_str()
@@ -50,6 +57,7 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         "Project no longer exists"
     );
     crate::project_storage::remember(db, id, &after)?;
+    crate::project_storage::delete_media::commit(db, before, &after)?;
     Ok(())
 }
 pub fn execute(

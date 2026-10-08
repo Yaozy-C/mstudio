@@ -97,17 +97,8 @@
 }
 .message-agent-tag {
   display: inline-block;
-  margin-left: 8px;
-  padding: 2px 6px;
-  background: var(--desk-sidebar);
-  border-radius: 5px;
+  min-width: 0;
   color: var(--desk-text);
-}
-.agent-message .agent-activity {
-  padding: 5px 0;
-  max-height: none;
-  overflow: visible;
-  font-size: 10px;
 }
 .agent-message .agent-run-status {
   padding: 5px 0;

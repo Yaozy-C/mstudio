@@ -55,24 +55,9 @@ export function useRunActions(
           cancel ? "cancel_job" : "refresh_job",
           { id: job.id },
         );
-      canvas.update(
-        {
-          status:
-            ["COMPLETED", "FAILED", "CANCELLED"].includes(job.status) &&
-            (job.outputCount ?? (job.status === "COMPLETED" ? 1 : 0)) >
-              (
-                task.resultAssetIds ??
-                (task.resultAssetId ? [task.resultAssetId] : [])
-              ).length
-              ? "RECEIVING"
-              : job.status,
-          requestId: job.requestId,
-          error: job.error,
-          trackingPaused: false,
-          progress: job.progress,
-        },
-        task.key,
-      );
+      // refresh_job/cancel_job reconcile the project and emit project-changed.
+      // Never overwrite that result with the task captured before the await:
+      // an import may have completed while this request was in flight.
       window.dispatchEvent(
         new CustomEvent("studio-job-submitted", {
           detail: { projectId, id: job.id },

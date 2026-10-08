@@ -11,7 +11,17 @@ pub const TEXT_LIMIT: usize = 1_048_576;
 fn attach(image: &Image, items: &mut Vec<Value>) -> Result<String> {
     let mut item = json!({"type":"image"});
     match &image.data {
-        DocumentSourceKind::Url(url) => item["url"] = json!(url),
+        DocumentSourceKind::Url(url) => {
+            if url.starts_with("file:") {
+                let path = reqwest::Url::parse(url)?
+                    .to_file_path()
+                    .map_err(|_| anyhow::anyhow!("Codex 本地图片路径无效"))?;
+                anyhow::ensure!(path.is_file(), "Codex 本地图片已丢失，请重新选择素材");
+                item = json!({"type":"localImage","path":path});
+            } else {
+                item["url"] = json!(url);
+            }
+        }
         DocumentSourceKind::FileId(id) => item["fileId"] = json!(id),
         DocumentSourceKind::Base64(data) => {
             let mime = image
@@ -96,6 +106,90 @@ pub fn turn_input(messages: &[Message]) -> Result<Value> {
 mod tests {
     use super::*;
     use rig_core::message::ImageMediaType;
+    #[test]
+    fn project_images_use_local_files_and_remote_urls_stay_urls() {
+        let (root, store, mut doc) = super::super::attachment_tests::fixture();
+        let path = root.join("assets/产品 reference #1.png");
+        let file = std::fs::File::create(&path).unwrap();
+        file.set_len(20 * 1024 * 1024).unwrap();
+        let mut asset: mstudio::model::Asset =
+            serde_json::from_value(doc["assets"][0].clone()).unwrap();
+        asset.path = path.to_string_lossy().into();
+        asset.id = "large-local".into();
+        crate::project_storage::save_asset(&store, "p", &asset).unwrap();
+        doc["assets"][0] = json!(asset);
+        let mut profile = super::super::config::Profile {
+            adapter: "codex".into(),
+            ..Default::default()
+        };
+        profile.inputs.image = true;
+        let payload = super::super::attachments::payload(
+            &store,
+            &doc,
+            "检查原图",
+            &[super::super::attachments::Reference {
+                kind: "asset".into(),
+                id: asset.id,
+            }],
+            &profile,
+        )
+        .unwrap();
+        assert!(payload.to_string().len() < 4096);
+        assert!(!payload.to_string().contains("base64"));
+        assert!(
+            !super::super::context::text_only(&payload)
+                .to_string()
+                .contains("file:")
+        );
+        let message = super::super::agent::convert(&json!({"role":"user","content":payload}));
+        let mut tool = Message::tool_result("read-1", "read_image", "reference");
+        if let Message::User { content } = &mut tool
+            && let UserContent::ToolResult(result) = &mut content[0]
+        {
+            result.content.push(ToolResultContent::Image(Image {
+                data: DocumentSourceKind::Url(reqwest::Url::from_file_path(&path).unwrap().into()),
+                ..Default::default()
+            }));
+        }
+        let input = turn_input(&[
+            message,
+            tool,
+            Message::User {
+                content: vec![UserContent::image_url(
+                    "https://example.com/reference.png",
+                    None,
+                    None,
+                )],
+            },
+        ])
+        .unwrap();
+        assert_eq!(
+            input[2],
+            json!({"type":"localImage", "path":path.canonicalize().unwrap()})
+        );
+        assert_eq!(input[4], json!({"type":"localImage", "path":path}));
+        assert_eq!(
+            input[6],
+            json!({"type":"image", "url":"https://example.com/reference.png"})
+        );
+        assert_eq!(std::fs::metadata(&path).unwrap().len(), 20 * 1024 * 1024);
+        std::fs::remove_file(&path).unwrap();
+        let mut images = vec![];
+        assert!(
+            attach(
+                &Image {
+                    data: DocumentSourceKind::Url(
+                        reqwest::Url::from_file_path(&path).unwrap().into()
+                    ),
+                    ..Default::default()
+                },
+                &mut images
+            )
+            .is_err()
+        );
+        drop(store);
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn large_images_are_native_inputs_and_tool_results_keep_their_identity() {
         let data = STANDARD.encode(vec![0_u8; 1_000_000]);

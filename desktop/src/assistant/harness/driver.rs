@@ -35,7 +35,7 @@ pub async fn run_until(
             return Err(crate::app_error::cancelled());
         }
         session.messages.extend(host.injected()?);
-        if budget::pressure(&session, profile, host) > profile.input_budget() {
+        if budget::over_budget(&session, profile, host) {
             budget::recover(model, profile, host, &mut session, false).await?;
         }
 
@@ -92,7 +92,7 @@ async fn step(
     let request_header = budget::header(profile, &request.tools);
     let response = model::request(model, request, host, session, streaming, key, deadline).await?;
     let usage = budget::usage_total(profile, &response.usage);
-    host.record("request/usage", json!({"inputTokens":response.usage.input_tokens,"outputTokens":response.usage.output_tokens,"totalTokens":response.usage.total_tokens,"cachedInputTokens":response.usage.cached_input_tokens}))?;
+    host.record("request/usage", json!({"inputTokens":response.usage.input_tokens,"outputTokens":response.usage.output_tokens,"totalTokens":response.usage.total_tokens,"cachedInputTokens":response.usage.cached_input_tokens,"contextWindow":response.raw["tokenUsage"]["modelContextWindow"],"contextTokens":response.raw["tokenUsage"]["last"]["totalTokens"]}))?;
     let stop_reason = match response.finish_reason() {
         Some(FinishReason::Length) => Some("max-tokens"),
         Some(FinishReason::ContentFilter) => Some("refusal"),
@@ -121,6 +121,38 @@ async fn step(
     if !streaming && !text.is_empty() {
         session.publish(host, &text)?;
     }
+    let final_text: String = response
+        .choice
+        .iter()
+        .filter_map(|c| match c {
+            AssistantContent::Text(t)
+                if t.additional_params
+                    .as_ref()
+                    .and_then(|p| p.get("phase"))
+                    .and_then(|v| v.as_str())
+                    != Some("commentary") =>
+            {
+                Some(t.text.as_str())
+            }
+            _ => None,
+        })
+        .collect();
+    let commentary: String = response
+        .choice
+        .iter()
+        .filter_map(|c| match c {
+            AssistantContent::Text(t)
+                if t.additional_params
+                    .as_ref()
+                    .and_then(|p| p.get("phase"))
+                    .and_then(|v| v.as_str())
+                    == Some("commentary") =>
+            {
+                Some(t.text.as_str())
+            }
+            _ => None,
+        })
+        .collect();
     // Preserve the full typed message: provider signatures, reasoning handles and call IDs.
     session.append(
         host,
@@ -129,7 +161,7 @@ async fn step(
             content: response.choice,
         },
     )?;
-    budget::anchor_request(session, request_header, usage);
+    budget::anchor_response(session, profile, request_header, &response.raw, usage);
     if let Some(reason) = stop_reason {
         host.record("model/stop", json!({"stopReason":reason}))?;
         scheduler::skip(
@@ -147,18 +179,16 @@ async fn step(
         .into());
     }
     if calls.is_empty() {
-        if text.trim().is_empty() {
+        if final_text.trim().is_empty() {
             return Err("模型回答为空".into());
         }
-        return Ok(Some(text));
+        if !commentary.is_empty() {
+            host.record("assistant/progress", json!({"text":commentary}))?;
+        }
+        session.replace_visible(host, &final_text)?;
+        return Ok(Some(final_text));
     }
+    session.progress(host, &text)?;
     scheduler::execute(host, session, &calls).await?;
-    if let Some(error) = session.edit_progress.stalled() {
-        host.record("model/stop", json!({"stopReason":"no-progress"}))?;
-        return Err(error.into());
-    }
-    if !session.text.is_empty() && !session.text.ends_with("\n\n") {
-        session.publish(host, "\n\n")?;
-    }
     Ok(None)
 }

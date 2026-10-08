@@ -1,3 +1,4 @@
+import { isVideoMode, supportsVideoReference } from "./referenceMode";
 import { t, useLanguage } from "../i18n";
 import { selectMediaModel } from "./frameInputs";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import {
   Image,
   VideoCamera,
   ChatCircle,
+  FilmStrip,
   SlidersHorizontal,
 } from "@phosphor-icons/react";
 import type { Project } from "../model";
@@ -33,17 +35,22 @@ export function ComposerGeneration({
   const [paramsOpen, setParamsOpen] = useState(false);
   const mode = canvas.composerMode;
   const task = canvas.task;
-  const kind = mode === "video" ? "video" : "image";
+  const kind = isVideoMode(mode) ? "video" : "image";
   const modelId =
     (mode !== "agent" && task?.modelId) || canvas.modelPreferences[kind] || "";
   const selected = canvas.media.models.find((m) => m.id === modelId);
   const Icon =
-    mode === "image" ? Image : mode === "video" ? VideoCamera : ChatCircle;
+    mode === "reference"
+      ? FilmStrip
+      : mode === "image"
+        ? Image
+        : mode === "video"
+          ? VideoCamera
+          : ChatCircle;
   const params = task?.parameters;
-  const summary =
-    mode === "video"
-      ? `${task?.mode === "ends" ? t("首尾帧") : task?.inputs.some((r) => r.role === "first-frame") ? t("首帧") : t("参考图/视频")} · ${params?.duration ? `${params.duration}s` : t("时长")}`
-      : `${params?.aspectRatio || t("比例")} · ${params?.resolution || (params?.width ? `${params.width}×${params.height}` : t("尺寸"))}`;
+  const summary = isVideoMode(mode)
+    ? `${task?.mode === "ends" ? t("首尾帧") : task?.inputs.some((r) => r.role === "first-frame") ? t("首帧") : t("参考图/视频")} · ${params?.duration ? `${params.duration}s` : t("时长")}`
+    : `${params?.aspectRatio || t("比例")} · ${params?.resolution || (params?.width ? `${params.width}×${params.height}` : t("尺寸"))}`;
   return (
     <>
       <Popover.Root open={modeOpen} onOpenChange={setModeOpen}>
@@ -58,7 +65,9 @@ export function ComposerGeneration({
                   ? "Agent"
                   : mode === "image"
                     ? t("图片")
-                    : t("视频"),
+                    : mode === "reference"
+                      ? t("参考模式")
+                      : t("视频"),
             })}
             title={t("切换创作模式 · {v0}", {
               v0:
@@ -66,7 +75,9 @@ export function ComposerGeneration({
                   ? "Agent"
                   : mode === "image"
                     ? t("图片")
-                    : t("视频"),
+                    : mode === "reference"
+                      ? t("参考模式")
+                      : t("视频"),
             })}
           >
             <Icon size={17} />
@@ -78,7 +89,7 @@ export function ComposerGeneration({
           align="start"
           className="composer-mode-menu"
         >
-          {(["agent", "image", "video"] as const).map((value) => (
+          {(["agent", "image", "video", "reference"] as const).map((value) => (
             <button
               type="button"
               key={value}
@@ -92,6 +103,8 @@ export function ComposerGeneration({
                 <ChatCircle />
               ) : value === "image" ? (
                 <Image />
+              ) : value === "reference" ? (
+                <FilmStrip />
               ) : (
                 <VideoCamera />
               )}
@@ -100,7 +113,9 @@ export function ComposerGeneration({
                   ? "Agent"
                   : value === "image"
                     ? t("图片")
-                    : t("视频")}
+                    : value === "reference"
+                      ? t("参考模式")
+                      : t("视频")}
               </span>
               {mode === value && <Check />}
             </button>
@@ -137,7 +152,9 @@ export function ComposerGeneration({
               inline
               task={{ ...task, modelId }}
               project={project}
-              models={canvas.media.models}
+              models={canvas.media.models.filter(
+                (m) => mode !== "reference" || supportsVideoReference(m),
+              )}
               close={() => setParamsOpen(false)}
               save={(draft) => {
                 canvas.update(draft, draft.key);
@@ -168,7 +185,12 @@ export function ComposerGeneration({
           >
             <strong>{mode === "image" ? t("图片模型") : t("视频模型")}</strong>
             {canvas.media.models
-              .filter((m) => m.kind === kind && m.enabled)
+              .filter(
+                (m) =>
+                  m.kind === kind &&
+                  m.enabled &&
+                  (mode !== "reference" || supportsVideoReference(m)),
+              )
               .map((m) => (
                 <button
                   type="button"
@@ -185,7 +207,12 @@ export function ComposerGeneration({
                   {modelId === m.id && <Check size={16} />}
                 </button>
               ))}
-            {!canvas.media.models.some((m) => m.kind === kind && m.enabled) && (
+            {!canvas.media.models.some(
+              (m) =>
+                m.kind === kind &&
+                m.enabled &&
+                (mode !== "reference" || supportsVideoReference(m)),
+            ) && (
               <p>
                 {t("还没有可用的")}
                 {kind === "image" ? t("图片") : t("视频")}

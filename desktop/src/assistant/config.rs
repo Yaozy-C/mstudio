@@ -76,14 +76,13 @@ pub fn validate(profile: &Profile) -> Result<()> {
 }
 
 impl Profile {
-    pub fn context_window(&self) -> usize {
-        self.context_window.unwrap_or(32_768)
+    pub fn context_window(&self) -> Option<usize> {
+        // Codex reports its effective capacity at runtime. Unknown is not a 32K window.
+        self.context_window
+            .or_else(|| (self.adapter != "codex").then_some(32_768))
     }
-    pub fn input_budget(&self) -> usize {
-        self.context_window().saturating_mul(4) / 5
-    }
-    pub fn retain_budget(&self) -> usize {
-        self.context_window().saturating_mul(16) / 100
+    pub fn input_budget(&self) -> Option<usize> {
+        self.context_window().map(|n| n.saturating_mul(4) / 5)
     }
 }
 

@@ -1,3 +1,4 @@
+import { deleteAssets } from "../workspace/deleteAssets";
 import { DomainError } from "./domainError";
 import { validateShotOrder } from "../creative/operations";
 import { applyOperations } from "../assistant/projectCommands";
@@ -29,6 +30,13 @@ type Request = {
   job: import("../workspace/generatedJobTracking").GeneratedJob;
 };
 function run(input: Request) {
+  if (input.action === "prune_deleted")
+    return {
+      document: deleteAssets(
+        input.document,
+        input.current?.removedAssetIds ?? [],
+      ),
+    };
   if (input.action === "generation_outcomes")
     return {
       generationTasks: generationOutcomes(input.document, input.taskKeys),
@@ -51,11 +59,20 @@ function run(input: Request) {
   if (input.action === "inspect")
     return inspectProject(input.document, input.args);
   if (input.action === "merge") {
-    const document = mergeValue(
-      input.base,
-      input.document,
-      input.current,
-    ) as Project;
+    const ids = [
+      ...new Set([
+        ...(input.document.removedAssetIds ?? []),
+        ...(input.current.removedAssetIds ?? []),
+      ]),
+    ];
+    const document = deleteAssets(
+      mergeValue(
+        deleteAssets(input.base, ids),
+        deleteAssets(input.document, ids),
+        deleteAssets(input.current, ids),
+      ) as Project,
+      ids,
+    );
     validateShotOrder(document);
     document.revision =
       (input.current.revision ?? 0) +

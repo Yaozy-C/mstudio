@@ -34,7 +34,7 @@ export function ErrorNotice({
           {message}
         </strong>
         <span>{recovery}</span>
-        {children}
+        {children && <div className="error-notice-actions">{children}</div>}
       </div>
     );
   const details = [

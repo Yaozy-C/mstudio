@@ -243,5 +243,8 @@
   "已用时 {v0}分 {v1}秒": "Elapsed {v0}m {v1}s",
   "子任务最近 {v0} 项操作": "Recent child operations: {v0}",
   "执行已中断": "Execution interrupted",
-  "执行失败": "Execution failed"
+  "执行失败": "Execution failed",
+  "删除项目素材": "Delete project media",
+  "删除「{name}」及其在画布、分镜和时间线中的引用？未被其他项目或公共素材库使用的文件会永久删除，无法撤销。": "Delete “{name}” and its references on the canvas, in shots and on the timeline? Files not used by another project or the shared library will be permanently deleted. This cannot be undone.",
+  "确认删除": "Confirm deletion"
 }

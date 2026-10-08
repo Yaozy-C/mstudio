@@ -26,6 +26,7 @@ pub(crate) async fn complete_with_resume(
 ) -> Result<String, String> {
     let token = tool.as_ref().map(|t| t.token.clone()).unwrap_or_default();
     let mut host = ProjectHost {
+        loaded_tools: Default::default(),
         media_profile: profile.clone(),
         tool,
         token,

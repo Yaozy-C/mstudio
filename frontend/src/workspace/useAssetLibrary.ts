@@ -91,6 +91,7 @@ export function useAssetLibrary(
     loading,
     error,
     message,
+    dismissMessage: () => setMessage(""),
     retryLabel,
     retry: () => run(lastAction.current ?? refresh, retryLabel),
     upload: () => run(upload, "重新选择文件"),

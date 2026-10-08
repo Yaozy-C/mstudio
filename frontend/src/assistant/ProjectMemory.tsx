@@ -1,3 +1,4 @@
+import { SuccessToast } from "../ui/SuccessToast";
 import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -95,6 +96,7 @@ export function ProjectMemory({
   }
   return (
     <section className="project-memory">
+      <SuccessToast message={notice} onDismiss={() => setNotice("")} />
       <div className="hub-intro">
         <h2>
           {name} · {t("项目记忆")}
@@ -240,7 +242,7 @@ export function ProjectMemory({
             ))}
             <footer className="memory-footer">
               <span role="status">
-                {notice || (dirty ? t("有未保存的修改") : t("仅用于当前项目"))}
+                {dirty ? t("有未保存的修改") : t("仅用于当前项目")}
               </span>
               <button type="button" onClick={() => void load()}>
                 <ArrowClockwise />

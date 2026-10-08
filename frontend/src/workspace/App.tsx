@@ -13,6 +13,7 @@ import { Settings } from "./Settings";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { PublicAssets } from "./PublicAssets";
 import { UserManual } from "../manual/UserManual";
+import { forgetViewport } from "../canvas/viewportMemory";
 export function App() {
   const language = useLanguage();
   const [entries, setEntries] = useState<ProjectEntry[]>([]);
@@ -181,6 +182,7 @@ export function App() {
                         project={p}
                         onDelete={async (id) => {
                           await bridge("delete_project", { id });
+                          forgetViewport(id);
                           localStorage.removeItem(`mstudio-chat-draft:${id}`);
                           setEntries((current) =>
                             current.filter((entry) => entry.id !== id),

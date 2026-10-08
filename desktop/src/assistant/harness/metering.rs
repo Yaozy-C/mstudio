@@ -23,5 +23,5 @@ pub fn record(host: &impl Host, session: &Session, profile: &Profile) -> Result<
         .map(budget::tokens)
         .sum();
     let tools = text_tokens(&serde_json::to_string(&host.definitions()).unwrap_or_default());
-    host.record("context/usage",json!({"estimatedSystemTokens":system,"estimatedMessageTokens":messages,"estimatedToolTokens":tools,"projectedTokens":budget::pressure(session,profile,host),"contextWindow":profile.context_window(),"messageCount":session.messages.len(),"note":"组成是估算，媒体使用估值；费用以 request/usage 和 compaction/end 的供应商用量为准"}))
+    host.record("context/usage",json!({"estimatedSystemTokens":system,"estimatedMessageTokens":messages,"estimatedToolTokens":tools,"projectedTokens":budget::pressure(session,profile,host),"contextWindow":budget::context_window(session,profile),"messageCount":session.messages.len(),"note":"组成是估算，媒体使用估值；费用以 request/usage 和 compaction/end 的供应商用量为准"}))
 }

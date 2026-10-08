@@ -202,6 +202,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let deadline = tool.deadline;
     let child = ChildHost {
         inner: ProjectHost {
+            loaded_tools: Default::default(),
             media_profile: child_profile.clone(),
             token: token.clone(),
             tool: Some(tool),

@@ -39,7 +39,11 @@ impl Rpc {
         }
         Err(last)
     }
-    async fn connect(binary: &std::path::Path, transport: &str, images: bool) -> Result<Self> {
+    pub(crate) async fn connect(
+        binary: &std::path::Path,
+        transport: &str,
+        images: bool,
+    ) -> Result<Self> {
         let mut command = tokio::process::Command::new(binary);
         #[cfg(windows)]
         command.creation_flags(0x08000000);

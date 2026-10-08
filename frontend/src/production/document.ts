@@ -55,6 +55,7 @@ export function receiveProductionResult(
   asset: Asset,
   source: ProductionSource,
 ): Project {
+  if (p.removedAssetIds?.includes(asset.id)) return p;
   asset = {
     ...asset,
     generated: true,
@@ -63,7 +64,10 @@ export function receiveProductionResult(
       : {}),
   };
   const original = source.canvasGeneration!;
-  const { ownerId } = resultOrigin(p, original.task);
+  const ownerId =
+    original.task.generationPurpose === "asset"
+      ? undefined
+      : resultOrigin(p, original.task).ownerId;
   const data = { ...original, task: { ...original.task, ownerId } };
   if (asset.kind !== data.task.kind)
     throw new Error("返回的媒体类型与生成任务不一致");
@@ -86,17 +90,8 @@ export function receiveProductionResult(
         ]),
       ],
     });
-  // Reference assets live in project media. Linking them to shots must not
-  // materialize a canvas node; users can still place them manually.
-  if (data.task.generationPurpose === "asset")
-    return {
-      ...p,
-      assets: p.assets.some((a) => a.id === asset.id)
-        ? p.assets.map((a) =>
-            a.id === asset.id ? { ...a, inLibrary: true } : a,
-          )
-        : [...p.assets, asset],
-    };
+  // Library membership and shot usage are independent of canvas visibility.
+  // Reference generation creates a standalone card like other unassigned media.
   const node = p.nodes.find((n) => n.id === data.task.ownerId && n.shot);
   if (
     node &&

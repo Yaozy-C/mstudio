@@ -15,7 +15,11 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 素材记录与时间线片段分离，片段引用素材 ID 并保存开始位置、裁切、速度和变换。图片作为默认三秒的画面片段插入，可继续调整。拖入指定画面轨道时按项目帧率对齐。
 
+素材文件以 `assets[].id` 标识；素材库收录、画布卡片和镜头使用关系分别存储。角色、产品等独立参考图生成完成后，同时收录到项目素材库并创建独立画布卡片，不能因 `generationPurpose=asset` 跳过展示，也不因当前选中镜头而变为它的产出。镜头的 `references` 表示生成参考，`shot.frames` 表示镜头画面，`shot.takes` 表示可供剪辑的候选版本；这些字段引用素材 ID，同一素材可被多个镜头使用。画布坐标只负责展示，不能据此推断镜头归属。此行为仅用于新接收的生成结果，历史已接收素材保持原状，不自动补建画布卡片。
+
 工程自动保存在 SQLite；导入的媒体、代理、导出和生成文件位于应用数据目录。原始用户文件不因项目删除而被删除。项目操作通过统一变更入口支持当前会话撤销。
+
+画布平移与缩放按项目 ID 保存在本机界面偏好中，不进入工程修改、自动保存或撤销历史。旧工程的 viewport 仅作首次恢复的默认值；当前视角供界面定位新内容，生成任务只保存已计算的位置。节点与卡片布局仍属于工程内容，正常自动保存。
 
 结构化脚本使用 `screenplay` 节点与 `screenplay.script`；镜头通过 `shot.screenplayId` 和 `shot.scriptId` 关联脚本及段落。当前默认配置包含 10 个角色（审片质检默认关闭）和 11 套仓库技能。角色定义见 `frontend/src/agents/defaults.json`，技能注册见 `desktop/src/assistant/skills.rs`；用户保存的配置决定实际可用角色与权限。
 
@@ -25,7 +29,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 生成操作按图片、视频和独立参考资产分支声明。资产角色只暴露要求 `generationPurpose=asset` 和显式 `references` 的独立图片分支；视频组合 `mode` 不出现在图片参数中。模式、引用角色、状态、比例和分辨率使用有限值约束，比例与分辨率集合和模型适配器共用来源。模型说明使用 `inputDescription` 描述输入语义，避免把 `mode:image` 混入工具参数。联合类型校验根据已知判别字段定位分支，一次返回可定位的缺失、非法值和多余字段；不纠正字段别名或静默忽略参数。
 
-Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与条件阅读路径。提示词角色默认加载对应入口与写作指南；动作教程、真人表演、皮肤和环境光线案例按需读取，角色方法不再维护重复副本。公共保存、查询和任务生命周期规则由运行时维护。已有安装通过一次性事务更新已识别的默认正文、移除已合并的默认文档，并保留自定义正文、角色权限和启停状态；剪辑角色已知的强制复查句单独替换为完整回执验收。数据库仍是用户可编辑规则的事实来源。
+Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与条件阅读路径。模型默认只收到技能目录，入口、核心规则、写作指南和其他参考统一按需读取；一次返回所选文档全文，不再按 4,000 字符拆页，也不重复自动注入正文。默认主 Agent 可直接编辑和制作，专业角色按需委派。公共保存、查询和任务生命周期规则由运行时维护。已有安装通过一次性事务更新已识别的默认正文、移除已合并的默认文档，并保留自定义正文、角色权限和启停状态；剪辑角色已知的强制复查句及 Skill 中过期的自动加载说明单独替换。数据库仍是用户可编辑规则的事实来源。
 
 `desktop/src/project_service` 管理读取、授权、对象观察、事务和回执。纯 TypeScript 领域函数在构建时由 Bun 编译为嵌入包，由受内存、栈和时间限制的 QuickJS 执行；不需要随应用携带 Node/Bun，不暴露 DOM、文件或网络。界面与后端复用纯领域规则，不维护 Rust/TypeScript 两套业务实现。已删除 WebView 工具执行事件、回调和 30 秒应答超时路径。
 
@@ -39,7 +43,7 @@ Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与
 
 素材查询按 `jobs.asset/assets` 中的实际素材 ID 关联来源，返回原始提交 Prompt、模型和引用；不解析文件名，不用当前可编辑草稿代替原始请求。只展开请求的文本字段，媒体二进制与服务凭据不进入查询结果；原始文字和批量来源继续分页。
 
-子 Agent 的执行进度以项目、父轮次、调用 ID 和子轮次关联。公开阶段、当前工具、最近进展和耗时投影到 `agent_child_activity`，由真实事件推送刷新，展开后读取该子轮次的操作记录。取消、失败、完成和重启中断分别显示，历史轮次不会跟随同一个子会话的后续任务变化。过程文字保留在会话记录与进度中；完成回传只使用最后一条无工具调用的模型回复，完整结论在输出限额内直接交给父 Agent。
+子 Agent 的执行进度以项目、父轮次、调用 ID 和子轮次关联。公开阶段、当前工具、最近进展和耗时投影到 `agent_child_activity`，由真实事件推送刷新，展开后读取该子轮次的操作记录。取消、失败、完成和重启中断分别显示，历史轮次不会跟随同一个子会话的后续任务变化。过程文字保留在完整模型历史和 `assistant/progress` 记录中，界面可展开查看，不累计拼接进最终回答；完成回传只使用最后一条无工具调用回复的最终文本，排除显式 commentary，完整结论在输出限额内直接交给父 Agent。
 
 编辑回执的 `savedValues[].values` 返回请求字段的实际保存值，包括图片/视频提示词、分镜图和引用；数组返回合并后的完整值。生成回执与查询共用 `taskOutcome`，提供 `status`、实际 `resultAssetIds` 和 `continuation`：等待用户、等待后台、结果可检查、已结束。委派返回时刷新任务事实，长输出卸载保留这些控制字段。Prompt 和 Skill 直接使用完整回执，等待确认时报告用户动作，不重复查询。
 
@@ -57,6 +61,8 @@ Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与
 
 对话支持 OpenAI 兼容、Responses、Gemini、Claude 原生协议及本机 Codex 接入。媒体供应商当前注册 `fal`、`gemini-native`、`http-json`、`codex-image`，对话与媒体能力分别校验。后台按输出索引导入全部结果，部分输出失败可继续收取；不再只导入第一张图片。附件每轮最多 12 个，原始内联素材单个最多 12 MiB、组合序列化后最多 18 MiB；文本文件最多 120 KB。原始音视频与 PDF 的可发送范围由具体模型及接口共同决定，视频抽帧不等于完整视听理解。
 
+Codex 在一次 Mstudio 任务执行中保留原生 app-server 会话与回合。动态工具调用交由宿主执行，文字、图片或错误结果通过同一 RPC 连接返回，模型继续该回合；不再每次工具调用都重启进程、重放历史。新输入、上下文压缩或工具配置变化时，用宿主持久化的当前历史重建原生回合。取消和完成会释放连接，工程写入、回执及恢复仍由 Mstudio 管理。
+
 预览由单个前端会话控制器管理，连续定位和倍速请求合并，播放/暂停保留操作边界。指令应答以状态完成及新目标帧到达为准。轨道名称和画布关联不参与渲染规格比较，连续参数变动停止 120 毫秒后再重建。旧会话的回调不能更新新会话；预处理缓存写入串行，已过期的等待请求跳过。隐藏助手面板时保留任务运行时，但卸载消息视图。
 
 ## Agent 任务上下文
@@ -68,14 +74,14 @@ Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与
 - 普通新消息仅读取同任务、同角色最近一个已完成问答，按 turn ID 配对，不自动重放旧工具过程；显式重试或 `/compact` 才恢复匹配会话。首轮可选上下文预算为模型预算与 12,000 估算 tokens 的较小值；当前用户输入及必要规则不会为了达标而静默删除。恢复会话继续使用已有压缩机制。
 - 保留共享项目约束、格式、版本和对象数量；指定目标后省略无关节点目录。`inspect` 支持 `ids/nodeIds/fields`，返回缺失对象、已省略字段和分页信息。约束截断时通过 `section=creation` 补读；`history` 支持按 `taskId` 查询。
 - 子 Agent 默认 spawn 独立历史；显式 fork 保留父会话已完成历史。子 Agent 工程快照不再重复系统消息中的角色规则与技能目录。
-- 编辑回执返回状态、版本、修改对象/字段及任务信息，不重复整份工程概览。普通结果超过 6,000 Unicode 字符时卸载；受限列表、含 savedClips 的编辑回执、生成等待与委派结果使用 14,000 字符限额。模型收到预览和 `turnId/resultRef`，通过 `mstudio_read_result` 分页回读。精简消息持久化，重启不恢复成庞大原文；图片沿用媒体工具。
+- 编辑回执返回状态、版本、修改对象/字段及任务信息，不重复整份工程概览。普通结果超过 6,000 Unicode 字符时卸载；受限列表、含 savedClips 的编辑回执、生成等待与委派结果使用 14,000 字符限额。Skill 正文不进入通用结果卸载，完整交给模型。模型收到其他长结果的预览和 `turnId/resultRef`，通过 `mstudio_read_result` 分页回读。精简消息持久化，重启不恢复成庞大原文；图片沿用媒体工具。
 - `context/usage` 记录估算组成及供应商校准后的压力；`context/selection` 记录任务和恢复条数。普通请求及摘要分别记录供应商总量和缓存输入。估算不是账单，缺失用量不是零。
 
 测试覆盖角色/任务隔离、连续修改、新任务重试、重置、共享约束、字段读取、Unicode 回读和跨项目拒绝。此次优化不改变原始媒体附件策略，也不承诺固定比例的 token 节省。
 
 参考：[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)、[Deep Agents](https://www.langchain.com/blog/context-management-for-deepagents)。
 
-编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。宿主按本轮实际提供的对象保存内容哈希，忽略节点布局与任务执行遥测；不再要求模型携带工程 revision。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。同一子任务连续三次修改遇到相同错误会停止重复尝试，读取操作不会清零计数，成功修改才清零。通用执行循环不设固定轮数上限，也不按媒体任务数量扩容；工具执行后继续请求模型，直到正常完成、取消或发生错误。
+编辑批次在副本上执行，镜头顺序唯一性在整批结束时校验，再一次保存；失败不提交中间结果。宿主按本轮实际提供的对象保存内容哈希，忽略节点布局与任务执行遥测；不再要求模型携带工程 revision。`inspect nodeIds` 的 `fields` 真正筛选内容，排序读取使用 `title/shot.order/shot.duration`，方案镜头目录使用 `shots`。普通工具错误交给模型纠正，不再按相同错误计数强制终止。通用执行循环不设固定轮数上限，也不按媒体任务数量扩容；工具执行后继续请求模型，直到正常完成、取消、达到整轮时限或发生不可恢复错误。
 
 ### GES Canvas 预览
 
@@ -131,9 +137,10 @@ Agent history has three lifetimes, implemented by `database/history_cleanup.rs`:
   tasks and current child continuations retain recovery state.
 
 `turn/usage` aggregates provider token counts and request/compaction counts per turn.
-Transient progress, skill-read notifications and startup notifications are live-only,
+Transient stream progress, skill-read notifications and startup notifications are live-only,
 classified in `event_retention.rs`; stream fragments still update the assistant-message
-crash checkpoint. Unknown event kinds remain durable. Active parent/child runs are
+crash checkpoint. Settled `assistant/progress` notes are durable and appear in expandable
+execution details. Unknown event kinds remain durable. Active parent/child runs are
 excluded from cleanup. Cleanup runs at startup and hourly while the app remains open;
 settlement immediately folds recovery state. Referenced media use the existing blob
 ownership and post-commit file cleanup. Migration v4 compacts existing data without a

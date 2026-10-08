@@ -1,4 +1,5 @@
-import { AsyncButton, LoadingState, StatusMessage } from "../ui/AsyncState";
+import { SuccessToast } from "../ui/SuccessToast";
+import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { useState } from "react";
 import { AlertDialog } from "@radix-ui/themes";
 import { Images, Plus, Trash, Eye } from "@phosphor-icons/react";
@@ -88,9 +89,10 @@ export function PublicAssets() {
           </button>
         </ErrorNotice>
       )}
-      {library.message && (
-        <StatusMessage kind="success">{library.message}</StatusMessage>
-      )}
+      <SuccessToast
+        message={library.message}
+        onDismiss={library.dismissMessage}
+      />
       {library.loading && !library.assets.length && (
         <LoadingState label={t("正在读取公共素材…")} />
       )}

@@ -1,3 +1,4 @@
+import { SuccessToast } from "../ui/SuccessToast";
 import { ActionButton } from "../ui/ActionButton";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -31,6 +32,7 @@ export function SpeechPanel({
   );
   const [captions, setCaptions] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<unknown>();
   useEffect(() => {
@@ -55,6 +57,7 @@ export function SpeechPanel({
   async function generate() {
     if (busy || !voice || !native) return;
     setError(undefined);
+    setSuccess("");
     const lines = text
       .split(/\n+/)
       .map((s) => s.trim())
@@ -104,7 +107,8 @@ export function SpeechPanel({
         });
         start += asset.duration;
       }
-      setMessage(t("已加入时间线；字幕按每段实际配音时长对齐，可继续调整。"));
+      setMessage("");
+      setSuccess(t("已加入时间线；字幕按每段实际配音时长对齐，可继续调整。"));
     } catch (e) {
       setError(e);
       setMessage(t("已完成的配音片段保留在时间线。"));
@@ -114,6 +118,7 @@ export function SpeechPanel({
   }
   return (
     <div className="creation-form speech-form" aria-busy={busy}>
+      <SuccessToast message={success} onDismiss={() => setSuccess("")} />
       <div className="speech-source">
         <strong>{t("系统配音")}</strong>
         <span>{/Win/.test(navigator.platform) ? "Windows" : "macOS"}</span>

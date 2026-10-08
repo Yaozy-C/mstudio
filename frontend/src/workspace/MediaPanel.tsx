@@ -1,3 +1,4 @@
+import { SuccessToast } from "../ui/SuccessToast";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import {
@@ -174,11 +175,10 @@ export function MediaPanel({
               </button>
             </ErrorNotice>
           )}
-          {library.message && (
-            <p className="media-scope-hint" role="status">
-              {library.message}
-            </p>
-          )}
+          <SuccessToast
+            message={library.message}
+            onDismiss={library.dismissMessage}
+          />
           <div className="media-section-label">
             {active.label} <span>{active.assets.length}</span>
           </div>
@@ -228,7 +228,7 @@ export function MediaPanel({
                   {
                     label:
                       scope === "project"
-                        ? t("从项目素材移除")
+                        ? t("删除项目素材")
                         : t("从公共素材移除"),
                     danger: true,
                     disabled,

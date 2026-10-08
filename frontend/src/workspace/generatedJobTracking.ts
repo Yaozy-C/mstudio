@@ -33,7 +33,11 @@ export function needsTracking(job: GeneratedJob, project: Project) {
           (
             task.resultAssetIds ??
             (task.resultAssetId ? [task.resultAssetId] : [])
-          ).length < terminalOutputCount(job)
+          ).length +
+            (job.assets ?? (job.asset ? [job.asset] : [])).filter((a) =>
+              project.removedAssetIds?.includes(a.id),
+            ).length <
+            terminalOutputCount(job)
       : (job.assets?.length ?? (job.asset ? 1 : 0)) < terminalOutputCount(job);
   return !!task && task.status !== job.status;
 }

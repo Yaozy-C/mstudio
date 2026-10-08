@@ -11,7 +11,7 @@ pub async fn recover(
     prune_tool_results(session, host)?;
     let result = if overflow {
         compact_manual(model, profile, host, session).await
-    } else if pressure(session, profile, host) > profile.input_budget() {
+    } else if over_budget(session, profile, host) {
         compact(model, profile, host, session).await
     } else {
         Ok(false)
@@ -79,7 +79,8 @@ pub async fn compact(
     host: &impl Host,
     session: &mut Session,
 ) -> Result<bool, String> {
-    compact_with_retain(model, profile, host, session, profile.retain_budget()).await
+    let retain = context_window(session, profile).map_or(0, |n| n.saturating_mul(16) / 100);
+    compact_with_retain(model, profile, host, session, retain).await
 }
 pub async fn compact_manual(
     model: &impl CompletionModel,
@@ -98,8 +99,8 @@ async fn compact_with_retain(
 ) -> Result<bool, String> {
     let Some(end) = compact_end(
         &session.messages,
-        profile
-            .input_budget()
+        input_budget(session, profile)
+            .unwrap_or(usize::MAX)
             .saturating_sub(tokens(&session.messages[0])),
         retain,
     ) else {

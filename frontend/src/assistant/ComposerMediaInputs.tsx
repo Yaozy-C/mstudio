@@ -1,3 +1,4 @@
+import { isVideoMode } from "../production/referenceMode";
 import { t, useLanguage } from "../i18n";
 import { MediaReferenceStrip } from "./MediaReferenceStrip";
 import { X, ArrowsLeftRight } from "@phosphor-icons/react";
@@ -20,10 +21,10 @@ export function ComposerMediaInputs(props: {
       m.id ===
       (task?.modelId ||
         canvas.modelPreferences[
-          canvas.composerMode === "video" ? "video" : "image"
+          isVideoMode(canvas.composerMode) ? "video" : "image"
         ]),
   );
-  const roles = canvas.composerMode === "video" ? frameRoles(model) : [];
+  const roles = isVideoMode(canvas.composerMode) ? frameRoles(model) : [];
   if (!task || !roles.length) return <MediaReferenceStrip {...props} />;
   return (
     <>

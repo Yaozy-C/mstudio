@@ -1,3 +1,4 @@
+import { referenceIssue } from "./referenceMode";
 import type { ProductionTask } from "./types";
 import type { bridge } from "../bridge";
 
@@ -5,7 +6,13 @@ export async function preparePrompt(
   invoke: typeof bridge,
   projectId: string,
   draft: ProductionTask,
+  directReference = false,
 ): Promise<ProductionTask> {
+  if (directReference) {
+    const issue = referenceIssue(draft);
+    if (issue) throw new Error(issue);
+    return structuredClone(draft);
+  }
   const inputs = draft.inputs.filter((r) => r.role !== "script");
   const prepared = await invoke<{
     prompt: string;

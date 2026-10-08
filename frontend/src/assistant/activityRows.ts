@@ -12,6 +12,7 @@ const actions: Record<string, string> = {
   read_skill: "读取创作规则",
   history: "查阅对话",
   models: "检查可用模型",
+  load_tools: "加载所需工具",
   read_image: "读取素材画面",
   reopen_image: "重新读取素材画面",
   read_result: "读取完整结果",
