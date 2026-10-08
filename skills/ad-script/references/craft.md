@@ -1,74 +1,50 @@
 # Craft and revision
 
-The following are optional tools; not every piece needs a surprising ending.
+Optional tools for the direction at hand. Not every piece needs a surprise ending.
 
 ## Write for viewing pleasure
 
 | Direction | Writing focus | Common mistakes |
 |---|---|---|
-| Satisfaction, process, ASMR | Initial state, action rhythm and change, tactile sound, completed state; the payoff can keep happening | Listing objects only; using gentle BGM instead of sound design |
-| Demonstration, test, tutorial | A question worth answering, clear operation, readable result; the conclusion matches the scale of the demonstration | Substituting slogans for proof; fabricating capabilities |
-| Life record, UGC | How a specific person chooses and uses it; real details, natural speech, a personal view | Labelling a generic actor with a profession; reading out selling points |
-| Comedy, character story | What the character wants, the situation, reactions, relationships and development | Manufacturing fake trouble; delaying an answer the audience has already guessed |
-| Emotional piece | Relationships revealed by behaviour, the cost of a choice, the weight of a small action | Declaring the emotion in narration first, then matching it with staged shots |
-| Visual discovery, stylised ad | Perceptible rules, anomalies, change and revelation; image and sound carry the meaning | Adding only camera moves and transitions; pasting the product on at the end |
+| Satisfaction, process, ASMR | Initial state, action rhythm and change, tactile sound, completed state; the payoff can keep arriving | Listing objects; a gentle music bed instead of sound design |
+| Demonstration, test, tutorial | A question worth answering, a clear operation, a readable result; the conclusion matches the scale of what was shown | Slogans instead of proof; capabilities the material does not support |
+| Life record, UGC | How a specific person chooses and uses the product; real details, natural speech, a personal view | A generic actor labelled with a profession; selling points read aloud |
+| Comedy, character story | What the character wants, the situation, reactions, relationships, development | Manufactured trouble; delaying an answer the audience already guessed |
+| Emotional piece | Relationships revealed through behaviour, the cost of a choice, the weight of a small action | Declaring the emotion in narration, then matching it with staged shots |
+| Visual discovery, stylised ad | Perceptible rules, anomalies, change and revelation; image and sound carry the meaning | Only camera moves and transitions; the product pasted on at the end |
 
-Choose details that carry meaning; do not pile up adjectives. An action can convey both character and product; a simple process can gain style from composition, the choice of actions and sound. A metaphor may be unrealistic, but it must not masquerade as a demonstration of product performance.
+Choose details that carry meaning instead of piling up adjectives. One action can convey both character and product; a simple process gains style from composition, the choice of actions and sound. A metaphor may be unrealistic, but it must never pose as a demonstration of product performance.
 
 ## An idea is not a title
 
-When comparing candidates, you can pin one down in a few sentences: "At the start we see/hear ___; then ___, so/but/while ___; finally ___. The audience gets its payoff at ___; the product is understood at ___."
+To pin a vague concept down, write it in a few sentences: "At the start we see or hear ___; then ___, so / but / while ___; finally ___. The audience gets its payoff at ___; the product is understood at ___."
 
-This is a tool for clarifying a vague concept, not a uniform story structure. A process piece can be organised by sensory change; an explanatory piece can give the answer first and then demonstrate; a story can skip the background and go straight into action.
+This is a clarifying tool, not a story structure. A process piece can be organised by sensory change; an explanatory piece can give the answer first and then demonstrate; a story can skip the setup and start in action. Within one direction compare different expressions, and within one expression compare different claims; one version of an opening is not a whole strategy.
 
-Within one direction you can compare different expressions, and within one expression you can compare different claims. Do not confuse one version of an opening with a complete strategy.
+## Three micro-editing exercises
 
-## Three micro-editing demonstrations
+Fictional exercises, not proven hits, and not applied to any client product by default.
 
-The following are fictional exercises, not proven hits, and they are not applied to a client's product by default.
+**Process: tidying cables.** Weak draft: "Show the desk, put down the charger, put down the cable, pull the zip, show the organiser pouch." Specific choices: "Three cables lie tangled on the desk; a hand lifts one and the other two come up with it. After they are separated, each is looped once and placed in its own slot, whose existence was established earlier; the three plugs face the same way and drop in one after another. The pouch closes; only the one cable that is charging is left on the desk." The change lies in the relationship from chaos to order and in the payoff of the action; no late-arriving character is needed. If the individual slots are not evidenced, do not write them.
 
-**Process: tidying cables**
+**Emotion: leaving dinner for a roommate.** Weak draft: "Prepare dinner, write a caring note, warm ending." Specific choices: "Serve two portions of noodles; as the coriander is about to be sprinkled, the spoon stops over the second portion, then the coriander goes into a small box placed beside it." The action lets the audience infer a memory of another person's taste. If the product is only background, this is an emotional fragment, not yet an ad: find an evidenced product relationship or drop the direction.
 
-Weak draft: "Show the desk, put down the charger, put down the cable, pull the zip, show the organiser pouch."
+**Demonstration: drawer storage.** Weak draft: "Can never find anything? This storage box solves it in one move!" Specific choices: "First show the small accessory to be found, then the drawer holding many accessories, so the search and the moment of taking it out are visible." The question becomes testable. Whether a comparison, a timer or an explanation is needed depends on the brief and a real demonstration; never fabricate a speed difference or promise that the product improves memory.
 
-Specific choices: "Three cables lie tangled on the desk; a hand lifts one and the other two come up with it. After they are separated, each is looped once and placed in an individual slot whose existence has already been established; the three plugs face the same direction and drop in one after another. The pouch closes, and only the one cable that is charging is left on the desk."
+## Fix a flat piece by locating the problem
 
-The change lies in the relationship from chaos to order and in the payoff of the action; there is no need to add a late-arriving character. If the individual slots are not evidenced, they must not be written this way.
+Quote one symptom from the script, then make the smallest effective fix:
 
-**Emotion: leaving dinner for a roommate**
-
-Weak draft: "Prepare dinner, write a caring note, warm ending."
-
-Specific choices: "Serve out two portions of noodles; just as the coriander is about to be sprinkled, the spoon stops over the second portion, then the coriander goes into a small box placed beside it."
-
-The action lets the audience infer a memory of another person's taste. If the product is only background, this is an emotional fragment and not yet an ad; you need to find an evidenced product relationship or drop this direction.
-
-**Demonstration: drawer storage**
-
-Weak draft: "Can never find anything again? This storage box solves it in one move!"
-
-Specific choices: "First show the audience the small accessory to be found, then show the drawer holding many accessories, making the search process and the result of taking it out visible."
-
-The question becomes testable. Whether a comparison, a timer or an explanation is needed depends on the brief and a real demonstration; you must not fabricate a speed difference or promise that the product improves a person's memory.
-
-## To fix a flat piece, locate the problem first
-
-Quote one symptom in the script, then choose the smallest effective fix:
-
-- No focus: several values are promised at once. Choose the main expression; reorganise or cut the side lines.
+- No focus: several values promised at once. Choose the main expression; reorganise or cut the side lines.
 - No material: everything is convenient, refined, healing. Add real behaviour, object choices, actual words or sensory detail.
-- No payoff: there is only a complete operation. Make clear which part lets the audience discover, learn, feel or enjoy something.
-- Stagnation: after the second segment nothing but the known is repeated. Compress, change the order of revelation, or give the repetition a new variation.
-- Forced: characters act stupid on purpose for the ad. Switch to a credible situation, or change it into a direct demonstration.
-- Disconnect: the selling only starts after the interesting part ends. Reconnect the experience and the product; if they cannot be connected, change direction.
-- Dragging: the idea works, but preparation and dialogue drown it. Keep the recognition time that is necessary and cut explanations and transitions.
+- No payoff: only a completed operation. Make clear which moment lets the audience discover, learn, feel or enjoy something.
+- Stagnation: after the second segment only the known repeats. Compress, change the order of revelation, or give the repetition a variation.
+- Forced: characters act foolish for the ad. Switch to a credible situation or a direct demonstration.
+- Disconnect: selling starts only after the interesting part ends. Reconnect experience and product; if they cannot connect, change direction.
+- Dragging: the idea works but preparation and dialogue drown it. Keep the recognition time that is necessary; cut explanations and transitions.
 
-Distinguish personal taste, a violated user constraint, a product-fact error and an audio-visual that cannot express the intent; do not treat an aesthetic preference as an objective defect.
+Separate personal taste, a violated user constraint, a product-fact error, and an audio-visual that cannot express the intent. An aesthetic preference is not an objective defect.
 
-## Evaluation and learning
+## What a review can and cannot tell you
 
-Internal review only tests expressibility, coherence, facts and creative assumptions; it cannot predict views or conversions, and a model giving itself a high score does not prove success.
-
-When evaluating the Skill systematically, run a blind comparison of old and new drafts using real briefs across multiple products and content modes: keep the facts, requirements and resources the same, hide the source and interleave the order. Let readers point out where they want to keep watching, what they remember, what product value they understand and which segment they would most like to cut, and only then state a preference; do not show the creative notes first. Allow both to be bad; do not compare only the writing.
-
-After launch, look separately at retention/viewing development, product understanding and recognition, and clicks/purchases, choosing the metric by the goal. Record differences in placement, audience, account, duration, offer and production; correct the current assumption rather than deriving a general law from a single piece. A character or form that works can be developed over time; avoid demanding a completely new formula every round.
+Reading your own draft tests expressibility, coherence, facts and whether assumptions are marked. It cannot predict views or conversions, and a high self-assessment proves nothing. Deliver once the justified revisions are made.

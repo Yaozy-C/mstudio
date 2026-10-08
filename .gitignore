@@ -55,4 +55,6 @@ playwright-report/
 *.swo
 *~
 
+.codegraph/
+
 /desktop/native/windows-bundle/

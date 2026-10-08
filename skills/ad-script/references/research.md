@@ -1,44 +1,44 @@
-# Content research: let observation change the choice
+# Content research: let observation change a choice
 
-Use this when analysing provided material, adapting a reference film, or producing formulaic output over and over. Mstudio has no network search capability: the sources below all mean content that already exists in the project or was imported by the user, and no external retrieval is required. Adjust the depth to the brief; do not set a general threshold for how many items must be viewed.
+Use this when analysing provided material, adapting a reference film, or when drafts keep coming out formulaic. Every source below means material that already exists in the project or that the user imported; Mstudio cannot retrieve anything. Match the depth to the brief; there is no required number of samples.
 
 ## Look for material with a question
 
-Choose among three kinds of evidence according to the gap:
+Choose the kind of evidence that fills the gap:
 
-1. Original product material: real images, documentation, measurements and user constraints. This determines which actions can be demonstrated and which claims can be made.
-2. Human material: comments, reviews, interviews, life sharing, user experiences. Look for specific wording, habits, concerns, unexpected uses and reasons for choices. Keep a single observation as a case; do not pass it off as a general rule.
-3. Content works: actual works for the same audience/category, and transferable forms from other categories. Looking only at the same product makes it easy to copy conventions; looking only at cross-category creativity makes it easy to lose the purchase relationship.
+1. Original product material: real images, documentation, measurements, user constraints. This decides which actions can be shown and which claims can be made.
+2. Human material: comments, reviews, interviews, user experiences. Look for specific wording, habits, concerns, unexpected uses and reasons for choosing. Keep a single observation as a case; do not promote it to a general rule.
+3. Content works: pieces for the same audience or category, and transferable forms from other categories. Only same-product examples lead to copied conventions; only cross-category examples lose the purchase relationship.
 
-For trend material the user provides, check its region, date and context; if there is not enough information, mark it unverified and do not claim it represents a current trend. Evergreen process forms do not need to chase a trending topic. When the user's direction is already clear, research serves that direction.
+For trend material the user provides, check region, date and context; if that is missing, mark it unverified and do not call it current. Evergreen process forms need no trending topic. When the user's direction is already clear, research serves that direction.
 
 ## What one sample leaves behind
 
-Save a short evidence card to the existing research record or the delivery attachment; do not stuff it into every script segment:
+Record a short evidence card in the existing research record or the delivery notes, not in every script segment:
 
-- Original link/work ID, author, region/language, time and visible publication nature: organic content, paid ad or unknown.
-- Access method: full playback, playback with sound, timestamped still frame, transcript or second-hand case. Report only what there is evidence for.
-- The actual opening image/line, the key development and the ending; when adapting pacing, mark the time range.
-- What the audience is watching, what payoff they get and where the product plays a part. This part is analysis and is kept separate from direct observation.
-- The transferable relationship and its necessary conditions; the original work's persona, performance, brand history and product capabilities are not inherited automatically.
-- Visible metrics and their definitions; without sales data, do not call it a selling hit.
+- Work identifier, author, region or language, time, and visible nature: organic, paid or unknown.
+- How it was accessed: full playback, playback with sound, a timestamped still, a transcript, or a second-hand account. Report only what that access supports.
+- The actual opening image or line, the key development and the ending; when adapting pacing, note the time range.
+- What the audience is watching, what payoff it gets, and where the product takes part. This is analysis, kept apart from observation.
+- The transferable relationship and its necessary conditions. The original's persona, performance, brand history and product capabilities do not transfer automatically.
+- Visible metrics and how they are defined. Without sales data, do not call anything a selling hit.
 
-Incomplete information can still give limited formal inspiration, but you must not fabricate subtitles, user quotes, timestamps or statistics.
+Incomplete information can still give limited formal inspiration. Never fabricate subtitles, user quotes, timestamps or statistics.
 
 ## From material to angle
 
-Write briefly: "Observed ___; it suggests ___ (interpretation/assumption); so this piece chooses to let the audience see ___; the product takes part through ___."
+Write one line: "Observed ___; it suggests ___ (interpretation or assumption); so this piece lets the audience see ___; the product takes part through ___."
 
-If all you have is "everyone is busy, wants convenience, wants to save money", keep looking in the available material for specific behaviour, or honestly mark it as a creative assumption. There is also no need to force a social insight onto a sensory process piece: the observed visual/sound appeal can be the starting point.
+If all you have is "people are busy, want convenience, want to save money", keep looking for specific behaviour in the material or mark the angle as a creative assumption. A sensory process piece needs no social insight; the observed visual or sound appeal can be the starting point.
 
-Transfer a relationship, such as "gradually increasing variation within repetition" or "show the phenomenon first, then reveal the cause", and realise it again with this product's facts and the new situation; do not copy the reference's lines, characters or distinctive creative. When a faithful reproduction is explicitly required, keep the locked structure and adjust only the differences that the product facts make necessary.
+Transfer a relationship, such as "increasing variation inside repetition" or "show the phenomenon first, then reveal the cause", and realise it again with this product's facts and a new situation. Do not copy the reference's lines, characters or signature idea. When a faithful reproduction is explicitly requested, keep the locked structure and change only what the product facts force.
 
 ## Avoid misreading a sample
 
-- Views are affected by account history, media spend, timing, offers or a trending topic; they do not on their own prove the script works.
-- A case offers a clue about mechanism, not a causal experiment. If the available material contains comparable ordinary works or counterexamples, analyse those too, and avoid seeking only success stories to endorse an existing idea.
-- Top Ads has performance thresholds and advertiser authorisation; a per-second normalised curve is not an absolute headcount, a site-wide ranking or sales.
-- Familiarity may itself be the appeal; a new character cannot inherit an established creator's credibility and follower relationship.
-- A still frame is not enough to confirm capacity, durability, leak-proofing, heat retention or continuous action.
+- Views depend on account history, media spend, timing, offers and trending topics; they do not prove the script works.
+- A case is a clue about mechanism, not a causal experiment. If the material contains ordinary works or counterexamples, analyse those too, instead of collecting successes that endorse an existing idea.
+- Platform showcases apply performance thresholds and advertiser authorisation; a normalised per-second curve is not a viewer count, a site-wide ranking or sales.
+- Familiarity can itself be the appeal; a new character cannot inherit an established creator's credibility.
+- A still frame cannot confirm capacity, durability, leak-proofing, heat retention or continuous action.
 
-Start writing once analysing the available material no longer changes the core angle, the viewing payoff or the product's role. If access is insufficient, deliver a provisional draft from the available facts, point out the evidence gap most worth filling, and do not let research drag on indefinitely.
+Start writing once further analysis would no longer change the core angle, the payoff or the product's role. If access is insufficient, deliver a provisional draft from the available facts, name the single most valuable missing verification, and do not let research run on.

@@ -1,27 +1,31 @@
-# Action generation and deterministic editing
+# Action chains and deterministic editing
 
-Follow the handed-off shots and [states](../../creative-ad-director/references/continuity.md); do not replace the story or claim.
+Follow the handed-off shots and the [continuity record](../../creative-ad-director/references/continuity.md); do not replace the story or the claim.
 
 ## Action units
 
-A generation segment carries an action chain the model can express; split according to real complexity. For important contact identify source, grasp, support, path, crossed boundary, release and destination in the underlying action. This is a causality check, not a requirement to show every phase at full length. The director’s selected proof or montage determines which phases must remain visible. Material-appropriate soft deformation is allowed without changing product structure/function.
+A generation segment carries one action chain the model can express; split by real complexity. For an important contact identify source, grasp, support, path, crossed boundary, release and destination in the underlying action. This is a causality check, not a requirement to show every phase at full length; the director's chosen proof or montage decides which phases stay visible. Material-appropriate soft deformation is allowed without changing product structure or function.
 
-Resolve risky contact through a readable view and compatible start, not a negative-word list. Inspect before, during and after contact plus necessary continuous footage. Occlusion is not automatically penetration, but cannot conceal required proof. A single long prompt is an input format, not continuity assurance. If a requested single generation fails with pauses/teleportation/penetration, revise staging or allowed cuts instead of appending fluent and realistic.
+Resolve a risky contact through a readable view and a compatible start, not a negative-word list. Inspect before, during and after the contact plus the necessary continuous footage. Occlusion is not automatically penetration, but it cannot conceal required proof. A single long prompt is an input format, not a continuity guarantee; if a requested single generation fails with pauses, teleportation or penetration, revise the staging or the allowed cuts instead of appending "fluent" and "realistic".
 
 ## Time and sound
 
-Use the shared [time-domain and selection rules](../../creative-ad-director/references/rhythm.md). Preserve the model's supported minimum generation duration without imposing it on editorial shots. Record the generation-group/shot ID and intended film intervals before submission; add actual asset IDs and inspected source in/out afterward. Each internal cut must remain explicit. If the model cannot reliably create the planned internal sequence, obtain the minimum missing supported source clips rather than weakening the edit.
+Apply the three clocks from [rhythm](../../creative-ad-director/references/rhythm.md): keep the model's minimum generation length without imposing it on editorial shots. Record the generation group or shot ID and the intended film intervals before submission; add the actual asset IDs and the inspected source in and out afterwards. Each internal cut stays explicit. If the model cannot create the planned internal sequence, obtain the minimum missing supported clips rather than weakening the edit.
 
-Translate the selected timeline into output frames. Editing controls exact cuts, sequential reveals, masks, splits, subtitles and accents; generation supplies usable handles, not guaranteed frame precision. Select effective source ranges, remove purposeless waits and preserve reading time for contact/release/results. Speed must not hide errors.
+Translate the selected timeline into output frames: editing controls exact cuts, sequential reveals, masks, splits, captions and accents; generation supplies usable handles, not frame precision. Select effective source ranges, remove purposeless waits and keep the reading time for contact, release and results. Speed must not hide errors.
 
-Choose tempo from content and sound, not a fixed BPM. Arrange information, action and reveal accents, then create/use authorized sound. Temporary original beats are allowed with source records, not claims of real product-test recordings or testimony. Check onset, tails, levels, clipping and silence.
+Choose tempo from content and sound, not a fixed BPM. Arrange information, action and reveal accents, then create or use authorised sound. Temporary original beats are allowed with source records, never claimed as real product-test recordings or testimony. Check onsets, tails, levels, clipping and silence.
 
-For duration compression, prioritize information and cut selection; for explicit whole-film speed, apply the requested multiplier and synchronize tracks as described in [duration feedback](../../creative-ad-director/references/rhythm.md#duration-and-speed-feedback). Follow established language and supported sales claims; do not invent offers.
+For duration compression, prioritise information and cut selection. For an explicit whole-film speed, apply the requested multiplier and synchronise tracks per [duration and speed feedback](../../creative-ad-director/references/rhythm.md#duration-and-speed-feedback). Keep the established language and the supported sales claims; do not invent offers.
 
 ## Select only valid chains
 
-Map [shot execution evidence](../../creative-ad-director/references/continuity.md#shot-execution-evidence) to shot ID, source, in/out, observed event, keep/trim/discard/repair and film range. Identify actual internal cuts, not one pass per task ID.
+Map the [shot execution evidence](../../creative-ad-director/references/continuity.md#shot-execution-evidence) to shot ID, source, in and out, observed event, keep or trim or discard or repair, and film range. Identify the actual internal cuts, not one pass per task ID.
 
-Check the selected chain from the object's first appearance, not only its final result. An intentional omission between compatible states is not itself a missing action; an impossible support/contact transition is. Do not remove cuts just to show every preparatory movement. Any essential source/support/path/contact/destination contradiction makes that range unusable. Keep a valid tail only if it can join a correct start. If trimming still leaves missing causality, produce the minimum missing event within authorization; music and transitions cannot hide it.
+Check the selected chain from the object's first appearance, not only from its final result. An intentional omission between compatible states is not a missing action; an impossible support or contact transition is. Do not remove cuts just to show every preparatory movement. Any essential contradiction in source, support, path, contact or destination makes that range unusable; keep a valid tail only if it can join a correct start. If trimming still leaves missing causality, produce the minimum missing event within authorisation; music and transitions cannot hide it.
 
-Compare adjacent selections for purposeful progression, revelation, result or performance. Different generation IDs do not justify redundant shots. Select action before allocating final time, then recheck joins and the sequence.
+Compare adjacent selections for purposeful progression, revelation, result or performance; different generation IDs do not justify redundant shots. Select the action before allocating final time, then recheck the joins and the sequence.
+
+## Tools
+
+Use `mstudio_slip_clip(id, sourceOffset)` to change which action phase a clip shows, `mstudio_retime_clip(id, speed, ripple)` for pace, `mstudio_move_clip(id, start, trackId)` for placement, and `mstudio_update_clip(id, trimIn, trimOut, ...)` for source ranges and visual settings. Captions and tracks have their own add, update and remove tools. Verify `savedClips` in the receipt, then recheck the affected frames and joins.

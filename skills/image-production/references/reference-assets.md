@@ -1,25 +1,23 @@
 # Shared reference assets
 
-Use for subjects repeated across distinct shots that need consistent identity, or an explicit request for a reference asset. Same-shot A/B continuity and finished location scenes belong to the scene-frame work in [storyboard frames](frames.md). Read the short [core](../CORE.md) and [image prompt writing](prompt-writing.md) when needed; reuse their current text already in context.
+Use for a subject that recurs across distinct shots and needs a consistent identity, or for an explicit request for a reference asset. Same-shot A and B continuity and finished location scenes belong to [storyboard frames](frames.md).
 
 ## Decide what is missing
 
-Use the scoped storyboard and available project assets to identify actual consumers, required views and stable attributes. Read missing shot detail or candidate images only where it changes that decision; a direct request for one asset need not inventory the whole film. Titles alone cannot establish suitability.
+From the scoped storyboard and the existing assets, identify the actual consumers, the required views and the stable attributes. Read missing shot detail or candidate images only where it changes that decision; a direct request for one asset does not need an inventory of the film. Titles alone cannot establish suitability.
 
-For each relevant subject, record the consuming shot IDs, reusable image IDs and specific gap. Distinguish reusable, uninspected, pending, repair-needed and missing references. Reuse suitable originals; inspect an unchecked candidate before replacing it. Similar category objects are not automatically the same subject, and planned outfit/state changes are legitimate variants. Multiple frames of one shot do not require a shared asset pack.
+For each relevant subject record the consuming shot IDs, the reusable image IDs and the specific gap, distinguishing reusable, uninspected, pending, needs repair and missing. Reuse suitable originals and inspect an unchecked candidate before replacing it. Similar objects are not automatically the same subject; planned outfit or state changes are legitimate variants. Several frames of one shot do not need a shared asset pack.
 
-Generate only necessary missing views. Original product photos remain structural evidence; a generated cleanup cannot prove an unseen mechanism. Existing suitable images do not need regeneration merely because their background is not white.
+Generate only the necessary missing views. Original product photos remain the structural evidence. An existing suitable image needs no regeneration merely because its background is not white.
 
-## Reference image design
+## Design the asset
 
-New shared asset images use a solid white background with neutral readable light and sufficient margins. Show the required outfit, footwear and accessories; preserve real product markings and connections. A small contact shadow may support the subject. Keep environmental backdrops, floor textures, panels and presentation labels out unless the user explicitly requests a different asset deliverable.
+A new shared asset uses a solid white background, neutral readable light and sufficient margins. Show the required outfit, footwear and accessories; keep real product markings and connections. A small contact shadow may ground the subject. Keep environmental backdrops, floor textures, panels and labels out unless the user asks for a different deliverable.
 
-For recurring setting elements, isolate the needed set piece; finished scene composition and location lighting belong to the artist. Lock selected identity, outfit and product construction across useful views. Derive additional views from an inspected identity image; a front/side/back pack is not automatic.
+For a recurring set element, isolate the needed piece; composition and location lighting belong to the artist. Lock identity, outfit and product construction across the useful views. Derive additional views from an inspected identity image; a front, side and back pack is not automatic. For photographic characters consult [photographic appearance](../../creative-ad-director/references/photographic-appearance.md); at full-body scale identity and complete clothing matter more than skin description. Reference lighting supports identification and does not dictate scene lighting.
 
-For photographic characters, consult [photographic appearance](../../creative-ad-director/references/photographic-appearance.md) when skin, lighting or realism needs specific treatment. At full-body scale, identity and complete clothing matter more than microscopic skin descriptions. Reference lighting supports identification; it does not dictate downstream scene lighting.
+## Generate, inspect, attach
 
-## Inspect and hand off
+Create standalone assets with `mstudio_generate_reference_image`, which takes explicit `references` and no shot ID. Compare the result pixels with the originals for identity, geometry, outfit, completeness and background. Attach suitable real image IDs to the consuming shots with `mstudio_upsert_references`, describing the view or identity in `purpose` or the asset name, and preserving unrelated references.
 
-Create standalone asset tasks with the declared tool contract. Compare actual result pixels with originals for identity, geometry, outfit, completeness and background. Attach suitable real image IDs directly to consuming shot references, preserving unrelated references. Describe front view, side view or identity as visual uses in purpose or the asset name; do not create a parallel subject/view registry.
-
-Return real assets, intended visual uses, fixed attributes and any unresolved visual dependency. Shared identity references do not replace the artist's composition/state reference for dependent frames. Keep changes to asset work and allowed shot references.
+Return the real assets, their intended uses, the fixed attributes and any unresolved dependency. A shared identity reference does not replace the artist's composition and state reference for dependent frames. Keep changes to asset work and the allowed shot references.

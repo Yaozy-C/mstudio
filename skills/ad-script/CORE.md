@@ -1,7 +1,9 @@
-# Screenwriting core
+# Core: screenwriting
 
-The complete creative rules are governed by [SKILL.md](SKILL.md); read it first. This file does not maintain a second creative workflow.
-
-Mstudio has no network search capability. Use project facts, user references and already-imported research to choose the point of view, the viewing payoff and the product's role; when material is missing, mark the assumption and keep writing rather than inventing market research.
-
-Be responsible for what makes the actual audio-visual worth watching. A process, a demonstration or a character story can all stand; conflict and reversals are not mandatory. For a full script, choose a concept with substance first and then expand it; for a local revision, preserve the working intent. Locked language, duration and voice-over/text requirements remain in force. Chat drafts are not written into the project.
+- Product facts and the user's locked requirements are not negotiable. Creative choices made to fill gaps are marked as assumptions, never presented as research or product evidence.
+- Mstudio has no network search. Work from project material, user attachments and the conversation; never suggest, simulate or wait for a web lookup, and never describe a video you have not watched through the available tools.
+- Every segment earns its place by advancing understanding, expectation, emotion, sensory rhythm or product evidence. A segment that exists only to carry a selling point is cut or rewritten.
+- Write what happens, the exact words and the sounds that do work. Analysis stays out of narration; detailed camera, prompts and task breakdowns stay out of the script.
+- Respect a locked total duration or cap by cutting secondary information. Never stretch a film to fill a model's minimum clip length, and never let 15 seconds become 23 unannounced.
+- Conflict, reversals, characters, voice-over, a call to action and a shocking first three seconds are options. A process, a demonstration or a quiet story can all be worth watching.
+- Chat drafts are not saved. Report a save only after the write receipt succeeds.

@@ -1,22 +1,22 @@
 # Transfer a real shot to a product
 
-Read when the user asks for a shot reference, a replacement segment or a specified source video. An original design needs no external material at all. **Mstudio has no network access**: search only what is already available — project assets, user attachments, previously imported references and research records, and other local files the user supplied. Never claim or attempt a web, browser or search-tool lookup, and never present a link as something to open inside Mstudio. If the user asks for a reference that is not available locally, say which lookup you cannot perform and either work from an accessible local source or continue with an explicitly marked hypothesis.
+Read when the user asks for a shot reference, a replacement segment or names a source video. An original design needs no external material. Mstudio has no network: search only project assets, user attachments, imported references and research records. Never claim or attempt a web, browser or search lookup, and never present a link as something to open inside Mstudio. If the named reference is not available locally, say exactly which lookup cannot be performed, then work from an accessible source or an explicitly marked hypothesis.
 
 ## Record the evidence
 
-For each serious candidate record title, verifiable author, usable link and source time range; mark approximations and distinguish source from adaptation timing. State whether you watched continuous footage, inspected key frames or only read a page. Describe beginning/change/end, separating subject movement, camera movement and cuts. Identify the visible cue, expectation and payoff plus necessary shape, translucency, scale, depth, contact, staging and background conditions. Unverified production techniques remain inferences.
+For each serious candidate record title, author if verifiable, the usable asset or link, and the source time range; mark approximations and keep source timing apart from adaptation timing. Say whether you watched continuous footage, inspected key frames or only read a page. Describe beginning, change and end, separating subject movement, camera movement and cuts. Identify the visible cue, the expectation and the payoff, plus the shape, translucency, scale, depth, contact, staging and background conditions they need. Unverified production techniques stay inferences.
 
-Check the decisive seconds of the strongest local candidate before looking further. Thumbnails, comments and descriptions do not establish motion or rhythm. If an imported clip cannot be played, look for another accessible local version; if the user named a source that is not available, report that exact limitation without inventing its content.
+Check the decisive seconds of the strongest local candidate before looking further. Thumbnails, comments and descriptions do not establish motion or rhythm. If an imported clip cannot be played, look for another accessible local version; never invent its content.
 
 ## Decide whether the mechanism transfers
 
-Compare source and adaptation at beginning, key change and result:
+Compare source and adaptation at the beginning, the key change and the result:
 
-- Which relationship produces viewing value?
-- Which necessary conditions are supported by the new product's original evidence, and which are absent?
-- How will the relationship survive changes in product, aspect ratio and duration?
+- Which relationship produces the viewing value?
+- Which necessary conditions does the new product's original evidence support, and which are absent?
+- How does the relationship survive the change of product, aspect ratio and duration?
 - What must be restaged, regenerated or composited, and what is the minimum useful check?
 
-Conclude ready for design, needs a relationship test, or conditions not met, with reasons. Changing the name/color/material alone is not adaptation. Missing core conditions require a changed idea/reference, not stronger zooms or sound.
+Conclude one of: ready for design, needs a relationship test, or conditions not met, with reasons. Changing the name, colour or material alone is not adaptation; missing core conditions call for a changed idea, not a stronger zoom or louder sound.
 
-A reference-only task returns the locatable segment, observation and adaptation method without generation. Evaluate a specified reference before replacing the concept. Clearly label discarded source endings as adaptation decisions, not descriptions of the original. Product interaction also changes contact, force, shadows and path. Keep source reference, planned storyboard and executed replacement distinct. Use [states and dependencies](continuity.md) for continuity.
+A reference-only task returns the locatable segment, the observation and the adaptation method, without generation. Evaluate a specified reference before replacing the concept. Label a discarded source ending as an adaptation decision, not a description of the original. Product interaction changes contact, force, shadows and path. Keep the source reference, the planned storyboard and the executed replacement distinct; use [continuity](continuity.md) for state.
