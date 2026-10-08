@@ -33,10 +33,10 @@ export function addTaskReference(
         key: `asset:${asset.id}`,
         assetId: asset.id,
         role: asset.kind === "video" ? "video-reference" : "reference",
-        purpose: asset.kind === "video" ? "动作参考" : "内容参考",
-        ...(asset.kind === "video"
-          ? { start: 0, end: Math.min(5, asset.duration) }
-          : {}),
+        // A role label alone is not a purpose; the asset name keeps the input
+        // traceable until prompt preparation names the subject it supplies.
+        purpose: asset.name,
+        ...(asset.kind === "video" ? { start: 0, end: asset.duration } : {}),
       },
     ],
   };

@@ -65,7 +65,7 @@ fn scoped_history_pairs_by_turn_and_restores_after_another_role() {
     for (turn, agent, task, status) in [
         ("a", "color", "task1", "completed"),
         ("a2", "color", "task1", "completed"),
-        ("b", "storyboard", "task2", "completed"),
+        ("b", "concept", "task2", "completed"),
         ("c", "color", "task3", "completed"),
         ("d", "color", "task1", "cancelled"),
     ] {
@@ -113,13 +113,10 @@ fn scoped_history_pairs_by_turn_and_restores_after_another_role() {
             .unwrap()
             .is_some()
     );
-    let restored = session_selection::latest(
-        &store,
-        "p",
-        &json!({"agentId":"storyboard","taskId":"task2"}),
-    )
-    .unwrap()
-    .unwrap();
+    let restored =
+        session_selection::latest(&store, "p", &json!({"agentId":"concept","taskId":"task2"}))
+            .unwrap()
+            .unwrap();
     assert!(
         serde_json::to_string(&restored)
             .unwrap()
@@ -132,13 +129,9 @@ fn scoped_history_pairs_by_turn_and_restores_after_another_role() {
     );
     journal::append(&store, "p", "reset", "session/reset", json!({})).unwrap();
     assert!(
-        session_selection::latest(
-            &store,
-            "p",
-            &json!({"agentId":"storyboard","taskId":"task2"})
-        )
-        .unwrap()
-        .is_none()
+        session_selection::latest(&store, "p", &json!({"agentId":"concept","taskId":"task2"}))
+            .unwrap()
+            .is_none()
     );
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

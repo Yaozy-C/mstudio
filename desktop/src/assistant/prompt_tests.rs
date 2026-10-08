@@ -20,23 +20,25 @@ fn builtin_instructions_and_tool_contracts_are_english_but_content_language_is_p
 }
 #[test]
 fn permissions_supply_data_semantics_without_assigning_unrelated_professional_roles() {
-    for role in ["colorist", "transition-designer"] {
-        let profile = profiles::builtins()
-            .into_iter()
-            .find(|p| p.id == role)
-            .unwrap();
-        let system = system(
-            &json!({"agent":{"name":profile.id,"instructions":profile.instructions,"tools":profile.tool_ids,"skills":profile.skill_ids}}),
-        );
-        assert!(system.contains("Timeline data:"));
-        assert!(!system.contains("Script editing:"));
-        assert!(!system.contains("Shot editing:"));
-        assert!(!system.contains("Own selection of existing media"));
-        assert!(system.contains("Verify complete savedValues[].values"));
-        assert!(system.contains("waiting_user"));
-        assert!(system.contains("mstudio_await_generation(taskKeys)"));
-        assert!(system.contains("recheck graded pixels and transition composites"));
-    }
+    let profile = profiles::builtins()
+        .into_iter()
+        .find(|p| p.id == "editor")
+        .unwrap();
+    let editor_system = system(
+        &json!({"agent":{"name":profile.id,"instructions":profile.instructions,"tools":profile.tool_ids,"skills":profile.skill_ids}}),
+    );
+    assert!(editor_system.contains("Timeline data:"));
+    assert!(!editor_system.contains("Script editing:"));
+    assert!(!editor_system.contains("Shot editing:"));
+    // editor is now the only timeline role, so its own instructions legitimately
+    // appear. The role-isolation this line used to check is preserved by requiring
+    // another shipped role's instructions to stay absent.
+    assert!(editor_system.contains("Own selection of existing media"));
+    assert!(!editor_system.contains("Own every still and video generation task"));
+    assert!(editor_system.contains("Verify complete savedValues[].values"));
+    assert!(editor_system.contains("waiting_user"));
+    assert!(editor_system.contains("mstudio_await_generation(taskKeys)"));
+    assert!(editor_system.contains("recheck graded pixels and transition composites"));
     let system = system(
         &json!({"agent":{"tools":["project-read","agent-delegate"]},"specialists":[{"id":"concept"}]}),
     );

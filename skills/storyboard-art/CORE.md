@@ -1,2 +1,0 @@
-# Core: image execution
-Preserve the selected scene, identity, outfit and verified product geometry. Each still shows one visible moment with readable pose, support, contact and viewpoint. Use concrete surfaces and lighting rather than generic polish or quality slogans. Dependent same-view frames use an inspected base for composition/state and original evidence for identity. The assigned image-prompt guide owns prompt methods; consult SKILL.md for frame dependencies and inspection.

@@ -7,6 +7,18 @@ import {
 export function taskKey(ids: string[]) {
   return JSON.stringify([...ids].sort());
 }
+function videoRange(p: Project, item: ProductionItem) {
+  const take = p.nodes
+    .find((n) => n.id === item.ownerId)
+    ?.shot?.takes?.find((t) => t.assetId === item.assetId);
+  return {
+    start: take?.trimIn ?? 0,
+    end:
+      take?.trimOut ??
+      p.assets.find((a) => a.id === item.assetId)?.duration ??
+      0,
+  };
+}
 export function createTask(
   p: Project,
   selected: ProductionItem[],
@@ -33,7 +45,10 @@ export function createTask(
     assetId: n.assetId ?? "",
     nodeId: n.nodeId,
     frame: n.kind === "image" && !!p.nodes.find((v) => v.id === n.nodeId)?.shot,
-    purpose: n.kind === "script" || n.kind === "note" ? n.text : "保持内容一致",
+    purpose:
+      n.kind === "script" || n.kind === "note"
+        ? n.text
+        : (p.assets.find((a) => a.id === n.assetId)?.name ?? n.text ?? ""),
     role: !n.assetId
       ? "script"
       : n.kind === "video"
@@ -43,15 +58,7 @@ export function createTask(
           : output === "video" && mode === "single"
             ? "first-frame"
             : "reference",
-    ...(n.kind === "video"
-      ? {
-          start: 0,
-          end: Math.min(
-            5,
-            p.assets.find((a) => a.id === n.assetId)?.duration ?? 0,
-          ),
-        }
-      : {}),
+    ...(n.kind === "video" ? videoRange(p, n) : {}),
   }));
   return {
     key: taskKey(selected.map((n) => n.key)),

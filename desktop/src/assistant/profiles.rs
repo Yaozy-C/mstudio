@@ -18,18 +18,12 @@ pub const TOOL_IDS: [&str; 13] = [
     "memory-read",
     "memory-write",
 ];
-pub const SKILL_IDS: [&str; 11] = [
-    "image-prompt",
-    "video-prompt",
-    "color-grading",
-    "transition-design",
-    "ad-team",
+pub const SKILL_IDS: [&str; 5] = [
     "ad-script",
-    "storyboard-art",
-    "asset-preparation",
-    "product-storyboard",
     "creative-ad-director",
+    "image-production",
     "product-video-production",
+    "video-editing",
 ];
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -60,13 +54,7 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
                 super::profile_instructions::upgrade(&mut saved, &builtins());
             for builtin in builtins() {
                 if !saved.iter().any(|p| p.id == builtin.id)
-                    && [
-                        "storyboard-artist",
-                        "colorist",
-                        "transition-designer",
-                        "asset-designer",
-                    ]
-                    .contains(&builtin.id.as_str())
+                    && ["concept", "production", "editor"].contains(&builtin.id.as_str())
                 {
                     saved.push(builtin);
                 }
@@ -207,11 +195,11 @@ mod tests {
     #[test]
     fn agent_skills_are_scoped_and_edit_requires_read() {
         let mut p = defaults("");
-        p.skill_ids = vec!["product-storyboard".into()];
+        p.skill_ids = vec!["creative-ad-director".into()];
         p.tool_ids.clear();
         assert!(!allows(&p, "edit"));
         assert!(!allows(&p, "inspect"));
-        assert_eq!(skill_setting(&p), "[\"skill-product-storyboard\"]");
+        assert_eq!(skill_setting(&p), "[\"skill-creative-ad-director\"]");
         p.tool_ids.push("project-edit".into());
         assert!(validate(&p).is_err());
         p.tool_ids.push("project-read".into());

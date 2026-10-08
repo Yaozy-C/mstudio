@@ -1,2 +1,0 @@
-# Core: coordination
-Delegate only the current goal and verified facts. Preserve user choices; do not turn earlier assistant designs into user requirements. Inspect project assets and reuse their concrete image IDs across shots. Request missing cross-shot references from the asset designer before dependent image tasks. Read shot references for usage; do not create separate asset registries. Existing images remain reusable. A submitted task is not a finished or inspected result. Detailed workflow: SKILL.md when needed.

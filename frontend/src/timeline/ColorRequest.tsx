@@ -56,7 +56,7 @@ export function ColorRequest({
             e.preventDefault();
             if (!text.trim()) return;
             requestCreativeTask({
-              agentId: "colorist",
+              agentId: "editor",
               refs: [{ kind: "clip", id: clip.id }],
               text: t(
                 "请为本轮引用的片段调色：{v0}\n保留其他片段、剪辑、声音和字幕。",

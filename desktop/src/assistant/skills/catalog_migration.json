@@ -1,0 +1,40 @@
+{
+  "removed": [
+    "ad-team",
+    "product-storyboard",
+    "image-prompt",
+    "video-prompt",
+    "storyboard-art",
+    "asset-preparation",
+    "color-grading",
+    "transition-design"
+  ],
+  "retiredAgents": [
+    "storyboard",
+    "asset-designer",
+    "storyboard-artist",
+    "reviewer",
+    "colorist",
+    "transition-designer"
+  ],
+  "skillMap": {
+    "ad-script": "ad-script",
+    "creative-ad-director": "creative-ad-director",
+    "product-video-production": "product-video-production",
+    "image-prompt": "image-production",
+    "storyboard-art": "image-production",
+    "asset-preparation": "image-production",
+    "product-storyboard": "creative-ad-director",
+    "video-prompt": "product-video-production",
+    "color-grading": "video-editing",
+    "transition-design": "video-editing",
+    "ad-team": ""
+  },
+  "modelRuleEdits": [
+    {
+      "id": "minimax-h3",
+      "before": "Verify full-reference syntax in the official guide rather than inventing tags.",
+      "after": "Use this injected syntax rather than inventing tags; the linked guides are provenance, not a step to perform inside Mstudio."
+    }
+  ]
+}

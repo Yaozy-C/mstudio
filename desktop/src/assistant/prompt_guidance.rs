@@ -1,13 +1,20 @@
-//! Deterministic rule loading for prompt authors in chat, delegation and quick generation.
+//! Selected-model capabilities plus the creative rules a task actually needs.
+//!
+//! Chat and delegated turns read Skill bodies on demand with tools, so they only
+//! receive the selected model's rules here. The generation panel is a single
+//! completion with no tool loop, so it must receive the current rule bodies
+//! directly: the bound Skill entry, its core, and the method documents its task
+//! signals require.
 use super::profiles::AgentProfile;
+use super::prompt_routing::routes;
 use anyhow::Result;
 use rusqlite::Connection;
 use serde_json::{Value, json};
+use std::collections::BTreeSet;
 
 #[derive(serde::Deserialize)]
 struct Binding {
     kind: String,
-    resources: Vec<String>,
 }
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -18,45 +25,6 @@ struct Config {
 fn config() -> Config {
     serde_json::from_str(include_str!("skills/prompt_bindings.json"))
         .expect("valid prompt Skill configuration")
-}
-
-// Skill assignment is the only trigger. Tool permissions never imply creative capabilities.
-fn creative(db: &Connection, profile: &AgentProfile) -> Result<(String, Vec<String>)> {
-    let config = config();
-    let setting = super::profiles::skill_setting(profile);
-    let mut text = String::new();
-    let mut kinds = Vec::new();
-    let mut loaded = std::collections::HashSet::new();
-    for id in &profile.skill_ids {
-        let Some(binding) = config.skills.get(id) else {
-            continue;
-        };
-        if !kinds.contains(&binding.kind) {
-            kinds.push(binding.kind.clone());
-        }
-        for path in &binding.resources {
-            let mut offset = 0;
-            loop {
-                let page = super::skills::storage::read(db, &setting, id, path, offset, true)?;
-                if offset == 0 {
-                    let key = format!("{} / {}", page["skill"], page["path"]);
-                    if !loaded.insert(key.clone()) {
-                        break;
-                    }
-                    text.push_str(&format!(
-                        "\nAssigned Skill rule (full current text): {key}\n"
-                    ));
-                }
-                text.push_str(page["text"].as_str().unwrap_or_default());
-                match page["nextOffset"].as_u64() {
-                    Some(next) => offset = next as usize,
-                    None => break,
-                }
-            }
-            text.push('\n');
-        }
-    }
-    Ok((text, kinds))
 }
 
 pub fn quick_profile(db: &Connection, kind: &str) -> Result<AgentProfile> {
@@ -82,7 +50,13 @@ pub fn for_agent(
     production: &Value,
     doc: &Value,
 ) -> Result<String> {
-    let (mut result, kinds) = creative(db, profile)?;
+    let config = config();
+    let kinds: std::collections::BTreeSet<_> = profile
+        .skill_ids
+        .iter()
+        .filter_map(|id| config.skills.get(id).map(|binding| binding.kind.as_str()))
+        .collect();
+    let mut result = String::new();
     if kinds.is_empty() {
         return Ok(result);
     }
@@ -117,6 +91,81 @@ pub fn for_agent(
     Ok(result)
 }
 
+/// Load the current rule text a quick generation panel needs, in the database's
+/// own words, followed by the selected model's rules.
+pub fn for_quick(
+    db: &Connection,
+    profile: &AgentProfile,
+    kind: &str,
+    description: &str,
+    production: &Value,
+    doc: &Value,
+) -> Result<String> {
+    let config = config();
+    let Some(bound) = profile
+        .skill_ids
+        .iter()
+        .find(|id| config.skills.get(*id).is_some_and(|s| s.kind == kind))
+    else {
+        return Ok(String::new());
+    };
+    let setting = super::profiles::skill_setting(profile);
+    let mut loader = Loader {
+        db,
+        setting: &setting,
+        owner: bound.clone(),
+        seen: BTreeSet::new(),
+        text: String::new(),
+    };
+    // The entry document is required: without it the panel would silently lose
+    // the rules it is supposed to apply.
+    loader.add(bound, "SKILL.md")?;
+    loader.add(bound, "CORE.md")?;
+    for (skill, path) in routes(kind, description) {
+        loader.add(skill, path)?;
+    }
+    let mut result = format!(
+        "\nCurrent creative rules from the project database. Apply them as written; they are not suggestions.\n{}",
+        loader.text
+    );
+    result.push_str(&for_agent(db, profile, production, doc)?);
+    Ok(result)
+}
+
+struct Loader<'a> {
+    db: &'a Connection,
+    setting: &'a str,
+    owner: String,
+    seen: BTreeSet<String>,
+    text: String,
+}
+
+impl Loader<'_> {
+    fn add(&mut self, skill: &str, path: &str) -> Result<()> {
+        if !self.seen.insert(format!("{skill}/{path}")) {
+            return Ok(());
+        }
+        let resource = if skill == self.owner {
+            path.to_owned()
+        } else {
+            format!("../{skill}/{path}")
+        };
+        match super::skills::storage::read(self.db, self.setting, &self.owner, &resource, 0, true) {
+            Ok(page) => {
+                let text = page["text"].as_str().unwrap_or_default();
+                if !text.trim().is_empty() {
+                    self.text
+                        .push_str(&format!("\n### {skill}/{path}\n{text}\n"));
+                }
+                Ok(())
+            }
+            // A Skill may legitimately ship no core document.
+            Err(_) if path != "SKILL.md" => Ok(()),
+            Err(error) => Err(error),
+        }
+    }
+}
+
 pub fn attach(
     snapshot: &mut Value,
     db: &Connection,
@@ -129,119 +178,5 @@ pub fn attach(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::database::Store;
-    #[test]
-    fn prompt_authors_get_complete_assigned_guides_and_optional_references_on_demand() {
-        let root =
-            std::env::temp_dir().join(format!("mstudio-prompt-rules-{}", mstudio::media::id()));
-        let store = Store::open(root.clone()).unwrap();
-        let db = store.db.lock().unwrap();
-        super::super::skills::storage::seed(
-            &db,
-            &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills"),
-        )
-        .unwrap();
-        let animation = format!("{}\nCURRENT_ANIMATION_TAIL", "x".repeat(9000));
-        db.execute(
-            "UPDATE skill_resources SET text=?1 WHERE path='references/animation-principles.md'",
-            [&animation],
-        )
-        .unwrap();
-        let models = json!([
-            {"id":"h3","name":"Selected video","plugin":"fal","kind":"video","endpoint":"minimax/h3/reference-to-video","enabled":true,"params":{}},
-            {"id":"image","name":"Image","plugin":"codex-image","kind":"image","endpoint":"codex://local/images","enabled":true,"params":{}},
-            {"id":"other","name":"Other video","plugin":"fal","kind":"video","endpoint":"other/video","enabled":true,"params":{}}
-        ]);
-        db.execute(
-            "INSERT INTO settings VALUES('media-models',?1)",
-            [models.to_string()],
-        )
-        .unwrap();
-        let agents = super::super::profiles::builtins();
-        let context = json!({"models":{"video":"h3","image":"image"}});
-        for id in ["storyboard-artist", "asset-designer", "production"] {
-            let profile = agents.iter().find(|a| a.id == id).unwrap();
-            let result = for_agent(&db, profile, &context, &json!({})).unwrap();
-            assert!(!result.contains("CURRENT_ANIMATION_TAIL"));
-            assert!(
-                result.contains("naturalistic-performance.md")
-                    || result.contains("photographic-appearance.md")
-            );
-            let optional = super::super::skills::storage::read(
-                &db,
-                &super::super::profiles::skill_setting(profile),
-                &profile.skill_ids[0],
-                "../creative-ad-director/references/animation-principles.md",
-                8500,
-                true,
-            )
-            .unwrap();
-            assert!(
-                optional["text"]
-                    .as_str()
-                    .unwrap()
-                    .contains("CURRENT_ANIMATION_TAIL")
-            );
-            assert_eq!(result.contains("subject_definitions"), id == "production");
-            assert_eq!(
-                result.contains("configured Codex image model"),
-                id != "production"
-            );
-        }
-        let production = agents.iter().find(|a| a.id == "production").unwrap();
-        let switched = for_agent(
-            &db,
-            production,
-            &json!({"models":{"video":"other"}}),
-            &json!({}),
-        )
-        .unwrap();
-        assert!(!switched.contains("subject_definitions"));
-        let referenced = for_agent(&db, production, &json!({"models":{"video":"other"},"referencedTask":{"key":"run","kind":"video","modelId":"other"}}), &json!({"production":{"drafts":{"run":{"kind":"video","modelId":"h3"}}}})).unwrap();
-        assert!(referenced.contains("subject_definitions"));
-        for id in [
-            "coordinator",
-            "concept",
-            "storyboard",
-            "editor",
-            "reviewer",
-            "colorist",
-            "transition-designer",
-        ] {
-            let agent = agents.iter().find(|a| a.id == id).unwrap();
-            assert!(
-                for_agent(&db, agent, &context, &json!({}))
-                    .unwrap()
-                    .is_empty(),
-                "{id}"
-            );
-        }
-        let mut unassigned = production.clone();
-        unassigned.skill_ids.retain(|s| s != "video-prompt");
-        assert!(
-            for_agent(&db, &unassigned, &context, &json!({}))
-                .unwrap()
-                .is_empty()
-        );
-        assert_eq!(quick_profile(&db, "image").unwrap().id, "storyboard-artist");
-        assert_eq!(quick_profile(&db, "video").unwrap().id, "production");
-        let mut configured = agents.clone();
-        configured
-            .iter_mut()
-            .find(|a| a.id == "production")
-            .unwrap()
-            .skill_ids
-            .retain(|s| s != "video-prompt");
-        db.execute(
-            "UPDATE settings SET value=?1 WHERE key='agents'",
-            [serde_json::to_string(&configured).unwrap()],
-        )
-        .unwrap();
-        assert!(quick_profile(&db, "video").is_err());
-        drop(db);
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-}
+#[path = "prompt_guidance_tests.rs"]
+mod tests;

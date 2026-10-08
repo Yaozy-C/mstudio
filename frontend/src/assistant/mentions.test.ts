@@ -93,22 +93,25 @@ test("specialists resolve independently through the project model", () => {
   expect(defaultAgents.map((a) => a.id)).toEqual([
     "coordinator",
     "concept",
-    "storyboard",
-    "asset-designer",
-    "storyboard-artist",
     "production",
     "editor",
-    "reviewer",
-    "colorist",
-    "transition-designer",
   ]);
   for (const a of defaultAgents.filter((a) => a.enabled))
     expect(resolveMention(defaultAgents, catalog, a.id).agent).toBe(a);
-  expect(defaultAgents.find((a) => a.id === "reviewer")!.enabled).toBe(false);
-  expect(() => resolveMention(defaultAgents, catalog, "reviewer")).toThrow();
-  expect(defaultAgents.find((a) => a.id === "reviewer")!.toolIds).not.toContain(
-    "project-edit",
-  );
+  const readOnly = {
+    ...defaultAgent,
+    id: "read-only",
+    name: "只读",
+    skillIds: [],
+    toolIds: ["project-read"],
+  };
+  expect(
+    resolveMention([defaultAgent, readOnly], catalog, "read-only").agent,
+  ).toBe(readOnly);
+  expect(() =>
+    resolveMention([{ ...readOnly, enabled: false }], catalog, "read-only"),
+  ).toThrow();
+  expect(readOnly.toolIds).not.toContain("project-edit");
 });
 
 test("dollar selects agents while at-sign selects elements without matching embedded symbols", () => {

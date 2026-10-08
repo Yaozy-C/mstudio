@@ -1,27 +1,34 @@
 ---
 name: creative-ad-director
-description: Shared creative, cinematography, animation and prompt-conversion rules for Mstudio advertising roles.
+description: Direction methods for Mstudio: the viewing proposition, shot design, staging, on-camera performance, photographic appearance, rhythm and transferring a real reference shot to a product.
 ---
 
-# Creative and shot-design rules
+# Creative direction and shot design
 
-Prompt writing belongs to agents assigned the image-prompt or video-prompt Skill. Direction defines the intended staging and performance; the assigned prompt author converts that design.
+Direct the actual viewing experience: what the audience notices, understands, expects and remembers, and how the product takes part in it. This is a professional reference library, not a second production workflow. Loading it grants no extra tools or permissions. Separate user requirements, product facts and creative hypotheses; an invented event is never product evidence.
 
+## Read for the task at hand
 
-This is a professional reference library, not a second production workflow. Read the rules required by the current role and task. Loading this skill does not expand scope or permissions. Separate product facts, user objectives and creative hypotheses; invented events must not masquerade as performance evidence.
+Choose a reference by what the current task has to decide, not by job title. Reuse text already in context and read a linked document only to resolve a concrete question.
 
-## Read by responsibility
+| The task has to decide | Read |
+|---|---|
+| Whether a concept, opening or payoff is worth making, or how to repair a flat one | [Concept development](references/concepts.md) |
+| Shot purpose, viewpoint, staging, cuts and the handoff to production | [Shot grammar](references/cinematography.md) |
+| Turning a chosen script into shots, camera, action beats and continuity | [Shot design](references/shot-design.md) |
+| Whether an earlier design decision, product fact or input is still valid | [Constraints and facts](references/brief-and-facts.md), [project state](references/project-state.md) |
+| How shots, frames and generated clips depend on each other's state | [State continuity](references/continuity.md) |
+| **How a person actually behaves on camera: what triggers a reaction, when it starts, and how gaze, breath, head and body layer** | **[Naturalistic performance](references/naturalistic-performance.md)** |
+| Weight, force, contact and material response | [Animation principles](references/animation-principles.md) |
+| **How long each beat earns, what to omit, and how cuts and sound shape pace** | **[Rhythm](references/rhythm.md)** |
+| **Skin, faces, fabric and light that read as a photograph rather than a polished render** | **[Photographic appearance](references/photographic-appearance.md)** |
+| Reusing the relationship of a real reference shot for a different product | [Transferring a reference](references/shot-references.md) |
+| Handing an approved design to a generation task | [Production handoff](assets/production-brief-template.md) |
 
-| Responsibility | Main reference | Conditional reference |
-|---|---|---|
-| Writer: new concept or event revision | [Concepts](references/concepts.md) | [Opening criteria](../product-storyboard/references/creative-bar.md), [development practice](../product-storyboard/references/director-hook.md) |
-| Director: shot design or revision | [Shot grammar](references/cinematography.md) | [Animation principles](references/animation-principles.md), [rhythm](references/rhythm.md), [state dependencies](../product-storyboard/references/shots-and-continuity.md) |
-| Artist: frames and image prompts | [Image prompts](references/image-prompt-writing.md) | Staging and handoff in shot grammar; [frame inspection](../product-storyboard/references/preview-images.md) |
-| Media producer: implementation | [Control routes](references/shot-control.md), [video prompt conversion](references/video-prompt-writing.md) | Use the selected model’s injected guidance |
-| Editor: pacing changes | [Rhythm](references/rhythm.md) | [Editing execution](../product-video-production/references/motion-and-editing.md) |
+The task itself is the trigger for the bold entries: showing real people means read performance; fitting several timed events into a limited duration means read rhythm before designing the beats; asking for believable skin, light or material means read photographic appearance. Do not wait for an explicit complaint about the current output.
 
-## Execute in Mstudio
+## Boundaries
 
-[Scriptwriting](../ad-script/SKILL.md) owns script fields, [storyboard direction](../product-storyboard/SKILL.md) owns shot fields and design handoff, [the artist](../storyboard-art/SKILL.md) owns images, and [production](../product-video-production/SKILL.md) owns model tasks and footage selection.
+Script content and dialogue wording belong to [ad-script](../ad-script/SKILL.md). Executing frames and writing image prompts belong to [image-production](../image-production/SKILL.md). Converting a design into a final video prompt, choosing inputs and generating belong to [product-video-production](../product-video-production/SKILL.md). Cutting, grading and transitions belong to [video-editing](../video-editing/SKILL.md). This Skill decides staging, camera, performance intent, timing, continuity and the viewing proposition.
 
-Use supplied current model capabilities; query mstudio_models only for missing or changed guidance. Do not invent parameters or switch services by default. Distinguish written design, actual frames, motion and sound checks; submission success does not establish output quality. Generation uses the scoped [production handoff](../product-storyboard/SKILL.md#production-handoff).
+Distinguish written design, actual frames, motion and sound. A saved design or a submitted task is not a verified result. Model syntax, limits and input modes come from the selected model's injected guidance; never invent parameters or switch services by default.

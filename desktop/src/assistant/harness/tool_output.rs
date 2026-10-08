@@ -24,7 +24,11 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     if value.get("__offloadedImage").is_some() {
         return json!({"ok":true,"imageId":value["imageId"]});
     }
-    if call.function.name == "mstudio_read_result" || value.to_string().chars().count() <= limit {
+    if matches!(
+        call.function.name.as_str(),
+        "mstudio_read_result" | "mstudio_read_skill"
+    ) || value.to_string().chars().count() <= limit
+    {
         return value.clone();
     }
     let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0) for this task; supply turnId for another task.","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
@@ -146,6 +150,18 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
 mod tests {
     use super::*;
     use rig_core::message::ToolFunction;
+    #[test]
+    fn skill_body_is_delivered_without_a_second_result_pagination() {
+        let call = ToolCall::from_wire(
+            "skill",
+            rig_core::message::ToolFunction {
+                name: "mstudio_read_skill".into(),
+                arguments: json!({"skill":"creative-ad-director"}),
+            },
+        );
+        let value = json!({"text":"camera method ".repeat(2000),"nextOffset":null});
+        assert_eq!(project(&call, &value, Some("turn")), value);
+    }
     #[test]
     fn bounded_clip_page_is_delivered_without_a_second_model_read() {
         let call = ToolCall::from_wire(

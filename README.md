@@ -81,7 +81,7 @@ These are example requests, not recorded execution results:
 - **Script to shots.** Write visuals, dialogue, on-screen text and sound as separate fields. Set paragraph timing and keep shots linked to their source script.
 - **A canvas for production.** Arrange references and media, inspect storyboard frames, and keep alternatives together before deciding what belongs in the film.
 - **Your models, your workflow.** Configure chat and media models separately. Generate and revise images or videos with the references and controls supported by each provider.
-- **Specialist Agents.** Configure a producer, writer, shot director, storyboard artist, editor and other roles with editable instructions, Skills and tool permissions. Reference specific project items in conversation.
+- **Specialist Agents.** Configure a coordinator, a creative direction role, a media production role and an editor with editable instructions, Skills and tool permissions. Reference specific project items in conversation.
 - **An editable timeline.** Arrange multiple tracks; split, trim and retime clips; detach audio; adjust color and transitions; add captions and local voiceover; preview and export MP4.
 - **Local project storage.** Automatic saving, project memory, a reusable media library and storage migration. The interface supports English and Simplified Chinese.
 

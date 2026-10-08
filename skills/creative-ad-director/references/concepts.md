@@ -1,15 +1,15 @@
-# From supported benefit to advertising event
+# Develop and repair the viewing proposition
 
-State what the user wants viewers to understand and the product evidence supporting it. Separate consumer insight, commission objective and creative hypothesis. A character or scene name is not insight.
+This is the shared concept method for writers and directors. For a new idea, compare a few materially different viewing experiences and choose one that fits the product, audience and available assets. For a revision, locate the weak relationship before changing the concept.
 
-Explore how a benefit could become visible: a clearer before/after relationship, a product causing or resolving an event, or humor, rhythm and metaphor helping recall. These are questions, not mandatory categories or recipes. Do not choose a camera trick first and invent a product rationale afterward.
+Describe the actual opening action or line, what makes the next moment worth watching, the payoff and the product's contribution. The opening and continuation must be concrete enough to write now. "Relatable", "cinematic", "fast" and "satisfying" are not event descriptions. A familiar use case is valid; neither novelty nor exclusive functionality is required.
 
-For a few substantively different candidates record benefit/source, opening/change/payoff, event-to-benefit relationship, permitted exaggeration versus factual properties, and the hardest relationship/minimum check. Reject invented core needs, unsupported claims, title-only meaning and an irrelevant spectacle with a product attached at the end. Category relevance is sufficient; product exclusivity is not required.
+Build the middle around that promise. Surprise can resolve and open a new question; comedy can escalate; motion or sound can develop a pattern; a demonstration can expose evidence. Preserve pauses needed to recognize a result. Another feature, another location or a later day is not automatically progression. If removing a section loses no tension, information, rhythm or product evidence, shorten or omit it.
 
-Use [opening criteria](../../product-storyboard/references/creative-bar.md) to evaluate and [opening practice](../../product-storyboard/references/director-hook.md) to develop alternatives. Do not maintain another competing scoring workflow. If candidates fail, change the event/value relationship or resolve missing evidence rather than repeatedly replacing the theme.
+Separate a product-enabled result from a change in the user's behavior. Make the actual help observable without inventing a need or capability. Storytelling exaggeration cannot establish real capacity, insulation or durability. Use supported evidence for claims and purchase details.
 
-## Connect the opening to the body
+For a reference, retain source/time range, observed mechanism and the condition that makes it transferable. Reuse the relationship, not the product claims or mandatory shot lengths. Production tutorials establish a way to make an effect; audience and sales results require their own evidence. Keep detailed cases in project research rather than loading a catalog into every request.
 
-Product components establish structure; benefits describe supported consequences for a user. Preserving every visible part does not require a dedicated feature shot for each one. Do not infer unverified convenience or performance from geometry alone.
+Repair the premise when its promise or product connection is weak; repair staging or editing when a sound idea is expressed poorly. Compare audience attention, continued viewing and product action separately, with sample sizes and comparable conditions. Revise the hypothesis from use; do not turn one outcome into a universal rule.
 
-Answer the opening promise through use, consequence or ending. A clear demonstration may serve the same main claim without turning every feature into spectacle. During revision, check whether shorter action removes reading time, extra features displace the event, or added seconds actually support necessary information. Written timing is a plan; dynamic pacing is checked in an authorized rough cut.
+Sources: [TikTok structure and stimulation](https://ads.tiktok.com/business/en-US/creative-codes), [hook and continuation](https://github.com/coreyhaines31/marketingskills/blob/main/skills/ad-creative/references/hook-system.md), [Krea cut architecture](https://github.com/krea-ai/skills/blob/main/krea-motion/references/cut-architecture.md), [Higgsfield shot-list skill](https://higgsfield.ai/academy/courses/ai-ad-3-step/the-shot-list-and-the-skill).

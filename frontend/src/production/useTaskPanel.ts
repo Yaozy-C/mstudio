@@ -44,7 +44,7 @@ export function useTaskPanel(
         new CustomEvent("studio-creative-request", {
           detail: {
             text: "",
-            agentId: task.kind === "image" ? "storyboard-artist" : "production",
+            agentId: "production",
           },
         }),
       );

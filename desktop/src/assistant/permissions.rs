@@ -153,14 +153,27 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
             } else {
                 kinds.get(id).map(String::as_str).unwrap_or("")
             };
+            // Creating or deleting a record is structural and belongs to the
+            // capability that owns that kind of record. Editing an existing
+            // record's content may also be done by the roles that fill in its
+            // prompt, frames or references.
+            let structural = matches!(name, "add_node" | "remove_node");
             let screenplay = kind == "screenplay" && has("project-script");
-            let shot = kind == "shot" && has("project-shots");
-            let production = kind == "shot" && has("project-production");
-            let frames = kind == "shot" && has("project-frames");
-            let asset = has("project-assets")
-                && (kind == "asset" || (kind == "shot" && name == "set_references"));
+            let shot = kind == "shot"
+                && if structural {
+                    has("project-shots")
+                } else {
+                    has("project-shots") || has("project-production") || has("project-frames")
+                };
+            let asset = kind == "asset" && has("project-assets");
+            let references = kind == "shot"
+                && name == "set_references"
+                && (has("project-shots")
+                    || has("project-production")
+                    || has("project-frames")
+                    || has("project-assets"));
             ensure!(
-                screenplay || shot || production || frames || asset,
+                screenplay || shot || asset || references,
                 "Node outside this Agent's edit scope"
             );
             if name == "add_node" || name == "update_node" {

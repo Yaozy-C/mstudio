@@ -1,11 +1,8 @@
 import {
   Graph,
   PencilSimple,
-  Crop,
-  Image,
   FilmReel,
   Faders,
-  CheckSquare,
   Cube,
   type IconProps,
 } from "@phosphor-icons/react";
@@ -23,11 +20,8 @@ export function AgentMark({
     {
       coordinator: Graph,
       concept: PencilSimple,
-      storyboard: Crop,
-      "storyboard-artist": Image,
       production: FilmReel,
       editor: Faders,
-      reviewer: CheckSquare,
     }[id] ?? Graph;
   return <Icon aria-hidden="true" weight="regular" {...props} />;
 }

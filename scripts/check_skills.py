@@ -10,9 +10,12 @@ def slug(heading):
     return re.sub(r"\s", "-", heading)
 
 
+EXPECTED = {"ad-script", "creative-ad-director", "image-production", "product-video-production", "video-editing"}
+
+
 def validate(root):
     errors = []
-    expected = {"image-prompt", "video-prompt", "asset-preparation", "color-grading", "transition-design", "ad-team", "ad-script", "storyboard-art", "creative-ad-director", "product-storyboard", "product-video-production"}
+    expected = EXPECTED
     folders = {p.name for p in root.iterdir() if p.is_dir()}
     if folders != expected:
         errors.append(f"skill folders differ: {folders ^ expected}")
@@ -63,4 +66,4 @@ if __name__ == "__main__":
     if errors:
         print("\n".join(errors))
         sys.exit(1)
-    print(f"Skills: 11 packages, {len(list(root.rglob('*.md')))} portable Markdown resources; links valid")
+    print(f"Skills: {len(EXPECTED)} packages, {len(list(root.rglob('*.md')))} portable Markdown resources; links valid")

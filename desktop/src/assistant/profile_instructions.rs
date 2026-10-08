@@ -1,11 +1,30 @@
-//! Upgrade only recognized shipped instruction bodies; preserve user customizations.
+//! Upgrade recognized defaults; preserve custom instructions and capability choices.
 use super::profiles::AgentProfile;
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Baseline {
+    instructions: Vec<String>,
+    description: String,
+    skill_ids: Vec<String>,
+    tool_ids: Vec<String>,
+}
+fn digest(text: &str) -> String {
+    format!("{:x}", Sha256::digest(text.as_bytes()))
+}
 pub(super) fn upgrade(saved: &mut [AgentProfile], builtins: &[AgentProfile]) -> bool {
-    let baseline: BTreeMap<String, String> =
-        serde_json::from_str(include_str!("profile_instruction_baseline.json"))
-            .expect("valid shipped instruction baseline");
+    let baseline = serde_json::from_str(include_str!("profile_instruction_baseline.json"))
+        .expect("valid shipped profile baseline");
+    apply(saved, builtins, &baseline)
+}
+fn apply(
+    saved: &mut [AgentProfile],
+    builtins: &[AgentProfile],
+    baseline: &BTreeMap<String, Baseline>,
+) -> bool {
     let mut changed = false;
     for profile in saved {
         let Some(old) = baseline.get(&profile.id) else {
@@ -14,8 +33,28 @@ pub(super) fn upgrade(saved: &mut [AgentProfile], builtins: &[AgentProfile]) -> 
         let Some(current) = builtins.iter().find(|p| p.id == profile.id) else {
             continue;
         };
-        if profile.instructions == *old && profile.instructions != current.instructions {
+        if !old.instructions.contains(&digest(&profile.instructions)) {
+            continue;
+        }
+        let instructions = profile.instructions != current.instructions;
+        let description =
+            profile.description == old.description && profile.description != current.description;
+        let skills = profile.skill_ids == old.skill_ids && profile.skill_ids != current.skill_ids;
+        let tools = profile.tool_ids == old.tool_ids && profile.tool_ids != current.tool_ids;
+        if instructions {
             profile.instructions.clone_from(&current.instructions);
+        }
+        if description {
+            profile.description.clone_from(&current.description);
+        }
+        // Upgrade untouched defaults; custom capability choices remain intact.
+        if skills {
+            profile.skill_ids.clone_from(&current.skill_ids);
+        }
+        if tools {
+            profile.tool_ids.clone_from(&current.tool_ids);
+        }
+        if instructions || description || skills || tools {
             profile.revision += 1;
             changed = true;
         }
@@ -26,50 +65,41 @@ pub(super) fn upgrade(saved: &mut [AgentProfile], builtins: &[AgentProfile]) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{assistant::profiles, database::Store};
+    use crate::assistant::profiles;
     #[test]
-    fn upgrades_recognized_instructions_once_without_replacing_user_configuration() {
-        let root =
-            std::env::temp_dir().join(format!("mstudio-prompt-upgrade-{}", mstudio::media::id()));
-        let store = Store::open(root.clone()).unwrap();
-        let db = store.db.lock().unwrap();
-        let baseline: BTreeMap<String, String> =
-            serde_json::from_str(include_str!("profile_instruction_baseline.json")).unwrap();
-        let mut saved = profiles::builtins();
-        let editor = saved.iter_mut().find(|p| p.id == "editor").unwrap();
-        editor.instructions = baseline["editor"].clone();
-        editor.name = "My editor".into();
-        editor.enabled = false;
-        editor.tool_ids = vec!["project-read".into()];
-        editor.revision = 100;
-        let custom = saved.iter_mut().find(|p| p.id == "concept").unwrap();
-        custom.instructions = "我的自定义要求：不要覆盖".into();
-        db.execute("INSERT INTO settings(key,value) VALUES('agents',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [serde_json::to_string(&saved).unwrap()]).unwrap();
-        let first = profiles::read(&db).unwrap();
-        let editor = first.iter().find(|p| p.id == "editor").unwrap();
-        assert_eq!(editor.name, "My editor");
-        assert!(!editor.enabled);
-        assert_eq!(editor.tool_ids, ["project-read"]);
-        assert_eq!(editor.revision, 101);
-        assert!(
-            editor
-                .instructions
-                .contains("complete authoritative receipts")
-        );
-        assert_eq!(
-            first
-                .iter()
-                .find(|p| p.id == "concept")
-                .unwrap()
-                .instructions,
-            "我的自定义要求：不要覆盖"
-        );
-        assert_eq!(
-            serde_json::to_value(&first).unwrap(),
-            serde_json::to_value(profiles::read(&db).unwrap()).unwrap()
-        );
-        drop(db);
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
+    fn upgrade_preserves_custom_profiles_and_restrictions_and_is_idempotent() {
+        let defaults = profiles::builtins();
+        let mut saved = vec![
+            defaults[0].clone(),
+            defaults[0].clone(),
+            defaults[0].clone(),
+        ];
+        for p in &mut saved {
+            p.instructions = "previous shipped instructions".into();
+            p.skill_ids = vec!["ad-script".into()];
+            p.tool_ids = vec!["project-read".into(), "agent-delegate".into()];
+        }
+        saved[0].name = "My assistant".into();
+        saved[0].enabled = false;
+        saved[1].tool_ids = vec!["project-read".into()];
+        saved[2].instructions = "User authored".into();
+        let custom = serde_json::to_value(&saved[2]).unwrap();
+        let baseline = BTreeMap::from([(
+            "coordinator".into(),
+            Baseline {
+                instructions: vec![digest("previous shipped instructions")],
+                description: saved[0].description.clone(),
+                skill_ids: saved[0].skill_ids.clone(),
+                tool_ids: saved[0].tool_ids.clone(),
+            },
+        )]);
+        assert!(apply(&mut saved, &defaults, &baseline));
+        assert_eq!(saved[0].tool_ids, defaults[0].tool_ids);
+        assert_eq!(saved[0].skill_ids, defaults[0].skill_ids);
+        assert_eq!(saved[0].name, "My assistant");
+        assert!(!saved[0].enabled);
+        assert_eq!(saved[1].tool_ids, ["project-read"]);
+        assert_eq!(serde_json::to_value(&saved[2]).unwrap(), custom);
+        assert!(!apply(&mut saved, &defaults, &baseline));
     }
 }

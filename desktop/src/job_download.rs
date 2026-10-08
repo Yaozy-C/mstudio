@@ -30,19 +30,23 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         .filter(|a| a.is_object())
         .or_else(|| if index == 0 { job.get("asset") } else { None })
     {
+        ensure!(asset["deleted"] != true, "生成结果已删除");
         let mut asset: Asset = serde_json::from_value(asset.clone())?;
         asset.generated = true;
         asset.missing = !std::path::Path::new(&asset.path).is_file();
+        crate::assistant::result_check::record(
+            &store,
+            &project,
+            &job,
+            &serde_json::to_value(&asset)?,
+        )?;
         return Ok(asset);
     }
     ensure!(
         ["COMPLETED", "FAILED", "CANCELLED"].contains(&job["status"].as_str().unwrap_or("")),
         "任务尚未结束"
     );
-    let outputs = crate::model_adapters::for_job(&job)?.outputs(&job["result"]);
-    let output = outputs
-        .get(index)
-        .context("未找到可导入的媒体结果；请检查模型输出类型")?;
+    let output = output_at(&job, index)?;
     let (temp, extension) = if output.url.starts_with("data:") {
         let (mime, bytes) = crate::model_adapters::image_data::image_bytes(&output.url)?;
         let extension = match mime {
@@ -119,13 +123,47 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
     if !job["assets"].is_array() {
         job["assets"] = serde_json::json!([]);
     }
-    let assets = job["assets"].as_array_mut().unwrap();
-    assets.resize(assets.len().max(index + 1), serde_json::Value::Null);
-    assets[index] = value.clone();
+    {
+        let assets = job["assets"].as_array_mut().unwrap();
+        assets.resize(assets.len().max(index + 1), serde_json::Value::Null);
+        assets[index] = value.clone();
+    }
+    crate::assistant::result_check::record(&store, &project, &job, &value)?;
     if index == 0 {
         job["asset"] = value;
     }
     jobs::save(&store, &job)?;
     crate::project_service::notify(app, &project);
     Ok(asset)
+}
+
+fn output_at(job: &serde_json::Value, index: usize) -> Result<crate::model_adapters::ModelOutput> {
+    if let Some(output) = job["outputs"].get(index) {
+        ensure!(output["deleted"] != true, "生成结果已删除");
+        return Ok(serde_json::from_value(output.clone())?);
+    }
+    crate::model_adapters::for_job(job)?
+        .outputs(&job["result"])
+        .into_iter()
+        .nth(index)
+        .context("未找到可导入的媒体结果；请检查模型输出类型")
+}
+
+#[cfg(test)]
+mod deletion_tests {
+    use super::*;
+    #[test]
+    fn deleting_one_output_preserves_other_output_indices() {
+        let job = serde_json::json!({"outputs":[{"deleted":true},{"kind":"image","url":"https://example.com/keep.png"}],"result":null});
+        assert!(
+            output_at(&job, 0)
+                .unwrap_err()
+                .to_string()
+                .contains("已删除")
+        );
+        assert_eq!(
+            output_at(&job, 1).unwrap().url,
+            "https://example.com/keep.png"
+        );
+    }
 }

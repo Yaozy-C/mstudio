@@ -64,6 +64,8 @@ pub fn read(store: &Store, project: &str, profile: &Profile, args: &Value) -> Va
                 _ => None,
             })
             .context("Image content missing")?;
+        // Reading real pixels is the evidence a produced result was waiting for.
+        crate::assistant::result_check::settle(store, project, id, "frames_read");
         // Use the same canonical multimodal tool-result path as restored images.
         Ok(json!({"ok":true,"imageId":image_id,"__offloadedImage":image}))
     })();

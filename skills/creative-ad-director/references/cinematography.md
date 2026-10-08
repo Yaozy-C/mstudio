@@ -35,6 +35,12 @@ When the action depends on a real product opening, closing, carrying or containi
 
 Assess the sequence before polishing isolated shots. Repetition without progression, purposeful emphasis or an echo should be merged or removed, not rescued by another angle.
 
+## Motion and perceived speed
+
+Specify subject motion and camera motion independently. For a speed-sensitive shot, decide what creates visible change: motion across the frame, approach/size change, passing foreground or motion relative to another subject. A camera locked to a subject may cancel its screen displacement; a fast world speed alone does not establish speed on screen. Choose framing, distance and environmental references accordingly; do not add shake or blur as a substitute for staging.
+
+For deterministic 3D work, record scene scale, time units, path and time progression separately, plus orientation, camera target/follow behavior and lens. Label provisional proxy dimensions as assumptions. Distinguish scene time from the chosen film interval and any intentional time remapping. Derive or constrain motion where needed instead of choosing arbitrary motion numbers. Hand off these decisions in existing text; they are not new model parameters. For ordinary generated shots use observable action/timing and compatible motion references rather than pretending a prose speed is a physical constraint.
+
 ## Coordinate action and camera
 
 Use [animation principles](animation-principles.md) for performance and [rhythm](rhythm.md) for time and sound. Align effort, contact, result and reaction with camera starts/stops, revelations, cuts and accents. Complex interaction needs readable beats; simple shots do not need every possible phase.
@@ -60,7 +66,7 @@ Use the existing shot text or table; simple shots can use short sentences. Do no
 5. **Locks and freedom:** preserve continuity, camera relationships, action order, required evidence and identity/parts that determine the effect. Identify secondary freedom. Separate user constraints from revisable director decisions. Shot count, slow motion, sound and animation style follow the current design, not another film's recipe.
 6. **Frames and verification:** the necessary frame moments, visible relationships and what static evidence cannot verify. Multiple frames do not multiply shot duration.
 
-Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. [Prompt conversion](video-prompt-writing.md) adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
+Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. [Prompt conversion](../../product-video-production/references/prompt-writing.md) adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
 
 Design review checks expression, compatible geometry and causal cuts. Actual frames check execution. Speed, performance pauses and synchronization require motion/audio evidence. Unexpected good results may be adopted only when they preserve the core task and user constraints.
 

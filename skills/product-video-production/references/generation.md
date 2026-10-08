@@ -1,6 +1,6 @@
 # Controlled generation and recovery
 
-Use the available image/video tools and relevant tool skill. Query unknown capabilities or reference limits instead of inventing parameters or switching paid APIs. Actual images require image-generation/editing tools; code can lay out generated assets but must not draw placeholder products and report them as generated results. Read [image prompting](../../creative-ad-director/references/image-prompt-writing.md) for still prompts.
+Use the available image/video tools and relevant tool skill. Query unknown capabilities or reference limits instead of inventing parameters or switching paid APIs. Actual images require image-generation/editing tools; code can lay out generated assets but must not draw placeholder products and report them as generated results. Read [image prompting](../../image-production/references/prompt-writing.md) for still prompts.
 
 ## Reduce uncontrolled variables
 
@@ -20,7 +20,7 @@ Before calls, identify the minimum final frame set. Generate only for new story 
 
 ## Separate concept and execution loops
 
-Concept changes address expectation, payoff and product relationship through [opening design](../../product-storyboard/references/director-hook.md). Generation repairs address structure, anatomy, framing and state. A failed render does not automatically invalidate the concept; polishing material does not repair a failed premise.
+Concept changes address expectation, payoff and product relationship through [opening design](../../creative-ad-director/references/concepts.md). Generation repairs address structure, anatomy, framing and state. A failed render does not automatically invalidate the concept; polishing material does not repair a failed premise.
 
 | Observed failure | Response |
 |---|---|

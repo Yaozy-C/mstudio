@@ -2,39 +2,56 @@ use super::{permissions, profiles, tool_schema};
 use serde_json::{Value, json};
 
 #[test]
-fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
-    let artist = profiles::builtins()
+fn production_owns_prompts_and_media_but_not_shot_structure_or_script() {
+    // production now holds project-frames and project-production together, so it owns the
+    // still prompt, the shot frames and the video prompt, and it may generate either kind.
+    // The old "cannot generate video" boundary now belongs to the asset-only profile
+    // exercised in operation_tools::tests instead of to a separate shipped role.
+    let agent = profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "storyboard-artist")
+        .find(|p| p.id == "production")
         .unwrap();
-    profiles::validate(&artist).unwrap();
-    let doc = json!({"nodes":[{"id":"s","kind":"shot"},{"id":"p","kind":"screenplay"}]});
+    profiles::validate(&agent).unwrap();
+    let doc = json!({"nodes":[{"id":"s","kind":"shot"},{"id":"p","kind":"screenplay"},{"id":"r","kind":"asset"}]});
     let check = |op: Value| {
         let args = json!({"action":"edit","operations":[op]});
-        crate::assistant::harness::schema::issues(&tool_schema::for_profile(&artist), &args)
+        crate::assistant::harness::schema::issues(&tool_schema::for_profile(&agent), &args)
             .is_empty()
-            && permissions::validate(&artist, &args, &doc).is_ok()
+            && permissions::validate(&agent, &args, &doc).is_ok()
     };
     assert!(check(
-        json!({"op":"update_node","id":"s","shot":{"framePrompt":"Wide shot","frames":[{"assetId":"image","title":"S01-A"}]}})
+        json!({"op":"update_node","id":"s","shot":{"framePrompt":"Wide shot","frames":[{"assetId":"image","title":"S01-A"}],"prompt":"Video"}})
     ));
     assert!(check(
         json!({"op":"request_generation","id":"s","mediaKind":"image","text":"Wide shot"})
     ));
+    assert!(check(
+        json!({"op":"request_generation","id":"s","mediaKind":"video","text":"Wide shot","mode":"multi"})
+    ));
+    // Creating or deleting a record is structural: production may manage asset
+    // records, but a shot record belongs to the capability that owns shot design.
+    assert!(!check(json!({"op":"remove_node","id":"s"})));
+    assert!(!check(json!({"op":"remove_node","id":"p"})));
+    assert!(check(
+        json!({"op":"add_node","id":"asset","kind":"asset","title":"Reference"})
+    ));
+    assert!(check(json!({"op":"remove_node","id":"r"})));
+    // production has no project-shots, project-script or project-edit: shot structure,
+    // staging text, timing, dialogue and screenplay content stay outside its scope.
     for op in [
         json!({"op":"request_generation","mediaKind":"video"}),
         json!({"op":"request_generation"}),
         json!({"op":"update_node","id":"s","text":"Change action"}),
         json!({"op":"update_node","id":"s","shot":{"duration":2}}),
-        json!({"op":"update_node","id":"s","shot":{"prompt":"Video"}}),
+        json!({"op":"update_node","id":"s","shot":{"scriptId":"p"}}),
+        json!({"op":"update_node","id":"s","shot":{"dialogue":"hello"}}),
         json!({"op":"update_node","id":"p","screenplay":{"story":"New story"}}),
-        json!({"op":"remove_node","id":"s"}),
         json!({"op":"add_node","id":"new","kind":"shot"}),
     ] {
-        assert!(!check(op));
+        assert!(!check(op.clone()), "{op}");
     }
     assert_eq!(
-        tool_schema::for_profile(&artist)["properties"]["operations"]["items"]["oneOf"]
+        tool_schema::for_profile(&agent)["properties"]["operations"]["items"]["oneOf"]
             .as_array()
             .unwrap()
             .iter()
@@ -42,7 +59,7 @@ fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
             .unwrap()["properties"]["mediaKind"]["const"],
         json!("image")
     );
-    let mut revoked = artist;
+    let mut revoked = agent;
     revoked.tool_ids.retain(|id| id != "media-generation");
     assert!(!permissions::allows_operation(
         &revoked,
@@ -51,30 +68,21 @@ fn artist_can_draw_but_cannot_rewrite_shots_or_generate_video() {
 }
 
 #[test]
-fn existing_catalog_gains_artist_without_overwriting_custom_roles() {
+fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
     let db = rusqlite::Connection::open_in_memory().unwrap();
     db.execute(
         "CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
         [],
     )
     .unwrap();
+    // A pre-refactor install is missing the roles profiles::read auto-adds now.
     let mut old = profiles::builtins();
-    old.retain(|p| {
-        ![
-            "storyboard-artist",
-            "colorist",
-            "transition-designer",
-            "asset-designer",
-        ]
-        .contains(&p.id.as_str())
-    });
-    let storyboard = old.iter_mut().find(|p| p.id == "storyboard").unwrap();
-    storyboard.revision = 1;
-    storyboard.name = "Old default".into();
-    let production = old.iter_mut().find(|p| p.id == "production").unwrap();
-    production.revision = 8;
-    production.instructions = "My custom rules".into();
-    production.enabled = false;
+    old.retain(|p| !["concept", "production", "editor"].contains(&p.id.as_str()));
+    let coordinator = old.iter_mut().find(|p| p.id == "coordinator").unwrap();
+    coordinator.revision = 8;
+    coordinator.name = "Old default".into();
+    coordinator.instructions = "My custom rules".into();
+    coordinator.enabled = false;
     db.execute(
         "INSERT INTO settings VALUES('agents', ?1)",
         [serde_json::to_string(&old).unwrap()],
@@ -82,31 +90,30 @@ fn existing_catalog_gains_artist_without_overwriting_custom_roles() {
     .unwrap();
     let loaded = profiles::read(&db).unwrap();
     assert_eq!(
-        loaded
-            .iter()
-            .filter(|p| p.id == "storyboard-artist")
-            .count(),
-        1
+        loaded.iter().filter(|p| p.id == "concept").count(),
+        1,
+        "an auto-added role appears exactly once"
     );
     assert_eq!(
-        loaded.iter().find(|p| p.id == "storyboard").unwrap().name,
-        "Old default"
+        loaded.iter().find(|p| p.id == "coordinator").unwrap().name,
+        "Old default",
+        "an existing saved role is not reset to its shipped default"
     );
-    for id in ["colorist", "transition-designer", "asset-designer"] {
+    for id in ["concept", "production", "editor"] {
         assert!(loaded.iter().any(|p| p.id == id && p.enabled));
     }
-    let custom = loaded.iter().find(|p| p.id == "production").unwrap();
+    let custom = loaded.iter().find(|p| p.id == "coordinator").unwrap();
     assert_eq!(custom.instructions, "My custom rules");
     assert!(!custom.enabled);
-    let mut artist = loaded
-        .iter()
-        .find(|p| p.id == "storyboard-artist")
-        .unwrap()
-        .clone();
-    artist.enabled = false;
-    profiles::save(&db, artist).unwrap();
-    assert!(profiles::resolve(&db, Some("storyboard-artist")).is_err());
-    assert_eq!(profiles::read(&db).unwrap().len(), 10);
+    let mut concept = loaded.iter().find(|p| p.id == "concept").unwrap().clone();
+    concept.enabled = false;
+    profiles::save(&db, concept).unwrap();
+    assert!(profiles::resolve(&db, Some("concept")).is_err());
+    assert_eq!(
+        profiles::read(&db).unwrap().len(),
+        4,
+        "coordinator plus the three auto-added roles"
+    );
 }
 
 #[test]
@@ -150,10 +157,17 @@ fn saved_role_instructions_are_authoritative_even_at_default_revision() {
 
 #[test]
 fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
-    let agent = profiles::builtins()
+    // The shipped roster has no dedicated asset role; the asset-only boundary
+    // (project-assets without frames, production or edit) is kept as an inline profile.
+    let mut agent = profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "asset-designer")
+        .find(|p| p.id == "production")
         .unwrap();
+    agent.tool_ids = vec![
+        "project-read".into(),
+        "project-assets".into(),
+        "media-generation".into(),
+    ];
     profiles::validate(&agent).unwrap();
     let doc = json!({"nodes":[{"id":"asset","kind":"asset"},{"id":"shot","kind":"shot"}],
         "production":{"drafts":{"asset-task":{"kind":"image","generationPurpose":"asset"},"frame":{"kind":"image"}}}});
@@ -186,6 +200,6 @@ fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
         json!({"op":"remove_node","id":"shot"}),
         json!({"op":"append_clip","assetId":"image"}),
     ] {
-        assert!(!check(op));
+        assert!(!check(op.clone()), "{op}");
     }
 }

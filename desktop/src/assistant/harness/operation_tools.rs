@@ -162,6 +162,8 @@ mod definitions;
 pub use definitions::tools;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_coordinator;
 
 pub fn is_edit(name: &str) -> bool {
     static NAMES: std::sync::OnceLock<std::collections::HashSet<String>> =
@@ -181,16 +183,10 @@ pub fn is_edit(name: &str) -> bool {
             })
             .contains(name)
 }
-pub fn decode(profile: &AgentProfile, name: &str, args: Value) -> Option<Result<Value, Value>> {
+/// Translate parameters already checked by the scheduler's tool boundary.
+pub fn decode(profile: &AgentProfile, name: &str, args: Value) -> Option<Value> {
     tools(profile)
         .into_iter()
         .find(|tool| tool.definition.name == name)
-        .map(|tool| {
-            let issues = super::schema::issues(&tool.definition.parameters, &args);
-            if issues.is_empty() {
-                Ok(tool.arguments(args))
-            } else {
-                Err(super::schema::rejection(issues))
-            }
-        })
+        .map(|tool| tool.arguments(args))
 }

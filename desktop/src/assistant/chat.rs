@@ -214,12 +214,13 @@ async fn execute(
     )
     .map_err(|e| e.to_string())?;
     snapshot["agent"] = crate::assistant::model_profile::role(&agent_profile);
+    snapshot["unverifiedResults"] = super::result_check::pending(&store, project_id);
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     let input = context::assemble_with_budget(
         &previous,
         payload.clone(),
         snapshot.clone(),
-        profile.input_budget().min(12_000),
+        profile.input_budget().unwrap_or(12_000).min(12_000),
     )?;
     let turn = client_turn_id;
     let record = |kind: &str, value: Value| {
@@ -232,7 +233,7 @@ async fn execute(
     record("user/message", json!({"text":prompt}))?;
     record(
         "request/context",
-        json!({"project":snapshot,"attachments":payload[0]["attachments"],"messages":input.as_array().unwrap().iter().map(|m|json!({"role":m["role"],"content":context::text_only(&m["content"])})).collect::<Vec<_>>(),"budgetEstimatedTokens":profile.input_budget().min(12_000),"taskId":scope.task_id}),
+        json!({"project":snapshot,"attachments":payload[0]["attachments"],"messages":input.as_array().unwrap().iter().map(|m|json!({"role":m["role"],"content":context::text_only(&m["content"])})).collect::<Vec<_>>(),"budgetEstimatedTokens":profile.input_budget().unwrap_or(12_000).min(12_000),"taskId":scope.task_id}),
     )?;
     history::update_payload(&store, project_id, turn, &context::text_only(&payload))
         .map_err(|e| e.to_string())?;
@@ -280,12 +281,12 @@ mod profile_refresh_tests {
         let in_flight = request.resolve_agent(&db).unwrap();
         let mut updated = in_flight.clone();
         updated.instructions = "New working instructions".into();
-        updated.skill_ids = vec!["product-storyboard".into()];
+        updated.skill_ids = vec!["creative-ad-director".into()];
         updated.tool_ids = vec!["project-read".into()];
         profiles::save(&db, updated).unwrap();
         let next = request.resolve_agent(&db).unwrap();
         assert_eq!(next.instructions, "New working instructions");
-        assert_eq!(next.skill_ids, ["product-storyboard"]);
+        assert_eq!(next.skill_ids, ["creative-ad-director"]);
         assert!(!profiles::allows(&next, "edit"));
         assert!(next.revision > in_flight.revision);
         assert_ne!(in_flight.instructions, next.instructions);

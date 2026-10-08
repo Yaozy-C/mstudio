@@ -1,30 +1,47 @@
 ---
 name: product-video-production
-description: Plan media inputs, diagnose generated action, select usable footage and edit timelines in Mstudio.
+description: Produce video in Mstudio: compile a shot design into a final model prompt, choose inputs and control routes, generate and repair clips, and judge the actual result.
 ---
 
-# Media production and editing
+# Video production
 
-Use the supplied shot design and [core](CORE.md). Production owns video implementation; the artist owns image prompts and stills; the editor owns source selection and audiovisual assembly. Consult the method relevant to the current work instead of following every phase.
+Turn an approved design into a final, usable video prompt and generated media, then judge the result from actual pixels. Use the supplied design; do not redesign the story or quietly widen the task. Loading this Skill grants no extra tools or permissions.
 
-## Production decisions
+## Read for the task at hand
 
-Use the selected model's current supplied rules and capability schema. Query model guidance only if missing or changed. Distinguish ordinary appearance/composition references from actual first/last-frame controls. Verify that the input's geometry and starting support can produce the intended event; calling a middle-state image 'not the first frame' does not remove the conflict.
+| The task has to decide | Read |
+|---|---|
+| How to compile the current segment into one final prompt | [Video prompt writing](references/prompt-writing.md) |
+| Which input mode and control route can express the planned action | [Control routes](references/control.md) |
+| Reference selection, segmentation and recovering a specific defect | [Controlled generation](references/generation.md) |
+| **How long each generated segment earns, what to leave out, and how cuts and sound line up in time** | **[Rhythm](../creative-ad-director/references/rhythm.md)** |
+| **How a person's reaction starts and layers on camera** | **[Naturalistic performance](../creative-ad-director/references/naturalistic-performance.md)** |
+| Weight, force, contact and material response inside the action | [Animation principles](../creative-ad-director/references/animation-principles.md) |
+| What a finished clip must be checked against | [Inspection evidence](references/evidence.md), [review and delivery](references/review.md) |
+| Selecting usable source intervals, trimming and assembling the timeline | [Editing](../video-editing/references/editing.md) |
 
-Apply [controlled generation](references/generation.md) for segmentation, reference selection and a specific production problem. The assigned video-prompt guide converts the design into final text. Keep user-locked aspect, resolution and duration in supported parameters; describe an unsupported requirement explicitly. Generated duration and edited shot duration can differ.
+A request that packs several timed events into a limited duration is itself the signal to read rhythm before writing the prompt, and a request showing real people is the signal to read performance. Do not wait for an explicit complaint.
 
-Judge action from its source and initial support through path/contact to destination. A correct ending cannot excuse a missing causal opening. For a faulty transfer, use a compatible input or the smallest useful split/cut consistent with the intended expression. Keep accepted ranges when possible; do not repeat contradictory references with longer negations. Return spatial design conflicts to direction with evidence.
+Read [core](CORE.md) for the short rules.
 
-## Source selection and timeline
+## Physical causality is not a full operating sequence
 
-Read [motion and editing](references/motion-and-editing.md) for usable source intervals, decisive action and sound synchronization. Use [rhythm](../creative-ad-director/references/rhythm.md) to distinguish startup delay, slow movement, repeated information, idle endings and insufficient recognition time. Remove redundant coverage instead of padding to provisional timing.
+An action has to be causally believable: its starting support, path, contact and release must be consistent, and nothing may cross a closed surface. That is a requirement on the action, not an instruction to show every step of it.
 
-trimIn/trimOut are source time, start is film time, and duration is (trimOut-trimIn)/speed. Set absolute speed directly; multiply current speed only for an explicit relative request. Whole-film retiming includes related track positions/speeds, caption times and fades while preserving source ranges. Local edits preserve unrelated tracks and accepted content.
+Decide which part of the action the audience actually needs — normally the decisive contact or change and its result — and omit preparation, repeated reaches, redundant handling and idle endings. Keep the supporting geometry consistent in what you do show. When a model cannot render the whole chain reliably, obtain the smallest supported segment that carries the needed event rather than lengthening the prompt to cover every stage.
 
-Use move_clip for position, slip_clip for source phase, and retime_clip for speed. Same-track ripple does not synchronize other audio/subtitles. Respect source handles and tool limits without silent clamping. Make timing edits before rechecking transitions or grading. For an animatic, existing still holds can test cuts and recognition time, not actual motion speed.
+## Bind every input to a concrete purpose
 
-## Inspect and deliver
+Each supplied image or video is one of: edit target, first frame, last frame, identity reference, product geometry and material evidence, composition or state reference, or motion reference. Name that use plus the subject it supplies in `references[].purpose` — for example "the lead's face and hair identity", "coworker's face and build identity", "opened main compartment as state reference", "reference clip 2.0-4.0s for hand-over motion" — never a bare label such as "content reference". `role` selects the technical input mode and `purpose` describes the visual use; both must be correct and consistent with the prompt text.
 
-Apply [output review](references/review-and-delivery.md) and [evidence boundaries](references/evidence-contract.md) to the relevant output. Handoff includes shot IDs, actual assets, usable source ranges, observed events and keep/trim/discard/repair decisions. Missing viewpoints or essential actions remain production gaps; trimming, captions or speed cannot conceal them.
+When more than one recurring person or object appears, bind every input to its named subject and keep the binding stable across segments. An unlabelled reference cannot carry a character's identity, and adding more unlabelled references does not fix a missing assignment.
 
-Return the saved prompt, media or timeline requested, with remaining dependencies. Parameters, extracted stills, playback and listening each support different claims; identify the evidence actually available.
+## Model inputs and parameters
+
+Use the selected model's current injected rules and capability schema; query model guidance only when it is missing or has changed. Distinguish ordinary appearance or composition references from actual first or last frame controls. Verify that an input's geometry and starting support can produce the intended event before relying on it; declaring a conflicting middle state "not the first frame" does not remove the conflict. Keep user-locked aspect, resolution and duration in supported parameters, and state an unsupported requirement explicitly instead of silently changing it.
+
+## Result state
+
+Submitted, generated, imported and visually inspected are four different states. A `COMPLETED` job proves the model finished, not that the clip is usable. When a result exists, check it against the original submitted prompt and the intended action before describing or reusing it: read actual frames for geometry, contact, identity and continuity, and state plainly which conclusions rest on frames, which need playback, and which still need listening. Report an evidence gap rather than implying a check happened.
+
+When a result is judged unusable, repair in this order: the smallest useful change to the input or the reference assignment, then the smallest split or cut that preserves the intended expression, then a different control route. Do not answer a diagnosed physical failure with longer negative lists, louder sound or global retiming.

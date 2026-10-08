@@ -3,49 +3,25 @@ use serde_json::{Value, json};
 
 pub(super) fn model_metadata(mut item: Value) -> Value {
     let (name, description) = match item["id"].as_str().unwrap_or_default() {
-        "image-prompt" => (
-            "Image prompts",
-            "Visible composition, poses, support and reference translation",
-        ),
-        "video-prompt" => (
-            "Video prompts",
-            "Action, timing, contact and sound translation",
-        ),
-        "asset-preparation" => (
-            "Reference assets",
-            "White-background character, wardrobe, product and prop references",
-        ),
-        "color-grading" => (
-            "Color grading",
-            "Color correction, shot matching and supported tool boundaries",
-        ),
-        "transition-design" => (
-            "Transition design",
-            "Action matching, pacing and shot joins",
-        ),
         "ad-script" => (
             "Creative audiovisual script",
-            "Concepts, visible events, on-screen text and sound",
-        ),
-        "storyboard-art" => (
-            "Storyboard frames",
-            "Still composition, image prompts and local image repairs",
-        ),
-        "product-storyboard" => (
-            "Shot design",
-            "Video intent, story, action beats and corresponding shots",
+            "Content-first concepts, viewing payoff, audio-visual script and local research",
         ),
         "creative-ad-director" => (
             "Creative direction",
-            "Advertising concepts, cinematography and model prompt conversion",
+            "Viewing proposition, shot design, on-camera performance, photographic appearance and rhythm",
+        ),
+        "image-production" => (
+            "Image production",
+            "Image prompts, storyboard frames, reference assets and frame inspection",
         ),
         "product-video-production" => (
             "Video production",
-            "References, segmented production, local repair and final review",
+            "Video prompts, input purposes, generation, repair and result judgement",
         ),
-        "ad-team" => (
-            "Team coordination",
-            "Specialist collaboration, handoffs and local revisions",
+        "video-editing" => (
+            "Editing and finishing",
+            "Source selection, pace, colour, transitions and sound",
         ),
         _ => return item,
     };
@@ -65,10 +41,10 @@ mod tests {
     use super::*;
     #[test]
     fn model_catalog_is_english_without_mutating_ui_catalog_or_rule_bodies() {
-        let ui = json!([{"id":"ad-team","name":"团队统筹","description":"专业协作","core":"CUSTOM_USER_RULE","revision":42}]);
+        let ui = json!([{"id":"ad-script","name":"创意与声画脚本","description":"专业协作","core":"CUSTOM_USER_RULE","revision":42}]);
         let model = model_catalog(ui.clone());
-        assert_eq!(ui[0]["name"], "团队统筹");
-        assert_eq!(model[0]["name"], "Team coordination");
+        assert_eq!(ui[0]["name"], "创意与声画脚本");
+        assert_eq!(model[0]["name"], "Creative audiovisual script");
         assert_eq!(model[0]["core"], "CUSTOM_USER_RULE");
         assert_eq!(model[0]["revision"], 42);
     }

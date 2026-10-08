@@ -103,9 +103,7 @@ export function SkillRules({
                 >
                   {["SKILL.md", ...(page.resources ?? [])].map((resource) => (
                     <option key={resource} value={resource}>
-                      {resource === "CORE.md"
-                        ? t("自动加载核心规则")
-                        : resource}
+                      {resource === "CORE.md" ? t("核心规则") : resource}
                     </option>
                   ))}
                 </select>

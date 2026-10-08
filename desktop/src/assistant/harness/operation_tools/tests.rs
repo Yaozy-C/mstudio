@@ -1,20 +1,58 @@
 use super::*;
 use crate::assistant::tool_schema;
-fn profile(id: &str) -> AgentProfile {
+pub(super) fn profile(id: &str) -> AgentProfile {
     crate::assistant::profiles::builtins()
         .into_iter()
         .find(|p| p.id == id)
         .unwrap()
 }
+// The shipped roster has no dedicated asset role; the asset-only boundary
+// (project-assets without frames or production) is kept as an inline profile.
+pub(super) fn asset_profile() -> AgentProfile {
+    let mut p = profile("production");
+    p.tool_ids = vec![
+        "project-read".into(),
+        "project-assets".into(),
+        "media-generation".into(),
+    ];
+    p
+}
+// Exercise the real scheduler validation boundary before translating operations.
+pub(super) fn decode(
+    profile: &AgentProfile,
+    name: &str,
+    args: Value,
+) -> Option<Result<Value, Value>> {
+    let definitions: Vec<_> = tools(profile)
+        .into_iter()
+        .map(|tool| tool.definition)
+        .collect();
+    if !definitions.iter().any(|definition| definition.name == name) {
+        return None;
+    }
+    let call = rig_core::message::ToolCall::from_wire(
+        "test",
+        rig_core::message::ToolFunction {
+            name: name.into(),
+            arguments: args.clone(),
+        },
+    );
+    if let Some(error) = super::super::scheduler::validate(&definitions, &call) {
+        return Some(Err(error));
+    }
+    super::decode(profile, name, args).map(Ok)
+}
 #[test]
 fn production_has_direct_prompt_tools_without_storyboard_writes() {
     let p = profile("production");
     let available = tools(&p);
+    // production has no project-shots/project-script/project-edit, so it still gets no
+    // shot-structure or screenplay writer. Its generic node writer exists only for the
+    // asset nodes project-assets covers, not for shot or screenplay design.
     for name in [
         "mstudio_edit",
         "mstudio_update_shot",
         "mstudio_update_shots",
-        "mstudio_update_node",
         "mstudio_update_screenplay",
     ] {
         assert!(
@@ -22,6 +60,16 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
             "{name}"
         );
     }
+    let update_node = available
+        .iter()
+        .find(|t| t.definition.name == "mstudio_update_node")
+        .expect("project-assets exposes the asset node writer");
+    let properties = update_node.definition.parameters["properties"]
+        .as_object()
+        .unwrap();
+    assert!(!properties.contains_key("shot"));
+    assert!(!properties.contains_key("screenplay"));
+    assert!(properties.contains_key("assetId"));
     let args = decode(
         &p,
         "mstudio_set_video_prompt",
@@ -32,6 +80,18 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     assert_eq!(
         args,
         json!({"action":"edit","operations":[{"op":"update_node","id":"s","shot":{"prompt":"English dialogue"}}]})
+    );
+    // The still prompt is the same direct edit; production owns both prompt kinds now.
+    let args = decode(
+        &p,
+        "mstudio_set_image_prompt",
+        json!({"id":"s", "framePrompt":"English still"}),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        args,
+        json!({"action":"edit","operations":[{"op":"update_node","id":"s","shot":{"framePrompt":"English still"}}]})
     );
     for invalid in [
         json!({"id":"s","patch":{"prompt":"x"}}),
@@ -73,7 +133,7 @@ fn generation_and_task_prompts_map_without_source_edits() {
         .unwrap()
         .is_err()
     );
-    let asset = profile("asset-designer");
+    let asset = asset_profile();
     assert!(decode(&asset, "mstudio_generate_video", json!({"prompt":"x"})).is_none());
     let args = decode(
         &asset,
@@ -127,21 +187,20 @@ fn every_role_has_unique_classified_tools_and_valid_internal_mapping() {
 }
 #[test]
 fn creation_tools_fix_kind_and_keep_body_separate_from_shot_fields() {
-    for (role, name, input, kind) in [
+    for (p, name, input, kind) in [
         (
-            "storyboard",
+            profile("concept"),
             "mstudio_add_shot",
-            json!({"id":"new","title":"Shot","text":"Action","screenplayId":"script","scriptId":"paragraph","duration":5}),
+            json!({"id":"new","title":"Shot","text":"Action","screenplayId":"script","scriptId":"paragraph","order":1,"duration":5}),
             "shot",
         ),
         (
-            "asset-designer",
+            asset_profile(),
             "mstudio_add_asset",
             json!({"id":"new","title":"Asset","assetId":"media"}),
             "asset",
         ),
     ] {
-        let p = profile(role);
         let args = decode(&p, name, input).unwrap().unwrap();
         assert_eq!(args["operations"][0]["kind"], kind);
         assert!(

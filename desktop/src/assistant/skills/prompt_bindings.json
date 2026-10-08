@@ -1,22 +1,14 @@
 {
   "skills": {
-    "image-prompt": {
-      "kind": "image",
-      "resources": [
-        "SKILL.md",
-        "../creative-ad-director/references/image-prompt-writing.md"
-      ]
+    "image-production": {
+      "kind": "image"
     },
-    "video-prompt": {
-      "kind": "video",
-      "resources": [
-        "SKILL.md",
-        "../creative-ad-director/references/video-prompt-writing.md"
-      ]
+    "product-video-production": {
+      "kind": "video"
     }
   },
   "quickAgents": {
-    "image": "storyboard-artist",
+    "image": "production",
     "video": "production"
   }
 }

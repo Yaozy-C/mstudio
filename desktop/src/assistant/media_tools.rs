@@ -43,9 +43,12 @@ mod tests {
         assert_eq!(result["models"][0]["id"], "image");
         let profiles = super::super::profiles::builtins();
         let production = profiles.iter().find(|p| p.id == "production").unwrap();
-        let reviewer = profiles.iter().find(|p| p.id == "reviewer").unwrap();
+        // The retired reviewer has no successor; keep the read-only boundary with an
+        // inline profile that has no media-generation tool.
+        let mut read_only = profiles.iter().find(|p| p.id == "editor").unwrap().clone();
+        read_only.tool_ids = vec!["project-read".into(), "memory-read".into()];
         assert!(super::super::profiles::allows(production, "models"));
-        assert!(!super::super::profiles::allows(reviewer, "models"));
+        assert!(!super::super::profiles::allows(&read_only, "models"));
         let profile = serde_json::to_value(production).unwrap();
         assert!(profile.get("modelId").is_none());
         assert!(profile.get("mediaModelIds").is_none());

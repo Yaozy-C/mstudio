@@ -3,10 +3,17 @@ use super::*;
 #[test]
 fn asset_tool_contract_rejects_all_errors_before_saving_and_corrected_call_commits_once() {
     let (store, before, _) = fixture();
-    let profile = crate::assistant::profiles::builtins()
+    // The retired asset-designer has no successor; keep exercising the asset-only
+    // boundary with an inline profile that has assets and generation but no frames.
+    let mut profile = crate::assistant::profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "asset-designer")
+        .find(|p| p.id == "production")
         .unwrap();
+    profile.tool_ids = vec![
+        "project-read".into(),
+        "project-assets".into(),
+        "media-generation".into(),
+    ];
     crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"execution":"confirm"},"instruction":"Generate"}}}))).unwrap();
     let bad = json!({"action":"edit","operations":[{"type":"request_generation","mediaKind":"image","text":"Synthetic reference","mode":"image","modelId":"invalid"}]});
     let result = execute(&store, &profile, "p", "turn", "bad", bad).unwrap();
@@ -160,6 +167,40 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
         request["uploaded"] = json!([{"assetId":"image","kind":"image","url":url}]);
         assert!(runtime::execute(request).unwrap().get("error").is_some());
     }
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn startup_repairs_receiving_status_from_imported_job_without_duplicate_assets() {
+    let (store, mut doc, _) = fixture();
+    let asset = json!({"id":"done","kind":"video","name":"Done","path":"/done.mp4","preview":"/done.jpg","duration":15,"width":480,"height":832,"hasAudio":true});
+    let task = json!({"key":"run","kind":"video","mode":"multi","prompt":"Keep","inputs":[],"modelId":"model","jobId":"job","submissionId":"job","turnId":"turn","status":"RECEIVING","resultAssetId":"done","resultAssetIds":["done"]});
+    doc["assets"] = json!([asset]);
+    doc["nodes"].as_array_mut().unwrap().push(json!({"id":"result","kind":"asset","assetId":"done","title":"Done","text":"Keep","x":0,"y":0}));
+    doc["production"] = json!({"drafts":{"run":task}});
+    crate::projects::write_document(&store, doc.clone(), false).unwrap();
+    let job = json!({"id":"job","projectId":"p","status":"COMPLETED","outputCount":1,"assets":[asset],"shot":{"canvasGeneration":{"task":task,"x":0,"y":0}}});
+    store
+        .db
+        .lock()
+        .unwrap()
+        .execute("INSERT INTO jobs VALUES('job','p',?1)", [job.to_string()])
+        .unwrap();
+    production::recover(&store).unwrap();
+    let restored = load(&store.db.lock().unwrap(), "p").unwrap();
+    assert_eq!(
+        restored["production"]["drafts"]["run"]["status"],
+        "COMPLETED"
+    );
+    assert_eq!(restored["assets"], doc["assets"]);
+    assert_eq!(restored["nodes"], doc["nodes"]);
+    assert!(
+        production::candidates(&store.db.lock().unwrap())
+            .unwrap()
+            .is_empty()
+    );
     let root = store.root.clone();
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

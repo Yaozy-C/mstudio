@@ -41,69 +41,6 @@ pub fn seed(db: &Connection, root: &Path) -> Result<()> {
     tx.commit()?;
     Ok(())
 }
-// Install a newly shipped capability once. Never refresh saved rule bodies.
-pub fn install_asset_defaults(db: &Connection) -> Result<()> {
-    let installed: bool = db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM settings WHERE key='asset_preparation_initialized')",
-        [],
-        |r| r.get(0),
-    )?;
-    if installed {
-        return Ok(());
-    }
-    let tx = db.unchecked_transaction()?;
-    tx.execute("INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES('asset-preparation','SKILL.md',?1)",
-        [include_str!("../../../../skills/asset-preparation/SKILL.md")])?;
-    tx.execute(
-        "INSERT INTO settings(key,value) VALUES('asset_preparation_initialized','true')",
-        [],
-    )?;
-    tx.commit()?;
-    Ok(())
-}
-pub fn install_core_defaults(db: &Connection) -> Result<()> {
-    if db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM settings WHERE key='core_rules_initialized')",
-        [],
-        |r| r.get::<_, bool>(0),
-    )? {
-        return Ok(());
-    }
-    let tx = db.unchecked_transaction()?;
-    for (id, body) in [
-        (
-            "ad-team",
-            include_str!("../../../../skills/ad-team/CORE.md"),
-        ),
-        (
-            "storyboard-art",
-            include_str!("../../../../skills/storyboard-art/CORE.md"),
-        ),
-        (
-            "asset-preparation",
-            include_str!("../../../../skills/asset-preparation/CORE.md"),
-        ),
-        (
-            "product-storyboard",
-            include_str!("../../../../skills/product-storyboard/CORE.md"),
-        ),
-        (
-            "product-video-production",
-            include_str!("../../../../skills/product-video-production/CORE.md"),
-        ),
-    ] {
-        tx.execute(
-            "INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES(?1,'CORE.md',?2)",
-            params![id, body],
-        )?;
-    }
-    tx.execute(
-        "INSERT INTO settings(key,value) VALUES('core_rules_initialized','true')",
-        [],
-    )?;
-    tx.commit()?;
-    Ok(())
-}
 fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
@@ -173,17 +110,7 @@ pub fn catalog(db: &Connection, setting: &str) -> Result<Value> {
             [id],
             |r| r.get(0),
         )?;
-        let core: Option<String> = if enabled(setting, id)? {
-            db.query_row(
-                "SELECT text FROM skill_resources WHERE skill_id=?1 AND path='CORE.md'",
-                [id],
-                |r| r.get(0),
-            )
-            .optional()?
-        } else {
-            None
-        };
-        items.push(json!({"id":id,"name":name,"description":description,"core":core,
+        items.push(json!({"id":id,"name":name,"description":description,
             "available":available,"enabled":enabled(setting,id)?,"path":"SKILL.md","storage":"database","revision":revision}));
     }
     Ok(json!(items))
@@ -218,7 +145,7 @@ pub fn read(
         .collect::<rusqlite::Result<Vec<_>>>()?;
     let chars: Vec<_> = text.chars().collect();
     let start = offset.min(chars.len());
-    let end = (start + 4000).min(chars.len());
+    let end = chars.len();
     Ok(
         json!({"skill":owner,"path":path,"text":chars[start..end].iter().collect::<String>(),
         "revision":revision,"offset":start,"nextOffset":if end<chars.len(){Some(end)}else{None},

@@ -23,12 +23,21 @@ export const roleLabels = {
 export function mediaReferences(task: ProductionTask): Reference[] {
   return task.inputs
     .filter((r) => r.role !== "script")
-    .map((r) => ({
-      assetId: r.assetId,
-      purpose: [roleLabels[r.role], r.purpose].filter(Boolean).join(" · "),
-      start: r.start,
-      end: r.end,
-    }));
+    .map((r) => {
+      const label = roleLabels[r.role];
+      const purpose = r.purpose?.trim() ?? "";
+      // Older drafts stored the role label itself, or nothing, as the purpose.
+      const described =
+        !purpose || purpose === label || purpose.startsWith(`${label} · `)
+          ? purpose || label
+          : `${label} · ${purpose}`;
+      return {
+        assetId: r.assetId,
+        purpose: described,
+        start: r.start,
+        end: r.end,
+      };
+    });
 }
 export function generationPrompt(_p: Project, task: ProductionTask) {
   // Script references are Agent context. The reviewed task prompt is the model

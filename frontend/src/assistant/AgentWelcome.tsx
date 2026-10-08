@@ -19,21 +19,27 @@ export function AgentWelcome({
     ? [
         {
           icon: ChatText,
-          title: t("$创意编剧 · 打磨故事"),
+          title: t("$创意与导演 · 打磨内容"),
           agentId: "concept",
-          prompt: t("请检查当前脚本的叙事和节奏，先给出修改建议。"),
+          prompt: t(
+            "请检查当前脚本或分镜的内容、表演与节奏，先给出具体修改建议。",
+          ),
         },
         {
           icon: FilmStrip,
-          title: t("$分镜导演 · 细化镜头"),
-          agentId: "storyboard",
-          prompt: t("请查看当前分镜，补充每个镜头的机位、运动与动作节拍。"),
+          title: t("$媒体制作 · 准备生成"),
+          agentId: "production",
+          prompt: t(
+            "请检查当前分镜的画面、参考素材用途与生成提示词，指出需要补充的内容。",
+          ),
         },
         {
           icon: ChatText,
-          title: t("$分镜画手 · 准备画面"),
-          agentId: "storyboard-artist",
-          prompt: t("请检查分镜构图、画格状态与图片参考，指出需要补充的内容。"),
+          title: t("$剪辑与后期 · 整理成片"),
+          agentId: "editor",
+          prompt: t(
+            "请查看当前时间线，说明可用的素材区间、节奏问题以及调色或转场建议。",
+          ),
         },
       ]
     : [
@@ -45,13 +51,13 @@ export function AgentWelcome({
         },
         {
           icon: ChatText,
-          title: t("$创意编剧 · 设计故事"),
+          title: t("$创意与导演 · 设计故事"),
           agentId: "concept",
           prompt: t("帮我写一支 30 秒短片的完整声画脚本，保存到脚本工作区。"),
         },
         {
           icon: FilmStrip,
-          title: t("$创意编剧 · 围绕素材"),
+          title: t("$创意与导演 · 围绕素材"),
           agentId: "concept",
           prompt: t(
             "请先查看项目中的素材，基于已有内容提出可以实现的短片方案。",

@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='mstudio Windows 中文 ') as temporary:
     subprocess.run(install_command, env=env, check=True, timeout=180)
     exe = installed / 'mstudio-desktop.exe'
     assert exe.is_file(), f'Installer omitted executable: {list(installed.iterdir())}'
-    assert (installed / 'skills/ad-team/SKILL.md').is_file(), 'Installer omitted skills'
+    assert (installed / 'skills/ad-script/SKILL.md').is_file(), 'Installer omitted skills'
     assert (installed / 'gstreamer/runtime.json').is_file(), 'Installer omitted runtime'
     tools = installed / 'media'
     video = work / '中文 有声测试.mp4'

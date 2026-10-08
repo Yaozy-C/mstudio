@@ -1,2 +1,0 @@
-# Core: shared references
-Reuse suitable real images and fill concrete cross-shot identity gaps. New reference assets use a plain white background unless the user specifies another asset deliverable; finished location scenes belong to the artist. Preserve identity, outfit, product construction and selected state. Generate only necessary views and inspect pixels before assigning real asset IDs to consuming shots. Original images remain evidence for product geometry; generated views do not prove unseen mechanisms. Consult SKILL.md for inventory and inspection methods.

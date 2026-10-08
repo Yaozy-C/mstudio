@@ -224,7 +224,7 @@ fn attribution_survives_reopen_and_activity_is_scoped_to_project_and_turn() {
             .unwrap()
             .execute("INSERT INTO projects VALUES('p','test','{}',0)", [])
             .unwrap();
-        let meta = json!({"agentId":"reviewer","agentName":"审片员","turnId":"turn-a","modelName":"Review"});
+        let meta = json!({"agentId":"editor","agentName":"剪辑与后期","turnId":"turn-a","modelName":"Edit"});
         history::append_attributed(
             &store,
             "p",
@@ -242,7 +242,7 @@ fn attribution_survives_reopen_and_activity_is_scoped_to_project_and_turn() {
     let messages = history::read(&store, "p").unwrap();
     assert_eq!(
         messages[0].attribution.as_ref().unwrap()["agentId"],
-        "reviewer"
+        "editor"
     );
     assert_eq!(
         messages[1].attribution.as_ref().unwrap()["turnId"],

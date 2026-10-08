@@ -12,37 +12,16 @@ fn labels(profile: &AgentProfile) -> (String, String) {
             "Goals, facts, scope, dependencies and specialist handoffs",
         ),
         "concept" => (
-            "Creative scriptwriter",
-            "Concepts, advertising events and audiovisual scripts",
-        ),
-        "storyboard" => (
-            "Storyboard director",
-            "Viewpoint, staging, camera, action beats and continuity",
-        ),
-        "asset-designer" => (
-            "Asset designer",
-            "Inventory and prepare missing shared white-background image references",
-        ),
-        "storyboard-artist" => (
-            "Storyboard artist",
-            "Shot composition, image generation and local image repair",
+            "Creative direction",
+            "Viewing payoff, audiovisual script, shot design, staging, performance and rhythm",
         ),
         "production" => (
-            "Media producer",
-            "Model prompts, references, production and local repair",
+            "Media production",
+            "Image and video prompts, input purposes, generation and local repair",
         ),
         "editor" => (
-            "Picture and sound editor",
-            "Take selection, multitrack editing, captions and sound timing",
-        ),
-        "reviewer" => (
-            "Independent reviewer",
-            "Read-only verification of facts, actions, continuity and expression",
-        ),
-        "colorist" => ("Colorist", "Color correction, shot matching and grading"),
-        "transition-designer" => (
-            "Transition designer",
-            "Action/composition matching, joins and pacing",
+            "Editing and finishing",
+            "Source selection, pace, colour, transitions, captions and sound",
         ),
         _ => return (profile.name.clone(), profile.description.clone()),
     };

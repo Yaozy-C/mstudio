@@ -14,6 +14,7 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
         )
         .unwrap();
     }
+    db.execute("INSERT INTO skill_resources(skill_id,path,text) VALUES('creative-ad-director','CORE.md','OLD_ROLE_CHAIN')", []).unwrap();
     for profile in profiles::builtins() {
         let catalog = skills::storage::catalog(&db, &profiles::skill_setting(&profile)).unwrap();
         let snapshot = json!({"skills":catalog,"agent":{
@@ -25,8 +26,9 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
         assert!(system.contains("mstudio_read_skill"));
         assert!(!system.contains("UNLOADED_SKILL_BODY"));
         assert!(!snapshot.to_string().contains("UNLOADED_SKILL_BODY"));
+        assert!(!snapshot.to_string().contains("OLD_ROLE_CHAIN"));
     }
-    let page = skills::storage::read(&db, "", "product-storyboard", "SKILL.md", 0, true).unwrap();
+    let page = skills::storage::read(&db, "", "creative-ad-director", "SKILL.md", 0, true).unwrap();
     assert!(
         page["text"]
             .as_str()
@@ -35,14 +37,14 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
     );
     skills::storage::save(
         &db,
-        "product-storyboard",
+        "creative-ad-director",
         "SKILL.md",
         "Updated current instructions",
         1,
     )
     .unwrap();
     assert_eq!(
-        skills::storage::read(&db, "", "product-storyboard", "SKILL.md", 0, true).unwrap()["text"],
+        skills::storage::read(&db, "", "creative-ad-director", "SKILL.md", 0, true).unwrap()["text"],
         "Updated current instructions"
     );
     assert!(skills::guidance(&skills::storage::catalog(&db, "[]").unwrap()).contains("Skills: []"));
