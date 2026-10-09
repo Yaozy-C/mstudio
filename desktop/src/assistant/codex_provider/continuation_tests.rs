@@ -4,7 +4,6 @@ use rig_core::{
     message::{AssistantContent, ImageMediaType, Message, ToolResultContent, UserContent},
 };
 
-#[cfg(unix)]
 #[tokio::test]
 async fn native_turn_survives_multiple_tools_with_errors_images_and_message_phases() {
     use std::os::unix::fs::PermissionsExt;

@@ -13,7 +13,7 @@ use serde_json::{Value, json};
 use std::time::Duration;
 
 mod connection;
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod continuation_tests;
 #[cfg(test)]
 mod loading_tests;
