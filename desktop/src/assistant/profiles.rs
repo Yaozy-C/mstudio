@@ -18,7 +18,8 @@ pub const TOOL_IDS: [&str; 13] = [
     "memory-read",
     "memory-write",
 ];
-pub const SKILL_IDS: [&str; 5] = [
+pub const SKILL_IDS: [&str; 6] = [
+    "creative-concepts",
     "ad-script",
     "creative-ad-director",
     "image-production",
@@ -53,9 +54,7 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
             let instructions_changed =
                 super::profile_instructions::upgrade(&mut saved, &builtins());
             for builtin in builtins() {
-                if !saved.iter().any(|p| p.id == builtin.id)
-                    && ["concept", "production", "editor"].contains(&builtin.id.as_str())
-                {
+                if !saved.iter().any(|p| p.id == builtin.id) && builtin.id != "coordinator" {
                     saved.push(builtin);
                 }
             }

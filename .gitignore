@@ -23,6 +23,7 @@
 /docs/*
 !/docs/development.md
 !/docs/architecture.md
+!/docs/image-storyboard-cases.md
 
 # Local credentials, settings, project data and logs
 .env

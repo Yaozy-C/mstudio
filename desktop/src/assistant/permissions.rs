@@ -10,6 +10,18 @@ pub fn asset_only(p: &AgentProfile) -> bool {
         && !has("project-edit")
 }
 
+/// Media kinds follow capabilities, not role names; custom combined profiles remain valid.
+pub fn allows_media_kind(p: &AgentProfile, kind: &str) -> bool {
+    let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
+    has("media-generation")
+        && (has("project-edit")
+            || match kind {
+                "image" => has("project-frames") || has("project-assets"),
+                "video" => has("project-production"),
+                _ => false,
+            })
+}
+
 pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
     if !allows(p, "edit") {
         return false;
@@ -127,12 +139,22 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
                     "Asset Agent can only modify asset tasks"
                 );
             }
-            if !has("project-production") && !has("project-edit") {
-                ensure!(
-                    task["kind"] == "image",
-                    "This Agent can only modify image tasks"
-                );
+            let kind = task["kind"].as_str().unwrap_or("");
+            // Updating prompt text does not require generation permission.
+            let mut author = p.clone();
+            if !author.tool_ids.iter().any(|id| id == "media-generation") {
+                author.tool_ids.push("media-generation".into());
             }
+            ensure!(
+                allows_media_kind(&author, kind),
+                "Task media kind outside this Agent's scope"
+            );
+        }
+        if name == "request_generation" {
+            ensure!(
+                allows_media_kind(p, op["mediaKind"].as_str().unwrap_or("")),
+                "Generation media kind outside this Agent's scope"
+            );
         }
         ensure!(
             allows_operation(p, name),

@@ -3,9 +3,13 @@ use serde_json::{Value, json};
 
 pub(super) fn model_metadata(mut item: Value) -> Value {
     let (name, description) = match item["id"].as_str().unwrap_or_default() {
+        "creative-concepts" => (
+            "Creative concepts",
+            "Viewing motives, core events, payoff, product relationship and direction comparison",
+        ),
         "ad-script" => (
-            "Creative audiovisual script",
-            "Content-first concepts, viewing payoff, audio-visual script and local research",
+            "Audiovisual screenwriting",
+            "Realize a selected concept as action, dialogue, visible text, sound and segment timing",
         ),
         "creative-ad-director" => (
             "Creative direction",
@@ -44,7 +48,7 @@ mod tests {
         let ui = json!([{"id":"ad-script","name":"创意与声画脚本","description":"专业协作","core":"CUSTOM_USER_RULE","revision":42}]);
         let model = model_catalog(ui.clone());
         assert_eq!(ui[0]["name"], "创意与声画脚本");
-        assert_eq!(model[0]["name"], "Creative audiovisual script");
+        assert_eq!(model[0]["name"], "Audiovisual screenwriting");
         assert_eq!(model[0]["core"], "CUSTOM_USER_RULE");
         assert_eq!(model[0]["revision"], 42);
     }

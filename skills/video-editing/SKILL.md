@@ -12,11 +12,11 @@ Assemble accepted media into the final viewing experience. Editing decides what 
 | The task has to decide | Read |
 |---|---|
 | Which source intervals are usable, where to cut, and how sound lands on the cut | [Editing](references/editing.md) |
-| **How much screen time each beat earns and what to remove** | **[Rhythm](../creative-ad-director/references/rhythm.md)** |
+| **How much screen time each beat earns and what to remove** | **[Rhythm](references/rhythm.md)** |
 | Exposure, colour balance, shot matching and a restrained look | [Colour grading](references/color.md), [grading tool limits](references/color-tools.md) |
 | Whether to cut or to add a transition, and how to build the join | [Transitions](references/transitions.md), [transition tool limits](references/transition-tools.md) |
-| The state relationships a cut has to preserve | [Continuity](../creative-ad-director/references/continuity.md) |
-| What a clip can support being claimed about it | [Inspection evidence](../product-video-production/references/evidence.md) |
+| The state relationships a cut has to preserve | [Continuity](references/continuity.md) |
+| What a clip can support being claimed about it | [Inspection evidence](references/evidence.md) |
 
 Read [core](CORE.md) for the short rules.
 

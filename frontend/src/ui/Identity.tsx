@@ -20,6 +20,9 @@ export function AgentMark({
     {
       coordinator: Graph,
       concept: PencilSimple,
+      writer: PencilSimple,
+      director: FilmReel,
+      image: Cube,
       production: FilmReel,
       editor: Faders,
     }[id] ?? Graph;

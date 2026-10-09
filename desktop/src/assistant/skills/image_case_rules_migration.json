@@ -1,0 +1,35 @@
+{
+  "updates": [
+    {
+      "skill": "image-production",
+      "path": "SKILL.md",
+      "before": "dd1c3ceb5b08e781fb99170c0ca94ca3605b19d5f56efc5a0424ec012c6d231f"
+    },
+    {
+      "skill": "image-production",
+      "path": "CORE.md",
+      "before": "5e9d5041ec78ec0a1fdc480e44be6b1942568bf69b056cec8b844b2c3d81b7fd"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/reference-assets.md",
+      "before": "370ea652ce51a517edb9eac3f43537e17107ca2f8331abbe0eec9eedefb299d8"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/frames.md",
+      "before": "1c63f4e638cc1b07e4b68884dcb54a29897a793f0e974022c21be727c8d1c956"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/prompt-writing.md",
+      "before": "7aefce14d2450cd78ff58f8595d91ae669eb15780e9b3e6d39ceb6bad9552f0a"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/frame-checks.md",
+      "before": "3b4c88c845a8b7de6024a091749f60d9ea037ad7609c14d2bc1ba787e2c228a2"
+    }
+  ],
+  "retired": []
+}

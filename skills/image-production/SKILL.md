@@ -1,6 +1,6 @@
 ---
 name: image-production
-description: Produce still images in Mstudio: write one-moment image prompts, execute designed frames, prepare reusable white-background reference assets and inspect actual pixels.
+description: Produce still images in Mstudio: write one-moment image prompts, execute designed frames, prepare reusable subject and location references and inspect actual pixels.
 ---
 
 # Image production
@@ -12,13 +12,13 @@ Produce the requested still image and the reusable references it depends on. Pre
 | The task has to decide | Read |
 |---|---|
 | How to write one prompt for one visible moment | [Image prompt writing](references/prompt-writing.md) |
-| How to execute a designed shot as a readable frame, and how dependent frames reuse an anchor | [Storyboard frames](references/frames.md) |
-| Whether a shared identity reference is missing, and how to design a white-background asset | [Reference assets](references/reference-assets.md) |
+| How to choose representative/start/key/end frames, make the shot readable and preserve continuity across a storyboard | [Storyboard frames](references/frames.md) |
+| Whether subject, location or layout references are missing, and how to design useful reference assets | [Reference assets](references/reference-assets.md) |
 | How to inspect actual pixels for viewpoint, contact, part count and cross-frame state | [Frame inspection](references/frame-checks.md) |
-| Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](../creative-ad-director/references/cinematography.md) |
-| Photographic people, skin, light and material appearance | [Photographic appearance](../creative-ad-director/references/photographic-appearance.md) |
+| Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](references/scene-execution.md) |
+| Photographic people, skin, light and material appearance | [Photographic appearance](references/scene-execution.md) |
 
-Read [core](CORE.md) for the short rules.
+For storyboard images or start/key/end control-frame requests, read the storyboard-frame method before authoring their prompts. It applies the supplied shot design without requiring a fixed number of images. Covers and unrelated standalone pictures do not become storyboards. Read [core](CORE.md) for the short rules.
 
 ## Bind every input to a concrete purpose
 
@@ -28,9 +28,9 @@ Purposes carry identity assignments. When a scene has more than one recurring pe
 
 ## What a reference does and does not transfer
 
-A white-background identity asset fixes who the subject is. It does not fix pose, camera, background or lighting for a scene frame: do not inherit its standing pose or studio light into a scene, and do not restate them as if they were requested.
+An identity asset fixes who the subject is. It does not fix pose, camera, background or lighting for a scene frame: do not inherit its standing pose or studio light into a scene, and do not restate them as if they were requested.
 
-A reference of an opened bag, a mid-action state or a detail close-up supplies structure and state. It is not a first frame, and it does not license a prompt to repeat an event that is already complete inside it.
+A reference of an opened bag, a mid-action state or a detail close-up supplies only its declared properties. Its state does not automatically bind a new composition. It is not an actual video first-frame control; when used as a control/edit base, its existing state must be compatible with the requested change.
 
 ## Boundaries
 

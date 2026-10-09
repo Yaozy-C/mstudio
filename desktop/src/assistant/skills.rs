@@ -1,5 +1,8 @@
 mod catalog;
+mod concept_split;
+mod isolation;
 mod metadata;
+mod rule_summary;
 use metadata::{model_catalog, model_metadata};
 pub mod storage;
 use anyhow::{Context, Result, ensure};
@@ -9,11 +12,16 @@ use tauri::Manager;
 
 /// The shipped creative catalog. Each Skill is one capability with a short entry
 /// document and optional method references.
-const SKILLS: [(&str, &str, &str); 5] = [
+const SKILLS: [(&str, &str, &str); 6] = [
+    (
+        "creative-concepts",
+        "创意策划",
+        "选题、观看动机、核心事件、商品关系与方向比较",
+    ),
     (
         "ad-script",
-        "创意与声画脚本",
-        "内容优先的创意、观看回报、声画脚本与本地研究",
+        "声画编剧",
+        "将选定方向写成动作、台词、文字、声音与段落时长",
     ),
     (
         "creative-ad-director",
@@ -69,6 +77,13 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
         storage::seed(&db, &root(app)?)?;
     }
     catalog::migrate(&db, &root(app)?)?;
+    concept_split::migrate(&db, &root(app)?)?;
+    isolation::migrate(&db, &root(app)?)?;
+    rule_summary::migrate(&db, &root(app)?)?;
+    rule_summary::migrate_methods(&db, &root(app)?)?;
+    rule_summary::migrate_video_motion(&db, &root(app)?)?;
+    rule_summary::migrate_image_storyboard(&db, &root(app)?)?;
+    rule_summary::migrate_image_cases(&db, &root(app)?)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {
@@ -150,22 +165,7 @@ pub fn guidance(catalog: &Value) -> String {
         })
         .collect();
     format!(
-        "Available Skills: {}. This catalog contains descriptions, not loaded instructions. Before specialized work, load the relevant SKILL.md with mstudio_read_skill; each read returns the complete remaining document. Choose it from the task in front of you: writing or repairing content reads the scriptwriting Skill, deciding shots, staging, on-camera behaviour, photographic appearance or pacing reads the direction Skill, producing stills or image prompts reads image production, writing a video prompt or generating and judging a clip reads video production, and cutting, grading or joining shots reads editing. A task involving real people, a limited duration with several events, or believable skin and light is already a reason to read the matching method, not only its entry document. Read linked references only to resolve a concrete task need and reuse full text already in context. Skill methods do not require separate Agents or expand tool permissions. Choose delegation by task needs, not professional titles in a guide. Database documents are authoritative; mstudio_skills lists resources. Use current tool schemas for writes, not legacy examples in documents. Reading a Skill does not submit generation or authorize actions.",
+        "Available Skills: {}. This catalog contains only this role's bound Skills, with descriptions rather than loaded instructions. Before specialized work, load the relevant SKILL.md with mstudio_read_skill. Each read returns the complete remaining document and its own resources. Read local references only for a concrete task need; reuse current full text already in context. Each Skill is an isolated root: cross-directory paths are forbidden, even when another Skill is also bound. For work outside this role's capability, hand off the required task and project evidence to the responsible role instead of loading its Skill. Skill methods do not expand tool permissions or authorize generation. Database documents are authoritative. Use current tool schemas for writes, not legacy examples in documents.",
         json!(available)
     )
-}
-
-// Read-only rule dependencies do not add tools or editing permissions.
-fn dependency(from: &str, to: &str) -> bool {
-    match from {
-        "ad-script" => to == "creative-ad-director",
-        "image-production" => to == "creative-ad-director",
-        "product-video-production" => matches!(to, "creative-ad-director" | "image-production"),
-        "video-editing" => matches!(to, "creative-ad-director" | "product-video-production"),
-        "creative-ad-director" => matches!(
-            to,
-            "ad-script" | "image-production" | "product-video-production" | "video-editing"
-        ),
-        _ => false,
-    }
 }

@@ -8,7 +8,7 @@
     }
   },
   "quickAgents": {
-    "image": "production",
+    "image": "image",
     "video": "production"
   }
 }

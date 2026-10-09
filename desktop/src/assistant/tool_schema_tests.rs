@@ -33,8 +33,9 @@ fn issues(agent: &AgentProfile, operation: Value) -> Vec<schema::Issue> {
 fn generation_contract_exposes_only_executable_role_variants() {
     let production = builtin("production");
     let asset_only = asset_only_profile();
+    let image_role = builtin("image");
     let image = json!({"op":"request_generation","mediaKind":"image","text":"Synthetic image"});
-    assert!(issues(&production, image.clone()).is_empty());
+    assert!(issues(&image_role, image.clone()).is_empty());
     assert!(!issues(&asset_only, image.clone()).is_empty());
     let mut asset = image.clone();
     asset["generationPurpose"] = json!("asset");
@@ -64,7 +65,7 @@ fn generation_contract_exposes_only_executable_role_variants() {
     let mut invalid = image;
     invalid["references"] = json!([{"assetId":"ref","purpose":"identity","role":"first-frame"}]);
     assert!(
-        issues(&production, invalid)
+        issues(&image_role, invalid)
             .iter()
             .any(|i| i.path.ends_with(".role"))
     );
@@ -201,15 +202,22 @@ fn image_and_video_advertise_only_their_parameter_fields() {
                 json!({"op":"request_generation","mediaKind":kind,"text":"Prompt","parameters":{}});
             value["parameters"][field] = json!(16);
             assert!(
-                issues(&production, value)
-                    .iter()
-                    .any(|e| e.path == format!("$.operations[0].parameters.{field}"))
+                issues(
+                    &builtin(if kind == "image" {
+                        "image"
+                    } else {
+                        "production"
+                    }),
+                    value
+                )
+                .iter()
+                .any(|e| e.path == format!("$.operations[0].parameters.{field}"))
             );
         }
     }
     let image = json!({"op":"request_generation","mediaKind":"image","text":"Prompt","parameters":{"resolution":"1080P"}});
     assert!(
-        issues(&production, image)
+        issues(&builtin("image"), image)
             .iter()
             .any(|e| e.path.ends_with(".resolution"))
     );

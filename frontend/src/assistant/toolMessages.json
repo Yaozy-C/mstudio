@@ -85,7 +85,7 @@
   "脚本段落不属于当前脚本": "Paragraph is outside the selected screenplay",
   "镜头顺序或时长无效": "Invalid shot order or duration",
   "镜头必须关联一个脚本文档": "Shot must link to a screenplay",
-  "脚本内容请写入 screenplay.script": "Write script content to screenplay.script",
+  "脚本文档不支持非空 text；请删除 text，使用结构化 script 段落": "Screenplay nodes do not accept non-empty text. Remove text and use structured script paragraphs.",
   "脚本中已有相同顺序的镜头": "Another shot has this order in the screenplay",
   "自定义转场必须提供 design": "Custom transitions require design",
   "未知转场设计参数": "Unknown transition design parameter",

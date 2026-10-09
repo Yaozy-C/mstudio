@@ -77,7 +77,7 @@ fn task_edits_use_existing_media_roles_and_actual_task_kind() {
     for operation in ["update_generation", "regenerate_generation"] {
         for (agent, key, allowed) in [
             (builtin("production"), "video", true),
-            (builtin("production"), "image", true),
+            (builtin("production"), "image", false),
             (frame_only.clone(), "image", true),
             (frame_only.clone(), "video", false),
             (read_only_profile(), "image", false),
@@ -105,43 +105,43 @@ fn specialists_cannot_cross_edit_boundaries() {
         json!({"op":"update_node","id":"p","text":"concept"})
     ));
     assert!(check(
-        &agent("concept"),
+        &agent("writer"),
         json!({"op":"update_node","id":"p","screenplay":{"script":[{"id":"para","action":"Story"}]}})
     ));
     // concept owns shot design through project-shots: it edits shot links, dialogue and
     // staging text, but it has no media-generation tool.
     assert!(check(
-        &agent("concept"),
+        &agent("director"),
         json!({"op":"update_node","id":"s","shot":{"scriptId":"para"}})
     ));
     assert!(check(
-        &agent("concept"),
+        &agent("director"),
         json!({"op":"update_node","id":"s","text":"rewrite"})
     ));
     assert!(check(
-        &agent("concept"),
+        &agent("director"),
         json!({"op":"update_node","id":"s","shot":{"dialogue":"hello"}})
     ));
     assert!(!check(
-        &agent("concept"),
+        &agent("director"),
         json!({"op":"request_generation","id":"s"})
     ));
     assert!(!check(
-        &agent("concept"),
+        &agent("director"),
         json!({"op":"request_generation","id":"s"})
     ));
     // production now owns both prompt kinds through project-frames and project-production,
     // so writing frame prompts and shot frames is no longer another role's boundary.
     assert!(check(
-        &agent("production"),
+        &agent("image"),
         json!({"op":"update_node","id":"s","shot":{"framePrompt":"Image description"}})
     ));
     assert!(check(
-        &agent("production"),
+        &agent("image"),
         json!({"op":"update_node","id":"s","shot":{"frames":[]}})
     ));
     assert!(check(
-        &agent("production"),
+        &agent("image"),
         json!({"op":"update_node","id":"s","shot":{"framePrompt":"Image description","frames":[]}})
     ));
     assert!(check(
@@ -149,7 +149,7 @@ fn specialists_cannot_cross_edit_boundaries() {
         json!({"op":"update_node","id":"s","shot":{"prompt":"generate"}})
     ));
     assert!(check(
-        &agent("production"),
+        &agent("image"),
         json!({"op":"request_generation","id":"s","text":"Close-up","mediaKind":"image"})
     ));
     // It has no project-shots/project-edit, so shot structure, timing and staging text stay
@@ -200,7 +200,7 @@ fn specialists_cannot_cross_edit_boundaries() {
         &agent("coordinator"),
         json!({"op":"set_creation","essential":"must see entry"})
     ));
-    assert!(check(
+    assert!(!check(
         &agent("coordinator"),
         json!({"op":"update_node","id":"p","text":"rewrite"})
     ));

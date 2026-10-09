@@ -1,15 +1,11 @@
-# Develop and repair the viewing proposition
+# Realize the selected viewing proposition
 
-This is the shared concept method for writers and directors. For a new idea, compare a few materially different viewing experiences and choose one that fits the product, audience and available assets. For a revision, locate the weak relationship before changing the concept.
+Use the handed-off premise, viewing motive, payoff and product role. Own their realization through staging, viewpoint, action, sound relationships and cuts. Do not compare new campaign directions or replace the premise during shot design. Return a premise-level conflict to creative planning with the specific unsupported relationship.
 
-Describe the actual opening action or line, what makes the next moment worth watching, the payoff and the product's contribution. The opening and continuation must be concrete enough to write now. "Relatable", "cinematic", "fast" and "satisfying" are not event descriptions. A familiar use case is valid; neither novelty nor exclusive functionality is required.
+Make the opening cue, development and payoff visible. Determine what viewers know on entry, what they are waiting for and which shot relationship changes that understanding. Preserve necessary revelation order and recognition pauses. Camera movement, another location or a new feature does not automatically create progression. Remove or merge repeated information unless it serves deliberate emphasis, pattern or an echo.
 
-Build the middle around that promise. Surprise can resolve and open a new question; comedy can escalate; motion or sound can develop a pattern; a demonstration can expose evidence. Preserve pauses needed to recognize a result. Another feature, another location or a later day is not automatically progression. If removing a section loses no tension, information, rhythm or product evidence, shorten or omit it.
+Check whether the product-enabled result is actually visible. A behavioral change or visual metaphor is not performance proof. Preserve factual structure, supported capabilities and the chosen viewing experience while correcting geometry, occlusion or contact.
 
-Separate a product-enabled result from a change in the user's behavior. Make the actual help observable without inventing a need or capability. Storytelling exaggeration cannot establish real capacity, insulation or durability. Use supported evidence for claims and purchase details.
+Transfer a reference's viewing relationship only when the new product supports its spatial, material and timing conditions. Preserve the specified source and time range as project evidence; do not copy its production settings as universal defaults. A tutorial can suggest an implementation route without proving audience or sales outcomes.
 
-For a reference, retain source/time range, observed mechanism and the condition that makes it transferable. Reuse the relationship, not the product claims or mandatory shot lengths. Production tutorials establish a way to make an effect; audience and sales results require their own evidence. Keep detailed cases in project research rather than loading a catalog into every request.
-
-Repair the premise when its promise or product connection is weak; repair staging or editing when a sound idea is expressed poorly. Compare audience attention, continued viewing and product action separately, with sample sizes and comparable conditions. Revise the hypothesis from use; do not turn one outcome into a universal rule.
-
-Sources: [TikTok structure and stimulation](https://ads.tiktok.com/business/en-US/creative-codes), [hook and continuation](https://github.com/coreyhaines31/marketingskills/blob/main/skills/ad-creative/references/hook-system.md), [Krea cut architecture](https://github.com/krea-ai/skills/blob/main/krea-motion/references/cut-architecture.md), [Higgsfield shot-list skill](https://higgsfield.ai/academy/courses/ai-ad-3-step/the-shot-list-and-the-skill).
+Repair staging, action or cuts when the premise is sound but unreadable. If the promise cannot be fulfilled or the product has no causal role, report that conflict rather than silently inventing a different concept. Written design, static frames, playback and listening support different conclusions.

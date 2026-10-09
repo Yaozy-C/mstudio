@@ -31,14 +31,4 @@ Motion references constrain action and timing; appearance references constrain i
 
 Diagnose missing action source, misplaced attention, incorrect key pose, wrong speed curve, missing reaction or conflicting reference appearance. Repair the corresponding design/input instead of appending natural, lively or powerful, or globally speeding up the clip. Retain current retry, budget and authorization limits.
 
-## Sources
-
-The classic framework is Frank Thomas and Ollie Johnston's The Illusion of Life. The Higgsfield tutorial around 18:30–18:50 translates principles into in-shot behavior; around 25:00–27:20 it illustrates the gap between obtaining an action result and achieving the performance. This document adapts the method rather than reproducing the team's internal skill.
-
-## Further reading
-
-- [Source 1](https://www.disneyanimation.com/process/animation/)
-- [Source 2](https://www.adobe.com/creativecloud/animation/discover/principles-of-animation.html)
-- [Source 3](https://xhslink.cn/o/rLnNxFkjbL)
-
 For live-action acting and interaction, read [naturalistic performance](naturalistic-performance.md) when needed.

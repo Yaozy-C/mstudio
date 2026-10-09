@@ -129,8 +129,8 @@ mod tests {
         }
     }
     #[test]
-    fn main_agent_exposes_catalog_without_eager_edit_schemas() {
-        let all = catalog(&profile("coordinator"));
+    fn video_agent_exposes_catalog_without_eager_edit_schemas() {
+        let all = catalog(&profile("production"));
         let scope = LoadedTools::default();
         let before = scope.definitions(all.clone());
         assert_eq!(before.len(), 1);
@@ -160,7 +160,8 @@ mod tests {
         scope.load(&all, &json!({"names":["mstudio_generate_reference_image"]}));
         assert_eq!(scope.definitions(all.clone()).len(), 2);
         assert_eq!(LoadedTools::default().definitions(all).len(), 1);
-        assert_eq!(scope.definitions(catalog(&profile("concept"))).len(), 1);
+        assert_eq!(scope.definitions(catalog(&profile("writer"))).len(), 1);
+        assert!(scope.definitions(catalog(&profile("concept"))).is_empty());
     }
     #[test]
     fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {

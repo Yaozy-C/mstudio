@@ -209,5 +209,13 @@
   "使用镜头 {v0}": "Used by {v0} shots",
   "保存": "Save",
   "滚轮缩放 · 拖动查看 · 双击切换": "Scroll to zoom · Drag to pan · Double-click to toggle",
-  "原始大小": "Actual size"
+  "原始大小": "Actual size",
+  "创意编剧": "Screenwriter",
+  "分镜导演": "Shot director",
+  "图片制作": "Image production",
+  "视频制作": "Video production",
+  "剪辑后期": "Editing and finishing",
+  "创意策划": "Creative planning",
+  "编剧": "Screenwriter",
+  "声画编剧": "Audiovisual screenwriting"
 }

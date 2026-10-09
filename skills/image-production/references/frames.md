@@ -1,21 +1,50 @@
-# Storyboard frames
+# Execute the storyboard as readable frames
 
-Translate the selected shot into one visible moment. Use the supplied design, original references and [core](../CORE.md); the [image prompt writing](prompt-writing.md) reference owns prompt methods.
+Use the selected shot design and original references to produce the requested frames. The director owns viewpoint, staging, action and revelation decisions; image production selects the required instant and realizes those decisions in actual pixels. Return incompatible or missing essential design with evidence rather than silently designing a different film. Read [image prompting](prompt-writing.md) for prompt conversion and [frame inspection](frame-checks.md) for acceptance.
 
-## Preserve design and evidence
+## Choose frames by their purpose
 
-Keep shot purpose, spatial relationships and intended reveal. Resolve secondary set details; return missing viewpoints or conflicting action relationships to direction. Product geometry comes from original image evidence, not invented director mechanisms. Do not change an opening, attachment or part to satisfy a contradictory viewpoint.
+Read the scoped shot IDs, viewing purpose, chosen camera, event order, necessary visible evidence and requested output. Each scene panel depicts one instant; a sequence board may contain several separately specified panels. A shot may need one representative frame or several necessary states; a long duration does not automatically require more images. A generation group containing different editorial viewpoints needs frames for the relevant viewpoints, not a single composite scene.
 
-Use [shot grammar](../../creative-ad-director/references/cinematography.md) when staging needs work: attention center, subject/target/obstacle relationship, silhouette, axis, depth, occlusion and meaningful negative space. A preparation frame must not show a completed result. Choose rough, clean or photographic frames by their intended use, without automatic polish.
+| Frame use | Choose the instant and preserve its limits |
+|---|---|
+| Representative storyboard image | Show the moment that makes this shot's purpose and essential relationship readable. It may show a result; do not automatically use the first instant or prepare the action again. |
+| Starting/control frame | Show the actual requested starting state and leave the required motion space. A completed placement cannot start that same placement. An intentional black start remains black; a separate explanatory image may be supplied only within the requested storyboard scope and must not replace the control frame. |
+| Decisive/key frame | Show the contact, revelation, pose or relationship that cannot be understood from the representative image alone. Choose one state rather than combining anticipation and completion. |
+| Ending/control frame | Show the requested final arrangement with the necessary parts, support and clearances. Label its intended use in the handoff; actual endpoint support determines whether it can constrain a video ending. |
 
-## Dependent frames
+Choose the minimum set needed by the supplied design. A fixed start/middle/end trio, four-part sales formula or frame count per second is not required. Do not invent extra viewpoints, reveal a surprise early or add a new shot just to fill a grid. Text-only tasks and Skill maintenance do not authorize image generation.
 
-A/B frames express only the required state change while retaining landmarks and screen direction. They do not add shots or multiply duration. For shared unverified identity, viewpoint or difficult contact, create the minimum useful anchor and inspect the actual image before generating its dependents. Reuse a suitable inspected anchor. Independent images do not require this extra step.
+## Make each frame legible
 
-Supply that base image as composition/state reference alongside original identity/product evidence. Preserve selected wardrobe and footwear. Reusable white-background assets do not dictate the scene background. Missing identity references used across distinct shots go to asset preparation; single-shot details remain here.
+Preserve the selected aspect ratio and camera relationship. Describe the position and looking direction of the camera, subject scale/crop, foreground/background and necessary visible surfaces. Use landmarks and occluding edges to distinguish an inside-looking-out view from an exterior product view. Keep original product geometry, attachments and mechanisms; an unsupported opening cannot be created to make a composition work.
 
-## Inspect and hand off
+Give the moment a clear attention center and make the essential subject/target/obstacle relationship readable through pose, silhouette, separation, depth and contact. Leave relevant room for the planned motion or requested graphic text without changing the shot design. Preserve important negative space and no-face constraints, including reflections. Light direction and focus must support the relationship, not conceal required proof.
 
-Apply [frame inspection](frame-checks.md) to viewpoint, perspective, support/contact, part count and cross-frame state. Texture repair does not validate uninspected geometry. Fix execution deviations locally; route design conflicts to direction with evidence.
+Read the frame at its expected display size before polishing texture: can the viewer locate the event, distinguish the participants and understand support or contact? Rough layouts can simplify irrelevant detail, not the geometry that makes the shot intelligible. Clean or photographic rendering follows the requested use; automatic polish and repeated lens jargon cannot repair unreadable staging. Use the local [scene execution](scene-execution.md) method for a concrete execution question.
 
-Save the requested task prompt or shot.framePrompt, and link real completed frame assets through shot.frames. Return affected shot IDs, actual assets, selected moments and concrete unresolved deviations. Motion and audio judgments require their own evidence.
+## Keep continuity without freezing every composition
+
+For same-view A/B states, reuse a suitable inspected anchor with the original identity/product evidence. Preserve stable landmarks, perspective, light, identity, wardrobe and screen direction while changing only the intended state. Edit a valid base when that route supports the requested change; a rejected or uninspected base must not propagate into dependent frames.
+
+When scale, placement or screen direction keeps drifting, use a supplied or authorized layout sketch and named landmarks rather than adding decorative prose. Keep diagram labels out of final clean scene images. A schematic supplies staging, not proof of hidden product construction.
+
+For a changed viewpoint, preserve world relationships, identity, product construction and the intended action state. Project them into the new selected camera: visible surfaces, occlusion and scale may change. Do not force identical screen coordinates or warp the product to imitate the preceding frame. Keep the original evidence alongside any generated anchor; anchors establish composition/state, not unseen construction.
+
+A change of wardrobe, light, position or contents is allowed when the plan actually calls for it. Track counts, support, openings and relevant object positions across the sequence. References from another task do not become visible to the model unless actually supplied. Assign each real input its subject and purpose; multiple frames of one shot do not require a new shared asset pack. Missing recurring identity references are prepared within image production's asset tools, without inventing a separate role.
+
+## Choose the output route
+
+For whole-sequence review, a rough thumbnail board or generated multi-panel storyboard can show the supplied causal beats together. Specify reading order and each panel's event, viewpoint and state, with recurring identities and art direction shared. Choose rough or finished rendering for the decision being reviewed; polished imagery is not a prerequisite for readable staging. Do not impose a four-panel template.
+
+For downstream video controls or individually requested images, produce clean independent assets at the required aspect ratio and inspect each separately. A useful planning board does not by itself supply suitable production inputs. State which route the output serves. A sheet with multiple product views is a reference asset, not a scene sequence.
+
+For clean frames, keep shot IDs, time labels, motion arrows, dialogue and sound notes outside clean scene pixels. An annotated storyboard may explain subject and camera movement with distinct labels, but arrows cannot establish missing contact or motion quality. Requested onscreen copy is part of the scene/graphic and remains exact.
+
+Arrange frames in the shot plan's viewing order. Associate each with the existing shot ID and selected moment/use in the supported project text or reply; do not invent frame timing fields. Several frames do not multiply shot.duration or create extra shots. Show individual frames large enough to inspect decisive relationships. A board can be generated jointly for sequence review or assembled from independent frames. Neither route substitutes for explicitly requested independent control images. Re-render or extract a selected panel only with available tools, then inspect its resolution, framing and state before downstream use. Use only actual provided layout/display tools; do not claim an unavailable composite was created.
+
+## Inspect, save and hand off
+
+Compare actual pixels to original evidence and the selected moment: viewpoint, support/contact, product part count/connections, identity, wardrobe, light, framing restrictions and intended reveal. Compare dependent frames together for the intended change and stable relationships. Reinspect the repaired region, whole image and affected dependents; a texture fix does not establish geometry.
+
+Save the requested task prompt or shot.framePrompt, and link real completed frame assets through shot.frames. Report affected shot IDs, actual asset IDs, selected moments and unresolved deviations. Task submission is not a completed frame, and a rendered preview is not automatically an accepted video control input. Hand off valid control candidates and their state/reference roles to video production; it verifies model input support. Stills do not establish motion, speed, sound or playback.

@@ -2,11 +2,9 @@
 //!
 //! The generation panel has no tool loop, so the entry document cannot send the
 //! author to a reference on its own. These tables read the task itself: the
-//! bound Skill's own guide is always loaded, and shared method documents are
-//! added when the description shows the matching need.
+//! bound Skill's own prompt and execution guides are always loaded. Additional
+//! local references are selected when the description shows the matching need.
 use std::collections::BTreeSet;
-
-const DIRECTION: &str = "creative-ad-director";
 
 pub(super) fn hits(text: &str, keys: &[&str]) -> bool {
     keys.iter().any(|key| text.contains(key))
@@ -170,7 +168,30 @@ pub(super) fn signals(description: &str) -> BTreeSet<&'static str> {
     ) {
         found.insert("review");
     }
-    if hits(&text, &["storyboard", "frame moment", "分镜", "画格"]) {
+    if hits(
+        &text,
+        &[
+            "storyboard",
+            "frame moment",
+            "first frame",
+            "first-frame",
+            "start frame",
+            "last frame",
+            "last-frame",
+            "end frame",
+            "keyframe",
+            "key frame",
+            "control frame",
+            "分镜",
+            "画格",
+            "首帧",
+            "起始帧",
+            "尾帧",
+            "结束帧",
+            "关键帧",
+            "控制帧",
+        ],
+    ) {
         found.insert("frames");
     }
     found
@@ -178,85 +199,71 @@ pub(super) fn signals(description: &str) -> BTreeSet<&'static str> {
 
 pub(super) fn routes(kind: &str, description: &str) -> Vec<(&'static str, &'static str)> {
     let found = signals(description);
-    let mut routes: Vec<(&'static str, &'static str)> = Vec::new();
-    if kind == "video" {
-        routes.push(("product-video-production", "references/prompt-writing.md"));
-        routes.push(("product-video-production", "references/control.md"));
+    let owner = if kind == "video" {
+        "product-video-production"
     } else {
-        routes.push(("image-production", "references/prompt-writing.md"));
-    }
-    let push = |skill: &'static str, path: &'static str, routes: &mut Vec<_>| {
-        if !routes.contains(&(skill, path)) {
-            routes.push((skill, path));
-        }
+        "image-production"
     };
-    if found.contains("performance") {
-        push(
-            DIRECTION,
-            "references/naturalistic-performance.md",
-            &mut routes,
-        );
-    }
-    if found.contains("appearance") {
-        push(
-            DIRECTION,
-            "references/photographic-appearance.md",
-            &mut routes,
-        );
-    }
-    if found.contains("rhythm") {
-        push(DIRECTION, "references/rhythm.md", &mut routes);
-    }
-    if found.contains("action") {
-        push(DIRECTION, "references/animation-principles.md", &mut routes);
-    }
-    if found.contains("grammar") {
-        push(DIRECTION, "references/cinematography.md", &mut routes);
-    }
-    if found.contains("continuity") {
-        push(DIRECTION, "references/continuity.md", &mut routes);
+    // Spatial coherence is required even when the brief is attached as context.
+    // These are the bound Skill's execution methods, never another role's library.
+    let execution = if kind == "video" {
+        "references/shot-execution.md"
+    } else {
+        "references/scene-execution.md"
+    };
+    let mut routes = vec![(owner, "references/prompt-writing.md"), (owner, execution)];
+    if kind == "video" {
+        routes.push((owner, "references/control.md"));
     }
     if found.contains("frames") && kind == "image" {
-        push("image-production", "references/frames.md", &mut routes);
+        routes.push((owner, "references/frames.md"));
     }
     if found.contains("review") {
         if kind == "video" {
-            push(
-                "product-video-production",
-                "references/review.md",
-                &mut routes,
-            );
-            push(
-                "product-video-production",
-                "references/evidence.md",
-                &mut routes,
-            );
+            routes.push((owner, "references/review.md"));
+            routes.push((owner, "references/evidence.md"));
         } else {
-            push(
-                "image-production",
-                "references/frame-checks.md",
-                &mut routes,
-            );
-        }
-    }
-    // A substantial brief that matched no keyword still gets the recommended
-    // method set for its kind; a short vague request does not need the library.
-    if found.is_empty() && description.chars().count() >= 200 {
-        for (skill, path) in recommended(kind) {
-            push(skill, path, &mut routes);
+            routes.push((owner, "references/frame-checks.md"));
         }
     }
     routes
 }
 
-pub(super) fn recommended(kind: &str) -> Vec<(&'static str, &'static str)> {
-    let mut set = vec![
-        (DIRECTION, "references/naturalistic-performance.md"),
-        (DIRECTION, "references/photographic-appearance.md"),
-        (DIRECTION, "references/animation-principles.md"),
-    ];
-    if kind == "video" {
-        set.push((DIRECTION, "references/rhythm.md"));
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn storyboard_and_control_frame_requests_route_to_local_image_frame_methods() {
+        for brief in [
+            "做分镜图",
+            "生成首帧",
+            "按参考做尾帧",
+            "制作关键帧",
+            "a storyboard panel",
+            "first-frame image",
+            "last frame",
+            "a keyframe",
+            "control frame",
+        ] {
+            let methods = routes("image", brief);
+            assert!(
+                methods.contains(&("image-production", "references/frames.md")),
+                "{brief}"
+            );
+            assert!(
+                methods
+                    .iter()
+                    .all(|(owner, _)| *owner == "image-production")
+            );
+        }
+        assert!(
+            !routes("image", "product cover image")
+                .contains(&("image-production", "references/frames.md"))
+        );
+        assert!(
+            routes("video", "animate this first frame")
+                .iter()
+                .all(|(owner, _)| *owner == "product-video-production")
+        );
     }
-    set
 }

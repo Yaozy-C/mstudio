@@ -10,7 +10,7 @@ def slug(heading):
     return re.sub(r"\s", "-", heading)
 
 
-EXPECTED = {"ad-script", "creative-ad-director", "image-production", "product-video-production", "video-editing"}
+EXPECTED = {"creative-concepts", "ad-script", "creative-ad-director", "image-production", "product-video-production", "video-editing"}
 
 
 def validate(root):
@@ -50,7 +50,7 @@ def validate(root):
                 continue
             target, _, anchor = unquote(link).partition("#")
             resolved = (path.parent / target).resolve() if target else path.resolve()
-            if not resolved.is_relative_to(root.resolve()) or not resolved.is_file():
+            if not resolved.is_relative_to((root / path.relative_to(root).parts[0]).resolve()) or not resolved.is_file():
                 errors.append(f"missing/escaping reference: {path}: {link}")
                 continue
             if anchor:

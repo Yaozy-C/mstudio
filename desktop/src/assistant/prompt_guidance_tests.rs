@@ -13,6 +13,7 @@ fn fixture() -> (std::path::PathBuf, Store) {
         .unwrap();
         let models = json!([
             {"id":"h3","name":"Selected video","plugin":"fal","kind":"video","endpoint":"minimax/h3/reference-to-video","enabled":true,"params":{}},
+            {"id":"generic-video","name":"Other video","plugin":"fal","kind":"video","endpoint":"example/video","enabled":true,"params":{}},
             {"id":"image","name":"Image","plugin":"codex-image","kind":"image","endpoint":"codex://local/images","enabled":true,"params":{}}
         ]);
         db.execute(
@@ -35,7 +36,14 @@ fn model_guidance_is_selected_without_eagerly_loading_skill_bodies() {
     )
     .unwrap();
     let context = json!({"models":{"video":"h3","image":"image"}});
-    for id in ["coordinator", "concept", "production", "editor"] {
+    for id in [
+        "coordinator",
+        "concept",
+        "director",
+        "image",
+        "production",
+        "editor",
+    ] {
         let profile = crate::assistant::profiles::builtins()
             .into_iter()
             .find(|a| a.id == id)
@@ -51,7 +59,7 @@ fn model_guidance_is_selected_without_eagerly_loading_skill_bodies() {
     assert!(
         for_agent(&db, &production, &context, &json!({}))
             .unwrap()
-            .contains("subject_definitions")
+            .contains("MiniMax H3 prompt adapter")
     );
     drop(db);
     drop(store);
@@ -70,17 +78,13 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     // The bound entry document and its core come from the database.
     assert!(guidance.contains("product-video-production/SKILL.md"));
     assert!(guidance.contains("product-video-production/CORE.md"));
-    // Timed multi-event action and on-camera behaviour select the methods.
-    assert!(guidance.contains("creative-ad-director/references/rhythm.md"));
-    assert!(guidance.contains("creative-ad-director/references/naturalistic-performance.md"));
+    // The bound Skill owns its motion, performance and timing methods.
+    assert!(guidance.contains("## Human performance"));
+    assert!(guidance.contains("## Timing and selection"));
     // The prompt-writing guide is always present for the bound kind.
     assert!(guidance.contains("product-video-production/references/prompt-writing.md"));
-    // The loaded prompt-writing guide links to shot grammar, so the literal path can
-    // appear in its body; the check is that no cinematography method section is added.
-    assert!(!guidance.contains("### creative-ad-director/references/cinematography.md"));
-    // A short vague request does not pull the whole library. The always-loaded video
-    // prompt-writing guide links to naturalistic performance in its body, so the check
-    // is that no naturalistic-performance method section is added.
+    assert!(guidance.contains("### product-video-production/references/shot-execution.md"));
+    // Even a vague request needs local spatial rules, but never another role's library.
     let short = for_quick(
         &db,
         &profile,
@@ -90,19 +94,50 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
         &json!({}),
     )
     .unwrap();
-    assert!(!short.contains("### creative-ad-director/references/naturalistic-performance.md"));
+    assert!(short.contains("### product-video-production/references/shot-execution.md"));
+    assert!(!short.contains("### creative-ad-director/"));
+    db.execute("UPDATE skill_resources SET text=text || '\nCURRENT_SPATIAL_RULE' WHERE skill_id='product-video-production' AND path='references/shot-execution.md'", []).unwrap();
+    let attached = for_quick(
+        &db,
+        &profile,
+        "video",
+        "按附件脚本整理",
+        &context,
+        &json!({}),
+    )
+    .unwrap();
+    assert!(attached.contains("CURRENT_SPATIAL_RULE"));
+    let portable = for_quick(
+        &db,
+        &profile,
+        "video",
+        "按附件脚本整理",
+        &json!({"models":{"video":"generic-video"}}),
+        &json!({}),
+    )
+    .unwrap();
+    // A model switch changes adaptation, while the current shot method still loads.
+    assert!(portable.contains("CURRENT_SPATIAL_RULE"));
+    assert!(portable.contains("product-video-production/references/prompt-writing.md"));
+    assert!(!portable.contains("MiniMax H3 prompt adapter"));
+
     // The image panel binds the image Skill, not the video one.
     let image = quick_profile(&db, "image").unwrap();
     let image_guidance = for_quick(
         &db,
         &image,
         "image",
-        "a still of the bag on a desk",
+        "a storyboard key frame of the bag on a desk",
         &json!({"models":{"image":"image"}}),
         &json!({}),
     )
     .unwrap();
     assert!(image_guidance.contains("image-production/SKILL.md"));
+    assert!(!image_guidance.contains("CURRENT_SPATIAL_RULE"));
+    assert!(image_guidance.contains("image-production/references/scene-execution.md"));
+    assert!(image_guidance.contains("### image-production/references/frames.md"));
+    assert!(!image_guidance.contains("### product-video-production/"));
+    assert!(!image_guidance.contains("### creative-ad-director/"));
     assert!(!image_guidance.contains("product-video-production/references/control.md"));
     drop(db);
     drop(store);
@@ -129,10 +164,10 @@ fn the_audited_real_brief_selects_the_methods_that_were_missing() {
     // real people and dialogue, timed multi-event action, photographic appearance
     // and physical contact.
     for expected in [
-        "### creative-ad-director/references/naturalistic-performance.md",
-        "### creative-ad-director/references/rhythm.md",
-        "### creative-ad-director/references/photographic-appearance.md",
-        "### creative-ad-director/references/animation-principles.md",
+        "## Human performance",
+        "## Timing and selection",
+        "## Appearance and continuity",
+        "## Contact and motion",
     ] {
         assert!(guidance.contains(expected), "missing route: {expected}");
     }
@@ -140,6 +175,93 @@ fn the_audited_real_brief_selects_the_methods_that_were_missing() {
     assert!(guidance.contains("Physical causality is not a full operating sequence"));
     // Every input must be bound to a subject and visual use.
     assert!(guidance.contains("concrete purpose"));
+    drop(db);
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn quick_preparation_fails_if_its_required_local_method_is_missing() {
+    let (root, store) = fixture();
+    let db = store.db.lock().unwrap();
+    let profile = quick_profile(&db, "video").unwrap();
+    db.execute("DELETE FROM skill_resources WHERE skill_id='product-video-production' AND path='references/shot-execution.md'", []).unwrap();
+    assert!(
+        for_quick(
+            &db,
+            &profile,
+            "video",
+            "use attached brief",
+            &json!({}),
+            &json!({})
+        )
+        .is_err()
+    );
+    drop(db);
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn video_motion_method_uses_current_db_text_and_stays_the_same_across_models() {
+    let (root, store) = fixture();
+    let db = store.db.lock().unwrap();
+    let profile = quick_profile(&db, "video").unwrap();
+    let brief = "按附件脚本整理视频提示词";
+    let generic = json!({"models":{"video":"generic-video"}});
+    let original = for_quick(&db, &profile, "video", brief, &generic, &json!({})).unwrap();
+    let page = crate::assistant::skills::storage::read(
+        &db,
+        "",
+        "product-video-production",
+        "references/prompt-writing.md",
+        0,
+        true,
+    )
+    .unwrap();
+    let custom = format!(
+        "{}\nDB_SPECIFIC_MOTION_RULE",
+        page["text"].as_str().unwrap()
+    );
+    crate::assistant::skills::storage::save(
+        &db,
+        "product-video-production",
+        "references/prompt-writing.md",
+        &custom,
+        page["revision"].as_i64().unwrap(),
+    )
+    .unwrap();
+    let updated = for_quick(&db, &profile, "video", brief, &generic, &json!({})).unwrap();
+    let h3 = for_quick(
+        &db,
+        &profile,
+        "video",
+        brief,
+        &json!({"models":{"video":"h3"}}),
+        &json!({}),
+    )
+    .unwrap();
+    assert!(!original.contains("DB_SPECIFIC_MOTION_RULE"));
+    assert!(updated.contains("DB_SPECIFIC_MOTION_RULE"));
+    assert!(h3.contains("DB_SPECIFIC_MOTION_RULE"));
+    // Model adaptation changes, while the current scene/motion method is identical.
+    assert_eq!(
+        updated.split("\nSelected model guidance (").next(),
+        h3.split("\nSelected model guidance (").next()
+    );
+    assert!(!updated.contains("MiniMax H3 prompt adapter"));
+    assert!(h3.contains("MiniMax H3 prompt adapter"));
+    let image = quick_profile(&db, "image").unwrap();
+    let still = for_quick(
+        &db,
+        &image,
+        "image",
+        brief,
+        &json!({"models":{"image":"image"}}),
+        &json!({}),
+    )
+    .unwrap();
+    assert!(!still.contains("DB_SPECIFIC_MOTION_RULE"));
     drop(db);
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

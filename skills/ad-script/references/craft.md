@@ -15,14 +15,6 @@ The following are optional tools; not every piece needs a surprising ending.
 
 Choose details that carry meaning; do not pile up adjectives. An action can convey both character and product; a simple process can gain style from composition, the choice of actions and sound. A metaphor may be unrealistic, but it must not masquerade as a demonstration of product performance.
 
-## An idea is not a title
-
-When comparing candidates, you can pin one down in a few sentences: "At the start we see/hear ___; then ___, so/but/while ___; finally ___. The audience gets its payoff at ___; the product is understood at ___."
-
-This is a tool for clarifying a vague concept, not a uniform story structure. A process piece can be organised by sensory change; an explanatory piece can give the answer first and then demonstrate; a story can skip the background and go straight into action.
-
-Within one direction you can compare different expressions, and within one expression you can compare different claims. Do not confuse one version of an opening with a complete strategy.
-
 ## Three micro-editing demonstrations
 
 The following are fictional exercises, not proven hits, and they are not applied to a client's product by default.

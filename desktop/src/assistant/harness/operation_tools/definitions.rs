@@ -49,6 +49,11 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 properties.retain(|key, _| {
                     crate::assistant::permissions::allows_node_field(profile, kind, key)
                 });
+                // Screenplay content is structured; the domain rejects body text
+                // even for the coordinator's unrestricted node permissions.
+                if kind == "screenplay" {
+                    properties.remove("text");
+                }
                 let nested = match kind {
                     "shot" => Some("shot"),
                     "screenplay" => Some("screenplay"),
@@ -78,7 +83,7 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                     serde_json::Map::from_iter([("kind".into(), json!(kind))]),
                     nested,
                     &format!(
-                        "Create a {kind} node with a new id and title. All listed fields are direct parameters, including any script or shot fields. x/y, when supplied, are absolute canvas coordinates."
+                        "Create a {kind} node with a new id and title. All listed fields are direct parameters, including any script or shot fields. Screenplay content uses script paragraphs, with no text body. x/y, when supplied, are absolute canvas coordinates."
                     ),
                 );
             }

@@ -31,13 +31,14 @@ fn shipped_rules_work_from_a_relocated_resource_directory() {
         assert!(page["text"].as_str().unwrap().contains(id));
         assert!(page["totalCharacters"].as_u64().unwrap() > 0);
     }
-    let path = "../creative-ad-director/references/rhythm.md";
+    let path = "references/shot-execution.md";
     let enabled = "[\"skill-product-video-production\"]";
     let page =
         skills::storage::read(&db, enabled, "product-video-production", path, 0, true).unwrap();
-    assert_eq!(page["skill"], "creative-ad-director");
+    assert_eq!(page["skill"], "product-video-production");
     let source =
-        fs::read_to_string(root.join("creative-ad-director/references/rhythm.md")).unwrap();
+        fs::read_to_string(root.join("product-video-production/references/shot-execution.md"))
+            .unwrap();
     let text = page["text"].as_str().unwrap();
     assert!(!text.is_empty() && source.starts_with(text));
     // A packaged install must never fall back to a developer's repository or home directory.

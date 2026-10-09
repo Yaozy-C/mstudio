@@ -1,6 +1,6 @@
 # Controlled generation and recovery
 
-Use the available image/video tools and relevant tool skill. Query unknown capabilities or reference limits instead of inventing parameters or switching paid APIs. Actual images require image-generation/editing tools; code can lay out generated assets but must not draw placeholder products and report them as generated results. Read [image prompting](../../image-production/references/prompt-writing.md) for still prompts.
+Use the available image/video tools and relevant tool skill. Query unknown capabilities or reference limits instead of inventing parameters or switching paid APIs. Actual images require image-generation/editing tools; code can lay out generated assets but must not draw placeholder products and report them as generated results. Hand missing still prompts and image generation to image production.
 
 ## Reduce uncontrolled variables
 
@@ -20,7 +20,7 @@ Before calls, identify the minimum final frame set. Generate only for new story 
 
 ## Separate concept and execution loops
 
-Concept changes address expectation, payoff and product relationship through [opening design](../../creative-ad-director/references/concepts.md). Generation repairs address structure, anatomy, framing and state. A failed render does not automatically invalidate the concept; polishing material does not repair a failed premise.
+Concept changes address expectation, payoff and product relationship through a handoff to creative planning. Generation repairs address structure, anatomy, framing and state. A failed render does not automatically invalidate the concept; polishing material does not repair a failed premise.
 
 | Observed failure | Response |
 |---|---|
@@ -29,7 +29,7 @@ Concept changes address expectation, payoff and product relationship through [op
 | Disconnected limb or penetration | Clarify connection/support, simplify contact or adjust view while preserving the event |
 | Duplicated/teleported prop | Repair state differences and count, not explanatory copy |
 | Local repair damages identity/background | Revert to the last valid base and narrow the change/reference set |
-| Meaning exists only in captions | Revisit concept, cues or staging |
+| A relationship intended to be visible needs captions to compensate for missing visual cues | Repair the cues or staging; information deliberately carried by language is not a visual defect |
 | Motion remains unknown | Retain a motion plan and validate actual footage when authorized; more stills are not motion evidence |
 
 Default to at most two diagnosed repairs of the same defect with hypothesis/change/observation. This is not two compulsory calls per image or a two-call limit for the whole task. If still stuck, stop sampling the same method and change staging/contact/route while preserving the viewing purpose. At user cost/attempt limits, deliver valid work and explicit gaps. If no route expresses a locked event, retain it as uncompleted rather than silently replacing it.

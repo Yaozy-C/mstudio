@@ -137,7 +137,9 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
     typeof op.text === "string" &&
     op.text.trim()
   )
-    throw new Error("脚本内容请写入 screenplay.script");
+    throw new Error(
+      "脚本文档不支持非空 text；请删除 text，使用结构化 script 段落",
+    );
   if (node.kind === "screenplay" && !node.screenplay)
     node = { ...node, screenplay: { script: [] } };
   if (node.shot && previous && shotBasis(previous) !== shotBasis(node)) {

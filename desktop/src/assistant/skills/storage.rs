@@ -1,4 +1,4 @@
-use super::{SKILLS, dependency, enabled};
+use super::{SKILLS, enabled};
 use anyhow::{Context, Result, ensure};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
@@ -82,7 +82,7 @@ fn resolve(id: &str, resource: &str) -> Result<(String, String)> {
             Component::Normal(v) => parts.push(v.to_string_lossy().into_owned()),
             Component::CurDir => {}
             Component::ParentDir => {
-                ensure!(!parts.is_empty(), "Rule path escapes its root");
+                ensure!(parts.len() > 1, "Rule path escapes its Skill root");
                 parts.pop();
             }
             _ => anyhow::bail!("Use a relative path within the Skill"),
@@ -100,6 +100,9 @@ fn resolve(id: &str, resource: &str) -> Result<(String, String)> {
 pub fn catalog(db: &Connection, setting: &str) -> Result<Value> {
     let mut items = vec![];
     for (id, name, description) in SKILLS {
+        if !enabled(setting, id)? {
+            continue;
+        }
         let available: bool = db.query_row(
             "SELECT EXISTS(SELECT 1 FROM skill_resources WHERE skill_id=?1 AND path='SKILL.md')",
             [id],
@@ -125,10 +128,6 @@ pub fn read(
 ) -> Result<Value> {
     let (owner, path) = resolve(id, resource)?;
     ensure!(!active_only || enabled(setting, id)?, "Skill disabled");
-    ensure!(
-        !active_only || enabled(setting, &owner)? || dependency(id, &owner),
-        "Referenced Skill disabled"
-    );
     let (text, revision): (String, i64) = db
         .query_row(
             "SELECT text,revision FROM skill_resources WHERE skill_id=?1 AND path=?2",

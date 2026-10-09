@@ -145,24 +145,16 @@ impl Loader<'_> {
         if !self.seen.insert(format!("{skill}/{path}")) {
             return Ok(());
         }
-        let resource = if skill == self.owner {
-            path.to_owned()
-        } else {
-            format!("../{skill}/{path}")
-        };
-        match super::skills::storage::read(self.db, self.setting, &self.owner, &resource, 0, true) {
-            Ok(page) => {
-                let text = page["text"].as_str().unwrap_or_default();
-                if !text.trim().is_empty() {
-                    self.text
-                        .push_str(&format!("\n### {skill}/{path}\n{text}\n"));
-                }
-                Ok(())
-            }
-            // A Skill may legitimately ship no core document.
-            Err(_) if path != "SKILL.md" => Ok(()),
-            Err(error) => Err(error),
-        }
+        anyhow::ensure!(skill == self.owner, "Prompt method outside bound Skill");
+        let page = super::skills::storage::read(self.db, self.setting, &self.owner, path, 0, true)?;
+        let text = page["text"].as_str().unwrap_or_default();
+        anyhow::ensure!(
+            !text.trim().is_empty(),
+            "Required prompt method is empty: {skill}/{path}"
+        );
+        self.text
+            .push_str(&format!("\n### {skill}/{path}\n{text}\n"));
+        Ok(())
     }
 }
 

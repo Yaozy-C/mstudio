@@ -13,6 +13,22 @@ const a = {
   duration: 4,
 };
 const b = { ...a, id: "b", title: "Pack", duration: 6 };
+test("screenplay body text reports the conflicting field without changing the project", () => {
+  const p = newProject("Script");
+  expect(() =>
+    applyOperations(p, [
+      {
+        op: "add_node",
+        id: "screenplay",
+        kind: "screenplay",
+        title: "Script",
+        text: "Extra explanation",
+        screenplay: { script: [a] },
+      },
+    ]),
+  ).toThrow("脚本文档不支持非空 text；请删除 text，使用结构化 script 段落");
+  expect(p.nodes).toHaveLength(0);
+});
 test("agent creates, edits, inserts, reorders, deletes and replaces structured script", () => {
   let p = applyOperations(newProject("Script"), [
     {

@@ -14,9 +14,15 @@ export type AgentProfile = {
 };
 export const skills = [
   {
+    id: "creative-concepts",
+    name: "创意策划",
+    description: "选题、观看动机、核心事件、商品关系与方向比较",
+    kind: "可编辑规则",
+  },
+  {
     id: "ad-script",
-    name: "创意与声画脚本",
-    description: "内容优先的创意、观看回报、声画脚本与本地研究",
+    name: "声画编剧",
+    description: "将选定方向写成动作、台词、文字、声音与段落时长",
     kind: "可编辑规则",
   },
   {

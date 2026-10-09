@@ -2,69 +2,73 @@ use super::{permissions, profiles, tool_schema};
 use serde_json::{Value, json};
 
 #[test]
-fn production_owns_prompts_and_media_but_not_shot_structure_or_script() {
-    // production now holds project-frames and project-production together, so it owns the
-    // still prompt, the shot frames and the video prompt, and it may generate either kind.
-    // The old "cannot generate video" boundary now belongs to the asset-only profile
-    // exercised in operation_tools::tests instead of to a separate shipped role.
-    let agent = profiles::builtins()
-        .into_iter()
-        .find(|p| p.id == "production")
-        .unwrap();
-    profiles::validate(&agent).unwrap();
-    let doc = json!({"nodes":[{"id":"s","kind":"shot"},{"id":"p","kind":"screenplay"},{"id":"r","kind":"asset"}]});
-    let check = |op: Value| {
+fn shipped_roles_have_independent_edit_and_generation_boundaries() {
+    let agents = profiles::builtins();
+    let doc = json!({"nodes":[{"id":"s","kind":"shot"},{"id":"p","kind":"screenplay"}],"production":{"drafts":{"image":{"kind":"image"},"video":{"kind":"video"}}}});
+    let check = |role: &str, op: Value| {
+        let agent = agents.iter().find(|a| a.id == role).unwrap();
+        profiles::validate(agent).unwrap();
         let args = json!({"action":"edit","operations":[op]});
-        crate::assistant::harness::schema::issues(&tool_schema::for_profile(&agent), &args)
+        crate::assistant::harness::schema::issues(&tool_schema::for_profile(agent), &args)
             .is_empty()
-            && permissions::validate(&agent, &args, &doc).is_ok()
+            && permissions::validate(agent, &args, &doc).is_ok()
     };
-    assert!(check(
-        json!({"op":"update_node","id":"s","shot":{"framePrompt":"Wide shot","frames":[{"assetId":"image","title":"S01-A"}],"prompt":"Video"}})
-    ));
-    assert!(check(
-        json!({"op":"request_generation","id":"s","mediaKind":"image","text":"Wide shot"})
-    ));
-    assert!(check(
-        json!({"op":"request_generation","id":"s","mediaKind":"video","text":"Wide shot","mode":"multi"})
-    ));
-    // Creating or deleting a record is structural: production may manage asset
-    // records, but a shot record belongs to the capability that owns shot design.
-    assert!(!check(json!({"op":"remove_node","id":"s"})));
-    assert!(!check(json!({"op":"remove_node","id":"p"})));
-    assert!(check(
-        json!({"op":"add_node","id":"asset","kind":"asset","title":"Reference"})
-    ));
-    assert!(check(json!({"op":"remove_node","id":"r"})));
-    // production has no project-shots, project-script or project-edit: shot structure,
-    // staging text, timing, dialogue and screenplay content stay outside its scope.
-    for op in [
-        json!({"op":"request_generation","mediaKind":"video"}),
-        json!({"op":"request_generation"}),
-        json!({"op":"update_node","id":"s","text":"Change action"}),
-        json!({"op":"update_node","id":"s","shot":{"duration":2}}),
-        json!({"op":"update_node","id":"s","shot":{"scriptId":"p"}}),
-        json!({"op":"update_node","id":"s","shot":{"dialogue":"hello"}}),
-        json!({"op":"update_node","id":"p","screenplay":{"story":"New story"}}),
-        json!({"op":"add_node","id":"new","kind":"shot"}),
+    for role in [
+        "coordinator",
+        "concept",
+        "writer",
+        "director",
+        "image",
+        "production",
+        "editor",
     ] {
-        assert!(!check(op.clone()), "{op}");
+        assert_eq!(
+            check(
+                role,
+                json!({"op":"update_node","id":"p","screenplay":{"script":[{"id":"p1","action":"Story"}]}})
+            ),
+            role == "writer",
+            "{role}: script"
+        );
+        assert_eq!(
+            check(
+                role,
+                json!({"op":"update_node","id":"s","text":"Camera inside"})
+            ),
+            role == "director",
+            "{role}: staging"
+        );
+        assert_eq!(
+            check(
+                role,
+                json!({"op":"update_node","id":"s","shot":{"framePrompt":"Still"}})
+            ),
+            role == "image",
+            "{role}: still prompt"
+        );
+        assert_eq!(
+            check(
+                role,
+                json!({"op":"update_node","id":"s","shot":{"prompt":"Video"}})
+            ),
+            role == "production",
+            "{role}: video prompt"
+        );
+        for kind in ["image", "video"] {
+            let allowed = role
+                == if kind == "image" {
+                    "image"
+                } else {
+                    "production"
+                };
+            let mut op = json!({"op":"request_generation","mediaKind":kind,"text":"Synthetic"});
+            if kind == "video" {
+                op["mode"] = json!("multi");
+            }
+            assert_eq!(check(role, op), allowed, "{role}: {kind}");
+            assert_eq!(permissions::validate(agents.iter().find(|a| a.id == role).unwrap(), &json!({"operations":[{"op":"update_generation","taskKey":kind,"text":"Changed"}]}), &doc).is_ok(), allowed, "{role}: task {kind}");
+        }
     }
-    assert_eq!(
-        tool_schema::for_profile(&agent)["properties"]["operations"]["items"]["oneOf"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .find(|s| s["properties"]["op"]["const"] == "request_generation")
-            .unwrap()["properties"]["mediaKind"]["const"],
-        json!("image")
-    );
-    let mut revoked = agent;
-    revoked.tool_ids.retain(|id| id != "media-generation");
-    assert!(!permissions::allows_operation(
-        &revoked,
-        "request_generation"
-    ));
 }
 
 #[test]
@@ -77,7 +81,7 @@ fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
     .unwrap();
     // A pre-refactor install is missing the roles profiles::read auto-adds now.
     let mut old = profiles::builtins();
-    old.retain(|p| !["concept", "production", "editor"].contains(&p.id.as_str()));
+    old.retain(|p| p.id == "coordinator");
     let coordinator = old.iter_mut().find(|p| p.id == "coordinator").unwrap();
     coordinator.revision = 8;
     coordinator.name = "Old default".into();
@@ -99,7 +103,14 @@ fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
         "Old default",
         "an existing saved role is not reset to its shipped default"
     );
-    for id in ["concept", "production", "editor"] {
+    for id in [
+        "concept",
+        "writer",
+        "director",
+        "image",
+        "production",
+        "editor",
+    ] {
         assert!(loaded.iter().any(|p| p.id == id && p.enabled));
     }
     let custom = loaded.iter().find(|p| p.id == "coordinator").unwrap();
@@ -111,8 +122,8 @@ fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
     assert!(profiles::resolve(&db, Some("concept")).is_err());
     assert_eq!(
         profiles::read(&db).unwrap().len(),
-        4,
-        "coordinator plus the three auto-added roles"
+        7,
+        "coordinator plus six specialists"
     );
 }
 

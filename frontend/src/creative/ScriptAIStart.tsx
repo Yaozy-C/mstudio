@@ -29,7 +29,7 @@ export function ScriptAIStart({
   const start = (text = "") =>
     requestCreativeTask({
       text,
-      agentId: "concept",
+      agentId: "writer",
       targetNodeId: screenplayId,
     });
   return (

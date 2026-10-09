@@ -6,7 +6,7 @@ Use for state checks, frame preparation and asset-change tracking after shot des
 
 An editorial shot is a continuous viewpoint; a Mstudio shot record may group several editorial shots for generation. A frame is one selected moment; a generated clip is a tool output. Preserve internal shot labels/time ranges in the record text and map them to actual footage cuts. Multiple frames do not multiply duration; a generation group does not erase internal shots.
 
-For important action, track source/initial support, path, necessary contact or boundary, and destination/final support. Record only the states required to understand the action; do not generate every state by default. A frame shows one readable instant, not mutually exclusive states at once. Necessary start/end frames retain shared landmarks. Actual frame checks belong in [preview inspection](../../image-production/references/frame-checks.md).
+For important action, track source/initial support, path, necessary contact or boundary, and destination/final support. Record only the states required to understand the action; do not generate every state by default. A frame shows one readable instant, not mutually exclusive states at once. Necessary start/end frames retain shared landmarks. Image production inspects the actual rendered frames and reports deviations.
 
 ## State and dependency record
 

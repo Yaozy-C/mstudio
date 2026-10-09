@@ -6,7 +6,7 @@ pub fn schema() -> Value {
     json!({"type":"object","properties":{
       "action":{"type":"string","enum":["inspect","edit","history","skills","read_skill","models"]},
       "skill":{"type":"string","description":"read_skill directory ID from the skills catalog."},
-      "path":{"type":"string","description":"Markdown path relative to the Skill root; default SKILL.md. Supports permitted cross-Skill links."},
+      "path":{"type":"string","description":"Markdown path relative to the Skill root; default SKILL.md. Must stay within this Skill; cross-Skill paths are forbidden."},
       "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect section to read; omission returns a compact project summary."},
       "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","screenplay","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden","status","targetNodeId","resultAssetIds","error","trackingPaused","turnId","modelId","ownerId","inputs","parameters","generationPurpose","source"]},"description":"With nodeIds, return selected fields plus id/kind. shot is basic structure; shot.order/shot.duration select order/timing; shots is a screenplay shot directory; text is action/staging. Omission returns summaries. script gives paragraph summaries; screenplay gives the full paginated script. Narrow with paragraphIds/scriptFields."},
       "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions: exact IDs; assets include source with the original submitted prompt, model and references. fields=[source] selects provenance; source.prompt.nextTextOffset paginates original text."},
@@ -46,11 +46,12 @@ pub fn for_profile(profile: &super::profiles::AgentProfile) -> Value {
             ) && (op["properties"]["op"]["const"] != "request_generation"
                 || ((!super::permissions::asset_only(profile)
                     || op["properties"]["generationPurpose"]["const"] == "asset")
-                    && (profile
-                        .tool_ids
-                        .iter()
-                        .any(|id| id == "project-production" || id == "project-edit")
-                        || op["properties"]["mediaKind"]["const"] == "image")))
+                    && super::permissions::allows_media_kind(
+                        profile,
+                        op["properties"]["mediaKind"]["const"]
+                            .as_str()
+                            .unwrap_or(""),
+                    )))
         });
         for operation in operations {
             let properties = operation["properties"].as_object_mut().unwrap();

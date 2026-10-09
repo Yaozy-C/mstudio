@@ -182,7 +182,7 @@
   "正在提交参考生成…": "Submitting reference generation…",
   "参考视频与描述直接用于生成，可添加图片指定商品或人物。": "Your reference video and description go directly into generation. Add images to specify a product or person.",
   "描述要保留的动作、运镜，以及要替换的主体或场景…": "Describe the action and camera movement to keep, and the subject or scene to replace…",
-  "让媒体制作检查此结果": "Ask media production to inspect this result",
+  "让制作角色检查此结果": "Ask media production to inspect this result",
   "检查此结果": "Inspect this result",
   "请检查这个生成结果。先读取实际画面，对照本次提交的提示词和每个参考素材的用途，说明哪些结论有真实帧支持，哪些还需要播放或听声音才能确认；发现的问题给出最小修复方向，不要只凭任务状态下结论。": "Inspect this generation result. Read the actual frames first and compare them with the submitted prompt and the purpose of each reference input. State which conclusions real frames support and which still need playback or listening to confirm. For any problem found, give the smallest useful repair direction instead of judging from task status alone."
 }

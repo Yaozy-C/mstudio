@@ -14,14 +14,3 @@ Legacy brightness, contrast, saturation, temperature and effect still run after 
 - Verification: inspect highlight/shadow clipping, color casts, cut-to-cut brightness changes and compression banding. Unseen final renders remain unchecked.
 
 For a slightly cooler image with preserved product color, compare neutrals and the product, adjust temperature modestly, and compensate affected color ranges only if needed. HSL selects colors throughout the image, not a semantic product mask. Values depend on the actual frames.
-
-## Reference status
-
-The retained official training and implementation sources were recorded as checked on 2026-09-27. They explain grading, monitoring and implementation concepts; their advanced features are not claims about Mstudio capability. This rewrite does not refresh that historical verification date.
-
-## Further reading
-
-- [Source 1](https://www.blackmagicdesign.com/products/davinciresolve/training)
-- [Source 2](https://www.blackmagicdesign.com/products/davinciresolve/color)
-- [Source 3](https://ffmpeg.org/ffmpeg-filters.html)
-- [Source 4](https://github.com/mltframework/shotcut/blob/master/src/qml/filters/brightness/ui.qml)

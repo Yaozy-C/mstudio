@@ -66,19 +66,8 @@ Use the existing shot text or table; simple shots can use short sentences. Do no
 5. **Locks and freedom:** preserve continuity, camera relationships, action order, required evidence and identity/parts that determine the effect. Identify secondary freedom. Separate user constraints from revisable director decisions. Shot count, slow motion, sound and animation style follow the current design, not another film's recipe.
 6. **Frames and verification:** the necessary frame moments, visible relationships and what static evidence cannot verify. Multiple frames do not multiply shot duration.
 
-Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. [Prompt conversion](../../product-video-production/references/prompt-writing.md) adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
+Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. Video production converts the design into a prompt and adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
 
 Design review checks expression, compatible geometry and causal cuts. Actual frames check execution. Speed, performance pauses and synchronization require motion/audio evidence. Unexpected good results may be adopted only when they preserve the core task and user constraints.
 
-## Sources and limits
-
-The Higgsfield tutorial around 17:10–19:10 demonstrates shot purpose, shot structure, constraints, animation principles and a shared skill. This is an adaptation for this workflow, not its full internal skill. The tutorial's vehicles, fixed durations, no-music choice and animation on twos are project decisions, not universal laws. Exact frames and perfect consistency in prompts express intent, not model guarantees.
-
-## Further reading
-
-- [Source 1](https://www.khanacademy.org/humanities/hass-storytelling/storytelling-pixar-in-a-box/ah-piab-film-grammar/v/film-grammar-overview)
-- [Source 2](https://www.khanacademy.org/v/dynamicshots)
-- [Source 3](https://filmglossary.ccnmtl.columbia.edu/term/180-degree-rule/)
-- [Source 4](https://www.columbia.edu/itc/film/engel/3001/continuity.html)
-- [Source 5](https://www.studiobinder.com/blog/30-degree-rule/)
-- [Source 6](https://xhslink.cn/o/rLnNxFkjbL)
+Choose duration, sound and animation cadence from the current brief rather than inheriting a tutorial example. Exact frame instructions and consistency constraints express design intent; they do not guarantee model control or a successful result.

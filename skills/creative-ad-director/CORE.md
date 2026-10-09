@@ -4,6 +4,6 @@ Preserve the chosen viewing proposition, the product evidence and the selected i
 
 Design for the audience's time, not the model's. Choose distinct information and decisive action moments, leave out redundant preparation, repeated reaches and idle endings, and only then allocate screen time. Generation duration and final screen time are different values: use the selected model's actual limits and keep every internal cut explicit in text.
 
-For any human beat, decide the trigger, the order in which the reaction appears (gaze and breath before the whole body), the purpose the action serves right now, and what it connects to. A person who only "looks and smiles" is not a performance.
+For any human beat, decide the trigger, how gaze, breath and body respond and overlap according to that stimulus, the purpose the action serves right now, and what it connects to. Their order is not fixed. A person who only "looks and smiles" is not a performance.
 
 Detailed methods, task triggers and the boundaries between Skills are in [SKILL.md](SKILL.md).

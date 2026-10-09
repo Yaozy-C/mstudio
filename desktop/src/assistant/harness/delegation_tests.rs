@@ -1,12 +1,12 @@
 use super::*;
 #[test]
 fn specialist_keeps_own_permissions_and_cannot_recursively_delegate() {
-    let mut concept = profiles::builtins()
+    let mut writer = profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "concept")
+        .find(|p| p.id == "writer")
         .unwrap();
-    concept.tool_ids.push("agent-delegate".into());
-    let child = scoped(concept.clone(), "coordinator").unwrap();
+    writer.tool_ids.push("agent-delegate".into());
+    let child = scoped(writer.clone(), "coordinator").unwrap();
     assert!(!profiles::allows(&child, "delegate"));
     assert!(crate::assistant::permissions::allows_operation(
         &child,
@@ -16,9 +16,9 @@ fn specialist_keeps_own_permissions_and_cannot_recursively_delegate() {
         &child,
         "request_generation"
     ));
-    assert!(scoped(concept.clone(), "concept").is_err());
-    concept.enabled = false;
-    assert!(scoped(concept, "coordinator").is_err());
+    assert!(scoped(writer.clone(), "writer").is_err());
+    writer.enabled = false;
+    assert!(scoped(writer, "coordinator").is_err());
 }
 
 #[test]

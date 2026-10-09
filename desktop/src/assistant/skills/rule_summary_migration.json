@@ -1,0 +1,28 @@
+{
+  "updates": [
+    {
+      "skill": "creative-concepts",
+      "path": "SKILL.md",
+      "before": "a93a2ba2ea81ea5ac37d15dab0a28af447a8741e5dce02affe2f3d06df1b7461"
+    },
+    {
+      "skill": "ad-script",
+      "path": "SKILL.md",
+      "before": "bb16fdaba3cb50c4b73f228c447a2d0206c296e6ca0ed07a7630c0b1e3764544"
+    }
+  ],
+  "retired": [
+    {
+      "skill": "creative-concepts",
+      "path": "references/research.md"
+    },
+    {
+      "skill": "ad-script",
+      "path": "references/research.md"
+    },
+    {
+      "skill": "ad-script",
+      "path": "references/sources.md"
+    }
+  ]
+}

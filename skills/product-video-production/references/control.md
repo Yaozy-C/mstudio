@@ -11,7 +11,7 @@ Start from shot purpose and what must remain fixed. Routes may be combined; no v
 | Precise path or parallax | Available 3D/proxy previs and camera/depth references | Requires actual tools/assets; do not invent completed modeling |
 | Exact timing, splits or graphics | Deterministic editing, masks and layer animation | Editing cannot hide missing required proof |
 
-Reference the [saved shot design](../../creative-ad-director/references/cinematography.md#shot-constraints-and-handoff); add input roles, chosen route, reason, risk and fallback in the existing handoff, not another full camera table. Separate product fact, scene/camera baseline, composition, motion and actual control frames. Use the minimum relevant set and resolve conflicts before submission.
+Reference the [saved shot design](shot-execution.md); add input roles, chosen route, reason, risk and fallback in the existing handoff, not another full camera table. Separate product fact, scene/camera baseline, composition, motion and actual control frames. Use the minimum relevant set and resolve conflicts before submission.
 
 Test the hardest relationship within existing authorization. Unclear static relationships require layout/design repair; motion unknowns require an authorized useful test. Diagnose concept, input, route or execution failures rather than appending adjectives. Under an all-generated requirement, use allowed reference-driven or segmented approaches; if essential output remains infeasible, report the gap without secretly filming or changing the idea.
 

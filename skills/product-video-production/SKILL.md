@@ -11,16 +11,17 @@ Turn an approved design into a final, usable video prompt and generated media, t
 
 | The task has to decide | Read |
 |---|---|
-| How to compile the current segment into one final prompt | [Video prompt writing](references/prompt-writing.md) |
+| How to describe changing screen states, subject/camera motion, focus, light and sound in one final prompt | [Video prompt writing](references/prompt-writing.md) |
 | Which input mode and control route can express the planned action | [Control routes](references/control.md) |
 | Reference selection, segmentation and recovering a specific defect | [Controlled generation](references/generation.md) |
-| **How long each generated segment earns, what to leave out, and how cuts and sound line up in time** | **[Rhythm](../creative-ad-director/references/rhythm.md)** |
-| **How a person's reaction starts and layers on camera** | **[Naturalistic performance](../creative-ad-director/references/naturalistic-performance.md)** |
-| Weight, force, contact and material response inside the action | [Animation principles](../creative-ad-director/references/animation-principles.md) |
+| **How long each generated segment earns, what to leave out, and how cuts and sound line up in time** | **[Rhythm](references/shot-execution.md)** |
+| **How a person's reaction starts and layers on camera** | **[Naturalistic performance](references/shot-execution.md)** |
+| Weight, force, contact and material response inside the action | [Animation principles](references/shot-execution.md) |
 | What a finished clip must be checked against | [Inspection evidence](references/evidence.md), [review and delivery](references/review.md) |
-| Selecting usable source intervals, trimming and assembling the timeline | [Editing](../video-editing/references/editing.md) |
 
 A request that packs several timed events into a limited duration is itself the signal to read rhythm before writing the prompt, and a request showing real people is the signal to read performance. Do not wait for an explicit complaint.
+
+Inspect generated action and identify usable source candidates for handoff. Final source selection, trimming and timeline assembly belong to editing; pass the observed events, candidate ranges and defects through the existing project records rather than performing timeline work under production permissions.
 
 Read [core](CORE.md) for the short rules.
 
@@ -28,7 +29,7 @@ Read [core](CORE.md) for the short rules.
 
 An action has to be causally believable: its starting support, path, contact and release must be consistent, and nothing may cross a closed surface. That is a requirement on the action, not an instruction to show every step of it.
 
-Decide which part of the action the audience actually needs — normally the decisive contact or change and its result — and omit preparation, repeated reaches, redundant handling and idle endings. Keep the supporting geometry consistent in what you do show. When a model cannot render the whole chain reliably, obtain the smallest supported segment that carries the needed event rather than lengthening the prompt to cover every stage.
+Follow the selected design and user requirements when deciding which action phases must be visible. Preserve required continuous proof, anticipation and recognition; omit only nonessential preparation, repeated reaches, redundant handling and idle endings. Keep the supporting geometry consistent in what you do show. When a model cannot render the whole chain reliably, obtain the smallest supported segment that carries the needed event rather than lengthening the prompt to cover every stage.
 
 ## Bind every input to a concrete purpose
 

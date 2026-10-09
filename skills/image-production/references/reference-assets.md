@@ -1,6 +1,6 @@
 # Shared reference assets
 
-Use for subjects repeated across distinct shots that need consistent identity, or an explicit request for a reference asset. Same-shot A/B continuity and finished location scenes belong to the scene-frame work in [storyboard frames](frames.md). Read the short [core](../CORE.md) and [image prompt writing](prompt-writing.md) when needed; reuse their current text already in context.
+Use for subjects repeated across distinct shots that need consistent identity, or an explicit request for a reference asset. Reusable locations and spatial layouts can also anchor several shots. Same-shot A/B continuity and final scene frames use [storyboard frames](frames.md). Read the short [core](../CORE.md) and [image prompt writing](prompt-writing.md) when needed; reuse their current text already in context.
 
 ## Decide what is missing
 
@@ -12,11 +12,11 @@ Generate only necessary missing views. Original product photos remain structural
 
 ## Reference image design
 
-New shared asset images use a solid white background with neutral readable light and sufficient margins. Show the required outfit, footwear and accessories; preserve real product markings and connections. A small contact shadow may support the subject. Keep environmental backdrops, floor textures, panels and presentation labels out unless the user explicitly requests a different asset deliverable.
+For isolated subjects, choose a neutral white or gray background and readable light with sufficient margins; preserve a requested background. Show required outfit, footwear and accessories, real product markings and connections. A multi-view or full-body/detail sheet is useful when those views have actual consumers. State panel order, view, shared identity and scale; use labels only where they clarify the reference. No fixed front/side/back pack is required, and a sheet is not automatically a valid single-frame video control.
 
-For recurring setting elements, isolate the needed set piece; finished scene composition and location lighting belong to the artist. Lock selected identity, outfit and product construction across useful views. Derive additional views from an inspected identity image; a front/side/back pack is not automatic.
+For a recurring location, retain its environment, light direction, time of day, material appearance and useful landmarks as the shared baseline. An empty location may leave room for later staging; isolate a set piece only when that is the needed asset. A layout sketch can specify relative position, scale and direction when text or generations leave these unstable. The director owns the selected layout; execute it without inventing a different setting. Lock selected identity, outfit and product construction across useful views. Derive additional views from an inspected identity image; a front/side/back pack is not automatic.
 
-For photographic characters, consult [photographic appearance](../../creative-ad-director/references/photographic-appearance.md) when skin, lighting or realism needs specific treatment. At full-body scale, identity and complete clothing matter more than microscopic skin descriptions. Reference lighting supports identification; it does not dictate downstream scene lighting.
+For photographic characters, consult [photographic appearance](scene-execution.md) when skin, lighting or realism needs specific treatment. At full-body scale, identity and complete clothing matter more than microscopic skin descriptions. Reference lighting supports identification; it does not dictate downstream scene lighting.
 
 ## Inspect and hand off
 

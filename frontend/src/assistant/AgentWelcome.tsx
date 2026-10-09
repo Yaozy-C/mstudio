@@ -19,18 +19,32 @@ export function AgentWelcome({
     ? [
         {
           icon: ChatText,
-          title: t("$创意与导演 · 打磨内容"),
-          agentId: "concept",
+          title: t("$编剧 · 打磨脚本"),
+          agentId: "writer",
+          prompt: t("请检查当前脚本的内容与声画表达，先给出具体修改建议。"),
+        },
+        {
+          icon: FilmStrip,
+          title: t("$分镜导演 · 设计镜头"),
+          agentId: "director",
           prompt: t(
-            "请检查当前脚本或分镜的内容、表演与节奏，先给出具体修改建议。",
+            "请根据已选脚本设计镜头，写清机位、调度、动作和切点，不改写脚本或生成媒体。",
           ),
         },
         {
           icon: FilmStrip,
-          title: t("$媒体制作 · 准备生成"),
+          title: t("$图片制作 · 准备画面"),
+          agentId: "image",
+          prompt: t(
+            "请检查当前镜头的静态画面需求、图片提示词与参考用途，指出需要补充的内容。",
+          ),
+        },
+        {
+          icon: FilmStrip,
+          title: t("$视频制作 · 准备生成"),
           agentId: "production",
           prompt: t(
-            "请检查当前分镜的画面、参考素材用途与生成提示词，指出需要补充的内容。",
+            "请检查当前分镜的视频生成提示词与参考素材用途，指出需要补充的内容。",
           ),
         },
         {
@@ -39,6 +53,14 @@ export function AgentWelcome({
           agentId: "editor",
           prompt: t(
             "请查看当前时间线，说明可用的素材区间、节奏问题以及调色或转场建议。",
+          ),
+        },
+        {
+          icon: ChatText,
+          title: t("$创意策划 · 探索方向"),
+          agentId: "concept",
+          prompt: t(
+            "请基于当前目标与素材比较几个不同创意方向，说明观看动机、核心事件和商品关系，不展开成完整脚本。",
           ),
         },
       ]
@@ -51,13 +73,13 @@ export function AgentWelcome({
         },
         {
           icon: ChatText,
-          title: t("$创意与导演 · 设计故事"),
-          agentId: "concept",
+          title: t("$编剧 · 撰写脚本"),
+          agentId: "writer",
           prompt: t("帮我写一支 30 秒短片的完整声画脚本，保存到脚本工作区。"),
         },
         {
           icon: FilmStrip,
-          title: t("$创意与导演 · 围绕素材"),
+          title: t("$创意策划 · 探索方向"),
           agentId: "concept",
           prompt: t(
             "请先查看项目中的素材，基于已有内容提出可以实现的短片方案。",
@@ -78,7 +100,7 @@ export function AgentWelcome({
           : hasContent
             ? t("输入 @ 选择脚本、镜头或素材，告诉我想改什么。")
             : t(
-                "用 $ 选择创意、分镜、制作、剪辑或审片 Agent。不指定时由项目统筹梳理目标。",
+                "用 $ 选择创意、编剧、导演、图片、视频或剪辑 Agent。不指定时由项目统筹梳理目标。",
               )}
       </p>
       <div className="agent-starters">

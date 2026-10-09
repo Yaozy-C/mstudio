@@ -1,0 +1,45 @@
+{
+  "updates": [
+    {
+      "skill": "creative-concepts",
+      "path": "SKILL.md",
+      "before": "20eb3d37d3508267d7e3a91e3c1ee4edf73af814a2c7be9a1f895d6150265bf4"
+    },
+    {
+      "skill": "creative-concepts",
+      "path": "references/diagnosis.md",
+      "before": "70f19ef9562355f3a61393e7913fd3b8a29c5fa21d12647452b1706c5a338d40"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/concepts.md",
+      "before": "966ac7810158677151ea083a8452a1f52730ac19b8c8c26e4abb21b08ce2a7a9"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/animation-principles.md",
+      "before": "e48fbadda1f6ca8399a5662a9b2c128812650f5039f8903a427b7145cb1b4df4"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/cinematography.md",
+      "before": "c310c28b118f4e74f932eeea1db340a31f5ba596710f5754dbe5a215897512b2"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/color-tools.md",
+      "before": "27781ab537929b060c59d7157a14b31c4585a8e164c8bdec4292a202056c0728"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/transition-tools.md",
+      "before": "0f8f5e8b7e256dac3f45c0a2e24d09d24288d3746fcb80d2b597de540fe84733"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/shot-design.md",
+      "before": "778f9fd5f65cb61b0ebcbb2681a63ad5a09a8eeb35cbc7651e88fce4b596c509"
+    }
+  ],
+  "retired": []
+}

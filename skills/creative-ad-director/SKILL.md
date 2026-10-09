@@ -13,7 +13,7 @@ Choose a reference by what the current task has to decide, not by job title. Reu
 
 | The task has to decide | Read |
 |---|---|
-| Whether a concept, opening or payoff is worth making, or how to repair a flat one | [Concept development](references/concepts.md) |
+| How to make the selected opening and payoff readable without changing the premise | [Visual realization of the premise](references/concepts.md) |
 | Shot purpose, viewpoint, staging, cuts and the handoff to production | [Shot grammar](references/cinematography.md) |
 | Turning a chosen script into shots, camera, action beats and continuity | [Shot design](references/shot-design.md) |
 | Whether an earlier design decision, product fact or input is still valid | [Constraints and facts](references/brief-and-facts.md), [project state](references/project-state.md) |
@@ -29,6 +29,6 @@ The task itself is the trigger for the bold entries: showing real people means r
 
 ## Boundaries
 
-Script content and dialogue wording belong to [ad-script](../ad-script/SKILL.md). Executing frames and writing image prompts belong to [image-production](../image-production/SKILL.md). Converting a design into a final video prompt, choosing inputs and generating belong to [product-video-production](../product-video-production/SKILL.md). Cutting, grading and transitions belong to [video-editing](../video-editing/SKILL.md). This Skill decides staging, camera, performance intent, timing, continuity and the viewing proposition.
+Concept development and direction selection belong to creative concepts. Script content and dialogue wording belong to ad-script. Executing frames and writing image prompts belong to image-production. Converting a design into a final video prompt, choosing inputs and generating belong to product-video-production. Cutting, grading and transitions belong to video-editing. This Skill decides staging, camera, performance intent, timing and continuity within the selected viewing proposition; it does not reopen concept selection during shot design.
 
 Distinguish written design, actual frames, motion and sound. A saved design or a submitted task is not a verified result. Model syntax, limits and input modes come from the selected model's injected guidance; never invent parameters or switch services by default.

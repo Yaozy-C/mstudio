@@ -57,7 +57,7 @@ fn database_edits_survive_seed_changes_and_missing_bundle() {
     );
 }
 #[test]
-fn database_reads_complete_unicode_documents_and_enforce_dependencies() {
+fn database_reads_complete_unicode_documents_and_enforces_isolation() {
     let db = db();
     seed(
         &db,
@@ -89,7 +89,7 @@ fn database_reads_complete_unicode_documents_and_enforce_dependencies() {
             0,
             true
         )
-        .is_ok()
+        .is_err()
     );
     for path in ["/SKILL.md", "../../private.md", "../video-editing/SKILL.md"] {
         assert!(read(&db, enabled, "image-production", path, 0, true).is_err());
@@ -117,4 +117,56 @@ fn failed_seed_does_not_leave_partial_defaults() {
             .unwrap(),
         0
     );
+}
+
+#[test]
+fn every_role_sees_only_its_bindings_and_traversal_never_crosses_a_skill_root() {
+    let db = db();
+    seed(
+        &db,
+        &Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills"),
+    )
+    .unwrap();
+    for profile in crate::assistant::profiles::builtins() {
+        let setting = crate::assistant::profiles::skill_setting(&profile);
+        let visible = catalog(&db, &setting).unwrap();
+        let ids: Vec<_> = visible
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["id"].as_str().unwrap())
+            .collect();
+        assert_eq!(ids.len(), profile.skill_ids.len(), "{}", profile.id);
+        for (id, _, _) in super::super::SKILLS {
+            assert_eq!(ids.contains(&id), profile.skill_ids.iter().any(|s| s == id));
+            assert_eq!(
+                read(&db, &setting, id, "SKILL.md", 0, true).is_ok(),
+                ids.contains(&id)
+            );
+        }
+    }
+    let both = "[\"skill-image-production\",\"skill-creative-ad-director\"]";
+    for setting in ["", both] {
+        for path in [
+            "../creative-ad-director/SKILL.md",
+            "../image-production/CORE.md",
+            "references/../../creative-ad-director/CORE.md",
+        ] {
+            assert!(read(&db, setting, "image-production", path, 0, true).is_err());
+            assert!(read(&db, setting, "image-production", path, 0, false).is_err());
+        }
+        assert!(
+            read(
+                &db,
+                setting,
+                "image-production",
+                "references/../CORE.md",
+                0,
+                true
+            )
+            .is_ok()
+        );
+    }
+    assert_eq!(catalog(&db, "").unwrap().as_array().unwrap().len(), 6);
+    assert!(catalog(&db, "[]").unwrap().as_array().unwrap().is_empty());
 }

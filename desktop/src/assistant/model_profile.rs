@@ -12,12 +12,24 @@ fn labels(profile: &AgentProfile) -> (String, String) {
             "Goals, facts, scope, dependencies and specialist handoffs",
         ),
         "concept" => (
-            "Creative direction",
-            "Viewing payoff, audiovisual script, shot design, staging, performance and rhythm",
+            "Creative planner",
+            "Concept directions, viewing motives, core events and product relationship",
+        ),
+        "writer" => (
+            "Screenwriter",
+            "Audiovisual screenplay, dialogue, text, sound and segment timing",
+        ),
+        "director" => (
+            "Shot director",
+            "Camera, staging, performance, timing and shot design",
+        ),
+        "image" => (
+            "Image production",
+            "Still prompts, reference assets, image generation and repair",
         ),
         "production" => (
-            "Media production",
-            "Image and video prompts, input purposes, generation and local repair",
+            "Video production",
+            "Video prompts, control inputs, generation and repair",
         ),
         "editor" => (
             "Editing and finishing",

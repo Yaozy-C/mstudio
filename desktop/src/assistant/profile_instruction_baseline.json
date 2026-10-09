@@ -4,18 +4,13 @@
       "8ae05b8c4848ff9f17a8939bec3ab4e30ea7c4f80c3bad321c64564611c4732a",
       "78cd7551eae8e0d7fad3718bd2bf2cbbf31660a5e90b569d88527d3b2814f611"
     ],
-    "description": "理解目标，按需使用技能和工具完成项目工作",
+    "description": "理解目标，直接使用技能和工具完成项目工作，必要时才分工",
     "skillIds": [
-      "creative-ad-director",
       "ad-script",
-      "product-storyboard",
-      "storyboard-art",
-      "asset-preparation",
+      "creative-ad-director",
+      "image-production",
       "product-video-production",
-      "image-prompt",
-      "video-prompt",
-      "color-grading",
-      "transition-design"
+      "video-editing"
     ],
     "toolIds": [
       "project-read",
@@ -24,14 +19,14 @@
       "memory-read",
       "memory-write",
       "agent-delegate"
-    ]
+    ],
+    "name": "项目统筹"
   },
   "concept": {
     "instructions": [
-      "736d994dbd300976f4264914e65a8bc0408c27cfe21dbc66777be158e9d72872",
-      "5c3dafa21f4f3d174289fe8a569fcd3736db793f7aa7b14e9c097da90f4fe5b2"
+      "cd26320dc609311399a5d335645e47a9880601423edceed396d4893110865bef"
     ],
-    "description": "创意、广告事件与完整声画脚本",
+    "description": "创意方向、观看回报与声画脚本",
     "skillIds": [
       "ad-script"
     ],
@@ -39,6 +34,27 @@
       "project-read",
       "project-script",
       "memory-read"
+    ],
+    "name": "创意编剧",
+    "variants": [
+      {
+        "instructions": [
+          "736d994dbd300976f4264914e65a8bc0408c27cfe21dbc66777be158e9d72872",
+          "5c3dafa21f4f3d174289fe8a569fcd3736db793f7aa7b14e9c097da90f4fe5b2"
+        ],
+        "description": "从内容到分镜：观看回报、声画脚本、机位调度、真人表演与节奏",
+        "skillIds": [
+          "ad-script",
+          "creative-ad-director"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-script",
+          "project-shots",
+          "memory-read"
+        ],
+        "name": "创意与导演"
+      }
     ]
   },
   "production": {
@@ -46,31 +62,35 @@
       "57859c886f6fee41742cfc48d66c6f8b37cfd41de83e913353c81626117b3c70",
       "8de907f4759f47cbf404a9aea4013abb583549e0c9587301c96aeff7d19171e1"
     ],
-    "description": "编写模型提示词、准备参考、制作与局部修复",
+    "description": "所有图片与视频生成：提示词、参考用途、生成与局部修复",
     "skillIds": [
-      "product-video-production",
-      "video-prompt"
+      "image-production",
+      "product-video-production"
     ],
     "toolIds": [
       "project-read",
+      "project-assets",
+      "project-frames",
       "project-production",
       "media-generation",
       "memory-read"
-    ]
+    ],
+    "name": "媒体制作"
   },
   "editor": {
     "instructions": [
       "90b16b875e04c87938491eafef7127462250e0e952d27f365f7ce20d1125a59a",
       "f5f58884397299559290a9850a1c8acb1981b0c956145dc2897c1944021bd4ec"
     ],
-    "description": "选用素材、编排多轨、字幕与声音落点",
+    "description": "已有素材的选段、剪接、字幕、声音与画面后期",
     "skillIds": [
-      "product-video-production"
+      "video-editing"
     ],
     "toolIds": [
       "project-read",
       "project-timeline",
       "memory-read"
-    ]
+    ],
+    "name": "剪辑与后期"
   }
 }

@@ -60,16 +60,11 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
             "{name}"
         );
     }
-    let update_node = available
-        .iter()
-        .find(|t| t.definition.name == "mstudio_update_node")
-        .expect("project-assets exposes the asset node writer");
-    let properties = update_node.definition.parameters["properties"]
-        .as_object()
-        .unwrap();
-    assert!(!properties.contains_key("shot"));
-    assert!(!properties.contains_key("screenplay"));
-    assert!(properties.contains_key("assetId"));
+    assert!(
+        !available
+            .iter()
+            .any(|t| t.definition.name == "mstudio_generate_image")
+    );
     let args = decode(
         &p,
         "mstudio_set_video_prompt",
@@ -81,9 +76,10 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
         args,
         json!({"action":"edit","operations":[{"op":"update_node","id":"s","shot":{"prompt":"English dialogue"}}]})
     );
-    // The still prompt is the same direct edit; production owns both prompt kinds now.
+    // Still authoring belongs to the image role.
+    assert!(decode(&p, "mstudio_set_image_prompt", json!({})).is_none());
     let args = decode(
-        &p,
+        &profile("image"),
         "mstudio_set_image_prompt",
         json!({"id":"s", "framePrompt":"English still"}),
     )
@@ -189,7 +185,7 @@ fn every_role_has_unique_classified_tools_and_valid_internal_mapping() {
 fn creation_tools_fix_kind_and_keep_body_separate_from_shot_fields() {
     for (p, name, input, kind) in [
         (
-            profile("concept"),
+            profile("director"),
             "mstudio_add_shot",
             json!({"id":"new","title":"Shot","text":"Action","screenplayId":"script","scriptId":"paragraph","order":1,"duration":5}),
             "shot",

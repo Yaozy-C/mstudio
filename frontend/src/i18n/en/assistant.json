@@ -183,5 +183,21 @@
   "画布素材": "Canvas media",
   "笔记": "Note",
   "时间线片段": "Timeline clip",
-  "引用参考素材": "Add references"
+  "引用参考素材": "Add references",
+  "$创意编剧 · 打磨内容": "$Screenwriter · Refine the script",
+  "$创意编剧 · 设计故事": "$Screenwriter · Develop a story",
+  "$创意编剧 · 围绕素材": "$Screenwriter · Start with my media",
+  "$分镜导演 · 设计镜头": "$Shot director · Design shots",
+  "$图片制作 · 准备画面": "$Image production · Prepare stills",
+  "$视频制作 · 准备生成": "$Video production · Prepare generation",
+  "请检查当前脚本的内容与声画表达，先给出具体修改建议。": "Review the current screenplay and audiovisual expression, and suggest concrete revisions.",
+  "请根据已选脚本设计镜头，写清机位、调度、动作和切点，不改写脚本或生成媒体。": "Design shots for the selected screenplay, specifying camera, staging, action and cuts without rewriting the screenplay or generating media.",
+  "请检查当前镜头的静态画面需求、图片提示词与参考用途，指出需要补充的内容。": "Review the still-image requirements, prompts and reference purposes for the current shot, identifying missing information.",
+  "请检查当前分镜的视频生成提示词与参考素材用途，指出需要补充的内容。": "Review the video prompts and reference purposes for the current shots, identifying missing information.",
+  "用 $ 选择编剧、导演、图片、视频或剪辑 Agent。不指定时由项目统筹梳理目标。": "Use $ to choose a screenwriter, shot director, image, video or editing Agent. The project coordinator handles goals when none is selected.",
+  "$编剧 · 打磨脚本": "$Screenwriter · Refine the script",
+  "$编剧 · 撰写脚本": "$Screenwriter · Write the screenplay",
+  "$创意策划 · 探索方向": "$Creative planner · Explore concepts",
+  "请基于当前目标与素材比较几个不同创意方向，说明观看动机、核心事件和商品关系，不展开成完整脚本。": "Compare distinct concepts using the current goals and material. Explain the viewing motive, core event and product relationship without expanding them into complete scripts.",
+  "用 $ 选择创意、编剧、导演、图片、视频或剪辑 Agent。不指定时由项目统筹梳理目标。": "Use $ to choose creative planning, screenwriting, direction, image, video or editing. The coordinator handles goals when none is selected."
 }

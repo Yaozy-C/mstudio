@@ -1,0 +1,20 @@
+{
+  "updates": [
+    {
+      "skill": "product-video-production",
+      "path": "SKILL.md",
+      "before": "44ee73d06b262cfc3c3a4bc744eba56f5bb9ac6590706c56339ef083f65c9014"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "CORE.md",
+      "before": "742fde3a7c55fdd088633c332c48872d649140a1cb15bf5ace6e118795b7f30e"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/prompt-writing.md",
+      "before": "a0dad43241538715f7c64cc96a71420b0940fa9e6c8d79f0e533ff0da9c12498"
+    }
+  ],
+  "retired": []
+}

@@ -160,7 +160,7 @@ impl ProjectHost {
                 .filter(|p| ids.contains(&p.id))
                 .map(|p| json!({"id":p.id,"tools":p.tool_ids}))
                 .collect();
-            definition.description.push_str(&format!("Available roles and permissions: {}. Shared white-background assets require project-assets; scripts project-script; shots project-shots; image prompts/images project-frames; video prompts/videos project-production; timeline project-timeline. Generation additionally requires media-generation.",json!(roster)));
+            definition.description.push_str(&format!("Available roles and permissions: {}. Shared subject/location reference assets require project-assets; scripts project-script; shots project-shots; image prompts/images project-frames; video prompts/videos project-production; timeline project-timeline. Generation additionally requires media-generation.",json!(roster)));
 
             definitions.push(definition);
             definitions.extend(super::delegation::control_definitions());

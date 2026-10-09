@@ -24,17 +24,3 @@ A transition occupies half its duration on either side of the cut. Current suppo
 Use available source handles first; at source boundaries the engine extends edge frames, potentially creating a hold. This is not optical-flow interpolation. Fast action may need more handles, a shorter effect or a hard cut. The application does not secretly move clips, shorten the film or retime captions. Visual transitions do not crossfade audio; J/L cuts and audio fades need separate authorized edits.
 
 Inspect actual composites for unwanted handle content, double subjects, direction jumps, edge artifacts and bounce-back; inspect the complete result separately for readable captions and audio continuity. Saved settings do not prove viewing.
-
-## Reference status
-
-Official help, training and implementation links below were recorded as checked on 2026-09-27. They support design concepts and implementation details, not a guarantee that every tutorial capability exists in this application. This rewrite does not claim a new web verification.
-
-## Further reading
-
-- [Source 1](https://www.capcut.com/help/transitions-in-capcut)
-- [Source 2](https://www.capcut.com/resource/dissolve-transition-in-video)
-- [Source 3](https://www.blackmagicdesign.com/products/davinciresolve/training)
-- [Source 4](https://ffmpeg.org/ffmpeg-filters.html#xfade)
-- [Source 5](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_xfade.c)
-- [Source 6](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_perspective.c)
-- [Source 7](https://www.shotcut.org/howtos/keyboard-shortcuts/)
