@@ -1,4 +1,4 @@
-"""Regression checks for the narrow shipped-preview allowance."""
+"""Regression checks for narrowly allowed release assets and documents."""
 from pathlib import Path
 import hashlib
 import json
@@ -64,6 +64,21 @@ class SourceReleaseTests(unittest.TestCase):
     def test_pinning_does_not_bypass_content_scan(self):
         self.video.write_bytes(b'-----BEGIN ' + b'PRIVATE KEY-----')
         self.record()
+        self.assertNotEqual(self.check_release().returncode, 0)
+
+    def test_public_case_notes_pass_but_unlisted_research_stays_blocked(self):
+        docs = self.root / 'docs'
+        docs.mkdir()
+        (docs / 'image-storyboard-cases.md').write_text('# Public storyboard cases\n')
+        result = self.check_release()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        (docs / 'private-research.md').write_text('Internal notes\n')
+        self.assertNotEqual(self.check_release().returncode, 0)
+
+    def test_public_case_notes_still_receive_content_scan(self):
+        docs = self.root / 'docs'
+        docs.mkdir()
+        (docs / 'image-storyboard-cases.md').write_text('-----BEGIN ' + 'PRIVATE KEY-----')
         self.assertNotEqual(self.check_release().returncode, 0)
 
 

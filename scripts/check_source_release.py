@@ -15,6 +15,9 @@ forbidden_parts = {
     '_ui-review', 'workflow-review', '__pycache__',
 }
 forbidden_extensions = {'.mp4', '.mov', '.wav', '.mp3', '.dylib', '.dll', '.so', '.exe', '.zip', '.gz', '.db', '.pem', '.key', '.p12', '.pfx'}
+published_docs = {
+    'docs/architecture.md', 'docs/development.md', 'docs/image-storyboard-cases.md',
+}
 patterns = [
     re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
     re.compile(r'\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b'),
@@ -58,7 +61,7 @@ for name in files:
         or (path.name.startswith('.env') and not path.name.endswith('.example'))
         or name.startswith('examples/') and len(parts) > 2
         or name.startswith('desktop/native/') and len(parts) > 3
-        or name.startswith('docs/') and name not in {'docs/architecture.md', 'docs/development.md'}):
+        or name.startswith('docs/') and name not in published_docs):
         errors.append(f'{name}: non-source/private artifact')
     if path.is_symlink():
         errors.append(f'{name}: symlink requires review')

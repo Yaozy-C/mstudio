@@ -64,10 +64,11 @@ fn replace_default(
             |r| r.get(0),
         )
         .optional()?;
-    if let Some(old) = old {
-        if format!("{:x}", Sha256::digest(old.as_bytes())) == expected && old != replacement {
-            db.execute("UPDATE skill_resources SET text=?3,revision=revision+1,updated=unixepoch() WHERE skill_id=?1 AND path=?2", params![owner, path, replacement])?;
-        }
+    if let Some(old) = old
+        && format!("{:x}", Sha256::digest(old.as_bytes())) == expected
+        && old != replacement
+    {
+        db.execute("UPDATE skill_resources SET text=?3,revision=revision+1,updated=unixepoch() WHERE skill_id=?1 AND path=?2", params![owner, path, replacement])?;
     }
     Ok(())
 }
