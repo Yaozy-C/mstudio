@@ -74,7 +74,7 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"update_node","id":"s","shot":{"prompt":"English dialogue"}}]})
+        json!({"action":"edit","operations":[{"op":"update_node","id":"s","expectedKind":"shot","shot":{"prompt":"English dialogue"}}]})
     );
     // Still authoring belongs to the image role.
     assert!(decode(&p, "mstudio_set_image_prompt", json!({})).is_none());
@@ -87,7 +87,7 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"update_node","id":"s","shot":{"framePrompt":"English still"}}]})
+        json!({"action":"edit","operations":[{"op":"update_node","id":"s","expectedKind":"shot","shot":{"framePrompt":"English still"}}]})
     );
     for invalid in [
         json!({"id":"s","patch":{"prompt":"x"}}),
@@ -172,7 +172,7 @@ fn every_role_has_unique_classified_tools_and_valid_internal_mapping() {
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"update_node","id":"a","shot":{"order":2}},{"op":"update_node","id":"b","shot":{"order":1}}]})
+        json!({"action":"edit","operations":[{"op":"update_node","id":"a","expectedKind":"shot","shot":{"order":2}},{"op":"update_node","id":"b","expectedKind":"shot","shot":{"order":1}}]})
     );
     assert!(super::super::schema::issues(&tool_schema::for_profile(&p), &args).is_empty());
     assert!(

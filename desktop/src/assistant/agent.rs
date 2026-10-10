@@ -72,9 +72,7 @@ pub(crate) async fn complete_with_resume(
                 *old = content.clone();
             }
             harness::context_boundary::refresh_snapshot(&mut restored, &mut additions);
-            if resume.is_none() {
-                harness::context_boundary::retire_memory_calls(&mut restored);
-            }
+            if resume.is_none() {}
             restored.extend(additions);
             messages = restored;
         }

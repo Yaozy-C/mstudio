@@ -1,0 +1,275 @@
+{
+  "updates": [
+    {
+      "skill": "image-production",
+      "path": "SKILL.md",
+      "before": "bb7ff4eff0fd5e70a72f5a69f456aeb5f012c2913f8d88f83e4a19b9b3ab356d"
+    },
+    {
+      "skill": "image-production",
+      "path": "CORE.md",
+      "before": "cd478c93d953c09c621dc6adc5b7fd20e2ddf7ca95c0c891fde9ddd317037a6b"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "SKILL.md",
+      "before": "bd2210041ace169eb30843b24e7019d6c371a2d12fe5d186ab9fa41abb8e7a95"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "CORE.md",
+      "before": "c6c970bd15572b4d658a9fc901608b4324c3b47f33bd85e8f5ea5c66c71f01d7"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "SKILL.md",
+      "before": "f69ae8ab3d1b3b1c6b3c0a552be85d3be67ef42c078ebaa64d7a1be7f172f494"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "CORE.md",
+      "before": "02284ac59abefe2ad6248a26ce1000ac255f3508acb0f69412df827021605124"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "SKILL.md",
+      "before": "c8d4bf0107a13a897c05c4212720b0a699790338bd2500c8cd6b6516672685b3"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "SKILL.md",
+      "before": "5686fc1b2e6bf22597eb122a04659f25824573de3fd9f300cd5b5c5dd98c5e81"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "CORE.md",
+      "before": "78dc130d1b1e4bc711365a6651212b1bfd77c437afbfe650545d68acf16d9c53"
+    },
+    {
+      "skill": "video-editing",
+      "path": "SKILL.md",
+      "before": "0229e7022eac1a3a389e76e5f21310ca1dd58c88716b7f4cc6e888f132610768"
+    },
+    {
+      "skill": "video-editing",
+      "path": "CORE.md",
+      "before": "408a5c7f8c938cf29379aa7b2ea306bdb5c7c3742961e369d29a205d7a179023"
+    },
+    {
+      "skill": "ad-script",
+      "path": "SKILL.md",
+      "before": "a64b4e49d317130ac48202f0dc8010bc17bf48294a7769351bc4501f2a1f8499"
+    },
+    {
+      "skill": "ad-script",
+      "path": "references/craft.md",
+      "before": "9ed5d6471e840bb71b93852b8cd05803ee4383960fd070a7f479d66d57830824"
+    },
+    {
+      "skill": "creative-concepts",
+      "path": "references/diagnosis.md",
+      "before": "eb2f946534f248d38ba3ebcc976ca8ee2db862df192a9a8a403bab7a06ecd708"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/color-tools.md",
+      "before": "6199a34b0147f80ec3ae3e37667ff2722c54736e394f1fdc9aaa0fbb5ce14c28"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/transitions.md",
+      "before": "b94298863fc22e40f151fa35cc070ec01c8c383a22e99fc9606d072fbf50ebfe"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/transition-tools.md",
+      "before": "e15650e83c5e424a8969979f39a43a7b2dfe3554d757bef898f7642c0e9c1e2a"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/evidence.md",
+      "before": "c816efd1534bebc599d95e5900a08f404620b438942b314924d452a5e151d90b"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/rhythm.md",
+      "before": "00fb71c137e6ecb5b602dcd3ac29aead295fc591f99f2b49b09b4b40bcc4cb37"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/continuity.md",
+      "before": "9bcfa63c756931042b600f925c9970bc19d565c43169efe5fac6714bde9f476f"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/editing.md",
+      "before": "a256635b4b090937f85afd58e02afb2ac576a1b7385294ed966519082eca1e0c"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/color.md",
+      "before": "f4c8f17f7191323cf4f4959c80b044ce638e4caad4cd565f3be63646e9bfb364"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/frame-checks.md",
+      "before": "18e7510bd7b3ef962245bac934334beb6a94bf5d46815cf017f5b449d6679020"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/scene-execution.md",
+      "before": "4f81831ace06c24f538efa730c0ce55c807a219c1dcd77574eb9d99c91d6593c"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/prompt-writing.md",
+      "before": "7a343751221d652d9584cb2ff4477b21c96c91501a82d3e39cf0f6d62258e3a2"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/frames.md",
+      "before": "3aa8fadf0f7a37f9e82d9f8a5a0ee333b74bcbc05e2d25c9483a66e6aece122b"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/reference-assets.md",
+      "before": "7ea108c74f759443939e4a0ec6815df77950be62f433faa0429538be43ec1154"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/project-state.md",
+      "before": "aa78ed5aa1400c27bf9027db2f0c5a896eb95ffc0f5f8a8eefcee19248542704"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/animation-principles.md",
+      "before": "697415bcafb63927e83e5e24cb042c4e9161e2a752fbe3a154d39a550e18d1ea"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/concepts.md",
+      "before": "f75ce4ae7ef546500fc353458a26ab033dc64a5fa855943ec216910f06096a92"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/rhythm.md",
+      "before": "9447ec51b40d4e7d1fdf3372af84c6ab0f7fa1058344f999655abed9bd880b89"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/continuity.md",
+      "before": "c8b2e3acb34dce6792d1b9aaac351026bade8e774722f482602b1cd246c6e7d8"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/shot-references.md",
+      "before": "c604d29050fcb7d2429fa6c9f1383481746c8dbabf288b3da994604c61e26c1e"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/shot-design.md",
+      "before": "2edbf1d6222af271a37754f111017ba5dfb4d138160cbda5e7ccb832799a31fe"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/naturalistic-performance.md",
+      "before": "f7095aed82bc9a2b6c189eee9328773ce3e1658a016d375c344df4e610295f41"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "references/cinematography.md",
+      "before": "24d07ed9de3b918fb14217f21e7f4ee6451ecbd20683fb0e0d0bca834f9e0bfc"
+    },
+    {
+      "skill": "creative-ad-director",
+      "path": "assets/production-brief-template.md",
+      "before": "ac9d0f23b7a0c65de7edef3ffd5a3851aac1b0f7daf2ba7545e3e21911a9c5ab"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/prompt-writing.md",
+      "before": "95c5b0d56873924fd61b857a81f853a3d8ce229be559bbbfd7f4db5db4b7e6f4"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/evidence.md",
+      "before": "c816efd1534bebc599d95e5900a08f404620b438942b314924d452a5e151d90b"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/generation.md",
+      "before": "62613187ab1d0cd4c5074c0b588ea2300650654d4bd4d436683a9dd28803dc8c"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/review.md",
+      "before": "130c00b007f9ad46ec0fc93f9c7de222ac3451bc807d6934c30df7332f464311"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/shot-execution.md",
+      "before": "629ce889fd18c1773bf36bfac262fdffafcc9cb2b7eea907bf43af5f51302d99"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/control.md",
+      "before": "e77b3e620b4ab6bfa7309ab6424e11ccd4e2c92f7fa504e119783d7b94ddfd9c"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/prompt-writing.md",
+      "before": "31ba391b5aa05afb563ef2134211aaabea27639881062655d411fd9f1b587d4d"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/evidence.md",
+      "before": "c816efd1534bebc599d95e5900a08f404620b438942b314924d452a5e151d90b"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/generation.md",
+      "before": "c5e773927e5f3a66e78992fb502e3699c5e2439486f3dc1d041021899180ebed"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/review.md",
+      "before": "130c00b007f9ad46ec0fc93f9c7de222ac3451bc807d6934c30df7332f464311"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/shot-execution.md",
+      "before": "629ce889fd18c1773bf36bfac262fdffafcc9cb2b7eea907bf43af5f51302d99"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/control.md",
+      "before": "87cb6285400067a0e9854782de699e561223d42dc26c7af654bb9c01a46885bd"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/frame-checks.md",
+      "before": "97a37985ba942e5a6b7211e010b7d134bbb825cbd7312d34f5fb4847a4a67cac"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/scene-execution.md",
+      "before": "4f81831ace06c24f538efa730c0ce55c807a219c1dcd77574eb9d99c91d6593c"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/prompt-writing.md",
+      "before": "b4b05b3f3de09c59403721e76951094b73a8674cd03d84e896a3e3642afa6649"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/frames.md",
+      "before": "320a487a42c35e9d5b7d6b05ea7d9d56ec4ac4eeec8a9e96291446b0f9625cf9"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/reference-assets.md",
+      "before": "7ea108c74f759443939e4a0ec6815df77950be62f433faa0429538be43ec1154"
+    }
+  ],
+  "retired": []
+}

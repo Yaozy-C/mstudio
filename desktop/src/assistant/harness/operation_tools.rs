@@ -54,7 +54,11 @@ impl OperationTool {
                         ]
                         .contains(&key.as_str())
                     });
-                    fields.insert(nested.clone(), json!(inner));
+                    if let Some((outer, child)) = nested.split_once('.') {
+                        fields.insert(outer.into(), json!({child: inner}));
+                    } else {
+                        fields.insert(nested.clone(), json!(inner));
+                    }
                 }
                 fields.extend(self.fixed.clone());
                 fields.insert("op".into(), json!(self.op));
@@ -158,12 +162,15 @@ fn flat(schema: &Value, nested: &str, selected: &[&str]) -> Value {
     }
     json!({"type":"object","properties":properties,"required":["id"],"additionalProperties":false})
 }
+mod clip_tools;
 mod definitions;
 pub use definitions::tools;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod tests_coordinator;
+#[cfg(test)]
+mod tests_objects;
 
 pub fn is_edit(name: &str) -> bool {
     static NAMES: std::sync::OnceLock<std::collections::HashSet<String>> =

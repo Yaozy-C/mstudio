@@ -10,7 +10,6 @@ mod image_input;
 mod media_input;
 pub mod media_prompt;
 pub(crate) mod media_tools;
-pub mod memory;
 mod model_feedback;
 mod model_profile;
 pub(crate) mod permissions;

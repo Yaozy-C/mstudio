@@ -7,11 +7,12 @@ const LIMIT: usize = 6000;
 
 pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     // Bounded editing pages/receipts must not immediately require another read-result call.
-    let limit = if (call.function.name == "mstudio_inspect"
-        && matches!(
-            call.function.arguments["section"].as_str(),
-            Some("clips" | "assets" | "tracks" | "captions" | "generation")
-        ))
+    let limit = if super::read_tools::is_read(&call.function.name)
+        || (call.function.name == "mstudio_inspect"
+            && matches!(
+                call.function.arguments["section"].as_str(),
+                Some("clips" | "assets" | "tracks" | "captions" | "generation")
+            ))
         || call.function.name == "mstudio_await_generation"
         || (super::operation_tools::is_edit(&call.function.name)
             && value.get("savedClips").is_some())

@@ -1,0 +1,15 @@
+{
+  "updates": [
+    {
+      "skill": "video-editing",
+      "path": "references/color-tools.md",
+      "before": "9fdeccc98cb4ef0ee175120723bc2ad8b0a40b662aff4e248fec9bd6c9680ff6"
+    },
+    {
+      "skill": "video-editing",
+      "path": "references/color.md",
+      "before": "8f271fff0f628ae525d1eeb1b6ea4a39b29765d20a241318aa5f057817748466"
+    }
+  ],
+  "retired": []
+}

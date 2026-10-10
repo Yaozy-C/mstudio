@@ -16,11 +16,37 @@
       "project-read",
       "project-edit",
       "media-generation",
-      "memory-read",
-      "memory-write",
       "agent-delegate"
     ],
-    "name": "项目统筹"
+    "name": "项目统筹",
+    "variants": [
+      {
+        "instructions": [
+          "3578cae3bf4f53185ffced7d3518beee0ee78c1f5f1ffc396bb8a65bd169e070"
+        ],
+        "description": "管理目标、约束、分工与交付，整合专业角色的结果",
+        "skillIds": [],
+        "toolIds": [
+          "project-read",
+          "project-brief",
+          "agent-delegate"
+        ],
+        "name": "项目统筹"
+      },
+      {
+        "instructions": [
+          "ffa83c57a35a6ea4b8cd320f325e857173fa4ab3d770438c0535dd70101dca73"
+        ],
+        "description": "管理目标、约束、分工与交付，整合专业角色的结果",
+        "skillIds": [],
+        "toolIds": [
+          "project-read",
+          "project-brief",
+          "agent-delegate"
+        ],
+        "name": "项目统筹"
+      }
+    ]
   },
   "concept": {
     "instructions": [
@@ -32,8 +58,7 @@
     ],
     "toolIds": [
       "project-read",
-      "project-script",
-      "memory-read"
+      "project-script"
     ],
     "name": "创意编剧",
     "variants": [
@@ -50,8 +75,7 @@
         "toolIds": [
           "project-read",
           "project-script",
-          "project-shots",
-          "memory-read"
+          "project-shots"
         ],
         "name": "创意与导演"
       }
@@ -72,10 +96,40 @@
       "project-assets",
       "project-frames",
       "project-production",
-      "media-generation",
-      "memory-read"
+      "media-generation"
     ],
-    "name": "媒体制作"
+    "name": "媒体制作",
+    "variants": [
+      {
+        "description": "视频提示词、控制输入、视频生成与修复",
+        "skillIds": [
+          "product-video-production"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-production",
+          "media-generation"
+        ],
+        "instructions": [
+          "885c5eba1b64c8ded979bd0f349f037136020a719750e890094ed83291ed924a"
+        ]
+      },
+      {
+        "instructions": [
+          "cc323cb8fc23b18f865498c318fac6749075a8359edecceec3b136d93fbb41ec"
+        ],
+        "description": "视频提示词、控制输入、视频生成与修复",
+        "skillIds": [
+          "storyboard-video-production"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-production",
+          "media-generation"
+        ],
+        "name": "视频制作"
+      }
+    ]
   },
   "editor": {
     "instructions": [
@@ -88,9 +142,85 @@
     ],
     "toolIds": [
       "project-read",
-      "project-timeline",
-      "memory-read"
+      "project-timeline"
     ],
-    "name": "剪辑与后期"
+    "name": "剪辑与后期",
+    "variants": [
+      {
+        "instructions": [
+          "f5f58884397299559290a9850a1c8acb1981b0c956145dc2897c1944021bd4ec"
+        ],
+        "description": "已有素材的选段、剪接、字幕、声音与画面后期",
+        "skillIds": [
+          "video-editing"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-timeline"
+        ],
+        "name": "剪辑后期"
+      }
+    ]
+  },
+  "image": {
+    "description": "静态画面、图片提示词、参考资产与局部修图",
+    "skillIds": [
+      "image-production"
+    ],
+    "toolIds": [
+      "project-read",
+      "project-assets",
+      "project-frames",
+      "media-generation"
+    ],
+    "instructions": [
+      "57a1149d8b967ea6f5d1a048878181ac952bb5df029fbf36f167bc7c76d0dc5a"
+    ],
+    "variants": [
+      {
+        "instructions": [
+          "d6ad2bba2d10a9114f921d4c4528a39e1618c328d239fae25fe44fe2f636b841"
+        ],
+        "description": "静态画面、图片提示词、参考资产与局部修图",
+        "skillIds": [
+          "storyboard-image-production"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-assets",
+          "project-frames",
+          "media-generation"
+        ],
+        "name": "图片制作"
+      }
+    ]
+  },
+  "director": {
+    "instructions": [],
+    "description": "将选定脚本转成机位、调度、表演、时序与分镜",
+    "skillIds": [
+      "creative-ad-director"
+    ],
+    "toolIds": [
+      "project-read",
+      "project-shots"
+    ],
+    "name": "分镜导演",
+    "variants": [
+      {
+        "instructions": [
+          "8ad7a3d6a0537cd625dabf7fd7b85ade2d1b033b6d9c04dc92b1160c7fc9ad35"
+        ],
+        "description": "将选定脚本转成机位、调度、表演、时序与分镜",
+        "skillIds": [
+          "creative-ad-director"
+        ],
+        "toolIds": [
+          "project-read",
+          "project-shots"
+        ],
+        "name": "分镜导演"
+      }
+    ]
   }
 }

@@ -35,16 +35,16 @@ fn permissions_supply_data_semantics_without_assigning_unrelated_professional_ro
     // another shipped role's instructions to stay absent.
     assert!(editor_system.contains("Own selection of existing media"));
     assert!(!editor_system.contains("Own every still and video generation task"));
-    assert!(editor_system.contains("Verify complete savedValues[].values"));
+    assert!(editor_system.contains("Use complete savedValues[].values"));
     assert!(editor_system.contains("waiting_user"));
     assert!(editor_system.contains("mstudio_await_generation(taskKeys)"));
-    assert!(editor_system.contains("recheck graded pixels and transition composites"));
+    assert!(editor_system.contains("Skills provide domain constraints"));
+    assert!(!editor_system.contains("recheck graded pixels and transition composites"));
     let system = system(
         &json!({"agent":{"tools":["project-read","agent-delegate"]},"specialists":[{"id":"concept"}]}),
     );
     assert!(system.contains("concept"));
     assert!(!system.contains("Script editing:"));
-    assert!(!system.contains("Project memory:"));
 }
 #[test]
 fn generation_rules_also_cover_standalone_asset_tasks() {

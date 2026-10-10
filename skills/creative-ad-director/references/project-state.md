@@ -1,11 +1,9 @@
-# Project state and continuation
+# Project state rules
 
-Use inspect for current creation, screenplay, shots, assets, timeline and revision. Follow returned pagination and text offsets. History and memory are clues, not overrides of current user intent. Report a save only after successful writing.
+Use supplied current project content and successful saved values. Retrieve only information missing for the requested edit. Preserve existing IDs, unrelated content and concurrent changes; resolve a reported conflict before overwriting it. Do not add mandatory reads before or after a write.
 
-Distinguish a new commission, continuation of a named version and a local edit. The same product, project or existing film does not automatically imply continuation. New work can reuse facts without inheriting a previous story or approval. Explicit continuation preserves decisions without another concept selection.
+Distinguish new work, continuation of a named version and a local edit. Reusing product facts does not inherit another story or approval. Explicit continuation preserves the selected direction.
 
-Record duration with its source and meaning: maximum, locked total, provisional estimate or explicit speed multiplier. Do not fill a maximum, upgrade an estimate into a constraint or turn a one-time speed change into a permanent preference. Store lasting preferences only within existing memory permissions.
+Keep duration meanings distinct: maximum, locked total, provisional estimate and explicit speed multiplier. Do not fill a maximum, upgrade an estimate to a user constraint or turn a one-time speed change into a lasting preference.
 
-Reuse object IDs and available editing operations. Do not create PROJECT.md or another shadow project solely for this skill. Maintain one current script using actual scriptMode and requested scope, retaining reusable assets and old outputs. Inspect before editing; reread on conflicts rather than overwriting concurrent changes.
-
-Hand off screenplay/shot IDs, decisions and evidence, original assets, editable scope, existing tasks/results and unverified areas. Verify failed or canceled task states before resubmitting.
+Use actual screenplay merge/replace semantics and retain reusable assets. Do not create PROJECT.md, shadow registries, evidence ledgers or audit reports. Hand off target IDs, selected decisions, relevant real references, permitted scope and concrete missing inputs. Do not repeat successful writes or resubmit a pending task.

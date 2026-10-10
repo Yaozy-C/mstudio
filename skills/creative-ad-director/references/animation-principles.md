@@ -21,9 +21,9 @@ Use for action design, motion review, or a pose/contact problem that needs more 
 
 Use the phases the shot needs: initial state/motive, effort or start, decisive contact/change, result, and recognition/reaction. Phases can merge or be deliberately omitted, but preserve the causality, joke or value evidence that depends on them. Record what the camera sees at each relevant point and when it follows, stops or cuts. Subject speed and camera speed are separate.
 
-For selected principles, specify the affected object, trigger, path/pose/speed change, sequence relative to the main action and observable acceptance point. Weight must arise from material-specific response, not a universal bounce recipe.
+For selected principles, specify the affected object, trigger, path/pose/speed change, sequence relative to the main action and intended visible outcome. Weight must arise from material-specific response, not a universal bounce recipe.
 
-Reaching the endpoint and delivering a performance are separate outcomes. A gag that requires a recognition pause still fails without it. No-face work still needs performance. Inspect staging, poses and attention statically; inspect timing, speed, weight and reaction dynamically. Extracted stills alone cannot establish rhythm.
+Reaching the endpoint and delivering a performance are separate outcomes. A gag that requires a recognition pause still fails without it. No-face work still needs performance. Keep staging, poses, attention, timing, speed, weight and reaction consistent with the intended action. Extracted stills alone cannot establish rhythm.
 
 ## Inputs and diagnosis
 

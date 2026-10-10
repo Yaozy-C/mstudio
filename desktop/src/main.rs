@@ -104,8 +104,6 @@ fn main() {
             assistant::profiles::agent_catalog,
             assistant::profiles::save_agent,
             assistant::agent_history,
-            assistant::memory::commands::project_memory,
-            assistant::memory::commands::save_project_memory,
             assistant::skills::creative_skills,
             assistant::skills::read_creative_skill,
             assistant::skills::save_creative_skill,

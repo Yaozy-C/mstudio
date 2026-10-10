@@ -1,11 +1,11 @@
 # Choose a controllable production route
 
-Start from shot purpose and what must remain fixed. Routes may be combined; no vendor is the default. References constrain generation but do not lock pixels or geometry. Verify preservation in actual results.
+Start from shot purpose and what must remain fixed. Routes may be combined; no vendor is the default. References constrain generation but do not lock pixels or geometry. Preserve the specified identity, geometry and action.
 
 | Control need | Possible route | Limit |
 |---|---|---|
 | Position, scale and composition | Layout sketch, annotated reference or static composite before generation | Layout is not final product restoration |
-| Clear start with limited change | Inspected production frame plus image-to-video | Motion can still alter parts |
+| Clear start with limited change | Selected production frame plus image-to-video | Motion can still alter parts |
 | Existing action with visual changes | Source action clip plus video editing | Product regions can change too |
 | Exact visible product details | Retained original product layer with separately generated environment/effects and compositing | A flat original does not solve new views, occlusion or soft-body motion |
 | Precise path or parallax | Available 3D/proxy previs and camera/depth references | Requires actual tools/assets; do not invent completed modeling |

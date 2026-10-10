@@ -5,7 +5,11 @@ use std::{collections::HashSet, sync::Mutex};
 
 pub const LOAD: &str = "mstudio_load_tools";
 const BASE: &[&str] = &[
-    "mstudio_inspect",
+    "mstudio_read_project",
+    "mstudio_read_shots",
+    "mstudio_read_screenplay",
+    "mstudio_read_assets",
+    "mstudio_read_generation",
     "mstudio_skills",
     "mstudio_read_skill",
     "mstudio_read_image",

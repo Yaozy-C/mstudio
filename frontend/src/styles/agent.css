@@ -235,3 +235,106 @@
   opacity: 0.45;
   cursor: default;
 }
+
+.agent-activity-timeline {
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  font-size: 13px;
+}
+.agent-activity-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 0 9px;
+  border-bottom: 1px solid var(--desk-rule);
+  color: var(--desk-muted);
+  list-style: none;
+}
+.agent-activity-heading::-webkit-details-marker {
+  display: none;
+}
+.agent-activity-timeline .agent-activity-content {
+  padding: 0;
+  border: 0;
+  max-height: none;
+  overflow: visible;
+}
+.agent-activity-timeline .agent-progress-note {
+  margin: 14px 0;
+  color: var(--desk-text);
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.agent-activity-timeline .agent-activity-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 7px;
+  margin: 12px 0;
+  padding: 0;
+  border: 0;
+  color: var(--desk-muted);
+  flex-wrap: wrap;
+}
+.agent-activity-timeline .agent-activity-row::before {
+  content: none;
+}
+.agent-activity-timeline .agent-activity-row > svg {
+  flex: 0 0 auto;
+  align-self: center;
+}
+.agent-activity-timeline .agent-activity-row > span {
+  color: inherit;
+}
+.agent-activity-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  color: var(--desk-muted);
+}
+
+.agent-activity-item > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.agent-activity-item > summary::-webkit-details-marker {
+  display: none;
+}
+.agent-activity-item > summary:hover {
+  color: var(--desk-text);
+}
+.agent-activity-item > summary:focus-visible {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 3px;
+}
+.agent-activity-item[open] > summary .agent-activity-chevron {
+  transform: rotate(90deg);
+}
+.agent-activity-timeline .agent-activity-item > summary {
+  flex-wrap: nowrap;
+}
+.agent-activity-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-activity-item-body {
+  margin: 0 0 16px 21px;
+  overflow-wrap: anywhere;
+}
+.agent-activity-item-body pre {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px;
+  background: var(--desk-sidebar);
+  font-size: 11px;
+}
+.agent-tool-name {
+  margin-bottom: 8px;
+}

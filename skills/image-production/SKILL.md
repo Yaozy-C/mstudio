@@ -1,11 +1,11 @@
 ---
 name: image-production
-description: Produce still images in Mstudio: write one-moment image prompts, execute designed frames, prepare reusable subject and location references and inspect actual pixels.
+description: Produce still images in Mstudio: write one-moment image prompts, execute designed frames, prepare reusable subject and location references and preserve the selected visual constraints.
 ---
 
 # Image production
 
-Produce the requested still image and the reusable references it depends on. Preserve the chosen concept, the selected identity and verified product geometry. Loading this Skill grants no extra tools or permissions: saving a prompt is not a generated image, and a generated image is not an inspected one.
+Produce the requested still image and the reusable references it depends on. Preserve the chosen concept, the selected identity and original product geometry. Loading this Skill grants no extra tools or permissions: saving a prompt is not a generated image, and task submission is not a completed image.
 
 ## Read for the task at hand
 
@@ -14,11 +14,11 @@ Produce the requested still image and the reusable references it depends on. Pre
 | How to write one prompt for one visible moment | [Image prompt writing](references/prompt-writing.md) |
 | How to choose representative/start/key/end frames, make the shot readable and preserve continuity across a storyboard | [Storyboard frames](references/frames.md) |
 | Whether subject, location or layout references are missing, and how to design useful reference assets | [Reference assets](references/reference-assets.md) |
-| How to inspect actual pixels for viewpoint, contact, part count and cross-frame state | [Frame inspection](references/frame-checks.md) |
+| Viewpoint, contact, part count and cross-frame state constraints | [Frame rules](references/frame-checks.md) |
 | Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](references/scene-execution.md) |
 | Photographic people, skin, light and material appearance | [Photographic appearance](references/scene-execution.md) |
 
-For storyboard images or start/key/end control-frame requests, read the storyboard-frame method before authoring their prompts. It applies the supplied shot design without requiring a fixed number of images. Covers and unrelated standalone pictures do not become storyboards. Read [core](CORE.md) for the short rules.
+For storyboard images or start/key/end control-frame requests, use the storyboard-frame rules when their format is needed; reuse loaded text. It applies the supplied shot design without requiring a fixed number of images. Covers and unrelated standalone pictures do not become storyboards. Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 ## Bind every input to a concrete purpose
 

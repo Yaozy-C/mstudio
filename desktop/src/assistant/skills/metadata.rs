@@ -17,11 +17,19 @@ pub(super) fn model_metadata(mut item: Value) -> Value {
         ),
         "image-production" => (
             "Image production",
-            "Image prompts, storyboard frames, reference assets and frame inspection",
+            "Image prompts, storyboard frames, reference assets and frame constraints",
         ),
         "product-video-production" => (
             "Video production",
-            "Video prompts, input purposes, generation, repair and result judgement",
+            "Video prompts, input purposes, generation, repair and output constraints",
+        ),
+        "storyboard-image-production" => (
+            "Temporal storyboard images",
+            "Four-panel action boards, state continuity and product geometry",
+        ),
+        "storyboard-video-production" => (
+            "Storyboard-driven video",
+            "Whole-board reference inputs, ordered state transitions and continuous motion",
         ),
         "video-editing" => (
             "Editing and finishing",

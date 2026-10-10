@@ -10,7 +10,7 @@ def slug(heading):
     return re.sub(r"\s", "-", heading)
 
 
-EXPECTED = {"creative-concepts", "ad-script", "creative-ad-director", "image-production", "product-video-production", "video-editing"}
+EXPECTED = {"creative-concepts", "ad-script", "creative-ad-director", "image-production", "product-video-production", "storyboard-image-production", "storyboard-video-production", "video-editing"}
 
 
 def validate(root):

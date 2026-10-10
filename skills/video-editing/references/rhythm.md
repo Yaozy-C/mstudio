@@ -26,17 +26,17 @@ Physical causality must hold in the underlying action; not every phase must appe
 
 For each retained event choose the useful entry, decisive change and exit. A placement can retain alignment, contact and the settled result while omitting most transport. If passage through an opening is the evidence, keep that passage visible. Frame count is not information count; additional viewpoints must justify their reading cost. Brief shots and longer recognition holds should follow content, not a universal duration or fixed cut count.
 
-Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Generate useful action and editing handles, then select inspected ranges. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
+Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Generate useful action and editing handles, then select source ranges. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
 
 ## Sound in the rough cut
 
 Use necessary temporary sound and music in the first authorized rough cut. Let music, action sound and ambience take turns leading. Loudness and density alone do not create impact. An in-shot action may land on a beat without a cut. Choose synchrony, anticipation, delay or cross-beat timing according to the scene; preserve essential contact/results.
 
-## Verify and iterate
+## Pacing rules
 
 For uncertain pacing, compare two materially different rough cuts of the core section using existing footage and the same content/duration constraints. A clear small fix can be made directly. Comparison does not authorize new generation or concept changes.
 
-Use available viewing modes to locate problems: silent viewing for waiting, floating, broken momentum and reading time; audio-only listening for dynamics, space and crowded accents; combined playback for material correspondence, contrast and value payoff. Each mode need not tell the entire story independently. Record actual timecodes, observations and changes. Missing contact calls for material repair, sync problems for alignment, redundant holds for trimming and overload for information restructuring. A comparison is an editorial judgment, not an audience test.
+Repair the concrete pacing cause: missing contact needs source repair, sync problems need alignment, redundant holds need trimming and overload needs information restructuring. Do not create an observation log or audience-test claim.
 
 ## Duration and speed feedback
 
@@ -44,6 +44,6 @@ Record whether time is a maximum, a user-locked total or an assistant estimate. 
 
 Locate dragging before changing time: late start, slow action, repeated information, empty tail or insufficient recognition time require different fixes. Do not shrink every shot proportionally by default.
 
-For an explicit whole-film multiplier r, apply it and set duration to original/r, synchronize audio and preserve pitch when required. Check subtitles and effects. An absolute speed differs from multiplying the current speed again. Do not turn a one-time multiplier into a permanent default; a simultaneous unchanged-total requirement needs conflict resolution.
+For an explicit whole-film multiplier r, apply it and set duration to original/r, synchronize audio and preserve pitch when required. Keep subtitle and effect timing synchronized. An absolute speed differs from multiplying the current speed again. Do not turn a one-time multiplier into a permanent default; a simultaneous unchanged-total requirement needs conflict resolution.
 
-Verify a timed edit, not merely a list of intended beats: the retained events, film intervals, source mapping and locked total must agree. Actual continuous playback of the new output establishes pacing. Stills can reveal wrong states or cuts, not natural playback speed. Without playback/audio access, retain unverified status.
+Retained events, film intervals, source ranges and a user-locked total must agree. Stills do not establish playback speed or sound. Do not add mandatory playback or evidence registration to a timing edit.

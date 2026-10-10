@@ -57,10 +57,9 @@ Quote one symptom in the script, then choose the smallest effective fix:
 
 Distinguish personal taste, a violated user constraint, a product-fact error and an audio-visual that cannot express the intent; do not treat an aesthetic preference as an objective defect.
 
-## Evaluation and learning
+## Outcome claims
 
-Internal review only tests expressibility, coherence, facts and creative assumptions; it cannot predict views or conversions, and a model giving itself a high score does not prove success.
+Creative choices do not establish views or conversions; do not claim success from a model self-score.
 
-When evaluating the Skill systematically, run a blind comparison of old and new drafts using real briefs across multiple products and content modes: keep the facts, requirements and resources the same, hide the source and interleave the order. Let readers point out where they want to keep watching, what they remember, what product value they understand and which segment they would most like to cut, and only then state a preference; do not show the creative notes first. Allow both to be bad; do not compare only the writing.
 
 After launch, look separately at retention/viewing development, product understanding and recognition, and clicks/purchases, choosing the metric by the goal. Record differences in placement, audience, account, duration, offer and production; correct the current assumption rather than deriving a general law from a single piece. A character or form that works can be developed over time; avoid demanding a completely new formula every round.

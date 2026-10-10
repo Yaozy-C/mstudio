@@ -138,8 +138,23 @@ export const operationContract = {
       },
       ["id", "kind", "title"],
     ),
-    op("update_node", { id, ...node }, ["id"]),
-    op("remove_node", { id }, ["id"]),
+    op(
+      "update_node",
+      {
+        id,
+        expectedKind: choices("text", "shot", "note", "asset", "screenplay"),
+        ...node,
+      },
+      ["id"],
+    ),
+    op(
+      "remove_node",
+      {
+        id,
+        expectedKind: choices("text", "shot", "note", "asset", "screenplay"),
+      },
+      ["id"],
+    ),
     op("set_brief", { text: text() }, ["text"]),
     op("choose_take", { id, assetId: id }, ["id", "assetId"]),
     op("assemble_screenplay", { id }, ["id"]),

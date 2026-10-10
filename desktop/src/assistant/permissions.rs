@@ -98,7 +98,7 @@ pub fn allows_shot_field(p: &AgentProfile, key: &str) -> bool {
 pub fn allows_node_field(p: &AgentProfile, kind: &str, key: &str) -> bool {
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
     has("project-edit")
-        || matches!(key, "op" | "id")
+        || matches!(key, "op" | "id" | "expectedKind")
         || (kind == "asset"
             && has("project-assets")
             && ["kind", "title", "text", "assetId", "x", "y"].contains(&key))
@@ -160,6 +160,13 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
             allows_operation(p, name),
             "Operation not permitted for this Agent: {name}"
         );
+        if let Some(expected) = op["expectedKind"].as_str() {
+            let id = op["id"].as_str().unwrap_or("");
+            ensure!(
+                kinds.get(id).map(String::as_str) == Some(expected),
+                "Node kind does not match this tool: expected {expected}"
+            );
+        }
         if has("project-edit") {
             continue;
         }

@@ -10,4 +10,4 @@ Concept diagnosis ends at the premise, event, payoff and product role. Full dial
 
 Locate the communication gap before increasing production spectacle: an unclear proposition, an unearned promise, a weak product connection and unreadable staging need different repairs. Repair the premise here; pass a coherent premise with an execution defect to direction or production.
 
-Check progression through the middle, not only the first image and ending. A new feature or location is useful only if it develops the selected promise. Preserve necessary pauses for discovery or recognition; novelty, rapid cutting and a reversal are optional techniques rather than acceptance criteria.
+Develop the premise through the middle, not only the opening and ending. A new feature or location is useful only if it develops the selected promise. Preserve necessary pauses for discovery or recognition; novelty, rapid cutting and a reversal are optional techniques rather than acceptance criteria.

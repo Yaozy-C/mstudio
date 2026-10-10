@@ -2,21 +2,6 @@
 pub(super) fn error(raw: &str) -> String {
     let exact = match raw {
         "项目不存在" => "Project not found",
-        "项目记忆已更新，请刷新后重试" => {
-            "Project memory changed; refresh before retrying"
-        }
-        "项目最多保存 40 条记忆，请合并已有内容" => {
-            "At most 40 memory entries; merge existing information"
-        }
-        "记忆 ID 无效或重复" => "Invalid or duplicate memory ID",
-        "记忆标题为空、重复或超过 60 字" => {
-            "Memory title empty, duplicated or longer than 60 characters"
-        }
-        "每条记忆须为 1–1200 字" => "Memory entries must contain 1-1200 characters",
-        "记忆来源过长" => "Memory evidence too long",
-        "项目记忆总长度不能超过 12000 字" => {
-            "Total memory content cannot exceed 12000 characters"
-        }
         "Agent 不存在，请重新选择" => "Agent not found; select another role",
         "Agent 已停用" => "Agent disabled",
         "已停止回答；已输出内容和已完成操作保留" => {
@@ -119,10 +104,6 @@ mod tests {
     use super::*;
     #[test]
     fn translates_host_errors_without_altering_evidence() {
-        assert_eq!(
-            error("每条记忆须为 1–1200 字"),
-            "Memory entries must contain 1-1200 characters"
-        );
         assert_eq!(error("外部供应商原话"), "外部供应商原话");
         let result = error("模型服务拒绝了请求（HTTP 400）：供应商原话。已完成的操作保留。");
         assert!(result.starts_with("Model service rejected"));

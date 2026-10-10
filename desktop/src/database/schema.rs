@@ -2,6 +2,7 @@ use anyhow::Result;
 use rusqlite::Connection;
 
 pub fn init(db: &Connection) -> Result<()> {
+    db.execute_batch("DROP TABLE IF EXISTS project_memory;")?;
     let linked: bool = db.query_row(
         "SELECT EXISTS(SELECT 1 FROM pragma_foreign_key_list('jobs') WHERE \"table\"='projects')",
         [],

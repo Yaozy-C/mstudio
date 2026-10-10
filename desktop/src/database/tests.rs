@@ -128,3 +128,26 @@ fn hot_queries_use_matching_indexes() {
         assert!(plan.contains(index), "{plan}");
     }
 }
+
+#[test]
+fn startup_removes_retired_storage_and_preserves_projects() {
+    let db = db();
+    db.execute_batch("CREATE TABLE project_memory(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE, document TEXT NOT NULL);
+        INSERT INTO project_memory VALUES('p','{}');").unwrap();
+    schema::init(&db).unwrap();
+    schema::init(&db).unwrap();
+    let exists: bool = db
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='project_memory')",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert!(!exists);
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM projects WHERE id='p'", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+}

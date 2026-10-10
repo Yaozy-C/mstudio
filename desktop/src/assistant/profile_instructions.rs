@@ -125,11 +125,7 @@ mod tests {
         old.name = "创意编剧".into();
         old.description = "创意方向、观看回报与声画脚本".into();
         old.skill_ids = vec!["ad-script".into()];
-        old.tool_ids = vec![
-            "project-read".into(),
-            "project-script".into(),
-            "memory-read".into(),
-        ];
+        old.tool_ids = vec!["project-read".into(), "project-script".into()];
         old.enabled = false;
         let mut saved = vec![old];
         assert!(upgrade(&mut saved, &defaults));

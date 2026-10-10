@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { activityRows } from "./activityRows";
-test("new named project and memory tools share call/result status", () => {
+test("named project tools share call/result status", () => {
   const rows = activityRows([
     {
       seq: 1,
@@ -24,8 +24,8 @@ test("new named project and memory tools share call/result status", () => {
       kind: "tool/call",
       payload: {
         callId: "b",
-        name: "mstudio_memory",
-        arguments: { action: "remember" },
+        name: "mstudio_update_shot_design",
+        arguments: {},
       },
     },
     {
@@ -40,7 +40,7 @@ test("new named project and memory tools share call/result status", () => {
   ]);
   expect(rows.map((r) => [r.title, r.detail])).toEqual([
     ["添加内容", "已完成"],
-    ["整理项目记忆", "已停止"],
+    ["修改镜头设计", "已停止"],
   ]);
   expect(rows[1].error).toBe(true);
 });

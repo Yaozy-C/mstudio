@@ -49,7 +49,6 @@ fn current_images_fit_by_compacting_optional_project_context() {
         "agent":{"name":"项目统筹","instructions":"按要求执行","canEdit":true},
         "skills":[{"name":"制作"}],
         "relevantNodes":[{"id":"shot","title":"当前镜头","kind":"shot","text":"镜头细节".repeat(20000)}],
-        "memory":{"enabled":true,"entries":[{"content":"项目记忆".repeat(500)}]},
         "nodes":[{"id":"shot","title":"当前镜头"}]
     });
     let messages = context::assemble(&[], payload, snapshot).unwrap();

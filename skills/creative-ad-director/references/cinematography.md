@@ -13,7 +13,7 @@ Decide whether viewers know before the subject, discover alongside it, or learn 
 | Choice | Decision criteria |
 |---|---|
 | Shot size | Retain environment for geography or scale; show participants and contact for interaction; move closer for decisive detail. Close-ups lose context, so establish necessary relationships. Do not force a wide opening or alternate wide, medium and close mechanically. |
-| Angle and viewpoint | Height and orientation serve the intended relationship, not fixed emotional labels. Check visible surfaces and occlusion at the beginning, key change and end. A fixed viewpoint cannot also see surfaces available only from another side. |
+| Angle and viewpoint | Height and orientation serve the intended relationship, not fixed emotional labels. Visible surfaces and occlusion must agree with the viewpoint throughout the action. A fixed viewpoint cannot also see surfaces available only from another side. |
 | Staging | Give each important beat a clear attention center. Use silhouette, position, depth, contrast, motion and negative space. Relationships viewers must understand together need readable evidence; secondary activity must not obscure decisive contact. |
 | Depth and perspective | Use depth for distance, approach, scale and trajectory. Foreground occlusion and shallow focus must not erase required evidence. Specify compatible field of view and camera distance rather than conflicting lens jargon. |
 | Static or moving camera | A hold can emphasize subject change; motion can follow action, reveal relationships or alter participation. State the trigger, relationship to the subject and destination. Not every shot must move. |
@@ -21,7 +21,7 @@ Decide whether viewers know before the subject, discover alongside it, or learn 
 
 Distinguish camera translation, pan/tilt, optical zoom and post crop. Translation usually changes perspective and foreground/background relationships; cropping does not. Product rotation cannot substitute for a planned camera orbit. For tracking, specify whether the camera is fixed relative to, ahead of or behind the subject, and whether it keeps moving when the subject stops. New product views require structural evidence.
 
-When the action depends on a real product opening, closing, carrying or containing something, inspect its original structure before choosing the action path. Anchor the path to verified edges, openings and attachments, not a generic category shape. Preserve those relationships through changes of viewpoint and deformation. If a proposed action requires an unverified or contradictory mechanism, revise the staging while preserving the shot's purpose; do not pass an invented mechanism to the artist as a hard constraint.
+Product opening, closing, carrying and containment must use original edges, openings and attachments, not invented category geometry. Preserve those relationships through changes of viewpoint and deformation. If a proposed action requires an unverified or contradictory mechanism, revise the staging while preserving the shot's purpose; do not pass an invented mechanism to the artist as a hard constraint.
 
 ## Grammar between shots
 
@@ -49,7 +49,7 @@ Use [animation principles](animation-principles.md) for performance and [rhythm]
 
 Identify the experience to preserve: restricted viewpoint, darkness-to-light reveal, scale reversal or impact. User acceptance of that experience does not lock every assistant-proposed measurement or operation. Surreal or virtual miniature viewpoints are valid when their internal perspective, occlusion and product structure remain consistent; accidental penetration or duplicated parts are not a solution.
 
-Locate the camera relative to stable parts and specify its viewing direction. Check what is onscreen, occluded or behind the camera as parts move. Give numbers only when they explain geometry or motion, with a reference and unit; unsupported centimeters or exact timings create false precision.
+Locate the camera relative to stable parts and specify its viewing direction. Keep onscreen, occluded and behind-camera regions consistent as parts move. Give numbers only when they explain geometry or motion, with a reference and unit; unsupported centimeters or exact timings create false precision.
 
 Not every real-world operation must be fully visible. For a view from inside an opening container, changes in the opening, light and sound may convey outside preparation. Actual visibility still depends on the real structure. If an entire operation is essential evidence or explicitly requested, preserve it and revise framing, staging, timing or implementation. Do not default to a cut that destroys the selected reveal.
 
@@ -64,10 +64,10 @@ Use the existing shot text or table; simple shots can use short sentences. Do no
 3. **Action beats:** necessary anticipation, main action, contact, outcome and reaction; ordering of primary and secondary movement, speed changes, sound accents and permissible omissions.
 4. **Cut relationship:** why to cut or hold, the outgoing/incoming action states, direction and attention location.
 5. **Locks and freedom:** preserve continuity, camera relationships, action order, required evidence and identity/parts that determine the effect. Identify secondary freedom. Separate user constraints from revisable director decisions. Shot count, slow motion, sound and animation style follow the current design, not another film's recipe.
-6. **Frames and verification:** the necessary frame moments, visible relationships and what static evidence cannot verify. Multiple frames do not multiply shot duration.
+6. **Frame states:** the necessary visible moments and relationships; stills cannot establish motion or sound. Multiple frames do not multiply shot duration.
 
 Give artists the selected moment, viewpoint, attention center and spatial/pose constraints. Give production action, camera, timing and hard constraints. The director makes the decisions rather than leaving work for a nonexistent human specialist. Video production converts the design into a prompt and adapts the design without simplifying away essential relationships. Do not report an unexecuted previs as completed.
 
-Design review checks expression, compatible geometry and causal cuts. Actual frames check execution. Speed, performance pauses and synchronization require motion/audio evidence. Unexpected good results may be adopted only when they preserve the core task and user constraints.
+Preserve expression, compatible geometry and causal cuts. Do not claim speed, performance timing or audio synchronization from stills. Unexpected good results may be adopted only when they preserve the core task and user constraints.
 
 Choose duration, sound and animation cadence from the current brief rather than inheriting a tutorial example. Exact frame instructions and consistency constraints express design intent; they do not guarantee model control or a successful result.

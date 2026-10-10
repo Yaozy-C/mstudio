@@ -61,14 +61,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     } else {
         json!({})
     };
-    if profiles::allows(&tool.profile, "memory-read") {
-        snapshot["memory"] = crate::assistant::memory::context(
-            &SqliteMemory(&store.db.lock().unwrap())
-                .recall(&parent.project)
-                .map_err(|e| e.to_string())?,
-            &parent.prompt,
-        );
-    }
     snapshot["skills"] =
         skills::runtime_catalog(&parent.app, &tool.skill_setting).map_err(|e| e.to_string())?;
     snapshot["agent"] = crate::assistant::model_profile::role(&tool.profile);
@@ -143,7 +135,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
     let instruction = format!(
-        "Original user request (memory evidence must quote this text):{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}\nUser-selected production settings for this turn (preserve, including the model):{selection}",
+        "Original user request:{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}\nUser-selected production settings for this turn (preserve, including the model):{selection}",
         original["prompt"].as_str().unwrap_or(&parent.prompt),
         parent.profile.id,
         parent.turn

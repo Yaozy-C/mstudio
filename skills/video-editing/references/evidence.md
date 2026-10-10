@@ -1,11 +1,7 @@
-# Inspection evidence
+# Output claims
 
-For each conclusion record shot ID, assetId, inspected object, time range/image region, actual observation and pass/fail/unchecked in the existing handoff or reply. Prompts, metadata and completion status are not visual evidence.
+Use real project IDs, assets and tool-returned specifications. Do not invent generated files, playback, listening, tests or user approval. Submitted, completed and imported describe task state; they do not establish aesthetic quality or action correctness.
 
-- Static: original product parts, frame state, camera and agreement with the plan.
-- Motion: source, initial support, path, decisive contact, destination, counts and positions.
-- Sequence: viewing changes, repetition, recognition time, speed and actual cuts.
-- Sound: actually listened range, sync, material and level; no audio input means unchecked.
-- Technical: only specifications returned by tools or actually inspected; technical validity is not content validity.
+Original product references define structure and supported functions. A generated image cannot establish an unseen mechanism. Stills describe visible states; they cannot establish continuous motion, playback speed or sound. Metadata cannot establish audio quality.
 
-Reinspect affected areas and joins after repairs, retiming or new versions. Do not relabel a known essential failure as unchecked to pass it. Report capability gaps precisely. In Mstudio, project fields and messages carry these records; do not require review.json or unavailable external scripts.
+Do not describe a known defect as acceptable or hide it with an unsupported claim. Report concrete missing capabilities or unfinished work briefly. Do not create evidence ledgers, pass/fail tables, review files or mandatory validation stages.

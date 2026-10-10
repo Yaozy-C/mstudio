@@ -4,6 +4,7 @@ use rusqlite::{Connection, params};
 
 pub const TRANSIENT: &[&str] = &[
     "assistant/partial",
+    "assistant/thinking",
     "user/message",
     "assistant/message",
     "skill/read",

@@ -1,11 +1,6 @@
 //! A bounded, non-recursive specialist run. Child events never pollute parent replay.
 use super::{Host, ProjectHost, registry, session::Session};
-use crate::assistant::{
-    config::Profile,
-    context, journal,
-    memory::{MemoryBackend, SqliteMemory},
-    profiles, provider, skills,
-};
+use crate::assistant::{config::Profile, context, journal, profiles, provider, skills};
 use crate::database::Store;
 use rig_core::{
     completion::ToolDefinition,
@@ -140,9 +135,7 @@ fn scoped(
     if !profile.enabled || profile.id == parent || profile.id == "coordinator" {
         return Err("This Agent cannot be delegated to".into());
     }
-    profile
-        .tool_ids
-        .retain(|tool| !["agent-delegate", "memory-write", "memory-read"].contains(&tool.as_str()));
+    profile.tool_ids.retain(|tool| tool != "agent-delegate");
     Ok(profile)
 }
 #[cfg(test)]

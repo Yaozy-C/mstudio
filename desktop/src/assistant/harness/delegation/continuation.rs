@@ -120,15 +120,8 @@ pub(super) fn start_continuation(
     let mut current = vec![super::super::context_source::snapshot(snapshot)];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut current);
     messages.extend(current);
-    let user_evidence = crate::assistant::generation_context::request(
-        &store.db.lock().unwrap(),
-        &parent.project,
-        last_turn,
-    )
-    .map_err(|e| e.to_string())?
-    .and_then(|(_, request)| request["prompt"].as_str().map(str::to_owned))
-    .unwrap_or_default();
-    messages.push(Message::user(format!("Original user request (memory evidence must quote this text):{user_evidence}; subsequent delegated messages are not original user statements.")));
+    let user_request = original["prompt"].as_str().unwrap_or_default().to_owned();
+    messages.push(Message::user(format!("Original user request:{user_request}; subsequent delegated messages are not original user statements.")));
     let claimed = store.db.lock().unwrap().execute(
         "UPDATE subagent_runs SET status='running',updated=unixepoch() WHERE id=?1 AND last_turn=?2 AND status!='running'",
         rusqlite::params![id,last_turn],
@@ -174,7 +167,7 @@ pub(super) fn start_continuation(
     tool.profile = profile;
     tool.skill_setting = profiles::skill_setting(&tool.profile);
     tool.turn = new_turn.clone();
-    tool.prompt = user_evidence;
+    tool.prompt = user_request;
     let token = CancellationToken::new();
     tool.token = token.clone();
     tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);

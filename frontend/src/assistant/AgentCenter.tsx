@@ -68,7 +68,7 @@ export function AgentCenter({
               description: "",
               instructions: "",
               skillIds: [],
-              toolIds: ["project-read", "memory-read"],
+              toolIds: ["project-read"],
               enabled: true,
               revision: 0,
             })

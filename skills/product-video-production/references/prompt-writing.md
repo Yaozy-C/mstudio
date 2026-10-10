@@ -14,7 +14,7 @@ If the model cannot retain those cuts or references, generate compatible parts s
 
 ## Design before conversion
 
-Use the supplied shot constraints; consult [shot grammar](shot-execution.md) when the camera or staging remains ambiguous. Preserve the viewing experience and essential events while repairing execution. Compare actual reference geometry and starting support with the design; director text does not prove image content. Return spatial design conflicts to creative direction with specific evidence. Resolve input/wording issues within production without reopening the concept.
+Use the supplied shot constraints; consult [shot grammar](shot-execution.md) when the camera or staging remains ambiguous. Preserve the viewing experience and essential events while repairing execution. Use reference geometry and support compatible with the selected action. Return concrete spatial design conflicts to creative direction. Resolve input/wording issues within production without reopening the concept.
 
 The model text carries the current scene relationships, key change, framing/camera/cuts that show it, necessary sound and identity constraints. Do not concatenate all storyboard columns. Separate subject movement from camera movement. Detail should remove ambiguity; brevity is not the goal if it deletes essential relationships.
 
@@ -26,11 +26,11 @@ Before prose conversion, establish the initial camera location relative to the s
 
 Light must have a source and a plausible path into the visible scene. A dark enclosed interior revealed by an opening is different from an exterior highlighted by a moving reflection. Opening a hinged lid requires an available opening, and an entering object must fit through it before contact. Describe only product features visible from the chosen angle; never move outside merely to show more reference details unless the design calls for it.
 
-Check compatibility before generation. Do not silently combine an internal viewpoint with an external dive, or a fixed camera with incompatible travel. Preserve the user's clarified intent; if essential constraints remain incompatible, report the exact decision needed rather than submitting a guessed compromise. This is an internal design check, not an additional section to dump into the model prompt.
+Use compatible camera and action geometry. Do not silently combine an internal viewpoint with an external dive, or a fixed camera with incompatible travel. Preserve the user's clarified intent; if essential constraints remain incompatible, report the exact decision needed rather than submitting a guessed compromise. Keep planning commentary out of the model prompt.
 
 ## Describe changes the viewer can actually see
 
-Write a temporal transformation, not a still description followed by "moves naturally". Start from the actual first visible state, identify the decisive change and end in the requested state. If the clip starts mid-action, describe the ongoing phase rather than replaying preparation. Distinguish ordered events, overlaps and deliberate holds; relative cues such as "only after the opening clears" or "as contact occurs" often resolve causality better than invented millisecond schedules. Exact user-locked beats remain targets to verify, not reasons to invent impossible choreography.
+Write a temporal transformation, not a still description followed by "moves naturally". Start from the actual first visible state, identify the decisive change and end in the requested state. If the clip starts mid-action, describe the ongoing phase rather than replaying preparation. Distinguish ordered events, overlaps and deliberate holds; relative cues such as "only after the opening clears" or "as contact occurs" often resolve causality better than invented millisecond schedules. Preserve exact user-locked beats without inventing impossible choreography.
 
 Use only the dimensions relevant to this shot:
 
@@ -61,7 +61,7 @@ Organize according to model capability; simple shots can be one paragraph:
 - Locks and permitted variation: camera relationships, direction, event order, identity/parts and required sound. Distinguish user constraints from director decisions without casually deleting the latter.
 - Material-specific anticipation, speed curve, contact response, follow-through and reaction rather than a slogan about cinematic motion or all twelve principles.
 
-Exact times/frames express targets; editorial cuts establish precise final timing. A successful request does not establish compliance. Inspect shot rules and performance separately afterward.
+Exact times/frames express targets; editorial cuts establish precise final timing. Preserve the selected shot rules and performance in the prompt.
 
 ## Inputs and modes
 
@@ -72,20 +72,20 @@ Use the minimum relevant set, with roles matching actual upload order:
 - Action state: relevant poses before/after the event, identified as references or actual control frames.
 - Actual first/last frames: use alignment language only when submitted through supported frame-control inputs.
 
-Do not automatically attach unrelated product photos or full storyboard sheets. Add necessary scene references only within existing authorization; not every shot needs new images. Inspect product/hand relationships. Ordinary references can express an end state but do not guarantee last-frame control. Calling an image not the first frame does not remove a conflicting completed action. Recheck every role after adding/replacing inputs.
+Do not automatically attach unrelated product photos or full storyboard sheets. Add necessary scene references only within existing authorization; not every shot needs new images. Keep product/hand support and contact coherent. Ordinary references can express an end state but do not guarantee last-frame control. An actual first-frame control must not begin after the required action is already complete. Keep each input's subject, purpose and technical role consistent when adding or replacing it.
 
 ## Action-source failures
 
 For transfers, pursuit and catches, compare actual reference position/support with the intended start. Prefer compatible references, a crop excluding the conflicting object, or a clear source insert joined to an accepted result, when consistent with the selected expression and authorization. Do not repeatedly add negations to the same contradictory image. If no suitable input exists, report the limitation and choose a feasible route.
 
-Check the test from the source: initial location, path/contact, then destination. A correct second half does not cancel a wrong beginning. Permitted anthropomorphism is not unlimited floating or teleportation.
+Keep the initial location, path, contact and destination coherent; a correct ending does not excuse an impossible beginning. Permitted anthropomorphism is not unlimited floating or teleportation.
 
-## Final request and testing
+## Final prompt and handoff
 
-Inspect submitted prompt, appended templates, reference roles/order, mode and duration. Check repeated already-completed actions, single/multiple-shot conflicts and impossible timing. Draft review alone is insufficient; inaccessible service rewriting remains unknown.
+Use one complete final prompt with consistent reference roles/order, input mode and supported duration. Do not replay already-completed actions, contradict single/multiple-shot intent or require impossible timing. Do not invent inaccessible service rewriting.
 
-A prompt-only request ends with saving. Existing same-scope authorization remains valid. An authorized test specifies concrete questions such as whether the matching angle appears or contact/release remains continuous, without a universal resolution/duration. Retain, repair or change route based on actual output, not prompt completeness.
+A prompt-only request ends with saving. Existing same-scope authorization remains valid. Generate only within the requested scope using supported parameters. Repair a concrete defect without adding mandatory test generations or approval rounds.
 
-Hand off shot/segment ID, intended change, essential event, inputs/order, actual mode, final prompt and acceptance points in existing records.
+Hand off shot/segment ID, intended change, essential event, inputs/order, actual mode, final prompt and essential constraints in existing records.
 
 For live-action reactions and dialogue, read [naturalistic performance](shot-execution.md) when needed.

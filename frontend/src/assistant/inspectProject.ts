@@ -19,6 +19,19 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     ? (args.fields as string[])
     : ["title", "shot", "script", "assetId", "resultAssetId"];
   const wants = (field: string) => fields.includes(field);
+  if (
+    !args.section &&
+    !ids.length &&
+    ((explicit &&
+      fields.some((f) => ["script", "screenplay", "shots"].includes(f))) ||
+      args.paragraphIds !== undefined ||
+      args.scriptFields !== undefined)
+  ) {
+    throw new Error(
+      "Script reads require nodeIds containing the screenplay node ID; paragraphIds only filters paragraphs within that node. Use fields=[script] or [screenplay].",
+    );
+  }
+
   const revision = p.revision ?? 0;
   const detailLimit = ids.length === 1 || args.taskKey ? 4000 : 1000;
   const snippet = (value: string, max = 1000) => ({

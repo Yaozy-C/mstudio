@@ -89,6 +89,8 @@ export function AgentMessage() {
         <AttachmentChips items={attached} project={context.project} />
         {message.role === "assistant" && turnId && (
           <AgentActivity
+            key={turnId}
+            startedAt={message.createdAt?.getTime()}
             projectId={context.project.id}
             agents={context.agents}
             turnId={turnId}

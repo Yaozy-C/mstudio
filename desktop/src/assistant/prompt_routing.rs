@@ -197,13 +197,12 @@ pub(super) fn signals(description: &str) -> BTreeSet<&'static str> {
     found
 }
 
-pub(super) fn routes(kind: &str, description: &str) -> Vec<(&'static str, &'static str)> {
+pub(super) fn routes<'a>(
+    kind: &str,
+    description: &str,
+    owner: &'a str,
+) -> Vec<(&'a str, &'static str)> {
     let found = signals(description);
-    let owner = if kind == "video" {
-        "product-video-production"
-    } else {
-        "image-production"
-    };
     // Spatial coherence is required even when the brief is attached as context.
     // These are the bound Skill's execution methods, never another role's library.
     let execution = if kind == "video" {
@@ -245,25 +244,33 @@ mod tests {
             "a keyframe",
             "control frame",
         ] {
-            let methods = routes("image", brief);
+            let methods = routes("image", brief, "storyboard-image-production");
             assert!(
-                methods.contains(&("image-production", "references/frames.md")),
+                methods.contains(&("storyboard-image-production", "references/frames.md")),
                 "{brief}"
             );
             assert!(
                 methods
                     .iter()
-                    .all(|(owner, _)| *owner == "image-production")
+                    .all(|(owner, _)| *owner == "storyboard-image-production")
             );
         }
         assert!(
-            !routes("image", "product cover image")
-                .contains(&("image-production", "references/frames.md"))
+            !routes(
+                "image",
+                "product cover image",
+                "storyboard-image-production"
+            )
+            .contains(&("storyboard-image-production", "references/frames.md"))
         );
         assert!(
-            routes("video", "animate this first frame")
-                .iter()
-                .all(|(owner, _)| *owner == "product-video-production")
+            routes(
+                "video",
+                "animate this first frame",
+                "storyboard-video-production"
+            )
+            .iter()
+            .all(|(owner, _)| *owner == "storyboard-video-production")
         );
     }
 }

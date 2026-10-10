@@ -180,3 +180,21 @@ test("video results retain exact media roles and undo never rewinds paid job sta
   expect(undone.nodes[1].shot!.takes).toHaveLength(1);
   expect(undone.production!.drafts![task.key].status).toBe("COMPLETED");
 });
+
+test("one storyboard image stays a reference rather than becoming an exact first frame", () => {
+  const p = fixture();
+  const board = productionItems(p).find((n) => n.assetId === "a")!;
+  const task = {
+    ...createTask(p, [board], "video"),
+    prompt: "Use four phases in one continuous take",
+  };
+  expect(task.inputs[0].role).toBe("reference");
+  const input = inputFor(p, task, model("minimax/h3/reference-to-video"), [
+    { assetId: "a", kind: "image", url: "https://example.test/board.png" },
+  ]);
+  expect(input.reference_image_urls).toEqual([
+    "https://example.test/board.png",
+  ]);
+  expect(input.image_url).toBeUndefined();
+  expect(() => inputFor(p, task, model("minimax/h3/image-to-video"))).toThrow();
+});

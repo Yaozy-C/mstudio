@@ -11,7 +11,6 @@ import { GeneralSettings } from "./GeneralSettings";
 import { ToolLibrary } from "../agents/ToolLibrary";
 import { ModelCenter } from "../models/ModelCenter";
 import { SkillLibrary } from "../agents/SkillLibrary";
-import { ProjectMemory } from "../assistant/ProjectMemory";
 import { AgentCenter } from "../assistant/AgentCenter";
 export function Settings({
   onClose,
@@ -40,7 +39,7 @@ export function Settings({
     content.current?.scrollTo({ top: 0 });
   }, []);
   useLayoutEffect(resetScroll, [tab, resetScroll]);
-  const pages = sidebarPages(!!project);
+  const pages = sidebarPages();
   return (
     <main className="settings-page" aria-label={t("设置")}>
       <StudioSidebar
@@ -64,13 +63,6 @@ export function Settings({
         <div className="hub-scroll" ref={content}>
           {tab === "skills" && (
             <SkillLibrary openAgents={() => setTab("agents")} />
-          )}
-          {tab === "memory" && project && (
-            <ProjectMemory
-              key={project.id}
-              projectId={project.id}
-              name={project.name}
-            />
           )}
           {tab === "general" && <GeneralSettings projectId={project?.id} />}
           {tab === "models" && <ModelCenter />}

@@ -285,3 +285,16 @@ test("duration edit reads only its paragraph, reports saved values, and preserve
   });
   expect(JSON.stringify(full)).toContain("Long action");
 });
+
+test("script queries require an explicit screenplay node instead of returning overview", () => {
+  const p = newProject("Script query");
+  for (const args of [
+    { fields: ["script"], paragraphIds: ["p3"] },
+    { fields: ["screenplay"] },
+    { fields: ["shots"] },
+    { paragraphIds: ["p3"] },
+  ]) {
+    expect(() => inspectProject(p, args)).toThrow("require nodeIds");
+  }
+  expect(inspectProject(p, {}).name).toBe("Script query");
+});

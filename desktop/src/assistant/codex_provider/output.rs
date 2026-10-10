@@ -69,3 +69,17 @@ pub(super) fn tool_response(result: &ToolResult) -> Result<Value> {
     }
     Ok(json!({"success":success,"contentItems":items}))
 }
+
+// Forward only readable notifications; never inspect encrypted reasoning handles.
+pub(super) fn reasoning_delta(method: &str, params: &Value) -> Option<RawStreamingChoice> {
+    let (kind, index) = match method {
+        "item/reasoning/summaryTextDelta" => ("summary", params["summaryIndex"].as_i64()?),
+        "item/reasoning/textDelta" => ("text", params["contentIndex"].as_i64()?),
+        _ => return None,
+    };
+    Some(RawStreamingChoice::ReasoningDelta {
+        id: StreamPartId::wire(format!("{}:{kind}:{index}", params["itemId"].as_str()?)),
+        provider_id: None,
+        reasoning: params["delta"].as_str()?.into(),
+    })
+}

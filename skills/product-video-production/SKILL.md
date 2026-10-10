@@ -1,11 +1,11 @@
 ---
 name: product-video-production
-description: Produce video in Mstudio: compile a shot design into a final model prompt, choose inputs and control routes, generate and repair clips, and judge the actual result.
+description: Produce video in Mstudio: compile a shot design into a final model prompt, choose inputs and control routes, generate and repair clips, and deliver the requested media.
 ---
 
 # Video production
 
-Turn an approved design into a final, usable video prompt and generated media, then judge the result from actual pixels. Use the supplied design; do not redesign the story or quietly widen the task. Loading this Skill grants no extra tools or permissions.
+Turn an approved design into a final, usable video prompt and generated media, and deliver the requested media. Use the supplied design; do not redesign the story or quietly widen the task. Loading this Skill grants no extra tools or permissions.
 
 ## Read for the task at hand
 
@@ -17,13 +17,13 @@ Turn an approved design into a final, usable video prompt and generated media, t
 | **How long each generated segment earns, what to leave out, and how cuts and sound line up in time** | **[Rhythm](references/shot-execution.md)** |
 | **How a person's reaction starts and layers on camera** | **[Naturalistic performance](references/shot-execution.md)** |
 | Weight, force, contact and material response inside the action | [Animation principles](references/shot-execution.md) |
-| What a finished clip must be checked against | [Inspection evidence](references/evidence.md), [review and delivery](references/review.md) |
+| Output constraints and delivery | [Output claims](references/evidence.md), [delivery rules](references/review.md) |
 
-A request that packs several timed events into a limited duration is itself the signal to read rhythm before writing the prompt, and a request showing real people is the signal to read performance. Do not wait for an explicit complaint.
+Use rhythm for timed events and performance for human behavior when those rules are needed; reuse loaded text.
 
-Inspect generated action and identify usable source candidates for handoff. Final source selection, trimming and timeline assembly belong to editing; pass the observed events, candidate ranges and defects through the existing project records rather than performing timeline work under production permissions.
+Final source selection, trimming and timeline assembly belong to editing. Hand off actual generated assets and any known missing events through existing project records; do not perform timeline work under production permissions.
 
-Read [core](CORE.md) for the short rules.
+Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 ## Physical causality is not a full operating sequence
 
@@ -39,10 +39,10 @@ When more than one recurring person or object appears, bind every input to its n
 
 ## Model inputs and parameters
 
-Use the selected model's current injected rules and capability schema; query model guidance only when it is missing or has changed. Distinguish ordinary appearance or composition references from actual first or last frame controls. Verify that an input's geometry and starting support can produce the intended event before relying on it; declaring a conflicting middle state "not the first frame" does not remove the conflict. Keep user-locked aspect, resolution and duration in supported parameters, and state an unsupported requirement explicitly instead of silently changing it.
+Use the selected model's current injected rules and capability schema; query model guidance only when it is missing or has changed. Distinguish ordinary appearance or composition references from actual first or last frame controls. Use compatible input geometry and support. Full-reference boards describe ordered states; only actual first/last-frame controls bind an endpoint state. Keep user-locked aspect, resolution and duration in supported parameters, and state an unsupported requirement explicitly instead of silently changing it.
 
-## Result state
+## Output rules
 
-Submitted, generated, imported and visually inspected are four different states. A `COMPLETED` job proves the model finished, not that the clip is usable. When a result exists, check it against the original submitted prompt and the intended action before describing or reusing it: read actual frames for geometry, contact, identity and continuity, and state plainly which conclusions rest on frames, which need playback, and which still need listening. Report an evidence gap rather than implying a check happened.
+Preserve the requested identity, structure, event order, continuous/cut intent, support and contact. Do not add repeated preparation, unauthorized cuts, grid layouts, morphing, teleportation or an already completed action.
 
-When a result is judged unusable, repair in this order: the smallest useful change to the input or the reference assignment, then the smallest split or cut that preserves the intended expression, then a different control route. Do not answer a diagnosed physical failure with longer negative lists, louder sound or global retiming.
+Use real generated assets and actual task states. Do not claim playback, listening or visual approval from completion status. Repair only requested or concretely identified defects within existing authorization. This Skill does not require a review pass, evidence ledger or repeated material inspection.

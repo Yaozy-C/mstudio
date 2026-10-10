@@ -124,13 +124,13 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                         name,
                         op,
                         parameters,
-                        Default::default(),
+                        serde_json::Map::from_iter([("expectedKind".into(), json!("shot"))]),
                         Some("shot"),
                         description,
                     );
                     if name == "update_shot" {
                         let source = out.last().unwrap();
-                        out.push(OperationTool { definition: ToolDefinition { name:"mstudio_update_shots".into(),description:"Atomically update multiple shots, including order swaps. Each items entry has the same direct fields as update_shot; no op or shot wrapper. The entire batch succeeds or fails together.".into(),parameters:json!({"type":"object","properties":{"items":{"type":"array","minItems":1,"maxItems":30,"items":source.definition.parameters}},"required":["items"],"additionalProperties":false}) },op:op.into(),fixed:Default::default(),nested:Some("shot".into()),task_prompt:false,batch:true });
+                        out.push(OperationTool { definition: ToolDefinition { name:"mstudio_update_shots".into(),description:"Atomically update multiple shots, including order swaps. Each items entry has the same direct fields as update_shot; no op or shot wrapper. The entire batch succeeds or fails together.".into(),parameters:json!({"type":"object","properties":{"items":{"type":"array","minItems":1,"maxItems":30,"items":source.definition.parameters}},"required":["items"],"additionalProperties":false}) },op:op.into(),fixed:serde_json::Map::from_iter([("expectedKind".into(), json!("shot"))]),nested:Some("shot".into()),task_prompt:false,batch:true });
                     }
                 }
             }
@@ -140,26 +140,106 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                     "update_screenplay",
                     op,
                     flat(operation, "screenplay", &[]),
-                    Default::default(),
+                    serde_json::Map::from_iter([("expectedKind".into(), json!("screenplay"))]),
                     Some("screenplay"),
                     "Update screenplay paragraphs by ID. Merge preserves omitted paragraphs; replace requires complete paragraphs. Explicit removeParagraphIds deletes paragraphs.",
                 );
             }
-            let mut node = operation.clone();
-            for field in ["shot", "screenplay", "references"] {
-                node["properties"].as_object_mut().unwrap().remove(field);
-            }
-            if node["properties"].as_object().unwrap().len() > 2 {
+            for (kind, name) in [
+                ("shot", "update_shot_design"),
+                ("screenplay", "update_screenplay_info"),
+                ("asset", "update_asset_node"),
+                ("note", "update_note"),
+                ("text", "update_text"),
+            ] {
+                let mut node = operation.clone();
+                node["properties"]
+                    .as_object_mut()
+                    .unwrap()
+                    .retain(|key, _| {
+                        let permitted = match kind {
+                            "shot" => ["op", "id", "expectedKind", "title", "text"]
+                                .contains(&key.as_str()),
+                            "screenplay" => {
+                                ["op", "id", "expectedKind", "title"].contains(&key.as_str())
+                            }
+                            "asset" => ["op", "id", "expectedKind", "title", "text", "assetId"]
+                                .contains(&key.as_str()),
+                            _ => ["op", "id", "expectedKind", "title", "text"]
+                                .contains(&key.as_str()),
+                        };
+                        permitted
+                            && crate::assistant::permissions::allows_node_field(profile, kind, key)
+                    });
+                if node["properties"]
+                    .as_object()
+                    .unwrap()
+                    .keys()
+                    .all(|key| ["op", "id", "expectedKind"].contains(&key.as_str()))
+                {
+                    continue;
+                }
+                if let Some(text) = node["properties"].get_mut("text") {
+                    text["description"] = json!(
+                        "Body text. For shots this is action/staging; use dedicated prompt tools for image/video prompts."
+                    );
+                }
                 add(
                     &mut out,
-                    "update_node",
+                    name,
                     op,
                     node,
-                    Default::default(),
+                    serde_json::Map::from_iter([("expectedKind".into(), json!(kind))]),
                     None,
-                    "Update the node's title, body or asset fields. Shot body text is staging; prompts and shot structure have dedicated tools.",
+                    &format!(
+                        "Update the {kind} node's direct title/body/asset properties. The ID must belong to a {kind}. Prompts, shot structure and screenplay paragraphs use their dedicated tools."
+                    ),
                 );
             }
+        } else if op == "remove_node" {
+            for (kind, name, capability) in [
+                ("shot", "remove_shot", "project-shots"),
+                ("screenplay", "remove_screenplay", "project-script"),
+                ("asset", "remove_asset_node", "project-assets"),
+                ("note", "remove_note", "project-edit"),
+                ("text", "remove_text", "project-edit"),
+            ] {
+                if !profile
+                    .tool_ids
+                    .iter()
+                    .any(|id| id == capability || id == "project-edit")
+                {
+                    continue;
+                }
+                add(
+                    &mut out,
+                    name,
+                    op,
+                    operation.clone(),
+                    serde_json::Map::from_iter([("expectedKind".into(), json!(kind))]),
+                    None,
+                    &format!(
+                        "Remove the {kind} canvas node identified by id. The ID must belong to a {kind}. This does not delete the underlying media asset."
+                    ),
+                );
+            }
+        } else if op == "update_clip" {
+            super::clip_tools::add_updates(&mut out, operation);
+        } else if op == "append_clip" {
+            let mut parameters = operation.clone();
+            parameters["properties"]
+                .as_object_mut()
+                .unwrap()
+                .remove("visual");
+            add(
+                &mut out,
+                "append_clip",
+                op,
+                parameters,
+                Default::default(),
+                None,
+                "Append assetId to the timeline with optional placement and source range in seconds. Visual adjustments use set_clip_visual or set_clip_grade.",
+            );
         } else if op == "set_references" {
             let modes = operation["properties"]["referenceMode"]["enum"]
                 .as_array()

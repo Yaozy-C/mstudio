@@ -85,12 +85,37 @@ async fn step(
         temperature: None,
         max_tokens: (profile.adapter == "anthropic-native").then_some(8192),
         tool_choice: None,
-        additional_params: (profile.adapter == "openai-responses").then(|| json!({"store":false})),
+        additional_params: match profile.adapter.as_str() {
+            "openai-responses" => Some(json!({"store":false})),
+            // Ask thinking-capable Gemini models for readable summaries without changing their budget.
+            "gemini-native"
+                if profile.model.rsplit('/').next().is_some_and(|model| {
+                    model.starts_with("gemini-2.5-") || model.starts_with("gemini-3")
+                }) =>
+            {
+                Some(json!({"generationConfig":{"thinkingConfig":{"includeThoughts":true}}}))
+            }
+            _ => None,
+        },
         output_schema: None,
         record_telemetry_content: false,
     };
     let request_header = budget::header(profile, &request.tools);
     let response = model::request(model, request, host, session, streaming, key, deadline).await?;
+    if !streaming {
+        let mut thinking = super::thinking::Thinking::new();
+        for (index, part) in response.choice.iter().enumerate() {
+            if let AssistantContent::Reasoning(reasoning) = part {
+                thinking.update(
+                    host,
+                    &index.to_string(),
+                    &super::thinking::readable(reasoning),
+                    true,
+                )?;
+            }
+        }
+        thinking.finish(host)?;
+    }
     let usage = budget::usage_total(profile, &response.usage);
     host.record("request/usage", json!({"inputTokens":response.usage.input_tokens,"outputTokens":response.usage.output_tokens,"totalTokens":response.usage.total_tokens,"cachedInputTokens":response.usage.cached_input_tokens,"contextWindow":response.raw["tokenUsage"]["modelContextWindow"],"contextTokens":response.raw["tokenUsage"]["last"]["totalTokens"]}))?;
     let stop_reason = match response.finish_reason() {

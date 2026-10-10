@@ -41,7 +41,7 @@ pub fn seed(db: &Connection, root: &Path) -> Result<()> {
     tx.commit()?;
     Ok(())
 }
-fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
+pub(super) fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         ensure!(

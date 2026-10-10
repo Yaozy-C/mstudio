@@ -9,7 +9,7 @@ fn read_only_profile() -> AgentProfile {
         .into_iter()
         .find(|a| a.id == "editor")
         .unwrap();
-    p.tool_ids = vec!["project-read".into(), "memory-read".into()];
+    p.tool_ids = vec!["project-read".into()];
     p
 }
 fn asset_only_profile() -> AgentProfile {

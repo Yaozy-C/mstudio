@@ -18,6 +18,7 @@ mod metering;
 mod model;
 mod operation_tools;
 mod outcomes;
+mod read_tools;
 mod registry;
 mod scheduler;
 pub(crate) mod schema;
@@ -29,6 +30,7 @@ pub(crate) mod session_selection;
 mod stored_image;
 #[cfg(test)]
 mod tests;
+mod thinking;
 pub(crate) mod tool_loading;
 mod tool_output;
 

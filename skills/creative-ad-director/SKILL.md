@@ -25,7 +25,7 @@ Choose a reference by what the current task has to decide, not by job title. Reu
 | Reusing the relationship of a real reference shot for a different product | [Transferring a reference](references/shot-references.md) |
 | Handing an approved design to a generation task | [Production handoff](assets/production-brief-template.md) |
 
-The task itself is the trigger for the bold entries: showing real people means read performance; fitting several timed events into a limited duration means read rhythm before designing the beats; asking for believable skin, light or material means read photographic appearance. Do not wait for an explicit complaint about the current output.
+Use performance for human behavior, rhythm for timed beats and photographic appearance for skin, light and material when those rules are needed; reuse loaded text.
 
 ## Boundaries
 

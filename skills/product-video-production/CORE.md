@@ -8,4 +8,4 @@ Describe the visible change from the actual starting state through the decisive 
 
 Show the action phases required by the design, including continuous proof and recognition when requested; keep the causal chain believable while leaving out nonessential handling.
 
-Submitted, generated, imported and visually inspected are different states; report the one that actually happened. Detailed prompt, control, generation and review methods are listed in [SKILL.md](SKILL.md).
+Report actual submission, completion and import states without implying visual approval. Detailed prompt, control and generation rules are listed in [SKILL.md](SKILL.md).

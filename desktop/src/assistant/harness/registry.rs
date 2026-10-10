@@ -1,6 +1,5 @@
 use super::Host;
-use crate::assistant::{memory::MemoryTool, profiles, tool_schema, tools::ProjectTool};
-use rig_agent::{prelude::Tool, tool::ToolContext};
+use crate::assistant::{profiles, tool_schema, tools::ProjectTool};
 use rig_core::{completion::ToolDefinition, message::ToolCall};
 use serde_json::{Value, json};
 use tauri::Manager;
@@ -14,23 +13,6 @@ pub struct ProjectHost {
     pub loaded_tools: super::tool_loading::LoadedTools,
 }
 const ACTIONS: &[(&str, &str, &[&str])] = &[
-    (
-        "inspect",
-        "Read missing project content needed for this task; use supplied snapshots and complete receipts first. Generation reads include continuation even with fields filters; use mstudio_await_generation for backend work, not repeated inspect status checks. For generation, query section=generation/taskKey or filter turnId/status; fields=[status,targetNodeId,resultAssetIds,error,trackingPaused] yields up to 30 tasks per page and whole-batch statistics. Follow nextOffset. For an existing image/video, section=assets with ids returns source: the linked generating job and original submitted prompt, independently of current task drafts. Use fields=[source] for provenance and textOffset for its prompt pages. Never infer taskKey from a filename or jobId, or search chat for a generation prompt available through source. For shots use nodeIds/fields; for scripts use fields=[script], paragraphIds and scriptFields. Omitted fields return summaries. Other lists have up to 12 entries per page and size limits; read small groups together with needed fields. Batch independent reads. revision is returned, not a query argument; supplied current target content or successful receipts already establish state.",
-        &[
-            "section",
-            "ids",
-            "taskKey",
-            "turnId",
-            "status",
-            "nodeIds",
-            "fields",
-            "paragraphIds",
-            "scriptFields",
-            "offset",
-            "textOffset",
-        ],
-    ),
     (
         "read_skill",
         "Read the complete text of an enabled Skill or permitted reference. Reuse loaded text; read references for concrete missing information and batch independent reads.",
@@ -95,6 +77,7 @@ impl ProjectHost {
         let mut definitions = Vec::new();
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(super::generation_tool::definition());
+            definitions.extend(super::read_tools::definitions());
         }
         definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
@@ -122,14 +105,6 @@ impl ProjectHost {
                 name: format!("mstudio_{action}"),
                 description: (*description).into(),
                 parameters: json!({"type":"object","properties":properties,"required":required,"additionalProperties":false}),
-            });
-        }
-        if profiles::allows(&t.profile, "memory-read") {
-            let memory = MemoryTool(t.clone());
-            definitions.push(ToolDefinition {
-                name: "mstudio_memory".into(),
-                description: memory.description(),
-                parameters: memory.parameters(),
             });
         }
         if profiles::allows(&t.profile, "inspect") {
@@ -189,19 +164,17 @@ impl Host for ProjectHost {
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         // Project reads are barriers relative to edits; execution is native and transactional.
-        // Skill files/history/catalog are independent reads; memory mutations are exclusive.
+        // Skill files/history/catalog are independent reads.
         matches!(
             self.action(&call.function.name),
             Some("read_skill" | "skills" | "history" | "models")
-        ) || (call.function.name == "mstudio_memory" && call.function.arguments["action"] == "list")
-            || matches!(
-                call.function.name.as_str(),
-                "mstudio_reopen_image" | "mstudio_read_result"
-            )
-            || matches!(
-                call.function.name.as_str(),
-                "mstudio_send_message" | "mstudio_interrupt_agent" | "mstudio_list_agents"
-            )
+        ) || matches!(
+            call.function.name.as_str(),
+            "mstudio_reopen_image" | "mstudio_read_result"
+        ) || matches!(
+            call.function.name.as_str(),
+            "mstudio_send_message" | "mstudio_interrupt_agent" | "mstudio_list_agents"
+        )
     }
     fn injected(&self) -> Result<Vec<rig_core::message::Message>, String> {
         self.tool
@@ -236,6 +209,13 @@ impl Host for ProjectHost {
 
 pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     let mut args = call.function.arguments.clone();
+    if let Some(decoded) = super::read_tools::decode(&call.function.name, args.clone()) {
+        let value = t
+            .execute(decoded, format!("{}:{}", t.turn, call.id.as_str()))
+            .await;
+        return super::read_tools::result(&call.function.name, value);
+    }
+
     if let Some(decoded) =
         super::operation_tools::decode(&t.profile, &call.function.name, args.clone())
     {
@@ -263,12 +243,6 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     }
     if call.function.name == "mstudio_read_result" {
         return super::tool_output::read(t, &args);
-    }
-    if call.function.name == "mstudio_memory" {
-        return MemoryTool(t.clone())
-            .call(&mut ToolContext::new(), args)
-            .await
-            .unwrap();
     }
     let Some(action) = call
         .function

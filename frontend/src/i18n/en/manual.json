@@ -23,7 +23,6 @@
   "描述目标与边界": "Describe the goal and scope",
   "例如：「用这些参考写一支 15 秒短片，保存脚本，先不要生成素材。」局部修改时，可说明「只改镜头 2，保留已有台词」。": "For example: “Use these references to write and save a 15-second script. Do not generate media yet.” For a local edit, specify: “Change only shot 2 and keep the existing dialogue.”",
   "检查实际修改": "Review the changes",
-  "查看对话里的工具操作结果，再到脚本、画布或时间线检查。项目记忆可在项目设置中维护，用来保存目标、约束和已确认决定。": "Read tool results in the conversation, then inspect the script, canvas or timeline. Maintain project memory in project settings to retain goals, constraints and confirmed decisions.",
   "Skill 提供工作方法，工具权限决定 Agent 能执行什么；完成一次操作后，仍需检查内容和画面。": "Skills provide methods; tool permissions determine what an Agent can execute. Review the content and visuals after each operation.",
   "写脚本与设计镜头": "Script and shot design",
   "先确认故事，再细化每个镜头的画面和节奏。": "Confirm the story before refining each shot and its rhythm.",
@@ -58,7 +57,6 @@
   "管理存储位置": "Manage storage",
   "在「通用设置 → 存储」查看素材位置，也可选择新目录并迁移。素材缺失时，先检查磁盘或原文件位置，放回原位置后可恢复引用。": "In General → Storage, inspect the media location or choose a new folder and migrate. If media is missing, check the drive and original file location; restoring files there recovers references.",
   "备份项目资料": "Back up your work",
-  "退出应用后备份应用数据目录；如果迁移过素材目录，也要备份设置中显示的素材文件夹。项目记忆不能替代素材和项目文件备份。": "Quit the app before backing up its data directory. If you migrated media, also back up the media folder shown in settings. Project memory does not replace a backup of project data and media.",
   "语言可在「通用设置 → 语言」切换；界面语言不会翻译已有项目名称、脚本或聊天内容。": "Change the interface language in General → Language. This does not translate existing project names, scripts or conversations.",
   "遇到问题时": "Troubleshooting",
   "先确认配置和任务状态，再继续操作。": "Check configuration and task status before continuing.",
@@ -122,5 +120,7 @@
   "新版本 {version} 可用": "Version {version} is available",
   "暂无新版本": "No newer version available",
   "暂无可查询的正式版本": "No stable release available to check",
-  "冷灰色": "Cool slate"
+  "冷灰色": "Cool slate",
+  "查看对话里的工具操作结果，再到脚本、画布或时间线检查。": "Read tool results in the conversation, then inspect the script, canvas or timeline.",
+  "退出应用后备份应用数据目录；如果迁移过素材目录，也要备份设置中显示的素材文件夹。": "Quit the app before backing up its data directory. If you migrated media, also back up the media folder shown in settings."
 }

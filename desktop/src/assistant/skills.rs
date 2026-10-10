@@ -3,6 +3,7 @@ mod concept_split;
 mod isolation;
 mod metadata;
 mod rule_summary;
+mod storyboard;
 use metadata::{model_catalog, model_metadata};
 pub mod storage;
 use anyhow::{Context, Result, ensure};
@@ -12,7 +13,7 @@ use tauri::Manager;
 
 /// The shipped creative catalog. Each Skill is one capability with a short entry
 /// document and optional method references.
-const SKILLS: [(&str, &str, &str); 6] = [
+const SKILLS: [(&str, &str, &str); 8] = [
     (
         "creative-concepts",
         "创意策划",
@@ -37,6 +38,16 @@ const SKILLS: [(&str, &str, &str); 6] = [
         "product-video-production",
         "视频制作",
         "视频提示词、输入用途、生成修复与成片判断",
+    ),
+    (
+        "storyboard-image-production",
+        "动作分镜板制作",
+        "每镜头四格动作板、状态连续性与图片检查",
+    ),
+    (
+        "storyboard-video-production",
+        "分镜板视频制作",
+        "整板参考输入、动作顺序、连续运动与视频检查",
     ),
     (
         "video-editing",
@@ -84,6 +95,10 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     rule_summary::migrate_video_motion(&db, &root(app)?)?;
     rule_summary::migrate_image_storyboard(&db, &root(app)?)?;
     rule_summary::migrate_image_cases(&db, &root(app)?)?;
+    storyboard::migrate(&db, &root(app)?)?;
+    rule_summary::migrate_board_regeneration(&db, &root(app)?)?;
+    rule_summary::migrate_pure_rules(&db, &root(app)?)?;
+    rule_summary::migrate_object_tools(&db, &root(app)?)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {
@@ -165,7 +180,7 @@ pub fn guidance(catalog: &Value) -> String {
         })
         .collect();
     format!(
-        "Available Skills: {}. This catalog contains only this role's bound Skills, with descriptions rather than loaded instructions. Before specialized work, load the relevant SKILL.md with mstudio_read_skill. Each read returns the complete remaining document and its own resources. Read local references only for a concrete task need; reuse current full text already in context. Each Skill is an isolated root: cross-directory paths are forbidden, even when another Skill is also bound. For work outside this role's capability, hand off the required task and project evidence to the responsible role instead of loading its Skill. Skill methods do not expand tool permissions or authorize generation. Database documents are authoritative. Use current tool schemas for writes, not legacy examples in documents.",
+        "Available Skills: {}. This catalog contains only this role's bound Skills, with descriptions rather than loaded instructions. Use the relevant SKILL.md for specialized work; load it with mstudio_read_skill only when its current full text is missing. Each read returns the complete remaining document and its own resources. Read local references only for a concrete task need; reuse current full text already in context. Each Skill is an isolated root: cross-directory paths are forbidden, even when another Skill is also bound. For work outside this role's capability, hand off the required task and project evidence to the responsible role instead of loading its Skill. Skills define domain constraints, not mandatory inspection, audit or approval workflows. Do not infer extra tool calls from a rule. Skill methods do not expand tool permissions or authorize generation. Database documents are authoritative. Use current tool schemas for writes, not legacy examples in documents.",
         json!(available)
     )
 }

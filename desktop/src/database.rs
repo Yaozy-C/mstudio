@@ -58,7 +58,6 @@ impl Store {
         crate::assistant::result_check::init(&db)?;
         crate::assistant::history::interrupt_pending(&db)?;
         crate::assistant::journal::init(&db)?;
-        crate::assistant::memory::init(&db)?;
         crate::models::init(&db)?;
         crate::model_adapters::prompt_rules::init(&db)?;
         crate::project_storage::init(&db)?;

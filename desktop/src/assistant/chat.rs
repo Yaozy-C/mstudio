@@ -1,7 +1,5 @@
 use super::{
-    agent, attachments, context, history, journal,
-    memory::{self, MemoryBackend, SqliteMemory},
-    pending, profiles, skills, task_target, tools,
+    agent, attachments, context, history, journal, pending, profiles, skills, task_target, tools,
 };
 use crate::database::Store;
 use serde::Deserialize;
@@ -164,12 +162,6 @@ async fn execute(
     } else {
         json!({"id":project_id})
     };
-    if profiles::allows(&agent_profile, "memory-read") {
-        let memory = SqliteMemory(&store.db.lock().unwrap())
-            .recall(project_id)
-            .map_err(|e| e.to_string())?;
-        snapshot["memory"] = memory::context(&memory, prompt);
-    }
     snapshot["skills"] = skills::runtime_catalog(app, &skill_setting).map_err(|e| e.to_string())?;
     if let Some(scope) = selection
         .clone()

@@ -167,6 +167,9 @@ fn every_role_sees_only_its_bindings_and_traversal_never_crosses_a_skill_root() 
             .is_ok()
         );
     }
-    assert_eq!(catalog(&db, "").unwrap().as_array().unwrap().len(), 6);
+    assert_eq!(
+        catalog(&db, "").unwrap().as_array().unwrap().len(),
+        super::super::SKILLS.len()
+    );
     assert!(catalog(&db, "[]").unwrap().as_array().unwrap().is_empty());
 }

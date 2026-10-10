@@ -16,12 +16,10 @@ export function AgentTools({
       if (id === "project-read")
         for (const tool of selected)
           if (tool.startsWith("project-")) selected.delete(tool);
-      if (id === "memory-read") selected.delete("memory-write");
     } else {
       selected.add(id);
       if (id.startsWith("project-") && id !== "project-read")
         selected.add("project-read");
-      if (id === "memory-write") selected.add("memory-read");
     }
     onChange({ ...profile, toolIds: [...selected] });
   }

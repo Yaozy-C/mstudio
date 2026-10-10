@@ -146,3 +146,27 @@ fn only_registered_dynamic_tools_reach_the_harness() {
     event["params"]["arguments"] = json!("invalid");
     assert!(tool_frame(&event, &["inspect_project".into()]).is_err());
 }
+
+#[test]
+fn readable_reasoning_notifications_become_stream_parts() {
+    for (method, index) in [
+        ("item/reasoning/summaryTextDelta", "summaryIndex"),
+        ("item/reasoning/textDelta", "contentIndex"),
+    ] {
+        let mut params = json!({"itemId":"r1","delta":"Check the reference", "encryptedContent":"never-display"});
+        params[index] = json!(0);
+        let part = output::reasoning_delta(method, &params).unwrap();
+        let rig_core::streaming::RawStreamingChoice::ReasoningDelta { reasoning, .. } = part else {
+            panic!("expected a reasoning delta")
+        };
+        assert_eq!(reasoning, "Check the reference");
+    }
+    assert!(output::reasoning_delta("item/agentMessage/delta", &json!({})).is_none());
+    assert!(
+        output::reasoning_delta(
+            "item/reasoning/textDelta",
+            &json!({"itemId":"r1","contentIndex":0,"encryptedContent":"secret"})
+        )
+        .is_none()
+    );
+}

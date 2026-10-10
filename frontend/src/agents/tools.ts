@@ -68,16 +68,4 @@ export const tools = [
       "使用模型目录中已启用的图像、视频和音频模型；遵循你选择的先确认或自动执行方式",
     kind: "项目工具",
   },
-  {
-    id: "memory-read",
-    name: "读取项目记忆",
-    description: "读取当前项目的目标、约束和已确认决定",
-    kind: "记忆工具",
-  },
-  {
-    id: "memory-write",
-    name: "整理项目记忆",
-    description: "依据用户原话更新或删除记忆；依赖读取记忆",
-    kind: "记忆工具",
-  },
 ];

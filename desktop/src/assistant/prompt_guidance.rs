@@ -121,7 +121,7 @@ pub fn for_quick(
     // the rules it is supposed to apply.
     loader.add(bound, "SKILL.md")?;
     loader.add(bound, "CORE.md")?;
-    for (skill, path) in routes(kind, description) {
+    for (skill, path) in routes(kind, description, bound) {
         loader.add(skill, path)?;
     }
     let mut result = format!(

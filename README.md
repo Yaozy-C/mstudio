@@ -72,8 +72,7 @@ These are example requests, not recorded execution results:
 
 - **Roles and instructions:** edit each Agent's responsibilities or create your own roles.
 - **Skills:** assign reusable creative methods and guidance to the roles that need them.
-- **Tool permissions:** separately control access to scripts, shots, media generation, timeline edits, delegation and project memory. Assigning a Skill does not grant tool access.
-- **Project memory:** keep goals, constraints and confirmed decisions available across the project when memory is enabled.
+- **Tool permissions:** separately control access to scripts, shots, media generation, timeline edits and delegation. Assigning a Skill does not grant tool access.
 - **Models:** choose chat and media models independently. What an Agent can see or generate depends on those models' capabilities.
 
 ## Features
@@ -83,7 +82,7 @@ These are example requests, not recorded execution results:
 - **Your models, your workflow.** Configure chat and media models separately. Generate and revise images or videos with the references and controls supported by each provider.
 - **Specialist Agents.** Configure a coordinator, a creative direction role, a media production role and an editor with editable instructions, Skills and tool permissions. Reference specific project items in conversation.
 - **An editable timeline.** Arrange multiple tracks; split, trim and retime clips; detach audio; adjust color and transitions; add captions and local voiceover; preview and export MP4.
-- **Local project storage.** Automatic saving, project memory, a reusable media library and storage migration. The interface supports English and Simplified Chinese.
+- **Local project storage.** Automatic saving, a reusable media library and storage migration. The interface supports English and Simplified Chinese.
 
 Manual media import, editing and local export do not require an AI account.
 

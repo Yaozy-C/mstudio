@@ -140,7 +140,6 @@ fn removes_files_and_all_project_rows_but_keeps_global_settings() {
     let db = f.store.db.lock().unwrap();
     db.execute_batch("INSERT INTO agent_messages(project_id,role,content,model,payload) VALUES('one','user','hello','model','{}');
         INSERT INTO agent_events(project_id,turn_id,kind,payload) VALUES('one','turn','test','{}');
-        INSERT INTO project_memory VALUES('one','{}');
         INSERT INTO model_profiles VALUES('model','{}');
         INSERT INTO model_credentials VALUES('model','endpoint','secret');
         INSERT INTO agent_model_preferences VALUES('one','model');
@@ -165,7 +164,6 @@ fn removes_files_and_all_project_rows_but_keeps_global_settings() {
         "jobs",
         "agent_messages",
         "agent_events",
-        "project_memory",
         "agent_model_preferences",
         "project_assets",
         "project_files",

@@ -92,8 +92,9 @@ test("model changes retain unsupported roles and independent images work as vide
   const draft = createTask(p, [item], "video");
   draft.prompt = "推进";
   expect(draft.inputs.map((r) => r.assetId)).toEqual(["a"]);
-  expect(draft.inputs[0].role).toBe("first-frame");
-  const run = directTask(p, draft, model("minimax/h3/image-to-video"), "v");
+  expect(draft.inputs[0].role).toBe("reference");
+  expect(draft.mode).toBe("multi");
+  const run = directTask(p, draft, model("minimax/h3/reference-to-video"), "v");
   expect(run.ownerId).toBeUndefined();
   expect(
     selectMediaModel(draft, model("minimax/h3/reference-to-video")).inputs,

@@ -39,6 +39,18 @@ pub(super) fn migrate_image_cases(db: &Connection, root: &Path) -> Result<()> {
     let manifest = serde_json::from_str(include_str!("image_case_rules_migration.json"))?;
     apply(db, root, manifest, "image_case_rules_v1")
 }
+pub(super) fn migrate_board_regeneration(db: &Connection, root: &Path) -> Result<()> {
+    let manifest = serde_json::from_str(include_str!("board_regeneration_migration.json"))?;
+    apply(db, root, manifest, "board_regeneration_rules_v1")
+}
+pub(super) fn migrate_pure_rules(db: &Connection, root: &Path) -> Result<()> {
+    let manifest = serde_json::from_str(include_str!("pure_rules_migration.json"))?;
+    apply(db, root, manifest, "creative_pure_rules_v1")
+}
+pub(super) fn migrate_object_tools(db: &Connection, root: &Path) -> Result<()> {
+    let manifest = serde_json::from_str(include_str!("object_tools_migration.json"))?;
+    apply(db, root, manifest, "creative_object_tools_v1")
+}
 fn apply(db: &Connection, root: &Path, manifest: Manifest, marker: &str) -> Result<()> {
     if db.query_row(
         "SELECT EXISTS(SELECT 1 FROM settings WHERE key=?1)",
@@ -137,6 +149,48 @@ mod tests {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills")
     }
     #[test]
+    fn pure_rules_upgrade_replaces_shipped_audits_preserves_custom_text_and_runs_once() {
+        let db = db();
+        let previous = r#"# Inspection evidence
+
+For each conclusion record shot ID, assetId, inspected object, time range/image region, actual observation and pass/fail/unchecked in the existing handoff or reply. Prompts, metadata and completion status are not visual evidence.
+
+- Static: original product parts, frame state, camera and agreement with the plan.
+- Motion: source, initial support, path, decisive contact, destination, counts and positions.
+- Sequence: viewing changes, repetition, recognition time, speed and actual cuts.
+- Sound: actually listened range, sync, material and level; no audio input means unchecked.
+- Technical: only specifications returned by tools or actually inspected; technical validity is not content validity.
+
+Reinspect affected areas and joins after repairs, retiming or new versions. Do not relabel a known essential failure as unchecked to pass it. Report capability gaps precisely. In Mstudio, project fields and messages carry these records; do not require review.json or unavailable external scripts.
+"#;
+        db.execute("INSERT INTO skill_resources(skill_id,path,text,revision) VALUES('product-video-production','references/evidence.md',?1,3),('image-production','references/frame-checks.md','CUSTOM USER RULES',7)", [previous]).unwrap();
+        migrate_pure_rules(&db, &root()).unwrap();
+        let read = |skill, path| {
+            db.query_row(
+                "SELECT text,revision FROM skill_resources WHERE skill_id=?1 AND path=?2",
+                [skill, path],
+                |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?)),
+            )
+            .unwrap()
+        };
+        let upgraded = read("product-video-production", "references/evidence.md");
+        assert_eq!(
+            upgraded.0,
+            std::fs::read_to_string(root().join("product-video-production/references/evidence.md"))
+                .unwrap()
+        );
+        assert_eq!(upgraded.1, 4);
+        assert_eq!(
+            read("image-production", "references/frame-checks.md"),
+            ("CUSTOM USER RULES".into(), 7)
+        );
+        migrate_pure_rules(&db, &root()).unwrap();
+        assert_eq!(
+            read("product-video-production", "references/evidence.md"),
+            upgraded
+        );
+    }
+    #[test]
     fn replaces_recognized_entries_archives_retired_custom_text_and_is_idempotent() {
         let db = db();
         db.execute("INSERT INTO skill_resources(skill_id,path,text) VALUES('creative-concepts','SKILL.md','OLD ENTRY'),('creative-concepts','references/research.md','CUSTOM RESEARCH')", []).unwrap();
@@ -211,7 +265,7 @@ mod tests {
         let count: i64 = db
             .query_row("SELECT count(*) FROM skill_resources", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(count, 45);
+        assert_eq!(count, 60);
         assert_eq!(db.query_row("SELECT count(*) FROM skill_resources WHERE path IN ('references/research.md','references/sources.md')", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
     }
     #[test]

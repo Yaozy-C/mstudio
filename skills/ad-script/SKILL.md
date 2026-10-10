@@ -31,7 +31,7 @@ For expression and local revision, read [craft](references/craft.md). Choose the
 
 ## Revise within the selected direction
 
-For a local change, fix the requested passage and preserve working intent, IDs and unrelated content. Check where the opening earns attention, where the payoff develops, how the product takes part and whether behavior and dialogue fit the scene. Fix the most consequential expression problem without sanding away individuality or iterating a self-score endlessly.
+For a local change, fix the requested passage and preserve working intent, IDs and unrelated content. Keep the opening engaging, develop the payoff, give the product a causal role and preserve credible behavior and dialogue. Fix the most consequential expression problem without sanding away individuality or iterating a self-score endlessly.
 
 If the central premise is unsupported or cannot express the requested payoff, state the exact conflict and the smallest decision needed from creative planning or the user. Do not silently replace the concept with a different campaign.
 

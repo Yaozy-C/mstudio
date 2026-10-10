@@ -6,22 +6,18 @@ import {
   Stack,
   Cube,
   Wrench,
-  Notebook,
   SquaresFour,
   ArrowLeft,
   Images,
   BookOpen,
 } from "@phosphor-icons/react";
-export function sidebarPages(hasProject = false) {
+export function sidebarPages() {
   return [
     { id: "general", name: t("通用设置"), icon: GearSix },
     { id: "agents", name: "Agents", icon: Graph },
     { id: "skills", name: t("Skills 能力库"), icon: Stack },
     { id: "models", name: t("模型"), icon: Cube },
     { id: "tools", name: t("工具"), icon: Wrench },
-    ...(hasProject
-      ? [{ id: "memory" as const, name: t("项目记忆"), icon: Notebook }]
-      : []),
   ] as const;
 }
 export type SettingsTab = ReturnType<typeof sidebarPages>[number]["id"];
@@ -44,7 +40,7 @@ export function StudioSidebar({
   project?: { name: string };
 }) {
   useLanguage();
-  const pages = sidebarPages(!!project);
+  const pages = sidebarPages();
   const settingButton = ({ id, name, icon: Icon }: (typeof pages)[number]) => (
     <button
       key={id}
@@ -90,7 +86,6 @@ export function StudioSidebar({
             {project.name}
           </div>
         )}
-        {pages.filter(({ id }) => id === "memory").map(settingButton)}
       </div>
       <div
         className="sidebar-group sidebar-configuration"
@@ -98,9 +93,7 @@ export function StudioSidebar({
         aria-label={t("创作配置")}
       >
         <h2 className="sidebar-group-title">{t("创作配置")}</h2>
-        {pages
-          .filter(({ id }) => id !== "general" && id !== "memory")
-          .map(settingButton)}
+        {pages.filter(({ id }) => id !== "general").map(settingButton)}
       </div>
       <div
         className="sidebar-group sidebar-utilities"

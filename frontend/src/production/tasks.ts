@@ -37,7 +37,7 @@ export function createTask(
   const visual = unique.filter((n) => n.assetId);
   const mode = visual.some((n) => n.kind === "video")
     ? "mixed"
-    : visual.length > 1
+    : visual.length > 1 || (output === "video" && visual.length > 0)
       ? "multi"
       : "single";
   const inputs: ProductionInput[] = unique.map((n) => ({
@@ -55,9 +55,7 @@ export function createTask(
         ? "video-reference"
         : output === "image" && n.key === image?.key
           ? "edit"
-          : output === "video" && mode === "single"
-            ? "first-frame"
-            : "reference",
+          : "reference",
     ...(n.kind === "video" ? videoRange(p, n) : {}),
   }));
   return {

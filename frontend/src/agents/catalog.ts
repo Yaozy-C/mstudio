@@ -44,6 +44,18 @@ export const skills = [
     kind: "可编辑规则",
   },
   {
+    id: "storyboard-image-production",
+    name: "动作分镜板制作",
+    description: "每镜头四格动作板、状态连续性与图片检查",
+    kind: "可编辑规则",
+  },
+  {
+    id: "storyboard-video-production",
+    name: "分镜板视频制作",
+    description: "整板参考输入、动作顺序、连续运动与视频检查",
+    kind: "可编辑规则",
+  },
+  {
     id: "video-editing",
     name: "剪辑与后期",
     description: "选段、节奏、调色、转场与声音",

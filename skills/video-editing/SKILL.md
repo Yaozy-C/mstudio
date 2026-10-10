@@ -16,12 +16,12 @@ Assemble accepted media into the final viewing experience. Editing decides what 
 | Exposure, colour balance, shot matching and a restrained look | [Colour grading](references/color.md), [grading tool limits](references/color-tools.md) |
 | Whether to cut or to add a transition, and how to build the join | [Transitions](references/transitions.md), [transition tool limits](references/transition-tools.md) |
 | The state relationships a cut has to preserve | [Continuity](references/continuity.md) |
-| What a clip can support being claimed about it | [Inspection evidence](references/evidence.md) |
+| What can be claimed about the output | [Output claims](references/evidence.md) |
 
-Read [core](CORE.md) for the short rules.
+Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
-## Evidence for every judgement
+## Editing constraints
 
-Each decision here needs its own evidence: source frames for colour and joins, actual composited frames for transitions, playback for continuous motion, listening for audio. Thumbnails, saved parameter values, receipts and task status are not visual acceptance. Say which of these you actually have.
+Preserve real source action, product geometry, identity and supported claims. Do not hide a missing essential event with trimming, speed, transitions, music or captions. Respect source/output time, supported tool ranges and unrelated tracks.
 
-A cut, a grade or a transition cannot repair missing action, invented geometry, identity drift, waxy skin or unnatural acting. Route those to production or direction with the observed evidence instead of masking them with effects, speed or a unified filter.
+A saved parameter or render status does not establish playback, listening or user approval. Report concrete unavailable capabilities without inventing completed work. Do not add an audit, inspection ledger or mandatory playback/technical acceptance stage to an ordinary edit.

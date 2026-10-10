@@ -46,7 +46,7 @@ mod tests {
         // The retired reviewer has no successor; keep the read-only boundary with an
         // inline profile that has no media-generation tool.
         let mut read_only = profiles.iter().find(|p| p.id == "editor").unwrap().clone();
-        read_only.tool_ids = vec!["project-read".into(), "memory-read".into()];
+        read_only.tool_ids = vec!["project-read".into()];
         assert!(super::super::profiles::allows(production, "models"));
         assert!(!super::super::profiles::allows(&read_only, "models"));
         let profile = serde_json::to_value(production).unwrap();

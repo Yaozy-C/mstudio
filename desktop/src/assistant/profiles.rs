@@ -3,7 +3,7 @@ use anyhow::{Result, ensure};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, State};
 
-pub const TOOL_IDS: [&str; 13] = [
+pub const TOOL_IDS: [&str; 11] = [
     "agent-delegate",
     "project-read",
     "project-brief",
@@ -15,16 +15,16 @@ pub const TOOL_IDS: [&str; 13] = [
     "project-timeline",
     "project-edit",
     "media-generation",
-    "memory-read",
-    "memory-write",
 ];
-pub const SKILL_IDS: [&str; 6] = [
+pub const SKILL_IDS: [&str; 8] = [
     "creative-concepts",
     "ad-script",
     "creative-ad-director",
     "image-production",
     "product-video-production",
     "video-editing",
+    "storyboard-image-production",
+    "storyboard-video-production",
 ];
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -51,6 +51,17 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
         Some(raw) => {
             let mut saved: Vec<AgentProfile> = serde_json::from_str(&raw)?;
             let original_len = saved.len();
+            let mut capabilities_changed = false;
+            for profile in &mut saved {
+                let count = profile.tool_ids.len();
+                profile
+                    .tool_ids
+                    .retain(|id| TOOL_IDS.contains(&id.as_str()));
+                if profile.tool_ids.len() != count {
+                    profile.revision += 1;
+                    capabilities_changed = true;
+                }
+            }
             let instructions_changed =
                 super::profile_instructions::upgrade(&mut saved, &builtins());
             for builtin in builtins() {
@@ -58,7 +69,7 @@ pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
                     saved.push(builtin);
                 }
             }
-            if saved.len() != original_len || instructions_changed {
+            if saved.len() != original_len || instructions_changed || capabilities_changed {
                 db.execute(
                     "UPDATE settings SET value=?1 WHERE key='agents'",
                     [serde_json::to_string(&saved)?],
@@ -121,11 +132,6 @@ pub fn validate(profile: &AgentProfile) -> Result<()> {
             || profile.tool_ids.contains(&"project-read".into()),
         "编辑工具依赖读取项目工具"
     );
-    ensure!(
-        !profile.tool_ids.contains(&"memory-write".into())
-            || profile.tool_ids.contains(&"memory-read".into()),
-        "整理记忆依赖读取记忆工具"
-    );
     Ok(())
 }
 pub fn save(db: &rusqlite::Connection, mut profile: AgentProfile) -> Result<()> {
@@ -161,8 +167,6 @@ pub fn allows(profile: &AgentProfile, action: &str) -> bool {
         "skills" | "read_skill" => !profile.skill_ids.is_empty(),
         "inspect" | "history" => has("project-read"),
         "models" => has("media-generation"),
-        "memory-read" => has("memory-read"),
-        "memory-write" => has("memory-read") && has("memory-write"),
         "edit" => {
             has("project-read")
                 && profile
@@ -228,14 +232,34 @@ mod tests {
         p.tool_ids = vec!["project-read".into(), "project-script".into()];
         assert!(allows(&p, "edit"));
         assert!(!allows(&p, "read_skill"));
-        assert!(!allows(&p, "memory-write"));
-        p.tool_ids.push("memory-write".into());
-        assert!(validate(&p).is_err());
-        p.tool_ids.push("memory-read".into());
-        assert!(validate(&p).is_ok());
-        assert!(allows(&p, "memory-write"));
         p.skill_ids.push("project-read".into());
         assert!(validate(&p).is_err());
+    }
+    #[test]
+    fn saved_profiles_drop_retired_capabilities_without_granting_new_ones() {
+        let db = rusqlite::Connection::open_in_memory().unwrap();
+        db.execute_batch("CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);")
+            .unwrap();
+        let mut profiles = builtins();
+        profiles[0].tool_ids = vec!["project-read".into(), "retired-capability".into()];
+        profiles[0].instructions = "Custom instructions".into();
+        profiles[0].enabled = false;
+        let revision = profiles[0].revision;
+        db.execute(
+            "INSERT INTO settings VALUES('agents',?1)",
+            [serde_json::to_string(&profiles).unwrap()],
+        )
+        .unwrap();
+        let saved = read(&db).unwrap();
+        assert_eq!(saved[0].tool_ids, ["project-read"]);
+        assert_eq!(saved[0].instructions, "Custom instructions");
+        assert!(!saved[0].enabled);
+        assert_eq!(saved[0].revision, revision + 1);
+        assert!(validate(&saved[0]).is_ok());
+        assert_eq!(
+            serde_json::to_value(read(&db).unwrap()).unwrap(),
+            serde_json::to_value(&saved).unwrap()
+        );
     }
     #[test]
     fn agent_profiles_persist_independently_and_revision_changes() {

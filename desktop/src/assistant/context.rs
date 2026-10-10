@@ -55,6 +55,7 @@ pub fn assemble_with_budget(
         fields.remove("agent");
         fields.remove("skills");
         fields.remove("promptGuidance");
+        fields.remove("unverifiedResults");
         fields.remove("specialists");
     }
     let cost = |snapshot: &Value| {
@@ -76,12 +77,6 @@ pub fn assemble_with_budget(
                 .map(|n| json!({"id":n["id"],"title":n["title"],"kind":n["kind"]}))
                 .collect::<Vec<_>>()
         );
-        used = cost(&snapshot);
-    }
-    if used > budget && !snapshot["memory"]["entries"].is_null() {
-        snapshot["memory"]["entries"] = json!([]);
-        snapshot["memory"]["note"] =
-            json!("Memory entries omitted; read them with the memory tool when needed.");
         used = cost(&snapshot);
     }
     if used > budget {

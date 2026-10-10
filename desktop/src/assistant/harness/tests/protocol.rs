@@ -95,7 +95,7 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
             }
             let content = match step {
                 0 => {
-                    json!([{"functionCall":{"id":"a","name":"ping","args":{}},"thoughtSignature":"signature-one"},{"functionCall":{"id":"b","name":"ping","args":{}}}])
+                    json!([{"text":"Inspect the references first.","thought":true,"thoughtSignature":"private-thought-signature"},{"functionCall":{"id":"a","name":"ping","args":{}},"thoughtSignature":"signature-one"},{"functionCall":{"id":"b","name":"ping","args":{}}}])
                 }
                 1 => {
                     json!([{"functionCall":{"id":"c","name":"ping","args":{}},"thoughtSignature":"signature-two"}])
@@ -129,6 +129,28 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
     server.join().unwrap();
     assert_eq!(result.unwrap(), "Complete");
     assert_eq!(host.trace.lock().unwrap().len(), 6);
+    let events = host.events.lock().unwrap();
+    let reasoning = events
+        .iter()
+        .find(|(kind, _)| kind == "assistant/reasoning")
+        .unwrap();
+    assert_eq!(reasoning.1["text"], "Inspect the references first.");
+    assert!(
+        !reasoning
+            .1
+            .to_string()
+            .contains("private-thought-signature")
+    );
+    assert!(
+        events
+            .iter()
+            .position(|(kind, _)| kind == "assistant/reasoning")
+            .unwrap()
+            < events
+                .iter()
+                .position(|(kind, _)| kind == "tool/call")
+                .unwrap()
+    );
 }
 #[tokio::test]
 async fn openai_stream_pairs_tool_call_ids_and_commits_visible_prefix() {

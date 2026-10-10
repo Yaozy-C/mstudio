@@ -78,6 +78,11 @@ export function applyOperations(
     if (!value || typeof value !== "object" || Array.isArray(value))
       throw new Error("操作格式无效");
     const op = value as Operation;
+    if (
+      op.expectedKind !== undefined &&
+      next.nodes.find((node) => node.id === op.id)?.kind !== op.expectedKind
+    )
+      throw new Error("Node kind does not match this tool");
     switch (op.op) {
       case "move_clip":
       case "retime_clip":

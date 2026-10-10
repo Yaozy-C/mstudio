@@ -6,13 +6,13 @@ Use the available image/video tools and relevant tool skill. Query unknown capab
 
 Prepare only the selected concept's necessary original product evidence, character/scene identity, viewpoint and states. Resolve reference conflicts instead of attaching the entire history.
 
-For a new visual direction, inspect a representative sample containing the crucial relationship and visual cast. Reuse an appropriate accepted base rather than resampling. Check clothing silhouette/color, pose, visible proportions, hands and whether the body or fabric overwhelms the product. Audience and no-face requirements do not prescribe a single character aesthetic.
+Preserve the selected visual direction, clothing silhouette/color, proportions and product prominence. Reuse a suitable existing base. Audience and no-face requirements do not prescribe a single character aesthetic.
 
-Technical correctness is not user aesthetic acceptance. If a direction is rejected, repair the sample with a meaningful change before extending its dependencies. This does not create approval for every frame; proceed under existing scope after internal checks. Use representative story moments, not a full before/during/after sequence for every contact. Rough layouts may simplify irrelevant backgrounds, not the very geometry or contact being tested. A generated overview is not automatically a set of final independent frames.
+A user-rejected direction requires a meaningful change, not propagation into more assets. Do not add sample approval or internal validation stages. Use representative story moments, not a full before/during/after sequence for every contact. Rough layouts may simplify irrelevant backgrounds, not the very geometry or contact being tested. A generated overview is not automatically a set of final independent frames.
 
 ## Reuse and edit by difference
 
-For a same-view state change, edit an inspected base and preserve stable background, product geometry, identity and light. Large viewpoint changes need original product evidence and appropriate scene/identity references. Reinspect the entire edit before using it as the next base; return to the last valid version if drift compounds.
+For a same-view state change, edit the selected base and preserve stable background, product geometry, identity and light. Large viewpoint changes need original product evidence and appropriate scene/identity references. Do not propagate a known defective base; use the last suitable version when the requested edit introduces drift.
 
 A useful prompt identifies output/aspect, ordered reference roles, stable properties, one selected state change, attention/occlusion/contact/support, compatible light/material/style and targeted observed defects. Under a no-face constraint specify crop and permitted motion including background/reflection/screen coverage. Clean scene frames omit labels unless requested. Avoid long generic negative lists.
 
@@ -30,24 +30,22 @@ Concept changes address expectation, payoff and product relationship through a h
 | Duplicated/teleported prop | Repair state differences and count, not explanatory copy |
 | Local repair damages identity/background | Revert to the last valid base and narrow the change/reference set |
 | A relationship intended to be visible needs captions to compensate for missing visual cues | Repair the cues or staging; information deliberately carried by language is not a visual defect |
-| Motion remains unknown | Retain a motion plan and validate actual footage when authorized; more stills are not motion evidence |
+| Motion remains unknown | Do not claim continuous motion from still images |
 
-Default to at most two diagnosed repairs of the same defect with hypothesis/change/observation. This is not two compulsory calls per image or a two-call limit for the whole task. If still stuck, stop sampling the same method and change staging/contact/route while preserving the viewing purpose. At user cost/attempt limits, deliver valid work and explicit gaps. If no route expresses a locked event, retain it as uncompleted rather than silently replacing it.
+Do not repeat the same failed method without a concrete input or route change. Preserve the selected staging and expression; design changes belong to direction. At user cost/attempt limits, deliver valid work and explicit gaps. If no route expresses a locked event, retain it as uncompleted rather than silently replacing it.
 
 ## Perceptual realism
 
 When the user requests realistic, natural or less AI-looking output, assess perceived realism independently of structure, resolution and texture richness. Preserve deliberately illustrated/rendered styles. Surreal events may change selected physical relationships, not every material, body or force relationship.
 
-Before expanding a new realistic direction, actually inspect the sample as a whole and at key regions. Explain whether it reads like a photograph or a render and which visible cues support that judgment. Fix the baseline before extending known failures; reuse accepted samples without extra approval rounds.
+Use integrated anatomy, light, material, scale and support for realistic work. Avoid waxy skin, rigid soft goods and incompatible lighting; preserve deliberately illustrated styles. Do not impose sample approval or realism scoring.
 
 Soft products deform under load, support and tension rather than behaving like rigid shells with fabric texture. Reflections, shadows and roughness follow actual light/material. Staging serves the action instead of automatically facing every object toward camera in perfect symmetry. Do not add arbitrary dirt, wrinkles or noise as another realism formula or reduce product quality to imply authenticity.
 
-Original product references constrain identity/structure; real photographed references can guide light, setting and camera. Generated bases support continuity, not self-proof of facts or realism. When a real reference is unavailable, state the unknown. Repair the identified light, staging, composition or physical cause and reinspect actual changes. Perceived realism is a visual judgment, not proof of photographic origin or universal audience perception; internal ratings do not override the user's concrete feedback.
+Original product references constrain identity/structure; real photographed references can guide light, setting and camera. Generated bases support continuity, not self-proof of facts or realism. When a real reference is unavailable, state the unknown. Address a specifically requested light, staging, composition or physical defect without adding a general review pass. Perceived realism is a visual judgment, not proof of photographic origin or universal audience perception; internal ratings do not override the user's concrete feedback.
 
 ## Visible product components
 
-Before generation identify expected visible components for the actual model: name, region, material/shape, connection and original source. Preserve non-featured parts too; keep product-specific lists in the project, not this general skill.
+Preserve original visible parts, their count, position, material and connections, including non-featured hardware. Do not invent mechanisms, replace parts or omit required visible components. Perspective and occlusion may hide a part; do not force hidden parts into view. A generated cleanup does not establish original product structure.
 
-After generation compare each expected part with original evidence. Distinguish actual absence, justified occlusion/offscreen placement and insufficient resolution. Do not force hidden parts into view or mark unreadable parts as verified. An expected visible part omitted or replaced is a blocking defect even if the overall image looks realistic.
-
-Repair the part, recheck the whole image and affected frames, and do not propagate the faulty image as product evidence. Do not change the view merely to evade a missing part. Original evidence defines the product, not generated output.
+Keep the selected view and product identity during a local repair. Do not change the camera merely to evade a missing part, or propagate a known defective image as a product reference.

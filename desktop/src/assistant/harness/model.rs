@@ -51,6 +51,7 @@ pub async fn request(
         host.record("request/start", json!({"attempt":attempt + 1}))?;
         let prefix = session.text.len();
         let mut persistence_error = None;
+        let mut thinking = super::thinking::Thinking::new();
         let call = async {
             if !streaming {
                 return model.completion(request.clone()).await;
@@ -63,6 +64,19 @@ pub async fn request(
                 let part = part?;
                 if matches!(&part, StreamedAssistantContent::Final(_)) {
                     finished = true;
+                }
+                let thought = match &part {
+                    StreamedAssistantContent::ReasoningDelta { id, reasoning, .. } => {
+                        Some(thinking.update(host, id, reasoning, false))
+                    }
+                    StreamedAssistantContent::Reasoning { id, reasoning } => {
+                        Some(thinking.update(host, id, &super::thinking::readable(reasoning), true))
+                    }
+                    _ => None,
+                };
+                if let Some(Err(error)) = thought {
+                    persistence_error = Some(error);
+                    return Err(CompletionError::ResponseError("无法保存思考内容".into()));
                 }
                 if let StreamedAssistantContent::Text(text) = part {
                     pending.push_str(&text.text);
@@ -100,9 +114,16 @@ pub async fn request(
         };
         let result = tokio::select! {
             result = call => result,
-            _ = host.token().cancelled() => return Err(crate::app_error::cancelled().into()),
-            _ = tokio::time::sleep_until(deadline) => return Err("本轮已达到 20 分钟时限；已完成操作保留".into()),
+            _ = host.token().cancelled() => {
+                thinking.finish(host)?;
+                return Err(crate::app_error::cancelled().into());
+            },
+            _ = tokio::time::sleep_until(deadline) => {
+                thinking.finish(host)?;
+                return Err("本轮已达到 20 分钟时限；已完成操作保留".into());
+            },
         };
+        thinking.finish(host)?;
         if let Some(error) = persistence_error {
             return Err(error.into());
         }

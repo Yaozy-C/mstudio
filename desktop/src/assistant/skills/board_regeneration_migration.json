@@ -1,0 +1,20 @@
+{
+  "updates": [
+    {
+      "skill": "storyboard-image-production",
+      "path": "SKILL.md",
+      "before": "6cc9518ffe864b0e2a2dcd52b353a0b2b3617d11322960303989267896881aa1"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "CORE.md",
+      "before": "a66ed6dc16af278dc4cdb65004f37781f15edf2297ebdc0d36c47bf14cc5edfb"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/frames.md",
+      "before": "37588f7c743101451972877bcc7e2ca5f1e8e613a311540f2461ccea4dc5261d"
+    }
+  ],
+  "retired": []
+}

@@ -39,7 +39,7 @@ Use original image evidence for openings, closure paths, part count, connections
 
 Identify supplied images in actual order and describe each visual use: identity/geometry or composition/light. In tool arguments, write that description in purpose; role selects the technical input mode, reference for guidance or edit for the source image being modified. Product photos constrain the product, not the entire original arrangement. Preserve actual markings while excluding irrelevant dimension labels or interface chrome.
 
-An independent request cannot see 'the previous frame' without that image. Supply an inspected base for same-view continuity alongside original product evidence. A generated base supplies composition/state, not proof of unseen mechanisms. Use 'change only X' language for an actual image edit; a new scene remains a new generation. State a model limitation if it cannot accept the required references.
+An independent request cannot see 'the previous frame' without that image. Supply the selected base for same-view continuity alongside original product evidence. A generated base supplies composition/state, not proof of unseen mechanisms. Use 'change only X' language for an actual image edit; a new scene remains a new generation. State a model limitation if it cannot accept the required references.
 
 ## Edits and reference scope
 

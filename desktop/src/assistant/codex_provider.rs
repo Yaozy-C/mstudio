@@ -141,6 +141,14 @@ impl CompletionModel for CodexModel {
                                 )));
                             }
                         }
+                        Some(
+                            method @ ("item/reasoning/summaryTextDelta"
+                            | "item/reasoning/textDelta"),
+                        ) => {
+                            if let Some(frame) = output::reasoning_delta(method, &params) {
+                                return Ok(Some((frame, (connection, None, owner))));
+                            }
+                        }
                         Some("item/tool/call") => {
                             let names = run
                                 .request

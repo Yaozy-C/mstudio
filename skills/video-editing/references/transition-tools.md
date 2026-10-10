@@ -23,4 +23,4 @@ A transition occupies half its duration on either side of the cut. Current suppo
 
 Use available source handles first; at source boundaries the engine extends edge frames, potentially creating a hold. This is not optical-flow interpolation. Fast action may need more handles, a shorter effect or a hard cut. The application does not secretly move clips, shorten the film or retime captions. Visual transitions do not crossfade audio; J/L cuts and audio fades need separate authorized edits.
 
-Inspect actual composites for unwanted handle content, double subjects, direction jumps, edge artifacts and bounce-back; inspect the complete result separately for readable captions and audio continuity. Saved settings do not prove viewing.
+Keep transition handles free of unrelated action. Avoid double subjects, direction jumps, edge artifacts and bounce-back; preserve readable captions and continuous audio. Do not claim viewing from saved settings.

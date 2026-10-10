@@ -7,6 +7,16 @@ export type ActivityEvent = {
 };
 const actions: Record<string, string> = {
   inspect: "读取项目内容",
+  read_project: "读取项目概况",
+  read_creation: "读取创作要求",
+  read_shots: "读取镜头",
+  read_screenplay: "读取脚本",
+  read_nodes: "读取画布内容",
+  read_assets: "读取素材信息",
+  read_clips: "读取时间线片段",
+  read_tracks: "读取轨道",
+  read_captions: "读取字幕",
+  read_generation: "读取生成任务",
   edit: "更新项目",
   skills: "查找创作能力",
   read_skill: "读取创作规则",
@@ -17,7 +27,6 @@ const actions: Record<string, string> = {
   reopen_image: "重新读取素材画面",
   read_result: "读取完整结果",
   await_generation: "等待生成结果",
-  memory: "整理项目记忆",
   delegate: "委派专业 Agent",
   plan: "安排交付清单",
 };
@@ -43,7 +52,24 @@ const operations: Record<string, string> = {
   add_asset: "添加素材",
   add_text: "添加文本",
   add_note: "添加备注",
+  trim_clip: "裁剪片段",
+  set_clip_transform: "调整片段画面",
+  set_clip_audio: "调整片段音量",
+  set_clip_visual: "调整片段视觉效果",
+  set_clip_grade: "调整片段调色",
+  clear_clip_grade: "清除片段调色",
+  clear_clip_visual: "清除片段视觉效果",
   update_node: "修改内容",
+  update_shot_design: "修改镜头设计",
+  update_screenplay_info: "修改脚本信息",
+  update_asset_node: "修改素材节点",
+  update_note: "修改备注",
+  update_text: "修改文本",
+  remove_shot: "删除镜头",
+  remove_screenplay: "删除脚本",
+  remove_asset_node: "删除素材节点",
+  remove_note: "删除备注",
+  remove_text: "删除文本",
   remove_node: "删除内容",
   choose_take: "选用镜头",
   assemble_screenplay: "编排时间线",
@@ -77,10 +103,7 @@ export function activityRows(events: ActivityEvent[]) {
           v.kind === "tool/result" &&
           (v.payload as Payload)?.callId === p.callId,
       )?.payload as Payload | undefined;
-      const action =
-        p.name === "mstudio_memory"
-          ? "memory"
-          : (p.arguments?.action ?? p.name?.replace(/^mstudio_/, ""));
+      const action = p.arguments?.action ?? p.name?.replace(/^mstudio_/, "");
       const title =
         action === "edit"
           ? [

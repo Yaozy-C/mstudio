@@ -1,20 +1,19 @@
-import { CaretRight, ListChecks } from "@phosphor-icons/react";
-import { StatusIcon } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { bridge, native } from "../bridge";
-import { activityRows, type ActivityEvent } from "./activityRows";
+import { type ActivityEvent } from "./activityRows";
 import type { AgentProfile } from "../agents/catalog";
 import { useChildActivity } from "./childActivity";
-import { ChildAgentActivity } from "./ChildAgentActivity";
+import { withLiveThinking } from "./activityTimeline";
+import { AgentActivityFeed } from "./AgentActivityFeed";
 type Event = ActivityEvent;
 type Progress = {
   projectId: string;
   turnId: string;
   kind: string;
-  payload?: { step?: number; action?: string; text?: string };
+  payload?: { id?: string; step?: number; action?: string; text?: string };
 };
 const actions: Record<string, string> = {
   inspect: "读取项目",
@@ -28,16 +27,27 @@ export function AgentActivity({
   turnId,
   running,
   agents,
+  startedAt,
 }: {
   projectId: string;
   turnId: string;
   running: boolean;
+  startedAt?: number;
   agents: Pick<AgentProfile, "id" | "name">[];
 }) {
   useLanguage();
   const [events, setEvents] = useState<Event[]>([]);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
+  const [liveThinking, setLiveThinking] = useState<
+    { id: string; text: string }[]
+  >([]);
+  const [started] = useState(Date.now());
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!running) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [running]);
   const [status, setStatus] = useState("");
   const [revision, setRevision] = useState(0);
   useEffect(() => {
@@ -47,26 +57,36 @@ export function AgentActivity({
       "agent-progress",
       ({ payload: e }) => {
         if (!active || e.projectId !== projectId || e.turnId !== turnId) return;
+        if (e.kind === "assistant/thinking") {
+          const id = e.payload?.id;
+          if (id)
+            setLiveThinking((current) => {
+              const block = { id, text: e.payload?.text ?? "" };
+              return current.some((item) => item.id === id)
+                ? current.map((item) => (item.id === id ? block : item))
+                : [...current, block];
+            });
+          setStatus(t("正在思考…"));
+          return;
+        }
         setStatus(
           e.kind === "assistant/progress"
-            ? e.payload?.text || ""
+            ? t("正在处理任务…")
             : e.kind === "turn/end"
               ? ""
               : e.kind === "step/start"
                 ? t("第 {v0} 步 · 正在思考", { v0: e.payload?.step })
                 : e.kind === "tool/start"
                   ? actions[e.payload?.action || ""] || t("执行操作")
-                  : e.kind === "memory/result"
-                    ? t("整理项目记忆")
-                    : e.kind === "request/retry"
-                      ? t("模型请求暂时失败，正在重试当前请求…")
-                      : e.kind === "request/start"
-                        ? t("正在等待模型响应…")
-                        : e.kind === "assistant/partial"
-                          ? t("正在回答…")
-                          : e.kind === "tool/call"
-                            ? t("正在执行工具…")
-                            : t("正在处理任务…"),
+                  : e.kind === "request/retry"
+                    ? t("模型请求暂时失败，正在重试当前请求…")
+                    : e.kind === "request/start"
+                      ? t("正在等待模型响应…")
+                      : e.kind === "assistant/partial"
+                        ? t("正在回答…")
+                        : e.kind === "tool/call"
+                          ? t("正在执行工具…")
+                          : t("正在处理任务…"),
         );
         if (e.kind !== "assistant/partial") setRevision((v) => v + 1);
       },
@@ -80,11 +100,24 @@ export function AgentActivity({
     if (!native) return;
     let active = true;
     const timer = setTimeout(() => {
-      void bridge<Event[]>("agent_turn_events", {
-        projectId,
-        turnId,
-        before: null,
-      })
+      const read = async () => {
+        const all: Event[] = [];
+        let before: number | null = null;
+        while (active) {
+          const page: Event[] = await bridge<Event[]>("agent_turn_events", {
+            projectId,
+            turnId,
+            before,
+          });
+          all.push(...page);
+          if (page.length < 40) break;
+          const next = Math.min(...page.map((event) => event.seq));
+          if (before !== null && next >= before) break;
+          before = next;
+        }
+        return all;
+      };
+      void read()
         .then((v) => {
           if (active) {
             setEvents(v);
@@ -99,11 +132,13 @@ export function AgentActivity({
       active = false;
       clearTimeout(timer);
     };
-  }, [projectId, turnId, open, revision, running]);
+  }, [projectId, turnId, revision, running]);
   const { children, error: childError } = useChildActivity(projectId, turnId);
-  const activeChildren = children.filter((c) => c.state === "running");
-  const childName = (id: string) => agents.find((a) => a.id === id)?.name || id;
-  const rows = activityRows(events);
+  const times = events.map((event) => event.created).filter((time) => time > 0);
+  const begin =
+    startedAt ?? (times.length ? Math.min(...times) * 1000 : started);
+  const end = running ? now : times.length ? Math.max(...times) * 1000 : now;
+  const seconds = Math.max(0, Math.floor((end - begin) / 1000));
   const scripts = new Map<string, { id: string; title: string }>();
   for (const event of [...events].sort((a, b) => a.seq - b.seq)) {
     const result = (
@@ -119,14 +154,6 @@ export function AgentActivity({
   }
   return (
     <>
-      {!open &&
-        activeChildren.map((child) => (
-          <ChildAgentActivity
-            key={child.turnId}
-            child={child}
-            name={childName(child.agentId)}
-          />
-        ))}
       {childError && <ErrorNotice error={childError} />}
       {[...scripts.values()].map((s) => (
         <div className="agent-script-receipt" key={s.id}>
@@ -145,93 +172,15 @@ export function AgentActivity({
           </button>
         </div>
       ))}
-      <details
-        className="agent-activity"
-        onToggle={(e) => setOpen(e.currentTarget.open)}
-      >
-        <summary>
-          {running ? (
-            <StatusIcon kind="loading" size={16} />
-          ) : (
-            <ListChecks size={16} aria-hidden="true" />
-          )}
-          <span className="agent-activity-label">
-            {running ? status || t("正在处理任务…") : t("执行过程")}
-          </span>
-          {rows.length > 0 && (
-            <span className="agent-activity-count">
-              {t("{v0} 个步骤", { v0: rows.length })}
-            </span>
-          )}
-          <CaretRight
-            className="agent-activity-chevron"
-            size={14}
-            aria-hidden="true"
-          />
-        </summary>
-        <div className="agent-activity-content">
-          {error && <ErrorNotice error={error} />}
-          {events
-            .filter((event) => event.kind === "assistant/progress")
-            .sort((a, b) => a.seq - b.seq)
-            .map((event) => (
-              <p className="agent-progress-note" key={event.seq}>
-                {(event.payload as { text: string }).text}
-              </p>
-            ))}
-          {events
-            .filter((e) => e.kind === "skill/loaded")
-            .map((e) => {
-              const rule = e.payload as { skill: string; path: string };
-              return (
-                <div className="agent-activity-row" key={`skill-${e.seq}`}>
-                  <span>{t("已加载规则")}</span>
-                  <small>
-                    {rule.skill} · {rule.path}
-                  </small>
-                </div>
-              );
-            })}
-          {rows.map((r) => (
-            <div className="agent-activity-row" key={r.id}>
-              <span>
-                {r.agentId
-                  ? t("委派给 {v0}", {
-                      v0:
-                        agents.find((agent) => agent.id === r.agentId)?.name ||
-                        r.agentId,
-                    })
-                  : r.title
-                      .split("、")
-                      .map((part) => t(part))
-                      .join(" · ")}
-              </span>
-              <small className={r.error ? "error" : ""}>{t(r.detail)}</small>
-              {children
-                .filter((c) => c.callId === r.callId)
-                .map((child) => (
-                  <ChildAgentActivity
-                    key={child.turnId}
-                    child={child}
-                    name={childName(child.agentId)}
-                    showTools
-                  />
-                ))}
-            </div>
-          ))}
-          {children
-            .filter((c) => !rows.some((r) => r.callId === c.callId))
-            .map((child) => (
-              <ChildAgentActivity
-                key={child.turnId}
-                child={child}
-                name={childName(child.agentId)}
-                showTools
-              />
-            ))}
-          {!events.length && !error && <p>{t("尚无执行记录。")}</p>}
-        </div>
-      </details>
+      <AgentActivityFeed
+        events={withLiveThinking(events, liveThinking)}
+        children={children}
+        agents={agents}
+        seconds={seconds}
+        running={running}
+        status={status}
+        error={error}
+      />
     </>
   );
 }

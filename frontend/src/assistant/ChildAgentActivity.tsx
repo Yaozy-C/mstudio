@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { t } from "../i18n";
 import { activityRows } from "./activityRows";
+import { ActivityEntries } from "./ActivityEntries";
 import { childStatus, elapsed, type ChildActivity } from "./childActivity";
 import "./child-activity.css";
 export function ChildAgentActivity({
@@ -41,19 +42,7 @@ export function ChildAgentActivity({
       {showTools && (
         <details>
           <summary>{t("子任务最近 {v0} 项操作", { v0: rows.length })}</summary>
-          {rows.map((row) => (
-            <div className="agent-activity-row" key={row.id}>
-              <span>
-                {row.title
-                  .split("、")
-                  .map((part) => t(part))
-                  .join(" · ")}
-              </span>
-              <small className={row.error ? "error" : ""}>
-                {t(row.detail)}
-              </small>
-            </div>
-          ))}
+          <ActivityEntries events={child.events} />
         </details>
       )}
     </div>

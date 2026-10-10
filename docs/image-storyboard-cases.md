@@ -61,3 +61,15 @@ The request was inspected, not just the article summary. Its `story-video` item 
 This supports a concrete whole-board-as-one-reference route on that host. It does not establish equal reliability across hosts, exact timestamp compliance or continuous uncut motion: the example explicitly requests four shots, whereas the lunch-bag design requires four phases within one shot. A prompt for that design must preserve the continuous camera and describe phases rather than introducing cuts.
 
 The [MiniMax official reference rewrite guide](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md) explicitly recognizes storyboard/shot-planning references and requires their shot mapping and planning roles to be explained. This is rewrite guidance, not a mandatory six-section submission schema. Mstudio's existing H3 reference adapter maps inputs with `role=reference` to `reference_image_urls`; its separate keyframe adapter maps first/last frames to `image_url` and `end_image_url`. No generation was submitted in this follow-up.
+
+## Selected Mstudio temporal-board workflow
+
+Follow-up reviewed 2026-10-09: the user selected one consistent board workflow and requested that legacy Skills remain intact and unmounted. This is a local product decision, not an industry-wide quality finding.
+
+The [Higgsfield Popcorn guide](https://higgsfield.ai/blog/The-AI-Storyboard-Generator-That-Feels-Like-Directing) describes specifying each frame separately and carrying shared identities/environment across a story. The [Cinema Studio guide](https://higgsfield.ai/blog/cinema-studio-guide) distinguishes grid exploration from animating a selected hero frame. Neither establishes that four temporal panels outperform a single first frame.
+
+The PoYo board, published request and sampled-output sheet were reopened alongside the MiniMax reference guide. Their concrete contribution is ordered panels, explicit storyboard-reference use, a full-screen output instruction and matching reference-input routing. Their multi-cut example does not validate four phases of a continuous take. Board timing, object contact and uninterrupted motion still need generated-video checks.
+
+Distilled implementation: one 2 by 2 temporal board per requested shot record; opening, meaningful intermediate states and ending; no invented action to fill cells; per-cell video aspect ratio; shared identity/world constraints; fixed-view landmarks or positions on the designed camera path; no board labels burned into scene pixels. Video handoff preserves the panel-state map and continuous/cut distinction, checks reference support, and never submits the whole board as an exact first/last frame. If unsupported, report the incompatibility rather than silently converting routes.
+
+New isolated packages are `storyboard-image-production` and `storyboard-video-production`. Original packages remain editable archives; default and previously bound agents move to the matching new package. No new agents or permissions are added. This follow-up made no paid generation or comparative compliance test.

@@ -12,3 +12,5 @@ mod completion;
 mod metering;
 
 mod step_limits;
+
+mod thinking;

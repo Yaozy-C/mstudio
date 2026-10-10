@@ -5,6 +5,12 @@
     },
     "product-video-production": {
       "kind": "video"
+    },
+    "storyboard-image-production": {
+      "kind": "image"
+    },
+    "storyboard-video-production": {
+      "kind": "video"
     }
   },
   "quickAgents": {
