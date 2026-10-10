@@ -8,7 +8,15 @@
   border-radius: 10px;
   user-select: none;
   touch-action: none;
+  cursor: grab;
   --reference-color: #3d75a5;
+}
+.canvas-card.dragging {
+  cursor: grabbing;
+  z-index: 1;
+}
+.canvas-card.dragging .card-title {
+  cursor: grabbing;
 }
 .canvas-card.selected {
   border-color: var(--desk-accent);

@@ -1,6 +1,6 @@
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
-import { memo, useLayoutEffect, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Play,
   Image,
@@ -70,6 +70,9 @@ export const CanvasCard = memo(function CanvasCard({
     return () => observer.disconnect();
   }, [item.key, item.kind, compact, canvas.measure]);
   const dragging = useRef(false);
+  const referenceDrag = useRef(false);
+  const stopDrag = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopDrag.current?.(), []);
   const selected = canvas.selected.includes(item.key);
   const referenced = canvas.referenced.has(item.key);
   const actions = [
@@ -112,7 +115,83 @@ export const CanvasCard = memo(function CanvasCard({
         }}
         data-card={item.key}
         draggable
+        title={t("拖动移动，按住 Alt 拖动到聊天或时间线")}
+        onPointerDown={(e) => {
+          if (e.button !== 0 || !e.isPrimary) return;
+          if (
+            (e.target as HTMLElement).closest(
+              "button,a,input,textarea,select,[contenteditable=true]",
+            )
+          )
+            return;
+          e.stopPropagation();
+          referenceDrag.current = e.altKey;
+          dragging.current = false;
+          if (e.altKey) return;
+          e.preventDefault();
+          stopDrag.current?.();
+          const card = e.currentTarget;
+          const scale = Number(
+            card.closest(".canvas-world")?.getAttribute("data-scale") ?? 1,
+          );
+          const sx = e.clientX,
+            sy = e.clientY;
+          const pointerId = e.pointerId;
+          card.setPointerCapture(pointerId);
+          const drag = (p: PointerEvent) => {
+            if (p.pointerId !== pointerId) return;
+            const dx = p.clientX - sx,
+              dy = p.clientY - sy;
+            if (!dragging.current && Math.abs(dx) + Math.abs(dy) <= 3) return;
+            dragging.current = true;
+            card.classList.add("dragging");
+            card.style.transform = `translate(${dx / scale}px,${dy / scale}px)`;
+          };
+          const cleanup = () => {
+            card.removeEventListener("pointermove", drag);
+            card.removeEventListener("pointerup", end);
+            card.removeEventListener("pointercancel", cancel);
+            card.removeEventListener("lostpointercapture", cancel);
+            card.style.transform = "";
+            card.classList.remove("dragging");
+            stopDrag.current = null;
+            if (card.hasPointerCapture(pointerId))
+              card.releasePointerCapture(pointerId);
+          };
+          const end = (p: PointerEvent) => {
+            if (p.pointerId !== pointerId) return;
+            cleanup();
+            if (dragging.current) {
+              canvas.move(
+                item.key,
+                item.x + (p.clientX - sx) / scale,
+                item.y + (p.clientY - sy) / scale,
+              );
+              if (!selected) canvas.select(item.key);
+            }
+            setTimeout(() => {
+              dragging.current = false;
+            }, 0);
+          };
+          const cancel = (p: PointerEvent) => {
+            if (p.pointerId !== pointerId) return;
+            cleanup();
+            setTimeout(() => {
+              dragging.current = false;
+            }, 0);
+          };
+          stopDrag.current = cleanup;
+          card.addEventListener("pointermove", drag);
+          card.addEventListener("pointerup", end);
+          card.addEventListener("pointercancel", cancel);
+          card.addEventListener("lostpointercapture", cancel);
+        }}
         onDragStart={(e) => {
+          if (!referenceDrag.current) {
+            e.preventDefault();
+            return;
+          }
+          dragging.current = true;
           const ref = item.assetId
             ? { kind: "asset", id: item.assetId }
             : { kind: "node", id: item.nodeId };
@@ -121,6 +200,12 @@ export const CanvasCard = memo(function CanvasCard({
             JSON.stringify(ref),
           );
           e.dataTransfer.effectAllowed = "copy";
+        }}
+        onDragEnd={() => {
+          referenceDrag.current = false;
+          setTimeout(() => {
+            dragging.current = false;
+          }, 0);
         }}
         tabIndex={0}
         aria-label={`${labels[item.kind]}：${mediaTitle}`}
@@ -144,54 +229,11 @@ export const CanvasCard = memo(function CanvasCard({
             canvas.select(item.key, e.shiftKey);
           }
         }}
-        onDoubleClick={() => preview(item)}
+        onDoubleClick={() => {
+          if (!dragging.current) preview(item);
+        }}
       >
-        <strong
-          className="card-title"
-          title={item.title}
-          onPointerDown={(e) => {
-            if (e.button !== 0) return;
-            e.stopPropagation();
-            e.preventDefault();
-            const el = e.currentTarget,
-              card = el.parentElement!,
-              world = el.closest(".canvas-world")!;
-            const scale = Number(world.getAttribute("data-scale") ?? 1),
-              sx = e.clientX,
-              sy = e.clientY;
-            dragging.current = false;
-            el.setPointerCapture(e.pointerId);
-            const drag = (p: PointerEvent) => {
-              const dx = (p.clientX - sx) / scale,
-                dy = (p.clientY - sy) / scale;
-              dragging.current = Math.abs(dx) + Math.abs(dy) > 3;
-              card.style.transform = `translate(${dx}px,${dy}px)`;
-            };
-            const end = (p: PointerEvent) => {
-              el.removeEventListener("pointermove", drag);
-              el.removeEventListener("pointerup", end);
-              el.removeEventListener("pointercancel", cancel);
-              card.style.transform = "";
-              if (dragging.current)
-                canvas.move(
-                  item.key,
-                  item.x + (p.clientX - sx) / scale,
-                  item.y + (p.clientY - sy) / scale,
-                );
-              setTimeout(() => {
-                dragging.current = false;
-              }, 0);
-            };
-            const cancel = () => {
-              el.removeEventListener("pointermove", drag);
-              el.removeEventListener("pointerup", end);
-              card.style.transform = "";
-            };
-            el.addEventListener("pointermove", drag);
-            el.addEventListener("pointerup", end, { once: true });
-            el.addEventListener("pointercancel", cancel, { once: true });
-          }}
-        >
+        <strong className="card-title" title={item.title}>
           {item.kind !== "script" && <Icon size={16} />}
           <span>{item.kind === "script" ? item.title : mediaTitle}</span>
         </strong>
