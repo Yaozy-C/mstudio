@@ -1,4 +1,12 @@
 import { multimodalSpecs } from "./multimodalSpecs";
+import {
+  imageRatios,
+  imageResolutions,
+  videoMaxResolutions,
+  videoRatios,
+  videoResolutions,
+  type CapabilityDeclaration,
+} from "./capabilities";
 import type { ModelConnection } from "./types";
 export type OutputKind = "text" | "image" | "video";
 export type ModelSpec = {
@@ -18,7 +26,73 @@ export type ModelSpec = {
     "endpoint" | "adapter" | "model" | "inputs"
   >;
   endpoint?: string;
+  /**
+   * What the model accepts and exposes, declared once and carried into every model added
+   * from this library. See models/capabilities.ts.
+   */
+  capabilities?: CapabilityDeclaration;
+  /** Editing endpoints usually accept the source image; most generation endpoints do not. */
+  editCapabilities?: CapabilityDeclaration;
 };
+
+const imageEditReferences: CapabilityDeclaration["references"] = [
+  {
+    key: "/image_urls",
+    kind: "image",
+    role: "reference",
+    multiple: true,
+    required: true,
+  },
+];
+const imageRatioControls: CapabilityDeclaration["controls"] = {
+  aspectRatio: { path: "/aspect_ratio", values: imageRatios },
+  resolution: { path: "/resolution", values: imageResolutions },
+};
+const customSizeControls: CapabilityDeclaration["controls"] = {
+  imageSize: { path: "/image_size" },
+};
+const h3Controls: CapabilityDeclaration["controls"] = {
+  aspectRatio: { path: "/aspect_ratio", values: videoRatios },
+  resolution: { path: "/resolution", values: videoResolutions },
+  duration: { path: "/duration", min: 5, max: 15 },
+};
+const h3FramesCapabilities: CapabilityDeclaration = {
+  references: [
+    { key: "/image_url", kind: "image", role: "first-frame" },
+    { key: "/end_image_url", kind: "image", role: "last-frame" },
+    { key: "/target_audio_url", kind: "audio", role: "reference" },
+  ],
+  controls: {
+    resolution: { path: "/resolution", values: videoResolutions },
+    duration: { path: "/duration", min: 5, max: 15 },
+  },
+};
+
+/** A declaration already published by the built-in library, for preset shortcuts. */
+export function libraryDeclaration(
+  plugin: string,
+  endpoint: string,
+): CapabilityDeclaration | undefined {
+  const belongs = (spec: ModelSpec) =>
+    plugin === "fal" ? !spec.connection : spec.connection?.adapter === plugin;
+  const published = modelLibrary.find(
+    (spec) => spec.endpoint === endpoint && belongs(spec),
+  );
+  if (published) return published.capabilities;
+  // Editing variants derive their endpoint exactly like catalogMediaModel does.
+  const editing = modelLibrary.find(
+    (spec) =>
+      spec.endpoint !== undefined &&
+      editingEndpoint(spec.endpoint) === endpoint &&
+      belongs(spec),
+  );
+  return editing?.editCapabilities;
+}
+
+/** The library publishes one entry per family; editing endpoints are derived at add time. */
+export function editingEndpoint(endpoint: string): string {
+  return endpoint.replace(/\/text-to-image$/, "") + "/edit";
+}
 const chat = (model: string) => ({
   model,
   messages: [
@@ -116,6 +190,11 @@ export const modelLibrary: ModelSpec[] = [
     endpoint: `openai/gpt-image-2.5/${variant}/text-to-image`,
     request: { prompt: "设计一张海报", num_images: 1, output_format: "png" },
     response: "images[].url / content_type / width / height",
+    capabilities: { controls: customSizeControls },
+    editCapabilities: {
+      references: imageEditReferences,
+      controls: customSizeControls,
+    },
   })),
   {
     id: "nano-banana-2",
@@ -130,6 +209,11 @@ export const modelLibrary: ModelSpec[] = [
     endpoint: "fal-ai/nano-banana-2",
     request: { prompt: "创作产品主视觉", num_images: 1 },
     response: "images[].url",
+    capabilities: { controls: imageRatioControls },
+    editCapabilities: {
+      references: imageEditReferences,
+      controls: imageRatioControls,
+    },
   },
   {
     id: "midjourney",
@@ -158,6 +242,13 @@ export const modelLibrary: ModelSpec[] = [
     endpoint: "minimax/h3-max/image-to-video",
     request: { prompt: "镜头缓慢推进" },
     response: "video.url",
+    capabilities: {
+      references: [{ key: "/image_url", kind: "image", role: "first-frame" }],
+      controls: {
+        resolution: { path: "/resolution", values: videoMaxResolutions },
+        duration: { path: "/duration", min: 5, max: 15 },
+      },
+    },
   },
   {
     id: "h3",
@@ -172,6 +263,7 @@ export const modelLibrary: ModelSpec[] = [
     endpoint: "minimax/h3/text-to-video",
     request: { prompt: "一段产品展示镜头", duration: 5 },
     response: "video.url",
+    capabilities: { controls: h3Controls },
   },
   ...(["image-to-video", "reference-to-video"] as const).map(
     (mode): ModelSpec => ({
@@ -196,6 +288,37 @@ export const modelLibrary: ModelSpec[] = [
       endpoint: `minimax/h3/${mode}`,
       request: { prompt: "产品展示", duration: 5 },
       response: "video.url",
+      capabilities:
+        mode === "image-to-video"
+          ? h3FramesCapabilities
+          : {
+              references: [
+                {
+                  key: "/reference_image_urls",
+                  kind: "image",
+                  role: "reference",
+                  multiple: true,
+                  max: 9,
+                },
+                {
+                  key: "/reference_video_urls",
+                  kind: "video",
+                  role: "reference",
+                  multiple: true,
+                  max: 3,
+                },
+                {
+                  key: "/reference_audio_urls",
+                  kind: "audio",
+                  role: "reference",
+                  multiple: true,
+                  max: 3,
+                },
+              ],
+              referenceLimit: 12,
+              referenceSeconds: 15,
+              controls: h3Controls,
+            },
     }),
   ),
   {

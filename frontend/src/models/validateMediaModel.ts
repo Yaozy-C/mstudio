@@ -1,7 +1,14 @@
 import { parseUrl } from "./parseUrl";
-import { modelAdapter } from "./adapters";
+import { mediaAdapter } from "./adapters";
+import { validateCapabilities } from "./capabilities";
 import type { MediaModel } from "./mediaRegistry";
+/**
+ * A capability declaration is data, never code: field pointers, roles and enum values are
+ * checked against fixed vocabularies, and a protocol that builds its own request body —
+ * or posts a fixed template — rejects declarations it could not honour.
+ */
 export function validateMediaModel(model: MediaModel) {
+  validateCapabilities(model.capabilities);
   if (!model.name.trim() || model.name.length > 80)
     throw new Error("请填写 80 字以内的模型名称");
   if (model.plugin === "codex-image") {
@@ -51,5 +58,12 @@ export function validateMediaModel(model: MediaModel) {
     throw new Error("模型参数须为 JSON 对象");
   if (!["image", "video", "audio"].includes(model.kind))
     throw new Error("模型插件或能力类型无效");
-  modelAdapter(model.plugin, model.endpoint);
+  const fields = mediaAdapter(model).fields;
+  if (model.plugin === "http-json" && fields.length)
+    throw new Error("自定义 HTTP 的参考素材写在请求模板里，不能声明参考字段");
+  if (
+    ["gemini-native", "codex-image"].includes(model.plugin) &&
+    fields.some((field) => field.kind !== "image")
+  )
+    throw new Error("此连接的请求格式只支持图片参考");
 }

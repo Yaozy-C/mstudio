@@ -1,3 +1,4 @@
+pub mod capabilities;
 pub mod codex_connection;
 pub mod commands;
 #[cfg(test)]
@@ -39,6 +40,7 @@ pub fn init(db: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS model_credentials(id TEXT PRIMARY KEY REFERENCES model_profiles(id) ON DELETE CASCADE,endpoint TEXT NOT NULL,api_key TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS agent_model_preferences(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,model_id TEXT REFERENCES model_profiles(id) ON DELETE SET NULL);")?;
     connections::init(db)?;
+    capabilities::migrate(db)?;
     Ok(())
 }
 

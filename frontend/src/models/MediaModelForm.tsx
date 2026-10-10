@@ -9,6 +9,7 @@ import {
 } from "./connectionStore";
 import { StudioSelect } from "../ui/StudioSelect";
 import { HttpModelFields, defaultHttpMapping } from "./HttpModelFields";
+import { parseCapabilities } from "./capabilities";
 import { useState } from "react";
 import { mediaLabels, type MediaModel } from "./mediaRegistry";
 export function MediaModelForm({
@@ -28,6 +29,9 @@ export function MediaModelForm({
   );
   const [nativeModel, setNativeModel] = useState(
     String(initial.params.model || "gemini-3.1-flash-image"),
+  );
+  const [capabilities, setCapabilities] = useState(
+    initial.capabilities ? JSON.stringify(initial.capabilities, null, 2) : "",
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -54,6 +58,7 @@ export function MediaModelForm({
                   model.plugin === "http-json"
                     ? JSON.parse(mapping)
                     : undefined,
+                capabilities: parseCapabilities(capabilities),
               },
               undefined,
               false,
@@ -199,6 +204,36 @@ export function MediaModelForm({
             {model.plugin === "http-json" && (
               <HttpModelFields mapping={mapping} setMapping={setMapping} />
             )}
+            <label className="model-field-wide">
+              {t("参考输入与参数能力（可选）")}
+              <textarea
+                rows={6}
+                spellCheck={false}
+                value={capabilities}
+                onChange={(e) => setCapabilities(e.target.value)}
+                placeholder={JSON.stringify(
+                  {
+                    references: [
+                      {
+                        key: "/image_url",
+                        kind: "image",
+                        role: "first-frame",
+                      },
+                    ],
+                    controls: {
+                      duration: { path: "/duration", min: 2, max: 15 },
+                    },
+                  },
+                  null,
+                  2,
+                )}
+              />
+              <small>
+                {t(
+                  "声明此模型接受的参考用途与可调参数，值为请求体中的 JSON Pointer；留空表示只用协议默认能力。参考字段会从生成面板的参考素材写入对应位置，控件决定面板显示哪些设置。",
+                )}
+              </small>
+            </label>
             <label className="model-field-wide">
               {model.plugin !== "http-json"
                 ? t("默认生成参数")

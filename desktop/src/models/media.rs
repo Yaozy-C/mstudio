@@ -18,6 +18,9 @@ pub struct MediaModel {
     pub enabled: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub http: Option<Value>,
+    /// Declared reference inputs and generation controls. See `models::capabilities`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<super::capabilities::Capabilities>,
     #[serde(default)]
     pub has_key: bool,
 }
@@ -56,6 +59,7 @@ pub fn validate(model: &MediaModel) -> Result<()> {
         model.params.is_object() && model.params.to_string().len() <= 32000,
         "参数须为不超过 32 KB 的 JSON 对象"
     );
+    super::capabilities::validate(model)?;
     Ok(())
 }
 pub(crate) fn read(db: &rusqlite::Connection) -> Result<Vec<MediaModel>> {
@@ -170,6 +174,7 @@ mod tests {
             params: serde_json::json!({}),
             enabled: true,
             http: None,
+            capabilities: None,
             connection_id: None,
             has_key: false,
         };
@@ -197,6 +202,7 @@ mod tests {
             params: serde_json::json!({"num_images":1}),
             enabled: true,
             http: None,
+            capabilities: None,
             connection_id: None,
             has_key: false,
         };

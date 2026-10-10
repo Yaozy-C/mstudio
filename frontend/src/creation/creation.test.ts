@@ -3,6 +3,7 @@ import { newProject, type Asset } from "../model";
 import { parseSrt, toSrt } from "./captions";
 import { registeredInput } from "./generationInput";
 import { applyOperations, inspectProject } from "../assistant/projectCommands";
+import { libraryDeclaration } from "../models/catalogSpecs";
 const asset: Asset = {
   id: "video",
   name: "video",
@@ -116,6 +117,7 @@ const model = {
   endpoint: "minimax/h3/reference-to-video",
   params: { duration: 6 },
   enabled: true,
+  capabilities: libraryDeclaration("fal", "minimax/h3/reference-to-video"),
 };
 
 test("model adapter rejects unsupported local references and invalid ranges before upload", () => {
@@ -134,7 +136,11 @@ test("model adapter rejects unsupported local references and invalid ranges befo
   );
   expect(() =>
     registeredInput(
-      { ...model, endpoint: "fal-ai/nano-banana-2" },
+      {
+        ...model,
+        endpoint: "fal-ai/nano-banana-2",
+        capabilities: libraryDeclaration("fal", "fal-ai/nano-banana-2"),
+      },
       p,
       "generate",
       [{ ...refs[0], end: 5 }],

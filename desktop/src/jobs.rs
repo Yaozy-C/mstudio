@@ -140,6 +140,10 @@ async fn submit(
             model.endpoint == endpoint && model.plugin == provider_id,
             "模型连接已变化，请重新提交"
         );
+        // The declaration is the last gate before a paid call: references must sit where
+        // the model says they do, within its declared limits.
+        crate::models::capabilities::validate_input(&model, &input)
+            .map_err(|error| anyhow::anyhow!(crate::app_error::rejected(error)))?;
         let key = crate::models::connections::media_key(&db, &model)?;
         let connection = model
             .connection_id

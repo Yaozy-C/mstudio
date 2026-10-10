@@ -1,5 +1,5 @@
 import { t } from "../i18n";
-import { modelAdapter } from "../models/adapters";
+import { mediaAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
 import type { ProductionTask } from "./types";
 
@@ -10,7 +10,7 @@ export const isVideoMode = (mode: ComposerMode) =>
 export function supportsVideoReference(model: MediaModel) {
   return (
     model.kind === "video" &&
-    modelAdapter(model.plugin, model.endpoint).fields.some(
+    mediaAdapter(model).fields.some(
       (f) => f.kind === "video" && f.role === "reference",
     )
   );

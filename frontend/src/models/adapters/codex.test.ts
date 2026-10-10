@@ -1,23 +1,11 @@
 import { expect, test } from "bun:test";
-import { modelAdapter } from ".";
+import { mediaAdapter } from ".";
 import { validateMediaModel } from "../mediaRegistry";
 import { modelLibrary } from "../catalogSpecs";
-test("Codex passes more than five reference images without truncation", () => {
-  const inputs = Array.from({ length: 12 }, () => ({
-    kind: "image" as const,
-    role: "reference" as const,
-    url: "data:image/png;base64,YQ==",
-  }));
-  const result = modelAdapter("codex-image", "codex://local/images").encode({
-    prompt: "Use every reference",
-    inputs,
-  });
-  expect(result.image).toHaveLength(12);
-});
-test("Codex is selectable without an API service and uses Images payload fields", () => {
+import type { MediaModel } from "../mediaRegistry";
+const codexModel = (): MediaModel => {
   const spec = modelLibrary.find((s) => s.id === "codex-image")!;
-  expect(spec.endpoint).toBe("codex://local/images");
-  validateMediaModel({
+  return {
     id: "codex",
     name: spec.name,
     kind: "image",
@@ -25,10 +13,27 @@ test("Codex is selectable without an API service and uses Images payload fields"
     endpoint: spec.endpoint!,
     params: spec.request,
     enabled: true,
+    capabilities: spec.capabilities,
+  };
+};
+test("Codex passes more than five reference images without truncation", () => {
+  const inputs = Array.from({ length: 12 }, () => ({
+    kind: "image" as const,
+    role: "reference" as const,
+    url: "data:image/png;base64,YQ==",
+  }));
+  const result = mediaAdapter(codexModel()).encode({
+    prompt: "Use every reference",
+    inputs,
   });
-  const adapter = modelAdapter("codex-image", spec.endpoint!);
+  expect(result.image).toHaveLength(12);
+});
+test("Codex is selectable without an API service and uses Images payload fields", () => {
+  const model = codexModel();
+  expect(model.endpoint).toBe("codex://local/images");
+  validateMediaModel(model);
   expect(
-    adapter.encode({
+    mediaAdapter(model).encode({
       prompt: "test",
       options: { model: "codex-image", n: 1 },
       inputs: [
@@ -42,11 +47,22 @@ test("Codex is selectable without an API service and uses Images payload fields"
     image: ["data:image/png;base64,YQ=="],
   });
   expect(() =>
-    adapter.encode({
+    mediaAdapter(model).encode({
       prompt: "test",
       inputs: [
         { kind: "image", role: "reference", url: "https://example.com/a.png" },
       ],
     }),
   ).toThrow("项目图片");
+});
+test("Codex rejects a reference kind its request builder cannot embed", () => {
+  const model = codexModel();
+  expect(() =>
+    validateMediaModel({
+      ...model,
+      capabilities: {
+        references: [{ key: "/clip", kind: "video", role: "reference" }],
+      },
+    }),
+  ).toThrow("图片参考");
 });

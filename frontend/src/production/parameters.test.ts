@@ -90,7 +90,13 @@ test("invalid and unsupported settings are rejected before submission", () => {
 });
 
 test("discovered model parameters match provider validation and exclude other models’ fields", () => {
-  const m = model("minimax/h3-max/reference-to-video");
+  // An endpoint outside the library declares its own vocabulary; no code path knows it.
+  const m = model("minimax/h3-max/reference-to-video", "video", {
+    controls: {
+      resolution: { path: "/resolution", values: ["480P", "768P", "1080P"] },
+      duration: { path: "/duration", min: 5, max: 15 },
+    },
+  });
   const schema = parameterContract(m).parameters.properties as Record<
     string,
     Record<string, unknown>

@@ -165,6 +165,7 @@ fn sync(
                 params: json!({"model":"codex-image","n":1}),
                 enabled: true,
                 http: None,
+                capabilities: None,
                 has_key: false,
             });
         }

@@ -12,7 +12,7 @@ import type { Project } from "../model";
 import { isSelectableAsset } from "../workspace/assetLibrary";
 import { mediaUrl } from "../bridge";
 import type { MediaModel } from "../models/mediaRegistry";
-import { modelAdapter } from "../models/adapters";
+import { mediaAdapter } from "../models/adapters";
 import { inputFor } from "./request";
 import { parameterFields, taskParameters } from "./parameters";
 import type { GenerationParameters } from "./parameters";
@@ -48,9 +48,7 @@ export function GenerationSettings({
   };
   const param = (value: GenerationParameters) =>
     patch({ parameters: { ...options, ...value } });
-  const adapter = model
-    ? modelAdapter(model.plugin, model.endpoint)
-    : undefined;
+  const adapter = model ? mediaAdapter(model) : undefined;
   const frames =
     draft.kind === "video" &&
     adapter?.fields.some((f) => f.role === "first-frame");
@@ -212,7 +210,13 @@ export function GenerationSettings({
               }
             >
               <option value="">{t("沿用模型设置")}</option>
-              {Array.from({ length: 11 }, (_, i) => i + 5).map((n) => (
+              {Array.from(
+                {
+                  length:
+                    fields.durationRange.max - fields.durationRange.min + 1,
+                },
+                (_, i) => fields.durationRange.min + i,
+              ).map((n) => (
                 <option key={n} value={n}>
                   {n} {t("秒")}
                 </option>

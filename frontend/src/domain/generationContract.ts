@@ -1,28 +1,24 @@
 import { array, choices, id, number, object, text } from "./schema";
 
+import { parameterSchema } from "../production/parameters";
 import {
-  parameterSchema,
   imageRatios,
-  videoRatios,
   imageResolutions,
-  videoResolutions,
   videoMaxResolutions,
-} from "../production/parameters";
+  videoRatios,
+  videoResolutions,
+} from "../models/capabilities";
 const imageParameters = parameterSchema({
   ratios: imageRatios,
   resolutions: imageResolutions,
   customSize: true,
   duration: false,
-  frameRatio: false,
-  supported: true,
 });
 const videoParameters = parameterSchema({
   ratios: videoRatios,
   resolutions: [...new Set([...videoResolutions, ...videoMaxResolutions])],
   customSize: false,
   duration: true,
-  frameRatio: false,
-  supported: true,
 });
 const references = (roles: string[]) =>
   array(

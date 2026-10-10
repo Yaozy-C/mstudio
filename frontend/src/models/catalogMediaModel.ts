@@ -22,6 +22,9 @@ export function catalogMediaModel(
       ? spec.endpoint!.replace(/\/text-to-image$/, "") + "/edit"
       : spec.endpoint!,
     params: falEdit ? { image_urls: [] } : params,
+    // The editing endpoint usually accepts the source image where generation does not.
+    capabilities:
+      (editing ? spec.editCapabilities : undefined) ?? spec.capabilities,
     enabled: true,
   };
 }

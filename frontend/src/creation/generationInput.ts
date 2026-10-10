@@ -1,7 +1,7 @@
 import type { MediaModel } from "../models/mediaRegistry";
 import { validateMediaModel } from "../models/validateMediaModel";
 import {
-  modelAdapter,
+  mediaAdapter,
   presetRequest,
   type ModelInput,
 } from "../models/adapters";
@@ -22,7 +22,7 @@ export function registeredInput(
   if (!prompt.trim()) throw new Error("请输入生成描述");
   validateMediaModel(model);
   if (!model.enabled) throw new Error("模型已停用");
-  const adapter = modelAdapter(model.plugin, model.endpoint);
+  const adapter = mediaAdapter(model);
   const request = presetRequest(
     adapter,
     requestPrompt(project, prompt, refs),

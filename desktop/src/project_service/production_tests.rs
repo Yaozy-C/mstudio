@@ -104,7 +104,16 @@ fn outbox_claim_survives_restart_but_reserved_remote_jobs_are_never_resubmitted(
 #[test]
 fn generation_duration_is_validated_against_the_selected_model_before_saving() {
     let (store, _, profile) = fixture();
-    store.set_setting("media-models", &json!([{"id":"video","name":"Video","kind":"video","plugin":"fal","endpoint":"minimax/h3/text-to-video","params":{"resolution":"480P"},"enabled":true}]).to_string()).unwrap();
+    store.set_setting("media-models", &json!([{
+        "id":"video","name":"Video","kind":"video","plugin":"fal",
+        "endpoint":"minimax/h3/text-to-video","params":{"resolution":"480P"},"enabled":true,
+        // Mirrors the published library declaration: capabilities are model data.
+        "capabilities":{"controls":{
+            "aspectRatio":{"path":"/aspect_ratio","values":["9:16","16:9","1:1","3:4","4:3","21:9"]},
+            "resolution":{"path":"/resolution","values":["480P","768P","2K","4K"]},
+            "duration":{"path":"/duration","min":5,"max":15}
+        }}
+    }]).to_string()).unwrap();
     crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"video":"video","execution":"automatic"},"instruction":"Generate"}}}))).unwrap();
     let args = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":7,"resolution":"480P"}}]});
     let receipt = execute(&store, &profile, "p", "turn", "generate", args.clone()).unwrap();
@@ -143,7 +152,20 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
     let (store, mut doc, _) = fixture();
     doc["assets"] = json!([{"id":"image","kind":"image","name":"Reference","path":"/synthetic.png","width":1024,"height":1024,"duration":0}]);
     doc["production"] = json!({"drafts":{"task":{"key":"task","position":{"x":0,"y":0},"kind":"video","mode":"multi","prompt":"Synthetic action","inputs":[{"key":"image","assetId":"image","role":"reference","purpose":"Identity"}],"status":"READY"}}});
-    let model = json!({"id":"model","name":"Video","plugin":"fal","endpoint":"minimax/h3/reference-to-video","kind":"video","enabled":true,"params":{}});
+    let model = json!({
+        "id":"model","name":"Video","plugin":"fal","endpoint":"minimax/h3/reference-to-video",
+        "kind":"video","enabled":true,"params":{},
+        // Mirrors the published library declaration.
+        "capabilities":{
+            "references":[
+                {"key":"/reference_image_urls","kind":"image","role":"reference","multiple":true,"max":9},
+                {"key":"/reference_video_urls","kind":"video","role":"reference","multiple":true,"max":3},
+                {"key":"/reference_audio_urls","kind":"audio","role":"reference","multiple":true,"max":3}
+            ],
+            "referenceLimit":12,
+            "referenceSeconds":15
+        }
+    });
     let base = json!({"action":"prepare_generation","document":doc,"taskKey":"task","model":model});
     let preflight = runtime::execute(base.clone()).unwrap();
     assert!(preflight.get("error").is_none(), "{preflight}");

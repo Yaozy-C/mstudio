@@ -1,12 +1,12 @@
 import type { Project } from "../model";
-import { modelAdapter } from "../models/adapters";
+import { mediaAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
 import type { ProductionInput, ProductionTask } from "./types";
 
 export type FrameRole = "first-frame" | "last-frame";
 export function frameRoles(model?: MediaModel): FrameRole[] {
   if (!model || model.kind !== "video") return [];
-  const fields = modelAdapter(model.plugin, model.endpoint).fields;
+  const fields = mediaAdapter(model).fields;
   return (["first-frame", "last-frame"] as const).filter((role) =>
     fields.some((f) => f.role === role),
   );

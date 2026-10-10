@@ -1,10 +1,10 @@
 import { t, useLanguage } from "../i18n";
 import { selectMediaModel } from "./frameInputs";
-import { modelAdapter } from "../models/adapters";
+import { mediaAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
 import type { ProductionTask } from "./types";
 function method(model: MediaModel) {
-  const fields = modelAdapter(model.plugin, model.endpoint).fields;
+  const fields = mediaAdapter(model).fields;
   return fields.some((f) => f.role === "first-frame")
     ? "frames"
     : fields.some((f) => f.role === "reference")

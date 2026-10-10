@@ -1,4 +1,6 @@
 import { newProject, type Asset } from "../model";
+import { libraryDeclaration } from "../models/catalogSpecs";
+import type { CapabilityDeclaration } from "../models/capabilities";
 import type { MediaModel } from "../models/mediaRegistry";
 export const asset = (id: string, kind: Asset["kind"] = "image"): Asset => ({
   id,
@@ -59,9 +61,14 @@ export function fixture() {
   ];
   return p;
 }
+/**
+ * A model as the library would add it: capabilities come from the published declaration,
+ * never from the endpoint string, so tests exercise the same data the app ships.
+ */
 export const model = (
   endpoint: string,
   kind: "image" | "video" = "video",
+  capabilities?: CapabilityDeclaration,
 ): MediaModel => ({
   id: "model",
   name: "Model",
@@ -70,4 +77,5 @@ export const model = (
   endpoint,
   enabled: true,
   params: {},
+  capabilities: capabilities ?? libraryDeclaration("fal", endpoint),
 });

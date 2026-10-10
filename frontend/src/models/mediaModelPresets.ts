@@ -1,3 +1,4 @@
+import { libraryDeclaration } from "./catalogSpecs";
 export const presets = {
   image: {
     name: "FLUX.1 Schnell",
@@ -8,5 +9,7 @@ export const presets = {
     name: "MiniMax H3",
     endpoint: "minimax/h3/text-to-video",
     params: { duration: 5 },
+    // Declared once by the model library; the shortcut never restates capabilities.
+    capabilities: libraryDeclaration("fal", "minimax/h3/text-to-video"),
   },
 };

@@ -2,6 +2,7 @@ import { validateMediaModel } from "./validateMediaModel";
 export { validateMediaModel } from "./validateMediaModel";
 import { useEffect, useState } from "react";
 import { bridge } from "../bridge";
+import type { CapabilityDeclaration } from "./capabilities";
 export type MediaKind = "image" | "video" | "audio";
 export type MediaModel = {
   id: string;
@@ -13,6 +14,8 @@ export type MediaModel = {
   params: Record<string, unknown>;
   enabled: boolean;
   http?: Record<string, unknown>;
+  /** Model-declared reference inputs and generation controls. See models/capabilities.ts. */
+  capabilities?: CapabilityDeclaration;
   hasKey?: boolean;
 };
 export const mediaLabels = { image: "图像", video: "视频", audio: "音频" };

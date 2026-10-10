@@ -124,6 +124,8 @@ async fn upload(
         .context("模型不存在或已停用")?;
     let native = ["gemini-native", "codex-image"].contains(&model.plugin.as_str());
     ensure!(native || model.plugin == "fal", "此服务不支持本地参考素材");
+    // Ceilings come from the model's declaration; the system caps still apply.
+    let limits = crate::models::capabilities::limits(&model);
     let key = if native {
         String::new()
     } else {
@@ -173,8 +175,21 @@ async fn upload(
         planned.push((asset, r));
     }
     ensure!(
-        images <= 9 && videos <= 3 && seconds <= 15.,
-        "最多 9 张图、3 段视频；参考视频总时长不超过 15 秒"
+        images <= crate::models::capabilities::MAX_IMAGES
+            && videos <= crate::models::capabilities::MAX_VIDEOS,
+        "最多 {} 张图、{} 段视频",
+        crate::models::capabilities::MAX_IMAGES,
+        crate::models::capabilities::MAX_VIDEOS
+    );
+    ensure!(
+        planned.len() <= limits.references,
+        "此模型最多上传 {} 个参考素材",
+        limits.references
+    );
+    ensure!(
+        seconds <= limits.seconds,
+        "参考视频总时长不超过 {} 秒",
+        limits.seconds
     );
     ensure!(!native || videos == 0, "Gemini 生图仅支持图片参考");
     let root = store.media_root().join("reference-work");

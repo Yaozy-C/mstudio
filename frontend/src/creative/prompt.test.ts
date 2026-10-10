@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { newProject } from "../model";
+import { libraryDeclaration } from "../models/catalogSpecs";
 import { applyOperations, inspectProject } from "../assistant/projectCommands";
 import { editShotText } from "./shotText";
 import { promptStale } from "./prompt";
@@ -157,4 +158,5 @@ const model = {
   endpoint: "minimax/h3/reference-to-video",
   params: { duration: 6 },
   enabled: true,
+  capabilities: libraryDeclaration("fal", "minimax/h3/reference-to-video"),
 };

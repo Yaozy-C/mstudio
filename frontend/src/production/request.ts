@@ -2,7 +2,12 @@ import { failure } from "../errors/failure";
 import { taskParameters } from "./parameters";
 import type { Project, Reference } from "../model";
 import type { MediaModel } from "../models/mediaRegistry";
-import { modelAdapter, type ModelInput } from "../models/adapters";
+import { mediaAdapter, type ModelInput } from "../models/adapters";
+import {
+  pointerDelete,
+  referenceLimits,
+  referenceSafetyCaps,
+} from "../models/capabilities";
 import {
   registeredInput,
   requestPrompt,
@@ -71,21 +76,25 @@ export function inputFor(
       "VALIDATION_FAILED",
       "图片生成不能使用首尾帧，请将用途改为内容参考",
     );
-  const adapter = modelAdapter(model.plugin, model.endpoint);
+  const adapter = mediaAdapter(model);
   const options = {
     ...model.params,
     ...taskParameters(model, task.parameters),
   };
   // Only the materials shown in this task may be sent. Model presets cannot add hidden references.
-  for (const f of adapter.fields) delete options[f.key];
+  for (const f of adapter.fields) pointerDelete(options, f.key);
+  const limits = referenceLimits(model);
   const refs = mediaReferences(task);
   if (new Set(refs.map((r) => r.assetId)).size !== refs.length)
     throw failure(
       "VALIDATION_FAILED",
       "同一素材只能有一种用途，请移除重复素材",
     );
-  if (refs.length > 12)
-    throw failure("VALIDATION_FAILED", "本次最多使用 12 个素材");
+  if (refs.length > (limits.count ?? referenceSafetyCaps.count))
+    throw failure(
+      "VALIDATION_FAILED",
+      `本次最多使用 ${limits.count ?? referenceSafetyCaps.count} 个素材`,
+    );
   if (task.inputs.some((r) => r.role === "video-edit"))
     throw failure(
       "VALIDATION_FAILED",
@@ -149,10 +158,14 @@ export function inputFor(
           : "https://example.invalid/validate"),
     };
   });
-  if (images > 9 || videos > 3 || seconds > 15)
+  if (
+    images > (limits.kinds.image ?? referenceSafetyCaps.image) ||
+    videos > (limits.kinds.video ?? referenceSafetyCaps.video) ||
+    seconds > (limits.seconds ?? referenceSafetyCaps.seconds)
+  )
     throw failure(
       "VALIDATION_FAILED",
-      "最多 9 张图片、3 段视频；视频参考合计不超过 15 秒",
+      `最多 ${limits.kinds.image ?? referenceSafetyCaps.image} 张图片、${limits.kinds.video ?? referenceSafetyCaps.video} 段视频；视频参考合计不超过 ${limits.seconds ?? referenceSafetyCaps.seconds} 秒`,
     );
   return registeredInput(
     { ...model, params: options },
