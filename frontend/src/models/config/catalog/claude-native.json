@@ -1,0 +1,31 @@
+{
+  "id": "claude-native",
+  "name": "Claude · 原生多模态",
+  "provider": "Anthropic",
+  "kind": "text",
+  "inputs": ["文本", "图像", "PDF"],
+  "outputs": ["文本", "工具调用"],
+  "note": "使用 Messages 原生接口；填写账号可用的具体模型 ID。当前不直接接收音视频。",
+  "source": "https://platform.claude.com/docs/en/build-with-claude/pdf-support",
+  "protocol": "Messages",
+  "request": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "根据资料写脚本"
+      }
+    ]
+  },
+  "response": "content[].text / tool_use",
+  "connection": {
+    "endpoint": "https://api.anthropic.com/v1",
+    "adapter": "anthropic-native",
+    "model": "",
+    "inputs": {
+      "image": true,
+      "audio": false,
+      "video": false,
+      "document": true
+    }
+  }
+}

@@ -40,7 +40,7 @@ test("task reference edits stay local until saved and reach model input", () => 
   expect(p.production?.drafts?.[draft.key]).toBeUndefined();
 });
 
-test("missing, incompatible, short and excessive references are rejected", () => {
+test("references reject missing assets and use configured count limits", () => {
   const task = createTask(fixture(), [], "video");
   expect(
     supportsReference(asset("a"), model("minimax/h3/image-to-video")),
@@ -50,11 +50,23 @@ test("missing, incompatible, short and excessive references are rejected", () =>
   ).toThrow();
   expect(() =>
     addTaskReference(task, { ...asset("v", "video"), duration: 1 }),
-  ).toThrow();
+  ).not.toThrow();
   let draft = task;
   for (let i = 0; i < 12; i++)
     draft = { ...draft, ...addTaskReference(draft, asset(String(i))) };
-  expect(() => addTaskReference(draft, asset("extra"))).toThrow("12");
+  expect(addTaskReference(draft, asset("extra")).inputs).toHaveLength(13);
+  expect(() =>
+    addTaskReference(
+      draft,
+      asset("extra"),
+      model("custom", "video", {
+        references: [
+          { key: "/images", kind: "image", role: "reference", multiple: true },
+        ],
+        referenceLimit: 12,
+      }),
+    ),
+  ).toThrow("12");
   const video = addTaskReference(task, asset("v", "video")).inputs![0];
   expect([video.role, video.start, video.end]).toEqual([
     "video-reference",
@@ -95,7 +107,7 @@ test("video references retain full duration across pickers and selected canvas i
   const m = model("minimax/h3/reference-to-video");
   expect(() =>
     inputFor(p, { ...task, prompt: "Follow reference", inputs: [attached] }, m),
-  ).toThrow("2–15");
+  ).toThrow("15 秒");
   expect(() =>
     inputFor(
       p,

@@ -9,6 +9,7 @@
 import { parseUrl } from "../parseUrl";
 import type { MediaModel } from "../mediaRegistry";
 import {
+  copyParameters,
   pointerDelete,
   pointerGet,
   pointerSet,
@@ -55,7 +56,8 @@ function create(
         try {
           const url = parseUrl(input.url);
           valid =
-            ["https:", "http:"].includes(url.protocol) &&
+            (["https:", "http:"].includes(url.protocol) ||
+              (id === "dashscope" && url.protocol === "oss:")) &&
             !url.username &&
             !url.password;
         } catch {
@@ -69,7 +71,10 @@ function create(
         )
           throw new Error("参考媒体需要有效 URL 或 Base64 数据");
       }
-      const result: Record<string, unknown> = { ...options, prompt };
+      const result: Record<string, unknown> = {
+        ...copyParameters(options),
+        prompt,
+      };
       for (const field of fields) {
         const values = inputs
           .filter((i) => i.kind === field.kind && i.role === field.role)
@@ -106,7 +111,9 @@ function declaredLimitCheck(model: MediaModel) {
 }
 
 function codexAdapter(model: MediaModel): ModelAdapter {
-  return create("codex-image", referenceFields(model), ({ inputs = [] }) => {
+  return create("codex-image", referenceFields(model), (request) => {
+    declaredLimitCheck(model)(request);
+    const { inputs = [] } = request;
     if (inputs.some((i) => !/^data:image\/(png|jpeg|webp);base64,/.test(i.url)))
       throw new Error("Codex 请使用项目图片或内嵌图片数据");
   });
@@ -158,6 +165,12 @@ export function mediaAdapter(model: MediaModel): ModelAdapter {
       return geminiAdapter(model);
     case "http-json":
       return httpJsonAdapter;
+    case "dashscope":
+      return create(
+        "dashscope",
+        referenceFields(model),
+        declaredLimitCheck(model),
+      );
     case "fal":
       return create(
         "fal-model",
@@ -175,7 +188,7 @@ export function presetRequest(
   prompt: string,
   params: Record<string, unknown>,
 ): ModelRequest {
-  const options = { ...params };
+  const options = copyParameters(params);
   const inputs: ModelInput[] = [];
   for (const field of adapter.fields) {
     const value = pointerGet(options, field.key);

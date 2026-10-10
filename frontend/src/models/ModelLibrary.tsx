@@ -92,7 +92,9 @@ export function ModelLibrary({
                   ? t("本机 Codex · 无需 API Key · 型号未验证")
                   : m.id === "gemini-image-direct"
                     ? t("Google 官方直连")
-                    : t("通过 fal 接入")}
+                    : m.plugin === "dashscope"
+                      ? t("阿里云百炼官方直连")
+                      : t("通过 fal 接入")}
               </small>
             )}
             <footer>

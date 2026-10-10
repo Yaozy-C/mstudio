@@ -1,0 +1,24 @@
+{
+  "endpoint": "minimax/h3-max/image-to-video",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_url",
+        "kind": "image",
+        "role": "first-frame"
+      }
+    ],
+    "controls": {
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "1080P"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    },
+    "ratioFromReference": true
+  }
+}

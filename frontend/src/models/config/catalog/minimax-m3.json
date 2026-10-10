@@ -1,0 +1,26 @@
+{
+  "id": "minimax-m3",
+  "name": "MiniMax M3",
+  "provider": "MiniMax",
+  "kind": "text",
+  "inputs": ["文本", "图像"],
+  "outputs": ["文本", "工具调用"],
+  "note": "通过 OpenAI 兼容接口连接。",
+  "source": "https://platform.minimax.io/docs/api-reference/text-openai-api",
+  "protocol": "Chat Completions",
+  "request": {
+    "model": "MiniMax-M3"
+  },
+  "response": "choices[].message",
+  "connection": {
+    "endpoint": "https://api.minimax.io/v1",
+    "adapter": "openai-compatible",
+    "model": "MiniMax-M3",
+    "inputs": {
+      "image": true,
+      "audio": false,
+      "video": false,
+      "document": false
+    }
+  }
+}

@@ -227,3 +227,34 @@ fn startup_repairs_receiving_status_from_imported_job_without_duplicate_assets()
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn custom_model_parameters_reach_model_validation_through_the_tool_contract() {
+    let (store, _, profile) = fixture();
+    store
+        .set_setting(
+            "media-models",
+            &json!([{
+                "id":"video","name":"Custom","kind":"video","plugin":"fal",
+                "endpoint":"vendor/custom-video","params":{},"enabled":true,
+                "capabilities":{"controls":{
+                    "resolution":{"path":"/settings/size","values":["720p-custom"]},
+                    "duration":{"path":"/settings/seconds","min":2,"max":20}
+                }}
+            }])
+            .to_string(),
+        )
+        .unwrap();
+    crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"video":"video","execution":"automatic"},"instruction":"Generate"}}}))).unwrap();
+    let args = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":2,"resolution":"720p-custom"}}]});
+    let receipt = execute(&store, &profile, "p", "turn", "custom", args.clone()).unwrap();
+    assert_eq!(receipt["outcome"], "committed", "{receipt}");
+    assert_eq!(receipt["generationTasks"][0]["parameters"]["duration"], 2);
+    let mut invalid = args;
+    invalid["operations"][0]["parameters"]["duration"] = json!(21);
+    let rejected = execute(&store, &profile, "p", "turn", "invalid", invalid).unwrap();
+    assert_eq!(rejected["outcome"], "not_executed", "{rejected}");
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

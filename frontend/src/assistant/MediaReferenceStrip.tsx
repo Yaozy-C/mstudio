@@ -222,9 +222,9 @@ export function MediaReferenceStrip(props: {
             </div>
           );
         })}
-        {canvas.composerMode !== "agent" &&
-          !props.extrasOnly &&
-          inputs.length < 12 && <ComposerReference {...props} />}
+        {canvas.composerMode !== "agent" && !props.extrasOnly && (
+          <ComposerReference {...props} />
+        )}
       </div>
       <Dialog.Root
         open={!!preview}

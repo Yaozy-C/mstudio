@@ -22,10 +22,12 @@ export function addTaskReference(
   if (!supportsReference(asset, model))
     throw new Error("此模型不支持该素材作为参考");
   if (task.inputs.some((r) => r.assetId === asset.id)) return {};
-  if (task.inputs.filter((r) => r.assetId).length >= 12)
-    throw new Error("最多引用 12 个素材");
-  if (asset.kind === "video" && asset.duration < 2)
-    throw new Error("视频参考至少需要 2 秒");
+  const limit = model?.capabilities?.referenceLimit;
+  if (
+    limit !== undefined &&
+    task.inputs.filter((r) => r.role !== "script").length >= limit
+  )
+    throw new Error(`最多引用 ${limit} 个素材`);
   return {
     inputs: [
       ...task.inputs,

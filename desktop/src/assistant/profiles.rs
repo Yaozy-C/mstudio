@@ -16,7 +16,8 @@ pub const TOOL_IDS: [&str; 11] = [
     "project-edit",
     "media-generation",
 ];
-pub const SKILL_IDS: [&str; 8] = [
+pub const SKILL_IDS: [&str; 9] = [
+    "video-analysis",
     "creative-concepts",
     "ad-script",
     "creative-ad-director",
@@ -96,6 +97,13 @@ pub fn resolve(db: &rusqlite::Connection, id: Option<&str>) -> Result<AgentProfi
     Ok(profile)
 }
 pub fn validate(profile: &AgentProfile) -> Result<()> {
+    if profile.id == "video-analyst" {
+        ensure!(profile.tool_ids.is_empty(), "视频拆解角色不使用工具");
+        ensure!(
+            profile.skill_ids == ["video-analysis"],
+            "视频拆解角色只使用视频拆解 Skill"
+        );
+    }
     ensure!(
         !profile.id.is_empty() && profile.id.len() <= 80,
         "Agent ID 无效"
@@ -161,6 +169,9 @@ pub fn skill_setting(profile: &AgentProfile) -> String {
     .unwrap()
 }
 pub fn allows(profile: &AgentProfile, action: &str) -> bool {
+    if profile.id == "video-analyst" {
+        return false;
+    }
     let has = |id: &str| profile.tool_ids.iter().any(|v| v == id);
     match action {
         "delegate" => has("agent-delegate"),

@@ -62,9 +62,9 @@
   button.transition-card[aria-pressed="true"]:hover:not(:disabled) {
   border-color: var(--desk-text);
 }
-.transition-card:focus-visible {
-  outline: 2px solid var(--desk-text);
-  outline-offset: 2px;
+.radix-themes .transition-card:focus-visible {
+  outline: none;
+  border-color: var(--desk-text);
 }
 .transition-card video {
   display: block;

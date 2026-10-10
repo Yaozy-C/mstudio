@@ -1,0 +1,27 @@
+{
+  "id": "mimo-v2.6-pro",
+  "name": "MiMo V2.6 Pro",
+  "provider": "Xiaomi / MiMo",
+  "kind": "text",
+  "inputs": ["文本", "图像"],
+  "outputs": ["文本", "工具调用"],
+  "note": "小米官方 Chat Completions 接口。当前连接支持文字、图片和工具调用；视频可按需抽帧读取。请在服务连接填写 MiMo API Key。",
+  "source": "https://mimo.mi.com/docs/en-US/api/chat/openai-api",
+  "protocol": "Chat Completions",
+  "request": {
+    "model": "mimo-v2.6-pro"
+  },
+  "response": "choices[].message.content / tool_calls",
+  "connection": {
+    "endpoint": "https://api.xiaomimimo.com/v1",
+    "adapter": "openai-compatible",
+    "model": "mimo-v2.6-pro",
+    "contextWindow": 1048576,
+    "inputs": {
+      "image": true,
+      "audio": false,
+      "video": false,
+      "document": false
+    }
+  }
+}

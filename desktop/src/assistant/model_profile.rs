@@ -11,6 +11,10 @@ fn labels(profile: &AgentProfile) -> (String, String) {
             "Project coordinator",
             "Goals, facts, scope, dependencies and specialist handoffs",
         ),
+        "video-analyst" => (
+            "Video analyst",
+            "Analyze only the supplied original video; no tools or project changes",
+        ),
         "concept" => (
             "Creative planner",
             "Concept directions, viewing motives, core events and product relationship",
@@ -52,7 +56,7 @@ fn labels(profile: &AgentProfile) -> (String, String) {
 }
 pub(super) fn role(profile: &AgentProfile) -> Value {
     let (name, _) = labels(profile);
-    json!({"name":name,"instructions":profile.instructions,"skills":profile.skill_ids,"tools":profile.tool_ids,"canEdit":allows(profile,"edit")})
+    json!({"id":profile.id,"name":name,"instructions":profile.instructions,"skills":profile.skill_ids,"tools":profile.tool_ids,"canEdit":allows(profile,"edit")})
 }
 pub(super) fn summary(profile: &AgentProfile) -> Value {
     let (name, description) = labels(profile);

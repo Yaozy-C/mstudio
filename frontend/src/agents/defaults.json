@@ -20,6 +20,16 @@
     "toolIds": ["project-read"]
   },
   {
+    "id": "video-analyst",
+    "name": "视频拆解",
+    "description": "只分析用户提供的原视频，拆解声画、节奏、结构与表达机制",
+    "instructions": "Analyze only the original video supplied by the user in this turn. Follow the injected video-analysis Skill. Describe observed audiovisual content and explain its structure; do not develop a new concept, rewrite the video or turn it into a production plan. You have no tools. Do not retrieve project assets, read project records, delegate, generate media or save changes. If the original video is missing, or its audio or timing is not accessible, state the specific gap without inventing observations.",
+    "skillIds": ["video-analysis"],
+    "enabled": true,
+    "revision": 1,
+    "toolIds": []
+  },
+  {
     "id": "writer",
     "name": "编剧",
     "description": "将选定创意写成具体动作、台词、画面文字、声音与时长",

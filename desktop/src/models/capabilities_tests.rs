@@ -36,19 +36,20 @@ fn declared_pointers_roles_and_limits_are_validated() {
                 duration: Some(ControlDeclaration {
                     path: "/parameters/duration".into(),
                     values: None,
-                    min: Some(2),
-                    max: Some(15),
+                    min: Some(2.0),
+                    max: Some(15.0),
                 }),
                 ..Default::default()
             }),
+            ratio_from_reference: None,
             reference_limit: Some(4),
             reference_seconds: Some(10.),
         }),
     );
     validate(&accepted).unwrap();
     let limits = limits(&accepted);
-    assert_eq!(limits.references, 4);
-    assert_eq!(limits.seconds, 10.);
+    assert_eq!(limits.references, Some(4));
+    assert_eq!(limits.seconds, Some(10.));
 
     for broken in [
         // A pointer must be a JSON Pointer, and a field may not repeat.
@@ -107,13 +108,13 @@ fn declared_pointers_roles_and_limits_are_validated() {
             }]),
             ..Default::default()
         },
-        // Limits can only lower the system ceiling.
+        // Configured limits must be positive.
         Capabilities {
-            reference_limit: Some(20),
+            reference_limit: Some(0),
             ..Default::default()
         },
         Capabilities {
-            reference_seconds: Some(60.),
+            reference_seconds: Some(0.),
             ..Default::default()
         },
         // Enum controls need values; duration and custom size must not carry any.
@@ -134,8 +135,8 @@ fn declared_pointers_roles_and_limits_are_validated() {
                 duration: Some(ControlDeclaration {
                     path: "/duration".into(),
                     values: Some(vec!["5".into()]),
-                    min: Some(5),
-                    max: Some(5),
+                    min: Some(5.0),
+                    max: Some(5.0),
                 }),
                 ..Default::default()
             }),
@@ -176,7 +177,7 @@ fn protocols_that_build_their_own_body_reject_foreign_references() {
             "https://generativelanguage.googleapis.com",
             Some(template.clone())
         ))
-        .is_ok()
+        .is_err()
     );
     let video = Capabilities {
         references: Some(vec![ReferenceDeclaration {
@@ -210,8 +211,8 @@ fn protocol_defaults_still_answer_for_builders_that_own_the_body() {
     let references = effective_references(&gemini);
     assert_eq!(references.len(), 1);
     assert_eq!(references[0].key, "/image_urls");
-    assert_eq!(references[0].max, Some(9));
-    assert_eq!(limits(&gemini).references, MAX_REFERENCES);
+    assert_eq!(references[0].max, None);
+    assert_eq!(limits(&gemini).references, None);
     // fal and custom HTTP imply nothing: the declaration is the only source.
     assert!(effective_references(&model("fal", "fal-ai/flux/schnell", None)).is_empty());
     assert!(
@@ -243,6 +244,7 @@ fn the_request_body_is_checked_against_the_declaration() {
         reference_limit: Some(3),
         reference_seconds: None,
         controls: None,
+        ratio_from_reference: None,
     };
     let declared_model = model("fal", "vendor/model", Some(declared));
     validate_input(
@@ -283,80 +285,8 @@ fn the_request_body_is_checked_against_the_declaration() {
     .unwrap();
 }
 
-#[test]
-fn migration_stamps_legacy_models_once_and_keeps_explicit_declarations() {
-    let db = rusqlite::Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
-        .unwrap();
-    let h3 = model("fal", "minimax/h3/reference-to-video", None);
-    let untouched = model(
-        "fal",
-        "fal-ai/flux/schnell",
-        Some(Capabilities {
-            reference_limit: Some(2),
-            ..Default::default()
-        }),
-    );
-    crate::models::media::write(&db, &[h3.clone(), untouched.clone()]).unwrap();
+#[path = "capabilities_tests_migration.rs"]
+mod migration;
 
-    migrate(&db).unwrap();
-    let stored = crate::models::media::read(&db).unwrap();
-    let migrated = stored.iter().find(|m| m.id == "model").unwrap();
-    assert!(migrated.capabilities.is_some());
-    assert_eq!(
-        migrated.capabilities.as_ref().unwrap().reference_limit,
-        Some(12)
-    );
-    assert_eq!(
-        migrated
-            .capabilities
-            .as_ref()
-            .unwrap()
-            .references
-            .as_ref()
-            .unwrap()
-            .len(),
-        3
-    );
-    validate(migrated).unwrap();
-
-    // An endpoint with no legacy knowledge keeps protocol defaults only.
-    let plain = model("fal", "fal-ai/wan/v2.7/image-to-video", None);
-    crate::models::media::write(&db, std::slice::from_ref(&plain)).unwrap();
-    migrate(&db).unwrap();
-    let stored = crate::models::media::read(&db).unwrap();
-    assert!(stored[0].capabilities.is_none());
-    assert!(legacy_declaration("fal", "fal-ai/wan/v2.7/image-to-video").is_none());
-}
-
-#[test]
-fn legacy_table_matches_the_capabilities_the_old_code_hardcoded() {
-    let h3_frames = legacy_declaration("fal", "minimax/h3/image-to-video").unwrap();
-    let references = h3_frames.references.unwrap();
-    assert_eq!(
-        references
-            .iter()
-            .map(|reference| (reference.key.as_str(), reference.role.as_str()))
-            .collect::<Vec<_>>(),
-        vec![
-            ("/image_url", "first-frame"),
-            ("/end_image_url", "last-frame"),
-            ("/target_audio_url", "reference"),
-        ]
-    );
-    let controls = h3_frames.controls.unwrap();
-    assert!(controls.aspect_ratio.is_none());
-    let duration = controls.duration.unwrap();
-    assert_eq!(duration.min, Some(5));
-    assert_eq!(duration.max, Some(15));
-
-    let edit = legacy_declaration("fal", "openai/gpt-image-2.5/flare/edit").unwrap();
-    assert!(edit.references.unwrap()[0].required);
-    assert_eq!(
-        edit.controls.unwrap().image_size.unwrap().path,
-        "/image_size"
-    );
-
-    assert!(legacy_declaration("gemini-native", "gemini-3.1-flash-image").is_none());
-    assert!(legacy_declaration("fal", "fal-ai/flux/schnell").is_none());
-}
+#[path = "capabilities_tests_regression.rs"]
+mod regression;

@@ -6,11 +6,12 @@ export function catalogMediaModel(
   editing = false,
 ): MediaModel {
   const plugin =
-    spec.id === "codex-image"
+    spec.plugin ??
+    (spec.id === "codex-image"
       ? "codex-image"
       : spec.id === "gemini-image-direct"
         ? "gemini-native"
-        : "fal";
+        : "fal");
   const falEdit = editing && plugin === "fal";
   const { prompt: _prompt, ...params } = spec.request;
   return {

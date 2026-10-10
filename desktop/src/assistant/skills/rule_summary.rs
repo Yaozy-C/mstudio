@@ -265,7 +265,7 @@ Reinspect affected areas and joins after repairs, retiming or new versions. Do n
         let count: i64 = db
             .query_row("SELECT count(*) FROM skill_resources", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(count, 60);
+        assert_eq!(count, 61);
         assert_eq!(db.query_row("SELECT count(*) FROM skill_resources WHERE path IN ('references/research.md','references/sources.md')", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
     }
     #[test]

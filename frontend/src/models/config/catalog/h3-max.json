@@ -1,0 +1,37 @@
+{
+  "id": "h3-max",
+  "name": "MiniMax H3 Max",
+  "provider": "MiniMax / fal",
+  "kind": "video",
+  "inputs": ["文本", "图像 · 首帧"],
+  "outputs": ["视频"],
+  "note": "2026 年 8 月发布的 fal 后训练版本。此预设支持 image_url 首帧；不提供图片时转为文字生成；不要套用 H3 参考视频接口的参数。",
+  "source": "https://fal.ai/models/minimax/h3-max/image-to-video/api",
+  "protocol": "fal Queue",
+  "endpoint": "minimax/h3-max/image-to-video",
+  "request": {
+    "prompt": "镜头缓慢推进"
+  },
+  "response": "video.url",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_url",
+        "kind": "image",
+        "role": "first-frame"
+      }
+    ],
+    "controls": {
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "1080P"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    },
+    "ratioFromReference": true
+  }
+}

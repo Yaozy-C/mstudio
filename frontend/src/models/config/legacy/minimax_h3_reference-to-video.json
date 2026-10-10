@@ -1,0 +1,45 @@
+{
+  "endpoint": "minimax/h3/reference-to-video",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/reference_image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "max": 9
+      },
+      {
+        "key": "/reference_video_urls",
+        "kind": "video",
+        "role": "reference",
+        "multiple": true,
+        "max": 3
+      },
+      {
+        "key": "/reference_audio_urls",
+        "kind": "audio",
+        "role": "reference",
+        "multiple": true,
+        "max": 3
+      }
+    ],
+    "referenceLimit": 12,
+    "referenceSeconds": 15,
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["9:16", "16:9", "1:1", "3:4", "4:3", "21:9"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "2K", "4K"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    }
+  }
+}

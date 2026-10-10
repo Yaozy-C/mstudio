@@ -1,0 +1,5 @@
+{
+  "https://api.xiaomimimo.com/v1": {
+    "apiKeyHeader": "api-key"
+  }
+}

@@ -151,6 +151,8 @@ fn text_files_work_without_vision_and_binary_inputs_fail_closed() {
         .into_iter()
         .find(|a| a.kind == "audio")
         .unwrap();
+    assert!(media_input::parts(&store, &audio, &profile).is_ok());
+    profile.inputs.audio = false;
     assert!(media_input::parts(&store, &audio, &profile).is_err());
     let mut foreign = asset;
     foreign.path = path.to_string_lossy().into();
@@ -181,6 +183,47 @@ async fn responses_transmits_pdf_as_input_file() {
     assert!(request.contains("input_file"));
     assert!(request.contains("data:application/pdf;base64,"));
     assert_eq!(result.unwrap(), "read file");
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[tokio::test]
+async fn compatible_video_configuration_transmits_original_video() {
+    let (root, store, doc) = fixture();
+    let (address, request) = mock(json!({
+        "id":"test", "object":"chat.completion", "created":0, "model":"test",
+        "choices":[{"index":0,"message":{"role":"assistant","content":"watched"},"finish_reason":"stop"}],
+        "usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}
+    }));
+    let mut profile = multimodal();
+    profile.adapter = "openai-compatible".into();
+    profile.endpoint = format!("{address}/v1");
+    profile.model = "custom-video-model".into();
+    let refs = [Reference {
+        kind: "asset".into(),
+        id: "video".into(),
+    }];
+    let payload = attachments::payload(&store, &doc, "Read video", &refs, &profile).unwrap();
+    assert!(!payload.to_string().contains("request frames"));
+    let result = agent::complete(&profile, "test-key", super::messages(&[], payload), None).await;
+    let request = request.join().unwrap();
+    let body: Value = serde_json::from_str(request.split_once("\r\n\r\n").unwrap().1).unwrap();
+    let part = body["messages"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|m| m["content"].as_array())
+        .flatten()
+        .find(|p| p["type"] == "video_url")
+        .unwrap();
+    assert_eq!(
+        part["video_url"]["url"],
+        "data:video/mp4;base64,dGVzdC1zb3VyY2UtY29udGVudA=="
+    );
+    assert_eq!(result.unwrap(), "watched");
+    profile.inputs.video = false;
+    profile.inputs.image = false;
+    assert!(attachments::payload(&store, &doc, "Read video", &refs, &profile).is_err());
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }

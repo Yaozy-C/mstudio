@@ -179,9 +179,7 @@ export function ComposerReference({
                 key={`node:${node.id}`}
                 title={node.title}
                 aria-label={`${added ? t("已引用") : t("引用")} ${node.title}`}
-                disabled={
-                  busy || added || (canvas.task?.inputs.length ?? 0) >= 12
-                }
+                disabled={busy || added}
                 onClick={() => canvas.attach({ kind: "node", id: node.id })}
               >
                 <div>
@@ -207,11 +205,7 @@ export function ComposerReference({
                   key={asset.id}
                   title={asset.name}
                   aria-label={`${added ? t("已引用") : t("引用")} ${asset.name}`}
-                  disabled={
-                    busy ||
-                    added ||
-                    (!role && (canvas.task?.inputs.length ?? 0) >= 12)
-                  }
+                  disabled={busy || added}
                   onClick={() => void reference(asset)}
                 >
                   <div>

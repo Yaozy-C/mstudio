@@ -80,7 +80,10 @@ pub(super) async fn fetch_models(
             .await
             .map_err(|e| e.to_string());
     }
+    let headers =
+        super::transport::headers(&profile.endpoint, key).map_err(|_| "服务认证配置无效")?;
     let client = reqwest::Client::builder()
+        .default_headers(headers)
         .timeout(std::time::Duration::from_secs(15))
         .redirect(reqwest::redirect::Policy::none())
         .build()

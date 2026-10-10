@@ -20,11 +20,11 @@
 }
 .canvas-card.selected {
   border-color: var(--desk-accent);
-  box-shadow: 0 0 0 1px var(--desk-accent);
+  box-shadow: none;
 }
 .canvas-card.referenced {
   border-color: var(--reference-color);
-  box-shadow: 0 0 0 1px var(--reference-color);
+  box-shadow: none;
 }
 .canvas-card.selected.referenced::after {
   content: "";
@@ -43,9 +43,9 @@
     linear-gradient(currentColor, currentColor) bottom right / 2px 12px;
   background-repeat: no-repeat;
 }
-.canvas-card:focus-visible {
-  outline: 2px dashed #45423b;
-  outline-offset: 8px;
+.radix-themes .canvas-card:focus-visible {
+  outline: none;
+  border-color: var(--desk-accent);
 }
 .canvas-card .card-title {
   display: flex;

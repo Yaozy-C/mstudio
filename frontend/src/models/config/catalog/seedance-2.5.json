@@ -1,0 +1,16 @@
+{
+  "id": "seedance-2.5",
+  "name": "Seedance 2.5",
+  "provider": "ByteDance",
+  "kind": "video",
+  "inputs": ["文本", "图像 / 视频 / 音频 · 参考模式"],
+  "outputs": ["视频"],
+  "note": "近期可用的 2.5 系列。文字生成、图生视频、多模态参考使用独立端点；当前预设为文字生成。参考模式支持最多 50 个混合参考，仍须遵守各类型限制。",
+  "source": "https://fal.ai/seedance-2.5",
+  "protocol": "fal Queue",
+  "endpoint": "bytedance/seedance-2.5/text-to-video",
+  "request": {
+    "prompt": "一个连续的产品展示镜头"
+  },
+  "response": "video.url"
+}

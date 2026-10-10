@@ -6,26 +6,8 @@ export const inputLabels = {
   video: "视频",
   document: "PDF",
 };
-export function protocolSupports(
-  adapter: ModelConnection["adapter"],
-  kind: string,
-) {
-  if (kind === "text" || kind === "image") return true;
-  if (kind === "audio")
-    return ["gemini-native", "openai-compatible"].includes(adapter);
-  if (kind === "video") return adapter === "gemini-native";
-  if (kind === "document")
-    return ["gemini-native", "anthropic-native", "openai-responses"].includes(
-      adapter,
-    );
-  return false;
-}
 export function supportsInput(model: ModelConnection, kind: string) {
-  return (
-    kind === "text" ||
-    (protocolSupports(model.adapter, kind) &&
-      !!model.inputs[kind as keyof typeof inputLabels])
-  );
+  return kind === "text" || !!model.inputs[kind as keyof typeof inputLabels];
 }
 export function inputSummary(model: ModelConnection) {
   return [

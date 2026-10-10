@@ -1,4 +1,5 @@
 {
+  "输入类型": "Input types",
   "参考图": "Reference image",
   "请先在本机 Codex 登录 ChatGPT 账号。": "Sign in to ChatGPT in your local Codex first.",
   "当前 Codex 不支持原生生图，请更新 Codex。": "This Codex version does not support native image generation. Update Codex.",
@@ -15,7 +16,6 @@
   "轮询使用 GET，地址须与提交接口同源。结果在另一接口时填写 resultUrl，例如 /tasks/{id}/result。headers 会附加到提交、轮询和结果请求，最多 8 个；Authorization、Host 等由服务连接管理，不能在此声明。取消任务需在服务端操作。当前支持 URL 媒体结果。": "Polling uses GET on the submission origin. Set resultUrl if results use another endpoint, e.g. /tasks/{id}/result. headers are attached to submission, polling and result requests, up to 8; Authorization, Host and similar stay managed by the service connection and cannot be declared here. Cancel tasks with the provider. URL media results are supported.",
   "配置模型": "Configure model",
   "参考输入与参数能力（可选）": "Reference inputs and parameter capabilities (optional)",
-  "声明此模型接受的参考用途与可调参数，值为请求体中的 JSON Pointer；留空表示只用协议默认能力。参考字段会从生成面板的参考素材写入对应位置，控件决定面板显示哪些设置。": "Declare the reference roles and adjustable parameters this model accepts; values are JSON Pointers into the request body. Leave empty to use only the protocol defaults. Reference fields receive the reference media chosen in the generation panel; controls decide which settings the panel shows.",
   "保存模型连接。生成描述和参考素材在项目中填写。": "Save the connection here. Add prompts and reference media in your project.",
   "给这个模型起个易识别的名字": "Give this model a recognizable name",
   "输出类型": "Output type",
@@ -218,5 +218,16 @@
   "使用 Messages 原生接口；填写账号可用的具体模型 ID。当前不直接接收音视频。": "Uses the native Messages interface. Enter a model ID available to your account. Direct audio/video input is not supported here.",
   "根据资料写脚本": "Write a script from the materials",
   "DeepSeek Flash：文字、图片；官方未列出原生音频、视频和 PDF 输入。": "DeepSeek Flash: text and images. Native audio, video and PDF input are not officially listed.",
-  "GPT-6 Astra：文字、图片；PDF 通过文件输入读取，不支持原生音频、视频。": "GPT-6 Astra: text and images. PDFs use file input; native audio and video are not supported."
+  "GPT-6 Astra：文字、图片；PDF 通过文件输入读取，不支持原生音频、视频。": "GPT-6 Astra: text and images. PDFs use file input; native audio and video are not supported.",
+  "声明此模型接受的参考用途与可调参数，值为请求体中的 JSON Pointer；留空表示只用协议默认能力。参考字段会从生成面板的参考素材写入对应位置，控件决定面板显示哪些设置。min/max、max、referenceLimit 和 referenceSeconds 仅在明确配置时限制，不填就不设上限。": "Declare the reference roles and adjustable parameters this model accepts; values are JSON Pointers into the request body. Leave empty to use only the protocol defaults. Reference fields receive the reference media chosen in the generation panel; controls decide which settings the panel shows. min/max, max, referenceLimit and referenceSeconds apply only when explicitly configured; omit them for no additional bounds.",
+  "地址已修改，请重新输入 API Key": "Address changed. Enter the API key again.",
+  "请填写连接名称": "Enter a connection name",
+  "请使用 HTTPS 或本机 HTTP 地址": "Use HTTPS or a local HTTP address",
+  "服务地址不能含凭据、查询参数或片段": "The service address cannot contain credentials, query parameters or fragments",
+  "Gemini 服务地址不附加 /v1 或 /v1beta": "Do not append /v1 or /v1beta to the Gemini service address",
+  "请填写有效的服务地址": "Enter a valid service address",
+  "API Key 格式无效": "Invalid API key format",
+  "移除服务连接": "Remove service connection",
+  "百炼 · 官方直连": "DashScope · Official API",
+  "阿里云百炼官方直连": "Alibaba Cloud DashScope official API"
 }

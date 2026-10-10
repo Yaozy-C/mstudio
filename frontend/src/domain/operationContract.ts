@@ -16,7 +16,7 @@ const reference = object(
   { assetId: id, purpose: text(400), start: number(0), end: number(0) },
   ["assetId", "purpose"],
 );
-const references = array(reference, 12);
+const references = { ...array(reference), maxItems: undefined };
 const screenplay = object({
   scriptMode: choices("merge", "replace"),
   removeParagraphIds: array(id, 200),
@@ -187,7 +187,11 @@ export const operationContract = {
     ),
     op(
       "set_references",
-      { id, referenceMode: choices("remove"), assetIds: array(id, 12) },
+      {
+        id,
+        referenceMode: choices("remove"),
+        assetIds: { ...array(id), maxItems: undefined },
+      },
       ["id", "referenceMode", "assetIds"],
     ),
     op("append_clip", { assetId: id, ...clip }, ["assetId"]),

@@ -1,60 +1,72 @@
-import { array, choices, id, number, object, text } from "./schema";
-
-import { parameterSchema } from "../production/parameters";
 import {
-  imageRatios,
-  imageResolutions,
-  videoMaxResolutions,
-  videoRatios,
-  videoResolutions,
-} from "../models/capabilities";
-const imageParameters = parameterSchema({
-  ratios: imageRatios,
-  resolutions: imageResolutions,
-  customSize: true,
-  duration: false,
+  array,
+  choices,
+  described,
+  id,
+  integer,
+  number,
+  object,
+  text,
+} from "./schema";
+
+// Generic tool arguments carry model-specific values; the selected model validates them
+// in the domain service before committing a task. mstudio_models advertises exact enums.
+const commonParameters = {
+  aspectRatio: described(
+    text(100),
+    "Use the selected model's aspectRatio enum from mstudio_models.",
+  ),
+  resolution: described(
+    text(100),
+    "Use the selected model's case-sensitive resolution enum from mstudio_models.",
+  ),
+};
+const imageParameters = object({
+  ...commonParameters,
+  width: integer(1),
+  height: integer(1),
 });
-const videoParameters = parameterSchema({
-  ratios: videoRatios,
-  resolutions: [...new Set([...videoResolutions, ...videoMaxResolutions])],
-  customSize: false,
-  duration: true,
+const videoParameters = object({
+  ...commonParameters,
+  duration: described(
+    { ...number(0), exclusiveMinimum: 0 },
+    "Seconds within the selected model's duration bounds from mstudio_models. Editorial duration is separate.",
+  ),
 });
-const references = (roles: string[]) =>
-  array(
-    {
-      ...object(
-        {
-          assetId: { ...id, description: "Existing project media asset ID." },
-          purpose: {
-            ...text(400),
-            description:
-              "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role.",
-          },
-          role: {
-            ...choices(...roles),
-            description: roles.includes("edit")
-              ? "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
-              : "Video input mode: reference = image guidance; first-frame = starting image; last-frame = ending image; video-reference = reference video. Omission defaults to reference for images and video-reference for videos. Select only modes supported by the chosen model; describe visual use in purpose.",
-          },
-          start: {
-            ...number(0),
-            description:
-              "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration.",
-          },
-          end: {
-            ...number(0),
-            description:
-              "Reference video trim end in seconds, greater than start and within the source video duration.",
-          },
+const references = (roles: string[]) => ({
+  ...array({
+    ...object(
+      {
+        assetId: { ...id, description: "Existing project media asset ID." },
+        purpose: {
+          ...text(400),
+          description:
+            "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role.",
         },
-        ["assetId", "purpose"],
-      ),
-      description:
-        'One existing media input. Example: {"assetId":"existing-image-id","role":"reference","purpose":"Preserve product geometry visible in the top view"}. Replace the example ID with an actual project asset ID.',
-    },
-    12,
-  );
+        role: {
+          ...choices(...roles),
+          description: roles.includes("edit")
+            ? "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
+            : "Video input mode: reference = image guidance; first-frame = starting image; last-frame = ending image; video-reference = reference video. Omission defaults to reference for images and video-reference for videos. Select only modes supported by the chosen model; describe visual use in purpose.",
+        },
+        start: {
+          ...number(0),
+          description:
+            "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration.",
+        },
+        end: {
+          ...number(0),
+          description:
+            "Reference video trim end in seconds, greater than start and within the source video duration.",
+        },
+      },
+      ["assetId", "purpose"],
+    ),
+    description:
+      'One existing media input. Example: {"assetId":"existing-image-id","role":"reference","purpose":"Preserve product geometry visible in the top view"}. Replace the example ID with an actual project asset ID.',
+  }),
+  maxItems: undefined,
+});
 const common = {
   op: {
     type: "string",

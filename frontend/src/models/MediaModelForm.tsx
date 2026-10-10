@@ -1,3 +1,4 @@
+import capabilityExample from "./config/example-capabilities.json";
 import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -5,6 +6,7 @@ import { ServicePicker } from "./ServicePicker";
 import {
   imageServiceKinds,
   videoServiceKinds,
+  servicePresets,
   type ServiceKind,
 } from "./connectionStore";
 import { StudioSelect } from "../ui/StudioSelect";
@@ -124,11 +126,13 @@ export function MediaModelForm({
             suggested={{
               kind: model.plugin as ServiceKind,
               endpoint:
-                model.plugin === "fal"
-                  ? "https://queue.fal.run"
-                  : model.plugin === "http-json"
-                    ? ""
-                    : model.endpoint,
+                model.plugin === "dashscope"
+                  ? servicePresets.find((p) => p.kind === "dashscope")!.endpoint
+                  : model.plugin === "fal"
+                    ? "https://queue.fal.run"
+                    : model.plugin === "http-json"
+                      ? ""
+                      : model.endpoint,
             }}
             onChange={(service) => {
               const changed = service.kind !== model.plugin;
@@ -138,11 +142,14 @@ export function MediaModelForm({
                 plugin: service.kind,
                 hasKey: service.hasKey,
                 endpoint:
-                  service.kind === "gemini-native"
-                    ? service.endpoint
-                    : changed
-                      ? ""
-                      : model.endpoint,
+                  service.kind === "dashscope"
+                    ? service.endpoint +
+                      "/api/v1/services/aigc/video-generation/video-synthesis"
+                    : service.kind === "gemini-native"
+                      ? service.endpoint
+                      : changed
+                        ? ""
+                        : model.endpoint,
               });
               if (changed)
                 setParams(
@@ -211,26 +218,11 @@ export function MediaModelForm({
                 spellCheck={false}
                 value={capabilities}
                 onChange={(e) => setCapabilities(e.target.value)}
-                placeholder={JSON.stringify(
-                  {
-                    references: [
-                      {
-                        key: "/image_url",
-                        kind: "image",
-                        role: "first-frame",
-                      },
-                    ],
-                    controls: {
-                      duration: { path: "/duration", min: 2, max: 15 },
-                    },
-                  },
-                  null,
-                  2,
-                )}
+                placeholder={JSON.stringify(capabilityExample, null, 2)}
               />
               <small>
                 {t(
-                  "声明此模型接受的参考用途与可调参数，值为请求体中的 JSON Pointer；留空表示只用协议默认能力。参考字段会从生成面板的参考素材写入对应位置，控件决定面板显示哪些设置。",
+                  "声明此模型接受的参考用途与可调参数，值为请求体中的 JSON Pointer；留空表示只用协议默认能力。参考字段会从生成面板的参考素材写入对应位置，控件决定面板显示哪些设置。min/max、max、referenceLimit 和 referenceSeconds 仅在明确配置时限制，不填就不设上限。",
                 )}
               </small>
             </label>
@@ -245,7 +237,7 @@ export function MediaModelForm({
                 spellCheck={false}
               />
               <small>
-                {model.plugin === "fal"
+                {["fal", "dashscope"].includes(model.plugin)
                   ? t("按模型文档填写 JSON，提交时自动填入 prompt。")
                   : model.plugin === "gemini-native"
                     ? t(

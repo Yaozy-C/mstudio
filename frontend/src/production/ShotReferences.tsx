@@ -46,11 +46,7 @@ export function ShotReferences({
     a.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
   );
   function add(asset: Asset) {
-    if (
-      references.length >= 12 ||
-      references.some((r) => r.assetId === asset.id)
-    )
-      return;
+    if (references.some((r) => r.assetId === asset.id)) return;
     onChange([
       ...references,
       {
@@ -65,7 +61,7 @@ export function ShotReferences({
       <div className="shot-references-heading">
         <div>
           <h3>{t("镜头参考素材")}</h3>
-          <span className="shot-reference-count">{references.length} / 12</span>
+          <span className="shot-reference-count">{references.length}</span>
         </div>
         <button
           className="shot-reference-add"
@@ -100,7 +96,7 @@ export function ShotReferences({
                   title={asset.name}
                   aria-label={`${t("添加参考素材")}：${asset.name}`}
                   aria-pressed={selected}
-                  disabled={selected || references.length >= 12}
+                  disabled={selected}
                   onClick={() => add(asset)}
                 >
                   <span className="shot-reference-option-image">

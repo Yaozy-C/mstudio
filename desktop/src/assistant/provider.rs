@@ -3,9 +3,17 @@ use rig_agent::{agent::AgentBuilder, prelude::*};
 use rig_core::providers::{anthropic, gemini, openai};
 use std::time::Duration;
 
+#[cfg(test)]
 pub(super) fn http_client(timeout: Duration) -> Result<rig_http::Client, String> {
+    configured_client(timeout, rig_http::header::HeaderMap::new())
+}
+fn configured_client(
+    timeout: Duration,
+    headers: rig_http::header::HeaderMap,
+) -> Result<rig_http::Client, String> {
     rig_http::Client::builder()
         .redirect(rig_http::redirect::Policy::none())
+        .default_headers(headers)
         .connect_timeout(Duration::from_secs(20))
         .timeout(timeout)
         .build()
@@ -19,7 +27,9 @@ pub fn builder(profile: &Profile, key: &str) -> Result<AgentBuilder, String> {
         )));
     }
     // Each model request gets its own budget, including after tool execution.
-    let http = http_client(Duration::from_secs(240))?;
+    let headers = crate::models::transport::headers(&profile.endpoint, key)
+        .map_err(|_| "服务认证配置无效")?;
+    let http = configured_client(Duration::from_secs(240), headers)?;
     let key = if key.is_empty() { "local" } else { key };
     macro_rules! client {
         ($provider:ident) => {

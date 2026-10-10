@@ -10,7 +10,6 @@ import { bridge } from "../bridge";
 import { type ModelConnection } from "./types";
 import { ServicePicker } from "./ServicePicker";
 import { textServiceKinds } from "./connectionStore";
-import { recommendedInputs } from "./verifiedInputs";
 export function ModelForm({
   initial,
   saved,
@@ -65,17 +64,8 @@ export function ModelForm({
         if (issue || !profile.connectionId) return;
         setBusy(true);
         setError("");
-        const supported = recommendedInputs(profile);
-        const inputs = supported
-          ? Object.fromEntries(
-              Object.entries(profile.inputs).map(([kind, enabled]) => [
-                kind,
-                enabled && supported[kind as keyof typeof supported],
-              ]),
-            )
-          : profile.inputs;
         void bridge("save_model", {
-          profile: { ...profile, inputs },
+          profile,
           key: null,
           clearKey: false,
         })

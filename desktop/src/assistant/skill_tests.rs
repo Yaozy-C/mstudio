@@ -17,13 +17,12 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
     db.execute("INSERT INTO skill_resources(skill_id,path,text) VALUES('creative-ad-director','CORE.md','OLD_ROLE_CHAIN')", []).unwrap();
     for profile in profiles::builtins() {
         let catalog = skills::storage::catalog(&db, &profiles::skill_setting(&profile)).unwrap();
-        let snapshot = json!({"skills":catalog,"agent":{
-            "name":profile.name,"instructions":profile.instructions,
-            "skills":profile.skill_ids,"tools":profile.tool_ids,
-            "canEdit":profiles::allows(&profile,"edit")
-        }});
+        let snapshot = json!({"skills":catalog,"agent":super::model_profile::role(&profile)});
         let system = super::prompts::system(&snapshot);
-        assert!(system.contains("mstudio_read_skill"));
+        assert_eq!(
+            system.contains("mstudio_read_skill"),
+            profile.id != "video-analyst"
+        );
         assert!(!system.contains("UNLOADED_SKILL_BODY"));
         assert!(!snapshot.to_string().contains("UNLOADED_SKILL_BODY"));
         assert!(!snapshot.to_string().contains("OLD_ROLE_CHAIN"));

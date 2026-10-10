@@ -1,0 +1,16 @@
+{
+  "id": "gemini-image-direct",
+  "name": "Gemini 3.1 Flash Image",
+  "provider": "Google / 官方直连",
+  "kind": "image",
+  "inputs": ["文本", "图像"],
+  "outputs": ["图像"],
+  "note": "Google 官方连接，无需 fal",
+  "source": "https://ai.google.dev/gemini-api/docs/image-generation",
+  "protocol": "Gemini 原生",
+  "request": {
+    "model": "gemini-3.1-flash-image"
+  },
+  "response": "inlineData",
+  "endpoint": "https://generativelanguage.googleapis.com"
+}

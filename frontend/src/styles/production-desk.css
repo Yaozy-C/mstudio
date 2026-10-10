@@ -27,7 +27,13 @@ body,
 .radix-themes button.primary:hover:not(:disabled) {
   background: var(--desk-text);
 }
-.radix-themes :is(button, input, textarea, select):focus-visible {
+.radix-themes
+  :is(
+    button,
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"]
+  ):focus-visible {
   outline: 2px solid var(--desk-accent);
   outline-offset: 3px;
 }

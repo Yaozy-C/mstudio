@@ -17,7 +17,7 @@ export function checkedReferences(
   raw: unknown,
   existing: Reference[] = [],
 ): Reference[] {
-  if (!Array.isArray(raw) || raw.length > 12) throw new Error("参考数量无效");
+  if (!Array.isArray(raw)) throw new Error("参考数量无效");
   const refs = raw.map((r: Record<string, unknown>) => {
     if (!r || typeof r !== "object") throw new Error("参考格式无效");
     const a = p.assets.find((a) => a.id === r.assetId);
@@ -127,7 +127,6 @@ export function creationOperation(p: Project, op: Op): Project | null {
           for (const ref of incoming)
             merged.set(ref.assetId, { ...merged.get(ref.assetId), ...ref });
           references = [...merged.values()];
-          if (references.length > 12) throw new Error("参考数量无效");
         }
       }
       return {

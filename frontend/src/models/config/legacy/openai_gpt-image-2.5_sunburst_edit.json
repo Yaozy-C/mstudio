@@ -1,0 +1,19 @@
+{
+  "endpoint": "openai/gpt-image-2.5/sunburst/edit",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "required": true
+      }
+    ],
+    "controls": {
+      "imageSize": {
+        "path": "/image_size"
+      }
+    }
+  }
+}

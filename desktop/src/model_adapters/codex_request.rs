@@ -4,19 +4,17 @@ use std::path::Path;
 
 pub fn validate(input: &Value) -> Result<()> {
     let object = input.as_object().context("请求必须是 JSON 对象")?;
+    let config: Value = serde_json::from_str(include_str!(
+        "../../../frontend/src/models/config/native-requests.json"
+    ))?;
+    let transport = &config["codex-image"];
+    let allowed = transport["allowedFields"]
+        .as_array()
+        .context("原生请求配置无效")?;
     for key in object.keys() {
         ensure!(
-            [
-                "prompt",
-                "model",
-                "n",
-                "size",
-                "quality",
-                "output_format",
-                "image"
-            ]
-            .contains(&key.as_str()),
-            "Codex 不支持参数：{key}"
+            allowed.iter().any(|field| field == key),
+            "原生连接不支持参数：{key}"
         );
     }
     let prompt = input["prompt"].as_str().context("请输入生成描述")?;
@@ -24,15 +22,13 @@ pub fn validate(input: &Value) -> Result<()> {
         !prompt.trim().is_empty() && prompt.len() <= 32000,
         "生成描述须为 1–32000 字节"
     );
-    for (key, expected) in [
-        ("model", "codex-image"),
-        ("size", "auto"),
-        ("quality", "auto"),
-        ("output_format", "png"),
-    ] {
+    for (key, expected) in transport["fixedValues"]
+        .as_object()
+        .context("原生请求配置无效")?
+    {
         ensure!(
             input.get(key).is_none_or(|v| v == expected),
-            "Codex 不支持指定 {key}；当前只支持 {expected}，不能保证 Image 2.5 型号或精确参数"
+            "原生连接不支持指定 {key}；当前只支持 {expected}"
         );
     }
     // Legacy model presets may contain n; native tool calls determine outputs.

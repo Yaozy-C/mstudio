@@ -24,7 +24,6 @@ pub fn payload(
         !prompt.trim().is_empty() && prompt.len() <= 24000,
         "消息需为 1–8000 个字符"
     );
-    ensure!(refs.len() <= 12, "每条消息最多附带 12 个对象或素材");
     let mut metadata = vec![];
     let mut contexts = vec![];
     let mut images = vec![];
@@ -90,14 +89,11 @@ pub fn payload(
             .or_else(|| asset.map(|a| a.name.chars().take(160).collect()))
             .unwrap_or_default();
         metadata.push(json!({"kind":reference.kind,"id":reference.id,"title":title,"assetId":asset_id,"mediaKind":asset.map(|a|a.kind.as_str())}));
-        contexts.push(json!({"attachment":metadata.last(),"creative":node.map(|n|super::creative_context::node_context(doc,n)),"clip":clip.map(|c|json!({"id":c["id"],"shotId":c["shotId"],"assetId":c["assetId"],"start":c["start"],"trimIn":c["trimIn"],"trimOut":c["trimOut"],"speed":c["speed"],"trackId":c["trackId"],"visual":c["visual"]})),"nodeText":node.map(|n|text(&n["text"],2400)),"nodeTextTruncated":node.is_some_and(|n|n["text"].as_str().unwrap_or("").chars().count()>2400),"references":node.and_then(|n|n["references"].as_array()).map(|r|r.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":text(&r["purpose"],200),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>()),"media":asset.map(|a|json!({"id":a.id,"kind":a.kind,"duration":a.duration,"width":a.width,"height":a.height,"provided":if a.kind == "video" && profile.inputs.image && !(profile.inputs.video && profile.adapter == "gemini-native") { "metadata only; request frames with mstudio_read_image" } else if a.kind == "image" && profile.adapter == "codex" { "original image supplied as a local file in this request" } else if a.kind == "image" { "image content in this request; large images may be resized for analysis; original asset unchanged" } else { "original content in this request" }}))}));
+        contexts.push(json!({"attachment":metadata.last(),"creative":node.map(|n|super::creative_context::node_context(doc,n)),"clip":clip.map(|c|json!({"id":c["id"],"shotId":c["shotId"],"assetId":c["assetId"],"start":c["start"],"trimIn":c["trimIn"],"trimOut":c["trimOut"],"speed":c["speed"],"trackId":c["trackId"],"visual":c["visual"]})),"nodeText":node.map(|n|text(&n["text"],2400)),"nodeTextTruncated":node.is_some_and(|n|n["text"].as_str().unwrap_or("").chars().count()>2400),"references":node.and_then(|n|n["references"].as_array()).map(|r|r.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":text(&r["purpose"],200),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>()),"media":asset.map(|a|json!({"id":a.id,"kind":a.kind,"duration":a.duration,"width":a.width,"height":a.height,"provided":if a.kind == "video" && profile.inputs.image && !profile.inputs.video { "metadata only; request frames with mstudio_read_image" } else if a.kind == "image" && profile.adapter == "codex" { "original image supplied as a local file in this request" } else if a.kind == "image" { "image content in this request; large images may be resized for analysis; original asset unchanged" } else { "original content in this request" }}))}));
         if let Some(asset) = asset
             && image_ids.insert(&asset.id)
         {
-            if asset.kind == "video"
-                && profile.inputs.image
-                && !(profile.inputs.video && profile.adapter == "gemini-native")
-            {
+            if asset.kind == "video" && profile.inputs.image && !profile.inputs.video {
                 images.push(json!({"type":"text","text":format!("Video {} (assetId={}) has not supplied pixels. Use mstudio_read_image(assetId,time) for needed frames; for a referenced clip include clipId and use clip-local seconds. Frame reads provide no audio and do not prove full playback.", asset.name, asset.id)}));
             } else {
                 images.extend(super::media_input::parts(store, asset, profile)?);

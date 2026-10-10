@@ -77,7 +77,7 @@ test("mixed references preserve intervals and never claim video editing support"
     ...task,
     inputs: task.inputs.map((r) => (r.assetId === "v" ? { ...r, end: 18 } : r)),
   };
-  expect(() => inputFor(p, invalid, m)).toThrow("2–15 秒");
+  expect(() => inputFor(p, invalid, m)).toThrow("15 秒");
   expect(() =>
     inputFor(
       p,

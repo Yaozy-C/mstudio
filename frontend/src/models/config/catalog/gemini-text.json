@@ -1,0 +1,41 @@
+{
+  "id": "gemini-text",
+  "name": "Gemini · 多模态文本",
+  "provider": "Google",
+  "kind": "text",
+  "inputs": ["文本", "图像", "音频", "视频", "PDF"],
+  "outputs": ["文本", "工具调用"],
+  "note": "原生协议用 contents / parts、inlineData 或 fileData。当前使用 Gemini 原生接口传入图片、音频、视频及 PDF；单素材上限 12 MiB。",
+  "source": "https://ai.google.dev/gemini-api/docs/function-calling",
+  "protocol": "Gemini 原生 generateContent",
+  "request": {
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "总结文件"
+          },
+          {
+            "fileData": {
+              "mimeType": "application/pdf",
+              "fileUri": "<已上传文件 URI>"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "response": "candidates[].content.parts[].text / functionCall",
+  "connection": {
+    "endpoint": "https://generativelanguage.googleapis.com",
+    "adapter": "gemini-native",
+    "model": "gemini-3.8-flash",
+    "inputs": {
+      "image": true,
+      "audio": true,
+      "video": true,
+      "document": true
+    }
+  }
+}

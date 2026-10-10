@@ -27,7 +27,13 @@
   background: #40403b;
   border-color: #40403b;
 }
-.radix-themes :is(button, input, select, textarea):focus-visible {
+.radix-themes
+  :is(
+    button,
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="range"]
+  ):focus-visible {
   outline: 2px solid var(--desk-accent);
   outline-offset: 3px;
 }

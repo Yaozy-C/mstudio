@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { newConnection } from "./types";
 import { recommendedInputs, verifiedInputs } from "./verifiedInputs";
-test("official capabilities are model-specific and gated by the wired protocol", () => {
+test("official capability suggestions are independent of protocol", () => {
   const base = newConnection();
   const ds = {
     ...base,
@@ -40,7 +40,7 @@ test("official capabilities are model-specific and gated by the wired protocol",
   });
   expect(
     recommendedInputs({ ...gpt, adapter: "openai-compatible" })?.document,
-  ).toBe(false);
+  ).toBe(true);
 });
 test("custom services and unknown models do not inherit official capabilities", () => {
   const base = {

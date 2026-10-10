@@ -28,10 +28,15 @@ export function registeredInput(
     requestPrompt(project, prompt, refs),
     model.params,
   );
-  for (const ref of refs) {
+  for (const [index, ref] of refs.entries()) {
     const asset = project.assets.find((a) => a.id === ref.assetId);
-    const file = uploaded.find((u) => u.assetId === ref.assetId);
-    if (!asset || !file || file.kind !== asset.kind)
+    const file = uploaded[index];
+    if (
+      !asset ||
+      !file ||
+      file.assetId !== ref.assetId ||
+      file.kind !== asset.kind
+    )
       throw new Error("参考素材丢失或尚未上传");
     if (
       asset.kind === "video" &&

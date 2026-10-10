@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Codex",
+    "kind": "codex",
+    "endpoint": "codex://local"
+  },
+  {
+    "name": "OpenAI",
+    "kind": "openai-responses",
+    "endpoint": "https://api.openai.com/v1"
+  },
+  {
+    "name": "Google",
+    "kind": "gemini-native",
+    "endpoint": "https://generativelanguage.googleapis.com"
+  },
+  {
+    "name": "Anthropic",
+    "kind": "anthropic-native",
+    "endpoint": "https://api.anthropic.com/v1"
+  },
+  {
+    "name": "DeepSeek",
+    "kind": "openai-compatible",
+    "endpoint": "https://api.deepseek.com"
+  },
+  {
+    "name": "Xiaomi · MiMo",
+    "kind": "openai-compatible",
+    "endpoint": "https://api.xiaomimimo.com/v1"
+  },
+  {
+    "name": "fal",
+    "kind": "fal",
+    "endpoint": "https://queue.fal.run"
+  },
+  {
+    "name": "其他对话服务",
+    "kind": "openai-compatible",
+    "endpoint": ""
+  },
+  {
+    "name": "自定义 HTTP",
+    "kind": "http-json",
+    "endpoint": ""
+  },
+  {
+    "name": "Alibaba · 百炼官方",
+    "kind": "dashscope",
+    "endpoint": "https://your-workspace-id.cn-beijing.maas.aliyuncs.com"
+  }
+]

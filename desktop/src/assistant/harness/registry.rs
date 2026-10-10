@@ -74,6 +74,9 @@ impl ProjectHost {
 impl ProjectHost {
     pub(super) fn available_definitions(&self) -> Vec<ToolDefinition> {
         let Some(t) = &self.tool else { return vec![] };
+        if t.profile.id == "video-analyst" {
+            return vec![];
+        }
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
         if profiles::allows(&t.profile, "inspect") {
@@ -190,6 +193,9 @@ impl Host for ProjectHost {
         let Some(t) = &self.tool else {
             return json!({"error":"Tool unavailable", "code":"UNKNOWN_TOOL"});
         };
+        if t.profile.id == "video-analyst" {
+            return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
+        }
         if call.function.name == super::tool_loading::LOAD {
             return self
                 .loaded_tools
@@ -212,6 +218,9 @@ impl Host for ProjectHost {
 }
 
 pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
+    if t.profile.id == "video-analyst" {
+        return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
+    }
     let mut args = call.function.arguments.clone();
     if let Some(decoded) = super::read_tools::decode(&call.function.name, args.clone()) {
         let value = t

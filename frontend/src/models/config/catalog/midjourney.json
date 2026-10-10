@@ -1,0 +1,15 @@
+{
+  "id": "midjourney",
+  "name": "Midjourney · MJ",
+  "provider": "Midjourney",
+  "kind": "image",
+  "inputs": ["文本", "图像提示", "风格参考"],
+  "outputs": ["图像"],
+  "note": "官方未提供通用公开 API。保留模型能力资料，暂不提供假接入或第三方冒充的官方协议。",
+  "source": "https://docs.midjourney.com/hc/en-us/articles/32013696484109-Community-Guidelines",
+  "protocol": "官方网页 / Discord",
+  "request": {
+    "prompt": "<图片 URL> 产品视觉 --ar 16:9"
+  },
+  "response": "官方界面中的图像结果；无公开 JSON API 合约"
+}

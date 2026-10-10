@@ -1,5 +1,4 @@
 import type { ModelConnection } from "./types";
-import { protocolSupports } from "./inputCapabilities";
 
 // Exact official model IDs only. Compatible endpoints may expose different capabilities.
 // Verified against provider documentation on 2026-09-22.
@@ -39,10 +38,5 @@ export function verifiedInputs(profile: ModelConnection) {
 export function recommendedInputs(profile: ModelConnection) {
   const verified = verifiedInputs(profile);
   if (!verified) return null;
-  return Object.fromEntries(
-    Object.entries(verified.inputs).map(([kind, supported]) => [
-      kind,
-      supported && protocolSupports(profile.adapter, kind),
-    ]),
-  ) as ModelConnection["inputs"];
+  return { ...verified.inputs };
 }

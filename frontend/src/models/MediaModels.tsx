@@ -175,9 +175,11 @@ export function MediaModels({
                   ? t("Codex · 型号未验证")
                   : m.plugin === "fal"
                     ? t("fal · 第三方")
-                    : m.plugin === "gemini-native"
-                      ? t("Google · 官方直连")
-                      : t("自定义 HTTP")}
+                    : m.plugin === "dashscope"
+                      ? t("百炼 · 官方直连")
+                      : m.plugin === "gemini-native"
+                        ? t("Google · 官方直连")
+                        : t("自定义 HTTP")}
               </span>
             </div>
             <footer>

@@ -23,7 +23,6 @@ fn payload(input: &Value) -> Result<Value> {
     let mut parts = vec![json!({"text":prompt})];
     if let Some(images) = input.get("image_urls") {
         let images = images.as_array().context("参考图片格式无效")?;
-        ensure!(images.len() <= 9, "最多 9 张参考图片");
         for image in images {
             let url = image.as_str().context("参考图片格式无效")?;
             let (mime, _) = image_bytes(url)?;
@@ -161,6 +160,8 @@ mod tests {
         );
         let update = parse(&json!({"candidates":[{"content":{"parts":[{"thought":true,"inlineData":{"mimeType":"image/png","data":"Yg=="}},{"inlineData":{"mimeType":"image/png","data":"YQ=="}}]}}]})).unwrap();
         assert_eq!(Gemini.outputs(&update.result.unwrap())[0].url, image);
+        let many = payload(&json!({"prompt":"reference", "image_urls":vec![image;16]})).unwrap();
+        assert_eq!(many["contents"][0]["parts"].as_array().unwrap().len(), 17);
         assert!(parse(&json!({"candidates":[]})).is_err());
         assert!(
             payload(&json!({"prompt":"edit","image_urls":["https://example.com/a.png"]})).is_err()

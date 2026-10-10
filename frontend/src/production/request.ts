@@ -3,11 +3,7 @@ import { taskParameters } from "./parameters";
 import type { Project, Reference } from "../model";
 import type { MediaModel } from "../models/mediaRegistry";
 import { mediaAdapter, type ModelInput } from "../models/adapters";
-import {
-  pointerDelete,
-  referenceLimits,
-  referenceSafetyCaps,
-} from "../models/capabilities";
+import { pointerDelete, referenceLimits } from "../models/capabilities";
 import {
   registeredInput,
   requestPrompt,
@@ -83,18 +79,13 @@ export function inputFor(
   };
   // Only the materials shown in this task may be sent. Model presets cannot add hidden references.
   for (const f of adapter.fields) pointerDelete(options, f.key);
+  // Fixed native builders still recognize these fields when references are disabled.
+  if (model.plugin === "gemini-native") pointerDelete(options, "/image_urls");
+  if (model.plugin === "codex-image") pointerDelete(options, "/image");
   const limits = referenceLimits(model);
   const refs = mediaReferences(task);
-  if (new Set(refs.map((r) => r.assetId)).size !== refs.length)
-    throw failure(
-      "VALIDATION_FAILED",
-      "同一素材只能有一种用途，请移除重复素材",
-    );
-  if (refs.length > (limits.count ?? referenceSafetyCaps.count))
-    throw failure(
-      "VALIDATION_FAILED",
-      `本次最多使用 ${limits.count ?? referenceSafetyCaps.count} 个素材`,
-    );
+  if (limits.count !== null && refs.length > limits.count)
+    throw failure("VALIDATION_FAILED", `本次最多使用 ${limits.count} 个素材`);
   if (task.inputs.some((r) => r.role === "video-edit"))
     throw failure(
       "VALIDATION_FAILED",
@@ -108,32 +99,24 @@ export function inputFor(
       visual.filter((r) => r.role === "last-frame").length !== 1)
   )
     throw failure("VALIDATION_FAILED", "首尾帧需要分别指定一张首帧和一张尾帧");
-  let seconds = 0,
-    images = 0,
-    videos = 0;
-  const files = refs.map((r) => {
+  let seconds = 0;
+  const files = refs.map((r, index) => {
     const asset = p.assets.find((a) => a.id === r.assetId);
     if (!asset || !["image", "video"].includes(asset.kind))
       throw failure("VALIDATION_FAILED", "素材已移除，或不支持用于媒体生成");
-    if (asset.kind === "image") images++;
-    else {
-      videos++;
+    if (asset.kind === "video") {
       const start = r.start ?? 0,
         end = r.end ?? asset.duration;
       if (
         !Number.isFinite(start + end) ||
         start < 0 ||
         end > asset.duration ||
-        end - start < 2 ||
-        end - start > 15
+        end <= start
       )
-        throw failure(
-          "VALIDATION_FAILED",
-          "每段视频参考需为 2–15 秒，且不能超出原视频",
-        );
+        throw failure("VALIDATION_FAILED", "参考区间须有效且不能超出原视频");
       seconds += end - start;
     }
-    const ref = visual.find((v) => v.assetId === r.assetId)!;
+    const ref = visual[index];
     const role: ModelInput["role"] = ["first-frame", "last-frame"].includes(
       ref.role,
     )
@@ -158,14 +141,10 @@ export function inputFor(
           : "https://example.invalid/validate"),
     };
   });
-  if (
-    images > (limits.kinds.image ?? referenceSafetyCaps.image) ||
-    videos > (limits.kinds.video ?? referenceSafetyCaps.video) ||
-    seconds > (limits.seconds ?? referenceSafetyCaps.seconds)
-  )
+  if (limits.seconds !== null && seconds > limits.seconds)
     throw failure(
       "VALIDATION_FAILED",
-      `最多 ${limits.kinds.image ?? referenceSafetyCaps.image} 张图片、${limits.kinds.video ?? referenceSafetyCaps.video} 段视频；视频参考合计不超过 ${limits.seconds ?? referenceSafetyCaps.seconds} 秒`,
+      `参考视频合计不超过 ${limits.seconds} 秒`,
     );
   return registeredInput(
     { ...model, params: options },

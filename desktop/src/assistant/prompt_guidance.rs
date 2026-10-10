@@ -50,6 +50,9 @@ pub fn for_agent(
     production: &Value,
     doc: &Value,
 ) -> Result<String> {
+    if profile.id == "video-analyst" {
+        return super::video_analysis::guidance(db, profile);
+    }
     let config = config();
     let kinds: std::collections::BTreeSet<_> = profile
         .skill_ids

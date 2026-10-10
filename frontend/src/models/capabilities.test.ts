@@ -66,8 +66,8 @@ test("a declaration is data: unknown fields, roles, kinds and limits are rejecte
     { controls: { duration: { path: "/duration", values: ["5"] } } },
     { controls: { imageSize: { path: "/image_size", values: ["1K"] } } },
     { controls: { duration: { path: "/duration", min: 9, max: 5 } } },
-    { referenceLimit: 13 },
-    { referenceSeconds: 16 },
+    { referenceLimit: 0 },
+    { referenceSeconds: 0 },
     { unexpected: true },
   ])
     expect(() => validateCapabilities(rejected)).toThrow();
@@ -146,6 +146,6 @@ test("first-frame models report a frame-derived ratio instead of offering ratios
   expect(referenceLimits(declared)).toEqual({
     count: 4,
     seconds: 8,
-    kinds: { image: 2, video: 3, audio: null },
+    kinds: { image: null, video: null, audio: null },
   });
 });

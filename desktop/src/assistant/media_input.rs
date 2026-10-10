@@ -13,16 +13,9 @@ pub fn parts(store: &Store, asset: &Asset, profile: &Profile) -> Result<Vec<Valu
     let supported = match asset.kind.as_str() {
         "text" => true,
         "image" => inputs.image,
-        "audio" => {
-            inputs.audio
-                && ["gemini-native", "openai-compatible"].contains(&profile.adapter.as_str())
-        }
-        "video" => inputs.video && profile.adapter == "gemini-native",
-        "document" => {
-            inputs.document
-                && ["gemini-native", "anthropic-native", "openai-responses"]
-                    .contains(&profile.adapter.as_str())
-        }
+        "audio" => inputs.audio,
+        "video" => inputs.video,
+        "document" => inputs.document,
         _ => false,
     };
     ensure!(

@@ -13,7 +13,12 @@ use tauri::Manager;
 
 /// The shipped creative catalog. Each Skill is one capability with a short entry
 /// document and optional method references.
-const SKILLS: [(&str, &str, &str); 8] = [
+const SKILLS: [(&str, &str, &str); 9] = [
+    (
+        "video-analysis",
+        "视频拆解",
+        "原视频的声画记录、节奏、结构与表达机制",
+    ),
     (
         "creative-concepts",
         "创意策划",
@@ -99,6 +104,7 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     rule_summary::migrate_board_regeneration(&db, &root(app)?)?;
     rule_summary::migrate_pure_rules(&db, &root(app)?)?;
     rule_summary::migrate_object_tools(&db, &root(app)?)?;
+    super::video_analysis::install(&db, &root(app)?)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {

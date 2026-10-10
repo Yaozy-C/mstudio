@@ -127,20 +127,26 @@ export function AgentForm({
           <p className="model-hint">
             {t("Skills 提供专业规则和方法；实际操作权限由工具配置决定。")}
           </p>
-          {skills.map((s) => (
-            <label className="agent-skill-choice" key={s.id}>
-              <input
-                type="checkbox"
-                checked={profile.skillIds.includes(s.id)}
-                onChange={() => toggle(s.id)}
-              />
-              <span>
-                <strong>{t(s.name)}</strong>
-                <small>{t(s.description)}</small>
-              </span>
-              <em>{t(s.kind)}</em>
-            </label>
-          ))}
+          {skills
+            .filter(
+              (s) =>
+                profile.id !== "video-analyst" || s.id === "video-analysis",
+            )
+            .map((s) => (
+              <label className="agent-skill-choice" key={s.id}>
+                <input
+                  type="checkbox"
+                  checked={profile.skillIds.includes(s.id)}
+                  disabled={profile.id === "video-analyst"}
+                  onChange={() => toggle(s.id)}
+                />
+                <span>
+                  <strong>{t(s.name)}</strong>
+                  <small>{t(s.description)}</small>
+                </span>
+                <em>{t(s.kind)}</em>
+              </label>
+            ))}
         </div>
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
       </fieldset>

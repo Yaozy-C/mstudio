@@ -1,0 +1,24 @@
+{
+  "id": "omni",
+  "name": "Gemini Omni 1.1 Flash",
+  "provider": "Google",
+  "kind": "video",
+  "inputs": ["文本", "图像", "视频 · 编辑 / 延长 ≤10s"],
+  "outputs": ["视频 · 3–10s"],
+  "note": "官方型号页更新于 2026 年 8 月。以型号页公开的输入为准；不能因 Omni 家族宣传就假定此接口接收音频。原生适配器待接入。",
+  "source": "https://ai.google.dev/gemini-api/docs/models/gemini-omni-flash",
+  "protocol": "Gemini generateContent",
+  "request": {
+    "model": "gemini-omni-1.1-flash",
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "生成一个产品镜头"
+          }
+        ]
+      }
+    ]
+  },
+  "response": "异步视频生成结果；按原生任务协议读取"
+}

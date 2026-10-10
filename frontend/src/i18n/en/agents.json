@@ -63,5 +63,9 @@
   "理解目标，直接使用技能和工具完成项目工作，必要时才分工": "Understand the goal, complete project work with your own Skills and tools, and delegate only when it helps",
   "执行过程": "Execution process",
   "{v0} 个步骤": "{v0} steps",
-  "加载所需工具": "Load required tools"
+  "加载所需工具": "Load required tools",
+  "视频拆解": "Video analysis",
+  "只分析用户提供的原视频，拆解声画、节奏、结构与表达机制": "Analyze the supplied original video: audiovisual content, pace, structure and expression",
+  "只分析传入的原视频，不使用工具。": "Analyze only the supplied original video, without tools.",
+  "原视频的声画记录、节奏、结构与表达机制": "Original-video audiovisual record, pace, structure and expression"
 }

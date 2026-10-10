@@ -1,0 +1,41 @@
+{
+  "id": "gpt-image-2.5-sunburst",
+  "name": "GPT Image 2.5 · Sunburst",
+  "provider": "OpenAI",
+  "kind": "image",
+  "inputs": ["文本", "图像 · 编辑接口"],
+  "outputs": ["PNG / JPEG / WebP"],
+  "note": "2026-09-08 发布。文字生成与图片编辑使用不同端点；编辑需要 image_urls。通过 fal 接入，非 OpenAI 文本连接。",
+  "source": "https://fal.ai/models/openai/gpt-image-2.5/sunburst/text-to-image/api",
+  "protocol": "fal Queue（Images 原生协议另有格式）",
+  "endpoint": "openai/gpt-image-2.5/sunburst/text-to-image",
+  "request": {
+    "prompt": "设计一张海报",
+    "num_images": 1,
+    "output_format": "png"
+  },
+  "response": "images[].url / content_type / width / height",
+  "capabilities": {
+    "controls": {
+      "imageSize": {
+        "path": "/image_size"
+      }
+    }
+  },
+  "editCapabilities": {
+    "references": [
+      {
+        "key": "/image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "required": true
+      }
+    ],
+    "controls": {
+      "imageSize": {
+        "path": "/image_size"
+      }
+    }
+  }
+}

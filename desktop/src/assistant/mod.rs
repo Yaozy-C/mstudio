@@ -24,6 +24,7 @@ mod provider;
 pub(crate) mod result_check;
 mod task_context;
 mod task_target;
+mod video_analysis;
 mod work_context;
 #[cfg(test)]
 pub(crate) use agent::complete as complete_for_test;

@@ -14,6 +14,12 @@ export type AgentProfile = {
 };
 export const skills = [
   {
+    id: "video-analysis",
+    name: "视频拆解",
+    description: "原视频的声画记录、节奏、结构与表达机制",
+    kind: "可编辑规则",
+  },
+  {
     id: "creative-concepts",
     name: "创意策划",
     description: "选题、观看动机、核心事件、商品关系与方向比较",

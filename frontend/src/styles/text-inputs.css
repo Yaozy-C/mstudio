@@ -13,3 +13,22 @@
 .radix-themes .creative-inline-input > textarea {
   min-height: 1lh;
 }
+
+/* Focus changes the existing field border, without a second outer rectangle. */
+.radix-themes
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"]),
+    textarea,
+    select,
+    .studio-select-trigger
+  ):focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--desk-accent);
+}
+.radix-themes
+  :is(input, textarea, select, .studio-select-trigger)[aria-invalid="true"] {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--desk-accent);
+}

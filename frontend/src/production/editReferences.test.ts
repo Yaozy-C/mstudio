@@ -30,7 +30,7 @@ test("adding and editing one reference preserves other references and never crea
   expect(removed.assets).toBe(p.assets);
   expect(removed.nodes[1].shot!.frames).toEqual(p.nodes[1].shot!.frames);
 });
-test("reference edits reject missing media and total overflow atomically", () => {
+test("reference edits reject missing media and allow more than twelve references", () => {
   const p = fixture();
   expect(() =>
     edit(p, {
@@ -39,14 +39,13 @@ test("reference edits reject missing media and total overflow atomically", () =>
     }),
   ).toThrow();
   p.assets.push(...Array.from({ length: 12 }, (_, i) => asset(`new-${i}`)));
-  expect(() =>
-    edit(p, {
-      referenceMode: "upsert",
-      references: p.assets
-        .slice(-12)
-        .map((a) => ({ assetId: a.id, purpose: "test" })),
-    }),
-  ).toThrow();
+  const next = edit(p, {
+    referenceMode: "upsert",
+    references: p.assets
+      .slice(-12)
+      .map((a) => ({ assetId: a.id, purpose: "test" })),
+  });
+  expect(next.nodes[1].references).toHaveLength(13);
   expect(p.nodes[1].references).toHaveLength(1);
 });
 test("local editor saves preserve concurrent additions and explicit replacement still works", () => {

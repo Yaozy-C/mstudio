@@ -1,0 +1,24 @@
+{
+  "endpoint": "fal-ai/nano-banana-2/edit",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "required": true
+      }
+    ],
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["1:1", "9:16", "16:9", "3:4", "4:3", "2:3", "3:2"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["1K", "2K", "4K"]
+      }
+    }
+  }
+}

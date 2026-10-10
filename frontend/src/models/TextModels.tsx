@@ -15,6 +15,7 @@ import {
   type ModelConnection,
 } from "./types";
 import { ModelLibrary } from "./ModelLibrary";
+import { RemoveDialog } from "./RemoveDialog";
 import { ModelForm } from "./ModelForm";
 import "../styles/model-center.css";
 export function TextModels() {
@@ -148,7 +149,7 @@ export function TextModels() {
           onChange={(e) => setQuery(e.target.value)}
         />
       )}
-      {(error || hub.error) && (
+      {((error && !remove) || hub.error) && (
         <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED">
           {hub.error && (
             <AsyncButton busy={hub.loading} onClick={() => void hub.refresh()}>
@@ -220,35 +221,31 @@ export function TextModels() {
               >
                 <PencilSimple />
               </button>
-              <button
-                aria-label={t("移除模型 {v0}", { v0: p.name })}
+              <RemoveDialog
+                open={remove === p.id}
+                onOpenChange={(open) => {
+                  setError("");
+                  setRemove(open ? p.id : null);
+                }}
                 title={t("移除模型")}
-                disabled={busy}
-                onClick={() => setRemove(p.id)}
+                busy={busy}
+                error={remove === p.id ? error : ""}
+                confirm={() => void act("remove_model", p.id)}
+                trigger={
+                  <button
+                    aria-label={t("移除模型 {v0}", { v0: p.name })}
+                    title={t("移除模型")}
+                    disabled={busy}
+                  >
+                    <Trash />
+                  </button>
+                }
               >
-                <Trash />
-              </button>
+                {t("移除「")}
+                {p.name}
+                {t("」？聊天记录和服务连接会保留。")}
+              </RemoveDialog>
             </div>
-            {remove === p.id && (
-              <div className="model-remove">
-                <span>
-                  {t("移除「")}
-                  {p.name}
-                  {t("」？聊天记录和服务连接会保留。")}
-                </span>
-                <button disabled={busy} onClick={() => setRemove(null)}>
-                  {t("取消")}
-                </button>
-                <AsyncButton
-                  busy={busy}
-                  busyLabel={t("正在移除…")}
-                  disabled={busy}
-                  onClick={() => void act("remove_model", p.id)}
-                >
-                  {t("确认移除")}
-                </AsyncButton>
-              </div>
-            )}
           </article>
         ))}
         {!hub.loading && !hub.error && !profiles.length && (

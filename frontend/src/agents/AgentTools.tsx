@@ -9,6 +9,14 @@ export function AgentTools({
   onChange: (profile: AgentProfile) => void;
 }) {
   useLanguage();
+  if (profile.id === "video-analyst") {
+    return (
+      <div className="agent-config-block">
+        <h3>{t("工具权限")}</h3>
+        <p className="model-hint">{t("只分析传入的原视频，不使用工具。")}</p>
+      </div>
+    );
+  }
   function toggle(id: string) {
     const selected = new Set(profile.toolIds);
     if (selected.has(id)) {

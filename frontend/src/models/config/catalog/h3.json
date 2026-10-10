@@ -1,0 +1,34 @@
+{
+  "id": "h3",
+  "name": "MiniMax H3",
+  "provider": "MiniMax",
+  "kind": "video",
+  "inputs": ["文本", "图像 / 视频 / 音频 · 按任务端点"],
+  "outputs": ["带声音的视频"],
+  "note": "2026-07-31 发布。模型支持多模态上下文；文字、参考生成等任务分别配置，不把家族能力当作单个端点的能力。",
+  "source": "https://www.minimax.io/blog/minimax-h3",
+  "protocol": "fal Queue",
+  "endpoint": "minimax/h3/text-to-video",
+  "request": {
+    "prompt": "一段产品展示镜头",
+    "duration": 5
+  },
+  "response": "video.url",
+  "capabilities": {
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["9:16", "16:9", "1:1", "3:4", "4:3", "21:9"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "2K", "4K"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    }
+  }
+}

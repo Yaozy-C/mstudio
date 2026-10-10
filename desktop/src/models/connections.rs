@@ -79,6 +79,7 @@ fn validate(service: &ServiceConnection) -> Result<()> {
             "openai-responses",
             "anthropic-native",
             "gemini-native",
+            "dashscope",
             "fal",
             "http-json",
             "codex"
@@ -200,7 +201,7 @@ pub fn bind_text(db: &Connection, model: &mut Model) -> Result<()> {
     if let Some(id) = &model.connection_id {
         let service = get(db, id)?;
         ensure!(
-            !["fal", "http-json"].contains(&service.kind.as_str()),
+            !["dashscope", "fal", "http-json"].contains(&service.kind.as_str()),
             "此连接不支持对话模型"
         );
         model.profile.endpoint = service.endpoint;
@@ -222,6 +223,10 @@ pub fn bind_media(db: &Connection, model: &mut media::MediaModel) -> Result<()> 
         match service.kind.as_str() {
             "gemini-native" => model.endpoint = service.endpoint,
             "fal" => {}
+            "dashscope" => {
+                model.endpoint =
+                    crate::model_adapters::dashscope::submission_url(&service.endpoint)?;
+            }
             "http-json" => {
                 ensure!(
                     reqwest::Url::parse(&model.endpoint)?.origin()

@@ -159,3 +159,19 @@
 .model-input-option small {
   color: var(--desk-muted);
 }
+
+.radix-themes .model-form input[aria-invalid="true"] {
+  border-color: #c2382b;
+  outline: none;
+  box-shadow: none;
+}
+.model-field-error {
+  color: #c2382b;
+  font-size: 12px;
+}
+.model-form label.service-clear-key {
+  flex-direction: row;
+  align-items: center;
+  align-self: end;
+  min-height: 40px;
+}

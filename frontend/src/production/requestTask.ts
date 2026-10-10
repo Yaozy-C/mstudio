@@ -98,8 +98,8 @@ export function requestTask(
     };
   }
   if (op.references !== undefined) {
-    if (!Array.isArray(op.references) || op.references.length > 12)
-      throw failure("VALIDATION_FAILED", "最多使用 12 个参考素材");
+    if (!Array.isArray(op.references))
+      throw failure("VALIDATION_FAILED", "参考素材须为数组");
     const inputs = op.references.map((value): ProductionInput => {
       if (!value || typeof value !== "object")
         throw failure("VALIDATION_FAILED", "参考素材无效");
@@ -142,6 +142,7 @@ export function requestTask(
         throw failure("VALIDATION_FAILED", "请指定有效的视频参考区间");
       return {
         ...input,
+        key: `asset:${input.assetId}:${role}`,
         role: role as ProductionInput["role"],
         start,
         end,
@@ -153,7 +154,10 @@ export function requestTask(
             : input.purpose,
       };
     });
-    if (new Set(inputs.map((r) => r.assetId)).size !== inputs.length)
+    if (
+      new Set(inputs.map((r) => `${r.assetId}:${r.role}`)).size !==
+      inputs.length
+    )
       throw failure("VALIDATION_FAILED", "参考素材不能重复");
     task.inputs = [
       ...task.inputs.filter((r) => r.role === "script"),

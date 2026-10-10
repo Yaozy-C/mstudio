@@ -4,6 +4,7 @@ pub(crate) mod codex_discovery;
 mod codex_request;
 pub mod codex_rpc;
 pub mod codex_setup;
+pub mod dashscope;
 mod fal;
 pub mod prompt_rules;
 pub(crate) use fal::recover_cancelled;
@@ -77,11 +78,13 @@ pub trait ProviderAdapter: Sync {
 }
 static HTTP_JSON: http_json::HttpJson = http_json::HttpJson;
 static GEMINI: gemini::Gemini = gemini::Gemini;
+static DASHSCOPE: dashscope::DashScope = dashscope::DashScope;
 static FAL: fal::Fal = fal::Fal;
 pub fn provider(id: &str) -> Result<&'static dyn ProviderAdapter> {
     match id {
         "codex-image" => Ok(&codex::CODEX),
         "fal" => Ok(&FAL),
+        "dashscope" => Ok(&DASHSCOPE),
         "gemini-native" => Ok(&GEMINI),
         "http-json" => Ok(&HTTP_JSON),
         _ => bail!("服务供应商适配器尚未安装：{id}"),

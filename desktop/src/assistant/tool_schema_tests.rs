@@ -172,8 +172,8 @@ fn production_fields_distinguish_draft_prompt_task_prompt_and_video_settings() {
     assert!(issues(&production, valid.clone()).is_empty());
     let mut invalid = valid;
     invalid["mode"] = json!("reference");
-    invalid["parameters"]["duration"] = json!(4);
-    invalid["parameters"]["resolution"] = json!("1080p");
+    invalid["parameters"]["duration"] = json!(0);
+    invalid["parameters"]["resolution"] = json!(1080);
     let errors = issues(&production, invalid);
     for field in ["mode", "parameters.duration", "parameters.resolution"] {
         assert!(
@@ -215,16 +215,9 @@ fn image_and_video_advertise_only_their_parameter_fields() {
             );
         }
     }
-    let image = json!({"op":"request_generation","mediaKind":"image","text":"Prompt","parameters":{"resolution":"1080P"}});
-    assert!(
-        issues(&builtin("image"), image)
-            .iter()
-            .any(|e| e.path.ends_with(".resolution"))
-    );
-    let video = json!({"op":"request_generation","mediaKind":"video","text":"Prompt","parameters":{"resolution":"1K"}});
-    assert!(
-        issues(&production, video)
-            .iter()
-            .any(|e| e.path.ends_with(".resolution"))
-    );
+    // Exact enum membership belongs to the selected model, not the generic tool.
+    let image = json!({"op":"request_generation","mediaKind":"image","text":"Prompt","parameters":{"resolution":"custom-image-size"}});
+    assert!(issues(&builtin("image"), image).is_empty());
+    let video = json!({"op":"request_generation","mediaKind":"video","text":"Prompt","parameters":{"duration":2,"resolution":"custom-video-size"}});
+    assert!(issues(&production, video).is_empty());
 }

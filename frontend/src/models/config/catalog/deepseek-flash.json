@@ -1,0 +1,43 @@
+{
+  "id": "deepseek-flash",
+  "name": "DeepSeek Flash",
+  "provider": "DeepSeek",
+  "kind": "text",
+  "inputs": ["文本", "图像 · JPEG / PNG / GIF / WebP"],
+  "outputs": ["文本", "工具调用"],
+  "note": "图片可用 URL、Base64 或 Files API。图片文件不等于任意文档；当前 Agent 接收文字和项目图片。",
+  "source": "https://api-docs.deepseek.com/guides/vision/",
+  "protocol": "Chat Completions / Responses",
+  "request": {
+    "model": "deepseek-flash",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "解释这张图"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://example.com/image.png"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "response": "choices[].message.content / tool_calls",
+  "connection": {
+    "endpoint": "https://api.deepseek.com",
+    "adapter": "openai-compatible",
+    "model": "deepseek-flash",
+    "inputs": {
+      "image": true,
+      "audio": false,
+      "video": false,
+      "document": false
+    }
+  }
+}

@@ -99,7 +99,7 @@ fn reference(kind: &str, id: &str) -> Reference {
     }
 }
 #[test]
-fn explicit_attachments_are_project_owned_bounded_and_persist_without_image_bytes() {
+fn explicit_attachments_are_project_owned_deduplicated_and_persist_without_image_bytes() {
     let (root, store, doc) = fixture();
     let refs = vec![
         reference("node", "script"),
@@ -160,7 +160,8 @@ fn explicit_attachments_are_project_owned_bounded_and_persist_without_image_byte
     let excessive = (0..13)
         .map(|_| reference("asset", "image"))
         .collect::<Vec<_>>();
-    assert!(attachments::payload(&store, &doc, "Inspect", &excessive, &multimodal()).is_err());
+    let many = attachments::payload(&store, &doc, "Inspect", &excessive, &multimodal()).unwrap();
+    assert_eq!(many[0]["attachments"].as_array().unwrap().len(), 1);
     let duplicate = attachments::payload(
         &store,
         &doc,

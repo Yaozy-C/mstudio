@@ -1,0 +1,48 @@
+{
+  "id": "h3-image-to-video",
+  "name": "MiniMax H3 · 首尾帧",
+  "provider": "MiniMax / fal",
+  "kind": "video",
+  "inputs": ["文本", "首帧", "尾帧", "固定音轨"],
+  "outputs": ["带声音的视频"],
+  "note": "支持首帧、尾帧或首尾帧组合，固定音轨可选。",
+  "source": "https://fal.ai/models/minimax/h3/image-to-video/api",
+  "protocol": "fal Queue",
+  "endpoint": "minimax/h3/image-to-video",
+  "request": {
+    "prompt": "产品展示",
+    "duration": 5
+  },
+  "response": "video.url",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_url",
+        "kind": "image",
+        "role": "first-frame"
+      },
+      {
+        "key": "/end_image_url",
+        "kind": "image",
+        "role": "last-frame"
+      },
+      {
+        "key": "/target_audio_url",
+        "kind": "audio",
+        "role": "reference"
+      }
+    ],
+    "controls": {
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "2K", "4K"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    },
+    "ratioFromReference": true
+  }
+}

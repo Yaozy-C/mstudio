@@ -66,8 +66,8 @@
   padding: 12px 14px;
 }
 .appearance-option:focus-within {
-  outline: 2px solid var(--desk-accent);
-  outline-offset: 3px;
+  outline: none;
+  border-color: var(--desk-accent);
 }
 .appearance-contrast {
   display: flex;

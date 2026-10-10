@@ -58,7 +58,11 @@ export function GenerationReferencePicker({
               key={a.id}
               title={a.name}
               aria-label={`${selected.has(a.id) ? t("已添加") : t("添加")} ${a.name}`}
-              disabled={selected.has(a.id) || selected.size >= 12}
+              disabled={
+                selected.has(a.id) ||
+                (model?.capabilities?.referenceLimit !== undefined &&
+                  selected.size >= model.capabilities.referenceLimit)
+              }
               onClick={() => {
                 try {
                   patch(addTaskReference(draft, a, model));

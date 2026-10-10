@@ -145,7 +145,7 @@ impl CompletionModel for CodexModel {
                             method @ ("item/reasoning/summaryTextDelta"
                             | "item/reasoning/textDelta"),
                         ) => {
-                            if let Some(frame) = output::reasoning_delta(method, &params) {
+                            if let Some(frame) = output::reasoning_delta(method, params) {
                                 return Ok(Some((frame, (connection, None, owner))));
                             }
                         }

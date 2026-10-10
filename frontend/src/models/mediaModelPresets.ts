@@ -1,15 +1,11 @@
-import { libraryDeclaration } from "./catalogSpecs";
-export const presets = {
-  image: {
-    name: "FLUX.1 Schnell",
-    endpoint: "fal-ai/flux/schnell",
-    params: { num_images: 1 },
-  },
-  video: {
-    name: "MiniMax H3",
-    endpoint: "minimax/h3/text-to-video",
-    params: { duration: 5 },
-    // Declared once by the model library; the shortcut never restates capabilities.
-    capabilities: libraryDeclaration("fal", "minimax/h3/text-to-video"),
-  },
-};
+import configured from "./config/presets.json";
+import type { CapabilityDeclaration } from "./capabilities";
+export const presets = configured as Record<
+  "image" | "video",
+  {
+    name: string;
+    endpoint: string;
+    params: Record<string, unknown>;
+    capabilities?: CapabilityDeclaration;
+  }
+>;

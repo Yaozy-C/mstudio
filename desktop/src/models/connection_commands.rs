@@ -50,7 +50,7 @@ pub async fn discover_service_models(
             key(&db, &id).map_err(|e| e.to_string())?,
         )
     };
-    if ["fal", "http-json"].contains(&service.kind.as_str()) {
+    if ["dashscope", "fal", "http-json"].contains(&service.kind.as_str()) {
         return Err("此连接请从模型库添加，或填写模型端点".into());
     }
     let profile = crate::assistant::config::Profile {

@@ -38,9 +38,9 @@ test("replacing first frame preserves last frame and submission roles regardless
   expect(result.image_url).toBe("https://example.com/first.png");
   expect(result.end_image_url).toBe("https://example.com/last.png");
 });
-test("frame slots reject videos and duplicates without changing either slot", () => {
+test("frame slots reject video but allow reusing the same image", () => {
   const task = base();
-  for (const id of ["v", "b"])
+  for (const id of ["v"])
     expect(() =>
       setFrameInput(task, fixture(), "first-frame", {
         key: id,
@@ -49,6 +49,22 @@ test("frame slots reject videos and duplicates without changing either slot", ()
         purpose: "",
       }),
     ).toThrow();
+  const shared = {
+    ...task,
+    ...setFrameInput(task, fixture(), "first-frame", {
+      key: "b",
+      assetId: "b",
+      role: "reference",
+      purpose: "",
+    }),
+  };
+  const result = inputFor(
+    fixture(),
+    shared,
+    model("minimax/h3/image-to-video"),
+  );
+  expect(result.image_url).toBe(result.end_image_url);
+  expect(new Set(shared.inputs.map((r) => r.key)).size).toBe(2);
   expect(task).toEqual(base());
   expect(setFrameInput(task, fixture(), "last-frame").mode).toBe("single");
 });

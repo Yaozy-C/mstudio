@@ -1,0 +1,10 @@
+{
+  "endpoint": "openai/gpt-image-2.5/flare/text-to-image",
+  "capabilities": {
+    "controls": {
+      "imageSize": {
+        "path": "/image_size"
+      }
+    }
+  }
+}

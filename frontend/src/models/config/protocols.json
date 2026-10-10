@@ -1,0 +1,32 @@
+{
+  "gemini-native": {
+    "references": [
+      {
+        "key": "/image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true
+      }
+    ],
+    "controls": {
+      "aspectRatio": {
+        "path": "/generationConfig/imageConfig/aspectRatio",
+        "values": ["1:1", "9:16", "16:9", "3:4", "4:3", "2:3", "3:2"]
+      },
+      "resolution": {
+        "path": "/generationConfig/imageConfig/imageSize",
+        "values": ["1K", "2K", "4K"]
+      }
+    }
+  },
+  "codex-image": {
+    "references": [
+      {
+        "key": "/image",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true
+      }
+    ]
+  }
+}

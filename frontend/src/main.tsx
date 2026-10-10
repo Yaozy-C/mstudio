@@ -10,6 +10,7 @@ import "./styles/studio.css";
 import "./styles/preview.css";
 import "./styles/workspace-overlays.css";
 import "./styles/agent.css";
+import "./styles/agent-activity.css";
 import "./styles/editing.css";
 import "./styles/attachments.css";
 import "./styles/node-content.css";

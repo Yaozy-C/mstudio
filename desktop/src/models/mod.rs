@@ -8,6 +8,7 @@ pub mod media;
 mod storage;
 #[cfg(test)]
 mod tests;
+pub mod transport;
 
 use crate::assistant::config::Profile;
 use anyhow::Result;

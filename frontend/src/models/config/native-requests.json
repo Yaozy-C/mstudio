@@ -1,0 +1,19 @@
+{
+  "codex-image": {
+    "allowedFields": [
+      "prompt",
+      "model",
+      "n",
+      "size",
+      "quality",
+      "output_format",
+      "image"
+    ],
+    "fixedValues": {
+      "model": "codex-image",
+      "size": "auto",
+      "quality": "auto",
+      "output_format": "png"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "image": {
+    "name": "FLUX.1 Schnell",
+    "endpoint": "fal-ai/flux/schnell",
+    "params": {
+      "num_images": 1
+    }
+  },
+  "video": {
+    "name": "MiniMax H3",
+    "endpoint": "minimax/h3/text-to-video",
+    "params": {
+      "duration": 5
+    },
+    "capabilities": {
+      "controls": {
+        "aspectRatio": {
+          "path": "/aspect_ratio",
+          "values": ["9:16", "16:9", "1:1", "3:4", "4:3", "21:9"]
+        },
+        "resolution": {
+          "path": "/resolution",
+          "values": ["480P", "768P", "2K", "4K"]
+        },
+        "duration": {
+          "path": "/duration",
+          "min": 5,
+          "max": 15
+        }
+      }
+    }
+  }
+}

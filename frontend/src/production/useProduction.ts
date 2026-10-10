@@ -123,10 +123,6 @@ export function useProduction(
       return;
     }
     if (!input || task.inputs.some((r) => sameInput(r, input))) return;
-    if (task.inputs.length >= 12) {
-      update({ error: "本次最多引用 12 个素材" });
-      return;
-    }
     update({ inputs: [...task.inputs, input] });
   }
 
@@ -274,8 +270,7 @@ export function useProduction(
           )
         )
           inputs.push(input);
-      if (inputs.length > 12) update({ error: "本次最多引用 12 个素材" });
-      else update({ inputs });
+      update({ inputs });
       open();
     },
     referenceAsset: async (asset: Asset, global = false, role?: FrameRole) => {

@@ -1,0 +1,12 @@
+{
+  "submitPath": "/api/v1/services/aigc/video-generation/video-synthesis",
+  "taskPath": "/api/v1/tasks/",
+  "uploadPath": "/api/v1/uploads",
+  "referenceTypes": {
+    "first_frame": "first_frame",
+    "last_frame": "last_frame",
+    "reference_image": "reference_image",
+    "reference_video": "reference_video",
+    "reference_audio": "reference_audio"
+  }
+}

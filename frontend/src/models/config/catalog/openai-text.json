@@ -1,0 +1,41 @@
+{
+  "id": "openai-text",
+  "name": "OpenAI · GPT-6 Astra",
+  "provider": "OpenAI",
+  "kind": "text",
+  "inputs": ["文本", "图像", "文件 · 按型号与文件类型"],
+  "outputs": ["文本", "工具调用"],
+  "note": "Responses 使用 input_text / input_image / input_file。当前支持原始 PDF 和 UTF-8 文本资料；连接预填 gpt-6-astra，可按账号权限调整。",
+  "source": "https://developers.openai.com/api/docs/guides/pdf-files",
+  "protocol": "Responses",
+  "request": {
+    "model": "gpt-6-astra",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "总结文件"
+          },
+          {
+            "type": "input_file",
+            "file_id": "file-..."
+          }
+        ]
+      }
+    ]
+  },
+  "response": "output[].content[] → output_text；function_call",
+  "connection": {
+    "endpoint": "https://api.openai.com/v1",
+    "adapter": "openai-responses",
+    "model": "gpt-6-astra",
+    "inputs": {
+      "image": true,
+      "audio": false,
+      "video": false,
+      "document": true
+    }
+  }
+}

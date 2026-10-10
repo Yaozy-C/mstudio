@@ -16,6 +16,7 @@ fn shipped_roles_have_independent_edit_and_generation_boundaries() {
     for role in [
         "coordinator",
         "concept",
+        "video-analyst",
         "writer",
         "director",
         "image",
@@ -105,6 +106,7 @@ fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
     );
     for id in [
         "concept",
+        "video-analyst",
         "writer",
         "director",
         "image",
@@ -122,8 +124,8 @@ fn existing_catalog_gains_shipped_roles_without_overwriting_custom_roles() {
     assert!(profiles::resolve(&db, Some("concept")).is_err());
     assert_eq!(
         profiles::read(&db).unwrap().len(),
-        7,
-        "coordinator plus six specialists"
+        8,
+        "coordinator plus seven specialists"
     );
 }
 

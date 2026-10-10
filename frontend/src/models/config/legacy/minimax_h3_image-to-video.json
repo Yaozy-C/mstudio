@@ -1,0 +1,34 @@
+{
+  "endpoint": "minimax/h3/image-to-video",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/image_url",
+        "kind": "image",
+        "role": "first-frame"
+      },
+      {
+        "key": "/end_image_url",
+        "kind": "image",
+        "role": "last-frame"
+      },
+      {
+        "key": "/target_audio_url",
+        "kind": "audio",
+        "role": "reference"
+      }
+    ],
+    "controls": {
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "2K", "4K"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    },
+    "ratioFromReference": true
+  }
+}

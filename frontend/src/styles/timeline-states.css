@@ -14,11 +14,12 @@
 .radix-themes :is(.timeline-clip, .caption-chip).selected {
   background: var(--desk-surface);
   border-color: var(--desk-accent);
-  box-shadow: inset 0 0 0 1px var(--desk-accent);
+  box-shadow: none;
 }
 .radix-themes :is(.timeline-clip, .caption-chip):focus-visible {
-  outline: 2px solid var(--desk-accent);
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--desk-accent);
+  box-shadow: none;
   z-index: 3;
 }
 .clip-selection-mark {

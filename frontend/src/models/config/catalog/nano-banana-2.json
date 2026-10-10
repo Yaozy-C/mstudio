@@ -1,0 +1,50 @@
+{
+  "id": "nano-banana-2",
+  "name": "Nano Banana 2",
+  "provider": "Google",
+  "kind": "image",
+  "inputs": ["文本", "图像 · 编辑接口"],
+  "outputs": ["图像"],
+  "note": "原生型号 gemini-3.1-flash-image。此处使用 fal 图片接口；编辑模式使用 image_urls，不能把所有 Banana 版本的输入能力混在一起。",
+  "source": "https://fal.ai/models/fal-ai/nano-banana-2/edit/api",
+  "protocol": "fal Queue / Gemini 原生",
+  "endpoint": "fal-ai/nano-banana-2",
+  "request": {
+    "prompt": "创作产品主视觉",
+    "num_images": 1
+  },
+  "response": "images[].url",
+  "capabilities": {
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["1:1", "9:16", "16:9", "3:4", "4:3", "2:3", "3:2"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["1K", "2K", "4K"]
+      }
+    }
+  },
+  "editCapabilities": {
+    "references": [
+      {
+        "key": "/image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "required": true
+      }
+    ],
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["1:1", "9:16", "16:9", "3:4", "4:3", "2:3", "3:2"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["1K", "2K", "4K"]
+      }
+    }
+  }
+}

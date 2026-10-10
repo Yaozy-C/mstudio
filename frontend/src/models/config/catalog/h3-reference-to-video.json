@@ -1,0 +1,59 @@
+{
+  "id": "h3-reference-to-video",
+  "name": "MiniMax H3 · 全参考",
+  "provider": "MiniMax / fal",
+  "kind": "video",
+  "inputs": ["文本", "参考图片", "参考视频", "参考音频"],
+  "outputs": ["带声音的视频"],
+  "note": "支持图片、视频、音频参考；参考数量和总时长按本配置声明，可在模型中心修改。",
+  "source": "https://fal.ai/models/minimax/h3/reference-to-video/api",
+  "protocol": "fal Queue",
+  "endpoint": "minimax/h3/reference-to-video",
+  "request": {
+    "prompt": "产品展示",
+    "duration": 5
+  },
+  "response": "video.url",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/reference_image_urls",
+        "kind": "image",
+        "role": "reference",
+        "multiple": true,
+        "max": 9
+      },
+      {
+        "key": "/reference_video_urls",
+        "kind": "video",
+        "role": "reference",
+        "multiple": true,
+        "max": 3
+      },
+      {
+        "key": "/reference_audio_urls",
+        "kind": "audio",
+        "role": "reference",
+        "multiple": true,
+        "max": 3
+      }
+    ],
+    "referenceLimit": 12,
+    "referenceSeconds": 15,
+    "controls": {
+      "aspectRatio": {
+        "path": "/aspect_ratio",
+        "values": ["9:16", "16:9", "1:1", "3:4", "4:3", "21:9"]
+      },
+      "resolution": {
+        "path": "/resolution",
+        "values": ["480P", "768P", "2K", "4K"]
+      },
+      "duration": {
+        "path": "/duration",
+        "min": 5,
+        "max": 15
+      }
+    }
+  }
+}

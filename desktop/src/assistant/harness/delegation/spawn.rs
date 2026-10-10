@@ -41,6 +41,11 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let profile =
         profiles::resolve(&store.db.lock().unwrap(), Some(id)).map_err(|e| e.to_string())?;
     let profile = scoped(profile, &parent.profile.id)?;
+    if profile.id == "video-analyst" && provider_name == "fork" {
+        return Err(
+            "Video analysis needs independent context; use spawn with the original video".into(),
+        );
+    }
 
     let mut tool = parent.clone();
     tool.profile = profile;
@@ -131,15 +136,24 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &parent.turn,
         &refs,
     );
+    let mut reference = reference;
+    if tool.profile.id == "video-analyst" {
+        crate::assistant::video_analysis::validate_video(&store, &refs, &child_profile)
+            .map_err(|e| e.to_string())?;
+        crate::assistant::video_analysis::isolate(&mut reference);
+    }
     let mut reference = vec![super::super::context_source::snapshot(reference)];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
-    let instruction = format!(
-        "Original user request:{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}\nUser-selected production settings for this turn (preserve, including the model):{selection}",
+    let mut instruction = format!(
+        "Original user request:{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}",
         original["prompt"].as_str().unwrap_or(&parent.prompt),
         parent.profile.id,
         parent.turn
     );
+    if tool.profile.id != "video-analyst" {
+        instruction.push_str(&format!("\nUser-selected production settings for this turn (preserve, including the model):{selection}"));
+    }
     let payload =
         crate::assistant::attachments::payload(&store, &doc, &instruction, &refs, &child_profile)
             .map_err(|e| e.to_string())?;

@@ -4,12 +4,12 @@ import {
   choices,
   described,
   integer,
+  number,
   object,
   type Schema,
 } from "../domain/schema";
 import {
   copyParameters,
-  defaultDurationRange,
   frameRatioModel,
   pointerGet,
   pointerSet,
@@ -23,12 +23,13 @@ export type ParameterVocabulary = {
   resolutions: string[];
   customSize: boolean;
   duration: boolean;
-  durationRange?: { min: number; max: number };
+  sizeRange?: { min?: number; max?: number };
+  durationRange?: { min?: number; max?: number };
 };
 
 // Shared by model capability discovery and the model-facing operation schema.
 export function parameterSchema(fields: ParameterVocabulary) {
-  const range = fields.durationRange ?? defaultDurationRange;
+  const range = fields.durationRange ?? {};
   const properties: Record<string, Schema> = {};
   if (fields.ratios.length)
     properties.aspectRatio = described(
@@ -38,21 +39,21 @@ export function parameterSchema(fields: ParameterVocabulary) {
   if (fields.resolutions.length)
     properties.resolution = described(
       choices(...fields.resolutions),
-      "Output resolution label, case-sensitive: use uppercase P or K exactly as listed (e.g. 1080P, not 1080p). Only values listed by the selected model are valid; 1K/2K/4K are labels, not pixel dimensions.",
+      "Output resolution label. Use the exact case-sensitive values in the selected model configuration.",
     );
   if (fields.duration)
     properties.duration = described(
-      integer(range.min, range.max),
-      `Generated source clip length in whole seconds, ${range.min} through ${range.max} for the selected model. Editorial shot length is separate. Unless the user explicitly fixes the generated source length, choose the shortest supported duration covering the shot (5.3-second cut -> duration=6; 4-second cut -> duration=5), without another confirmation. Keep essential action inside the editorial interval, leave any surplus as a hold, and preserve shot/timeline timing. An explicitly fixed source length outside the supported range is a capability conflict; do not silently replace it.`,
+      { ...number(range.min, range.max), exclusiveMinimum: 0 },
+      "Generated source clip length in seconds. Use the configured model bounds when present. Editorial shot length is separate.",
     );
   if (fields.customSize) {
     properties.width = described(
-      integer(16, 3840),
-      "Image width in pixels, multiple of 16. Supply height together; only for models exposing custom size. Maximum ratio 3:1; total pixels 655360–8294400.",
+      integer(fields.sizeRange?.min ?? 1, fields.sizeRange?.max),
+      "Image width in pixels. Supply height together; use the selected model configuration.",
     );
     properties.height = described(
-      integer(16, 3840),
-      "Image height in pixels, multiple of 16. Supply width together; only for models exposing custom size. Maximum ratio 3:1; total pixels 655360–8294400.",
+      integer(fields.sizeRange?.min ?? 1, fields.sizeRange?.max),
+      "Image height in pixels. Supply width together; use the selected model configuration.",
     );
   }
   return described(
@@ -70,7 +71,7 @@ export type GenerationParameters = {
 };
 
 export type ParameterFields = Omit<ParameterVocabulary, "durationRange"> & {
-  durationRange: { min: number; max: number };
+  durationRange: { min?: number; max?: number };
   frameRatio: boolean;
   supported: boolean;
   controls: ResolvedControls;
@@ -93,10 +94,14 @@ export function parameterFields(model?: MediaModel): ParameterFields {
     ratios: controls.aspectRatio?.values ?? [],
     resolutions: controls.resolution?.values ?? [],
     customSize: !!controls.imageSize,
+    sizeRange: {
+      min: controls.imageSize?.min ?? undefined,
+      max: controls.imageSize?.max ?? undefined,
+    },
     duration: !!controls.duration,
     durationRange: {
-      min: controls.duration?.min ?? defaultDurationRange.min,
-      max: controls.duration?.max ?? defaultDurationRange.max,
+      min: controls.duration?.min ?? undefined,
+      max: controls.duration?.max ?? undefined,
     },
     frameRatio: model ? frameRatioModel(model) : false,
     supported: !!(
@@ -123,7 +128,7 @@ export function parameterContract(model: MediaModel) {
       imageSize: configured(controls.imageSize),
     },
     constraints: fields.customSize
-      ? "Specify width and height together, multiples of 16; at most 3840 per side; ratio at most 3:1; 655360–8294400 total pixels."
+      ? "Specify positive integer width and height together; use configured bounds when present."
       : undefined,
     omission:
       "Omitted fields inherit the referenced task, then configured defaults; remaining defaults are chosen by the provider.",
@@ -138,49 +143,48 @@ export function taskParameters(
   model: MediaModel,
   value: GenerationParameters = {},
 ): Record<string, unknown> {
-  // Codex manages output settings; inherited task overrides must not block it.
-  if (model.plugin === "codex-image") return {};
   const controls = resolvedControls(model);
   const { aspectRatio, resolution, duration, width, height } = value;
   if (
+    controls.aspectRatio &&
     aspectRatio &&
     !(controls.aspectRatio?.values ?? []).includes(aspectRatio)
   )
     throw failure("VALIDATION_FAILED", "当前模型不支持这个比例，请重新设置");
-  if (resolution && !(controls.resolution?.values ?? []).includes(resolution))
+  if (
+    controls.resolution &&
+    resolution &&
+    !(controls.resolution?.values ?? []).includes(resolution)
+  )
     throw failure("VALIDATION_FAILED", "当前模型不支持这个尺寸，请重新设置");
   const range = {
-    min: controls.duration?.min ?? defaultDurationRange.min,
-    max: controls.duration?.max ?? defaultDurationRange.max,
+    min: controls.duration?.min ?? undefined,
+    max: controls.duration?.max ?? undefined,
   };
   if (
     duration !== undefined &&
-    (!controls.duration ||
-      !Number.isInteger(duration) ||
-      duration < range.min ||
-      duration > range.max)
+    controls.duration &&
+    (duration <= 0 ||
+      !Number.isFinite(duration) ||
+      (range.min !== undefined && duration < range.min) ||
+      (range.max !== undefined && duration > range.max))
   )
-    throw failure(
-      "VALIDATION_FAILED",
-      `当前模型的视频时长须为 ${range.min}–${range.max} 秒`,
-    );
-  if (width !== undefined || height !== undefined) {
+    throw failure("VALIDATION_FAILED", "视频时长须为正数并符合配置中的范围");
+  if (controls.imageSize && (width !== undefined || height !== undefined)) {
+    const { min, max } = controls.imageSize;
     if (
-      !controls.imageSize ||
-      !width ||
-      !height ||
-      !Number.isInteger(width) ||
-      !Number.isInteger(height) ||
-      width % 16 ||
-      height % 16 ||
-      Math.max(width, height) > 3840 ||
-      Math.max(width / height, height / width) > 3 ||
-      width * height < 655360 ||
-      width * height > 8294400
+      ![width, height].every(
+        (n) =>
+          n !== undefined &&
+          Number.isInteger(n) &&
+          n > 0 &&
+          (min === null || n >= min) &&
+          (max === null || n <= max),
+      )
     )
       throw failure(
         "VALIDATION_FAILED",
-        "尺寸须为 16 的倍数，最长边不超过 3840；比例不超过 3:1，总像素为 65.5–829 万",
+        "宽高须同时填写正整数并符合配置中的范围",
       );
   }
   const resolved = copyParameters(model.params);

@@ -1,0 +1,22 @@
+{
+  "id": "veo",
+  "name": "Veo 3.1",
+  "provider": "Google",
+  "kind": "video",
+  "inputs": ["文本", "首帧 / 尾帧", "参考图", "视频 · 延长"],
+  "outputs": ["视频 + 原生音频"],
+  "note": "不同任务对分辨率、时长和参考数有约束；原生 API 使用异步 operation，不是文本对话返回。原生适配器待接入。",
+  "source": "https://ai.google.dev/gemini-api/docs/veo",
+  "protocol": "predictLongRunning",
+  "request": {
+    "instances": [
+      {
+        "prompt": "生成产品展示视频"
+      }
+    ],
+    "parameters": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "response": "operation → response.generateVideoResponse.generatedSamples[].video"
+}

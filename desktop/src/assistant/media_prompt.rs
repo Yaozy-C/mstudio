@@ -86,7 +86,6 @@ pub async fn prepare_media_prompt(
     if !["image", "video"].contains(&request.kind.as_str())
         || request.prompt.trim().is_empty()
         || request.prompt.chars().count() > 12000
-        || request.inputs.len() + request.context_references.len() > 12
     {
         return Err("生成描述或素材数量无效".into());
     }
@@ -132,7 +131,7 @@ pub async fn prepare_media_prompt(
             .and_then(|a| a.iter().find(|a| a["id"] == input.asset_id))
             .ok_or("引用素材已移除")?;
         if !["image", "video"].contains(&asset["kind"].as_str().unwrap_or(""))
-            || !ids.insert(&input.asset_id)
+            || !ids.insert((&input.asset_id, &input.role))
             || ![
                 "reference",
                 "edit",

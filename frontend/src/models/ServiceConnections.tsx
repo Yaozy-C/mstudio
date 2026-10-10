@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Plus, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import { bridge, native } from "../bridge";
 import { ModelMark } from "../ui/Identity";
+import { RemoveDialog } from "./RemoveDialog";
 import { ServiceForm } from "./ServiceForm";
 import {
   serviceChanged,
@@ -79,7 +80,7 @@ export function ServiceConnections() {
           {t("添加连接")}
         </button>
       </div>
-      {(error || hub.error) && (
+      {((error && !remove) || hub.error) && (
         <ErrorNotice error={error || hub.error} fallback="OPERATION_FAILED">
           {hub.error && (
             <AsyncButton busy={hub.loading} onClick={() => void hub.refresh()}>
@@ -134,37 +135,33 @@ export function ServiceConnections() {
               >
                 <PencilSimple />
               </button>
-              <button
-                disabled={busy}
-                aria-label={t("移除 {v0}", { v0: service.name })}
-                onClick={() => setRemove(service.id)}
-              >
-                <Trash />
-              </button>
-            </div>
-            {remove === service.id && (
-              <div className="model-remove">
-                <span>
-                  {service.modelCount
-                    ? t(
-                        "还有 {v0} 个模型使用此连接，请先更换连接或移除模型。",
-                        { v0: service.modelCount },
-                      )
-                    : t("移除「{v0}」及本机密钥？", { v0: service.name })}
-                </span>
-                <button type="button" onClick={() => setRemove(null)}>
-                  {t("取消")}
-                </button>
-                {!service.modelCount && (
+              <RemoveDialog
+                open={remove === service.id}
+                onOpenChange={(open) => {
+                  setError("");
+                  setRemove(open ? service.id : null);
+                }}
+                title={t("移除服务连接")}
+                busy={busy}
+                blocked={service.modelCount > 0}
+                error={remove === service.id ? error : ""}
+                confirm={() => void destroy(service.id)}
+                trigger={
                   <button
                     disabled={busy}
-                    onClick={() => void destroy(service.id)}
+                    aria-label={t("移除 {v0}", { v0: service.name })}
                   >
-                    {t("确认移除")}
+                    <Trash />
                   </button>
-                )}
-              </div>
-            )}
+                }
+              >
+                {service.modelCount
+                  ? t("还有 {v0} 个模型使用此连接，请先更换连接或移除模型。", {
+                      v0: service.modelCount,
+                    })
+                  : t("移除「{v0}」及本机密钥？", { v0: service.name })}
+              </RemoveDialog>
+            </div>
           </article>
         ))}
       </div>

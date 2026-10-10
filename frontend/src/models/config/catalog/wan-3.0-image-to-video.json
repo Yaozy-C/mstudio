@@ -1,0 +1,70 @@
+{
+  "id": "wan-3.0-image-to-video",
+  "name": "Wan 3.0 · 首尾帧",
+  "provider": "Alibaba / 百炼",
+  "kind": "video",
+  "inputs": [
+    "文本",
+    "图像 · 首帧 / 尾帧"
+  ],
+  "outputs": [
+    "带声音的视频"
+  ],
+  "note": "阿里云百炼官方接口。请在服务连接中填写所属地域的业务空间地址和 API Key。duration=-1 为智能时长。",
+  "source": "https://help.aliyun.com/zh/model-studio/wan3-video-generation-api-reference",
+  "protocol": "DashScope 异步",
+  "endpoint": "https://your-workspace-id.cn-beijing.maas.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis",
+  "request": {
+    "model": "wan3.0-video",
+    "prompt": "一个连续的产品展示镜头",
+    "parameters": {
+      "resolution": "1080P",
+      "ratio": "adaptive",
+      "duration": 5,
+      "audio": true
+    }
+  },
+  "response": "output.video_url",
+  "capabilities": {
+    "references": [
+      {
+        "key": "/first_frame",
+        "kind": "image",
+        "role": "first-frame",
+        "required": true
+      },
+      {
+        "key": "/last_frame",
+        "kind": "image",
+        "role": "last-frame"
+      }
+    ],
+    "controls": {
+      "aspectRatio": {
+        "path": "/parameters/ratio",
+        "values": [
+          "adaptive",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ]
+      },
+      "resolution": {
+        "path": "/parameters/resolution",
+        "values": [
+          "480P",
+          "720P",
+          "1080P"
+        ]
+      },
+      "duration": {
+        "path": "/parameters/duration"
+      }
+    }
+  },
+  "plugin": "dashscope",
+  "serviceEndpoint": "https://your-workspace-id.cn-beijing.maas.aliyuncs.com"
+}

@@ -93,6 +93,7 @@ test("specialists resolve independently through the project model", () => {
   expect(defaultAgents.map((a) => a.id)).toEqual([
     "coordinator",
     "concept",
+    "video-analyst",
     "writer",
     "director",
     "image",

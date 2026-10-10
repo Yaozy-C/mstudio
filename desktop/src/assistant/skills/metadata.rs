@@ -3,6 +3,10 @@ use serde_json::{Value, json};
 
 pub(super) fn model_metadata(mut item: Value) -> Value {
     let (name, description) = match item["id"].as_str().unwrap_or_default() {
+        "video-analysis" => (
+            "Video analysis",
+            "Original video observations, audiovisual beats, rhythm and narrative mechanisms",
+        ),
         "creative-concepts" => (
             "Creative concepts",
             "Viewing motives, core events, payoff, product relationship and direction comparison",

@@ -1,0 +1,14 @@
+{
+  "references": [
+    { "key": "/image_url", "kind": "image", "role": "first-frame" },
+    { "key": "/end_image_url", "kind": "image", "role": "last-frame" }
+  ],
+  "controls": {
+    "aspectRatio": {
+      "path": "/aspect_ratio",
+      "values": ["16:9", "9:16", "1:1"]
+    },
+    "resolution": { "path": "/resolution", "values": ["720p", "1080p"] },
+    "duration": { "path": "/duration" }
+  }
+}

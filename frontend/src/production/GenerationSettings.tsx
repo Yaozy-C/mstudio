@@ -1,3 +1,4 @@
+import { GenerationDuration } from "./GenerationDuration";
 import { t, useLanguage } from "../i18n";
 import { failure } from "../errors/failure";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -57,12 +58,10 @@ export function GenerationSettings({
     (a) => a.kind === "image" && isSelectableAsset(a),
   );
   function frame(role: "first-frame" | "last-frame", assetId: string) {
-    const inputs = draft.inputs.filter(
-      (r) => r.role !== role && (!assetId || r.assetId !== assetId),
-    );
+    const inputs = draft.inputs.filter((r) => r.role !== role);
     if (assetId)
       inputs.push({
-        key: `asset:${assetId}`,
+        key: `asset:${assetId}:${role}`,
         assetId,
         role,
         purpose: role === "first-frame" ? t("视频首帧") : t("视频尾帧"),
@@ -183,9 +182,9 @@ export function GenerationSettings({
                 {k === "width" ? t("宽度（px）") : t("高度（px）")}
                 <input
                   type="number"
-                  step={16}
-                  min={16}
-                  max={3840}
+                  step={1}
+                  min={fields.controls.imageSize?.min ?? 1}
+                  max={fields.controls.imageSize?.max ?? undefined}
                   placeholder={t("模型默认")}
                   value={options[k] ?? ""}
                   onChange={(e) =>
@@ -199,30 +198,11 @@ export function GenerationSettings({
           </>
         )}
         {fields.duration && (
-          <label className="generation-setting-field">
-            {t("视频时长")}
-            <select
-              value={options.duration ?? ""}
-              onChange={(e) =>
-                param({
-                  duration: e.target.value ? Number(e.target.value) : undefined,
-                })
-              }
-            >
-              <option value="">{t("沿用模型设置")}</option>
-              {Array.from(
-                {
-                  length:
-                    fields.durationRange.max - fields.durationRange.min + 1,
-                },
-                (_, i) => fields.durationRange.min + i,
-              ).map((n) => (
-                <option key={n} value={n}>
-                  {n} {t("秒")}
-                </option>
-              ))}
-            </select>
-          </label>
+          <GenerationDuration
+            value={options.duration}
+            range={fields.durationRange}
+            onChange={(duration) => param({ duration })}
+          />
         )}
       </div>
       {fields.frameRatio && (

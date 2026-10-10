@@ -21,22 +21,12 @@ export function setFrameInput(
     const asset = project.assets.find((a) => a.id === input.assetId);
     if (!asset || asset.kind !== "image" || asset.missing)
       throw new Error("首尾帧只能选择可用的图片");
-    if (
-      task.inputs.some(
-        (r) =>
-          r.assetId === input.assetId &&
-          r.role !== role &&
-          (r.role === "first-frame" || r.role === "last-frame"),
-      )
-    )
-      throw new Error("首帧和尾帧请选择不同的图片");
   }
-  const inputs = task.inputs.filter(
-    (r) => r.role !== role && (!input || r.assetId !== input.assetId),
-  );
+  const inputs = task.inputs.filter((r) => r.role !== role);
   if (input)
     inputs.push({
       ...input,
+      key: `asset:${input.assetId}:${role}`,
       role,
       purpose: role === "first-frame" ? "视频首帧" : "视频尾帧",
     });
