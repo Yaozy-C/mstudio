@@ -14,6 +14,7 @@ use std::{
 };
 use tauri::Manager;
 use tokio_util::sync::CancellationToken;
+#[derive(Clone)]
 pub struct Context {
     pub profile: Profile,
     pub key: String,
@@ -22,7 +23,7 @@ pub struct Context {
     pub deadline: tokio::time::Instant,
 }
 pub fn definition() -> ToolDefinition {
-    ToolDefinition { name:"mstudio_delegate".into(), description:"Delegate a self-contained task to a specialist: goal, object references, preserved requirements and expected result. Default spawn uses independent context; fork only when completed parent history is needed. Default mode=oneShot cannot continue after settlement; select continuable for expected follow-ups. Returns mode, canContinue, stop reason, answer and actual operation results; failure does not roll back saved work.".into(), parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"task":{"type":"string","minLength":1,"maxLength":8000},"provider":{"type":"string","enum":["spawn","fork"]},"modelId":{"type":"string"},"mode":{"type":"string","enum":["oneShot","continuable"]},"runInBackground":{"type":"boolean"}},"required":["agentId","task"],"additionalProperties":false}) }
+    ToolDefinition { name:"mstudio_delegate".into(), description:"Delegate a self-contained task to a specialist: goal, object references, preserved requirements and expected result. Default spawn uses independent context; fork only when completed parent history is needed. Default mode=oneShot waits for the result and cannot continue after settlement. mode=continuable runs in the background by default, returns a childId for send_message, and notifies you when it settles. Set runInBackground=false when your next action depends on the result. Select continuable for expected follow-ups. Returns mode, canContinue, stop reason, answer and actual operation results; failure does not roll back saved work.".into(), parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"task":{"type":"string","minLength":1,"maxLength":8000},"provider":{"type":"string","enum":["spawn","fork"]},"modelId":{"type":"string"},"mode":{"type":"string","enum":["oneShot","continuable"]},"runInBackground":{"type":"boolean","description":"oneShot defaults to false; continuable defaults to true. Set false when your next action depends on the result."}},"required":["agentId","task"],"additionalProperties":false}) }
 }
 
 pub fn control_definitions() -> Vec<ToolDefinition> {

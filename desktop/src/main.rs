@@ -38,6 +38,7 @@ mod windows_host;
 use tauri::{Emitter, Manager};
 #[tauri::command]
 fn finish_exit(app: tauri::AppHandle) {
+    assistant::parent_activation::close_all();
     app.exit(0);
 }
 fn main() {

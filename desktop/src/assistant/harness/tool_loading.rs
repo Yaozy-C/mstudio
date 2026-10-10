@@ -1,7 +1,10 @@
 //! Permission filtering precedes discovery. Loading changes exposure, never authorization.
 use rig_core::completion::ToolDefinition;
 use serde_json::{Value, json};
-use std::{collections::HashSet, sync::Mutex};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Mutex},
+};
 
 pub const LOAD: &str = "mstudio_load_tools";
 const BASE: &[&str] = &[
@@ -15,8 +18,8 @@ const BASE: &[&str] = &[
     "mstudio_read_image",
     "mstudio_read_result",
 ];
-#[derive(Default)]
-pub struct LoadedTools(Mutex<HashSet<String>>);
+#[derive(Clone, Default)]
+pub struct LoadedTools(Arc<Mutex<HashSet<String>>>);
 impl LoadedTools {
     pub fn definitions(&self, available: Vec<ToolDefinition>) -> Vec<ToolDefinition> {
         if available.is_empty() {

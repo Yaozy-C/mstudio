@@ -3,7 +3,7 @@ use rig_core::{
     completion::{
         CompletionError, CompletionModel, CompletionRequest, CompletionResponse, ToolDefinition,
     },
-    message::{AssistantContent, ToolCall, ToolFunction},
+    message::{AssistantContent, Message, ToolCall, ToolFunction},
     streaming::{RawStreamingChoice, StreamFinal, StreamingCompletionResponse},
 };
 use serde_json::{Value, json};
@@ -22,6 +22,8 @@ pub struct TestHost {
     pub trace: Mutex<Vec<String>>,
     pub active: AtomicUsize,
     pub peak: AtomicUsize,
+    pub inbox: Mutex<Vec<Message>>,
+    pub settlement_after_step: Mutex<Option<Message>>,
 }
 impl Host for TestHost {
     fn token(&self) -> &CancellationToken {
@@ -29,7 +31,15 @@ impl Host for TestHost {
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String> {
         self.events.lock().unwrap().push((kind.into(), value));
+        if kind == "step/end"
+            && let Some(message) = self.settlement_after_step.lock().unwrap().take()
+        {
+            self.inbox.lock().unwrap().push(message);
+        }
         Ok(())
+    }
+    fn injected(&self) -> Result<Vec<Message>, String> {
+        Ok(std::mem::take(&mut *self.inbox.lock().unwrap()))
     }
     fn definitions(&self) -> Vec<ToolDefinition> {
         ["read", "write", "ping"].into_iter().map(|name|ToolDefinition {name:name.into(),description:name.into(),parameters:json!({"type":"object","properties":{"delay":{"type":"integer"},"cancel":{"type":"boolean"}},"additionalProperties":false})}).collect()

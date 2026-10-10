@@ -65,15 +65,17 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             .as_ref()
             .map(String::as_str)
             .unwrap_or_else(|e| e.as_str());
-        let update = (|| -> Result<(), String> {
+        let update = (|| -> Result<bool, String> {
             let mut db = store.db.lock().unwrap();
             let tx = db.transaction().map_err(|e| e.to_string())?;
             let changed = tx.execute("UPDATE subagent_runs SET status=?2,output=?3,notified=?4,updated=unixepoch() WHERE id=?1 AND last_turn=?5",rusqlite::params![id,status,output,notified as i32,tool.turn]).map_err(|e| e.to_string())?;
             if changed == 1 && !notified {
                 tx.execute("INSERT INTO subagent_notices(child_id,project_id,parent_agent_id,status,output) SELECT id,project_id,parent_agent_id,?2,?3 FROM subagent_runs WHERE id=?1",rusqlite::params![id,status,output]).map_err(|e| e.to_string())?;
             }
-            tx.commit().map_err(|e| e.to_string())
+            tx.commit().map_err(|e| e.to_string())?;
+            Ok(changed == 1 && !notified)
         })();
+        let notify_parent = matches!(update, Ok(true));
         if let Err(error) = update {
             eprintln!("subagent settlement failed: {error}");
         }
@@ -81,5 +83,20 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             "subagent/settled",
             json!({"childId":id,"status":status,"stopReason":stop_reason(answer, child),"output":output}),
         );
+        if notify_parent {
+            let parent_turn: Option<String> = store
+                .db
+                .lock()
+                .unwrap()
+                .query_row(
+                    "SELECT parent_turn FROM subagent_runs WHERE id=?1",
+                    [id],
+                    |r| r.get(0),
+                )
+                .ok();
+            if let Some(parent_turn) = parent_turn {
+                crate::assistant::parent_activation::notify(&tool.project, &parent_turn);
+            }
+        }
     }
 }

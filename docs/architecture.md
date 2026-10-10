@@ -93,6 +93,14 @@ Codex 在一次 Mstudio 任务执行中保留原生 app-server 会话与回合�
 
 GES 首版按片段缓存 FFmpeg 调色/变速，复用转场与导出音频混音逻辑；GES 负责时间线层级、字幕、时钟和 seek。切换预览清晰度不会写入工程或改变导出路径。技术取舍是保持现有效果语义，代价是效果修改后的准备时间。未来可逐项引入 GES 原生效果，但必须先验证与现有导出的一致性。
 
+### 子 Agent 完成后的父 Agent 交接
+
+委派沿用 DSH 的调度契约：`oneShot` 默认等待结果；`continuable` 默认后台运行。下一步依赖结果时明确设置 `runInBackground=false`，工具说明及参数说明直接向模型声明这一点。
+
+后台结算先事务性保存结果与通知，再交接给仍驻留的父 Agent。父 Agent 正在执行时，在模型步骤边界读取通知；通知在最后一次模型请求期间到达，也必须先交付再进入空闲。父 Agent 已空闲时，`parent_activation.rs` 恢复其原始 session、已加载工具和模型连接，继续同一任务；不伪造用户消息、不重新执行已提交的工具调用。收尾阶段重新检查已提交的通知，避免结果落在“最后一步结束”和“进入空闲”之间而丢失。取消、替换或退出中的父 Agent 只保留通知，不自动唤醒。
+
+实现对照：[DSH 工具调度与说明](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/tool-subagent/src/index.ts)、[DSH notifySettlement/sendWaking](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/subagent/src/continuation-activation.ts)。父会话恢复和界面消息沿用 Mstudio 现有 SQLite journal/history。
+
 ## SQLite content storage
 
 Project documents remain atomic editable aggregates. Job and event query metadata stay in

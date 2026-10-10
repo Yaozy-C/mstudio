@@ -12,6 +12,7 @@ pub mod media_prompt;
 pub(crate) mod media_tools;
 mod model_feedback;
 mod model_profile;
+pub(crate) mod parent_activation;
 pub(crate) mod permissions;
 mod profile_instructions;
 pub mod profiles;

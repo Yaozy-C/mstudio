@@ -39,6 +39,7 @@ pub(crate) async fn complete_with_resume(
         .map(convert)
         .collect();
     let mut fork_history = Vec::new();
+    let mut parent_binding = None;
     if let Some(t) = &host.tool {
         let store = t.app.state::<crate::database::Store>();
         let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()});
@@ -88,7 +89,8 @@ pub(crate) async fn complete_with_resume(
                 )));
             }
         }
-        harness::session::start(&store, &t.project, &t.turn, binding, &messages)?;
+        harness::session::start(&store, &t.project, &t.turn, binding.clone(), &messages)?;
+        parent_binding = Some(binding);
     }
     host.delegation = Some(harness::delegation::Context {
         profile: profile.clone(),
@@ -117,6 +119,9 @@ pub(crate) async fn complete_with_resume(
         };
         session.append(&host, Message::assistant(reply))?;
         return Ok(reply.into());
+    }
+    if let Some(binding) = parent_binding {
+        super::parent_activation::register(&host, binding, key);
     }
     harness::run(&model, profile, &host, session, host.tool.is_some(), key).await
 }

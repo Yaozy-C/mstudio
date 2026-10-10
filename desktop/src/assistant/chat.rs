@@ -39,6 +39,7 @@ impl Request {
 
 pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, String> {
     let pending = pending::PendingTurn::begin(&request.project_id).map_err(|e| e.to_string())?;
+    super::parent_activation::close(&request.project_id);
     let store = app.state::<Store>();
     if let Some(turn) = &request.resume_turn_id {
         super::harness::session::validate_resume(
@@ -110,6 +111,8 @@ pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, Stri
         "agent-progress",
         json!({"projectId":request.project_id,"turnId":request.client_turn_id,"kind":"turn/end"}),
     );
+    drop(pending);
+    super::parent_activation::settled(&request.project_id, &request.client_turn_id, result.is_ok());
     result
 }
 

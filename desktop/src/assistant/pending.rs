@@ -29,6 +29,7 @@ impl PendingTurn {
 }
 #[tauri::command]
 pub(crate) fn cancel_assistant(thread_id: String) {
+    super::parent_activation::close(&thread_id);
     if let Ok(pending) = PENDING.lock()
         && let Some(token) = pending.get(&thread_id)
     {

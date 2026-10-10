@@ -57,6 +57,13 @@ pub async fn run_until(
             json!({"step":index,"status":if result.is_ok() {"completed"} else {"failed"}}),
         )?;
         if let Some(mut answer) = result.map_err(String::from)? {
+            // A settlement can arrive while the model is producing its final
+            // answer. Deliver it before accepting idle, as DSH Steer does.
+            let injected = host.injected()?;
+            if !injected.is_empty() {
+                session.messages.extend(injected);
+                continue;
+            }
             let notice = session.delegation_outcomes.notice();
             if !notice.is_empty() {
                 session.publish(host, &notice)?;

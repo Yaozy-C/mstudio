@@ -5,6 +5,7 @@ use serde_json::{Value, json};
 use tauri::Manager;
 use tokio_util::sync::CancellationToken;
 
+#[derive(Clone)]
 pub struct ProjectHost {
     pub tool: Option<ProjectTool>,
     pub media_profile: crate::assistant::config::Profile,

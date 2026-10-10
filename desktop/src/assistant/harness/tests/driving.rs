@@ -290,3 +290,50 @@ async fn delegated_run_respects_inherited_deadline_and_keeps_partial_output() {
             .any(|(k, _)| k == "assistant/partial")
     );
 }
+
+#[tokio::test]
+async fn settlement_arriving_with_final_answer_reaches_parent_before_completion() {
+    let host = TestHost::default();
+    *host.settlement_after_step.lock().unwrap() = Some(Message::user(
+        "Subagent concept settled this turn with status idle. Final message: use the packing concept",
+    ));
+    let model = TestModel::default();
+    model.responses.lock().unwrap().extend([
+        Ok(reply(vec![AssistantContent::text(
+            "Creative direction is still running",
+        )])),
+        Ok(reply(vec![AssistantContent::ToolCall(call(
+            "save",
+            "write",
+            json!({}),
+        ))])),
+        Ok(reply(vec![AssistantContent::text("Script saved")])),
+    ]);
+    let answer = run(
+        &model,
+        &profile(),
+        &host,
+        Session::new(vec![Message::user("Create the ad script")]),
+        false,
+        "",
+    )
+    .await
+    .unwrap();
+    assert_eq!(answer, "Script saved");
+    let requests = model.requests.lock().unwrap();
+    assert_eq!(requests.len(), 3);
+    assert!(
+        serde_json::to_string(&requests[1].chat_history)
+            .unwrap()
+            .contains("use the packing concept")
+    );
+    assert_eq!(
+        host.trace
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|s| s.as_str() == "start:save")
+            .count(),
+        1
+    );
+}
