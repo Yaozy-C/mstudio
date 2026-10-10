@@ -138,6 +138,56 @@ test("first and last frame requests preserve exact references without a frame co
   ).toThrow("已有");
 });
 
+test("a full-reference source can cover fractional editorial timing without changing the shot", () => {
+  const { p, context } = setup();
+  p.nodes[1].shot!.duration = 5.3;
+  const selected = model("minimax/h3/reference-to-video");
+  context.turn.task = undefined;
+  context.turn.models = { video: selected.id, execution: "automatic" };
+  const next = requestTask(
+    p,
+    {
+      op: "request_generation",
+      id: "shot",
+      mediaKind: "video",
+      mode: "multi",
+      text: "Complete the packing action by 5.3 seconds, then hold the closed bag.",
+      references: [
+        {
+          assetId: "a",
+          role: "reference",
+          purpose: "Temporal storyboard: bag states and camera composition",
+        },
+      ],
+      parameters: { duration: 6, aspectRatio: "9:16", resolution: "2K" },
+    },
+    context,
+  );
+  const run = runsOf(next)[0];
+  expect(run.status).toBe("READY");
+  expect(run.targetNodeId).toBe("shot");
+  expect(run.modelId).toBe(selected.id);
+  expect(next.nodes[1].shot!.duration).toBe(5.3);
+  expect(next.nodes[1].shot!.takes).toEqual(p.nodes[1].shot!.takes);
+  expect(run.inputs.map((r) => r.role)).toEqual(["reference"]);
+  const uploaded = [
+    { assetId: "a", kind: "image" as const, url: "https://example.test/board" },
+  ];
+  const input = inputFor(next, run, selected, uploaded);
+  expect(input.duration).toBe(6);
+  expect(input.reference_image_urls).toEqual(["https://example.test/board"]);
+  expect(input.image_url).toBeUndefined();
+  expect(input.end_image_url).toBeUndefined();
+  expect(() =>
+    inputFor(
+      next,
+      { ...run, parameters: { duration: 5.3 } },
+      selected,
+      uploaded,
+    ),
+  ).toThrow("5–15");
+});
+
 test("results belong to their conversation task; save, undo, and later iterations retain actual job state", () => {
   const { p, context, op } = setup();
   let next = requestTask(p, op, context);

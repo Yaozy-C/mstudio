@@ -31,7 +31,7 @@ export function parameterSchema(fields: ReturnType<typeof parameterFields>) {
   if (fields.duration)
     properties.duration = described(
       integer(videoDurationRange.min, videoDurationRange.max),
-      "Generated source clip length in whole seconds, 5 through 15 for the currently supported video models. This is not the editorial shot length. A 4-second shot does not make duration=4 valid. Resolve a duration mismatch explicitly; do not silently change the shot or requested generation length.",
+      "Generated source clip length in whole seconds, 5 through 15 for the currently supported video models. Editorial shot length is separate. Unless the user explicitly fixes the generated source length, choose the shortest supported duration covering the shot (5.3-second cut -> duration=6; 4-second cut -> duration=5), without another confirmation. Keep essential action inside the editorial interval, leave any surplus as a hold, and preserve shot/timeline timing. An explicitly fixed source length outside the supported range is a capability conflict; do not silently replace it.",
     );
   if (fields.customSize) {
     properties.width = described(
