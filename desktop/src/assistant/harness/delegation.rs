@@ -67,6 +67,9 @@ impl Host for ChildHost {
     fn definitions(&self) -> Vec<ToolDefinition> {
         self.inner.definitions()
     }
+    fn deferred_tools(&self) -> Vec<String> {
+        self.inner.deferred_tools()
+    }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         self.inner.parallel_safe(call)
     }

@@ -37,7 +37,7 @@ pub(super) fn decode(
             arguments: args.clone(),
         },
     );
-    if let Some(error) = super::super::scheduler::validate(&definitions, &call) {
+    if let Some(error) = super::super::scheduler::validate(&definitions, &call, &[]) {
         return Some(Err(error));
     }
     super::decode(profile, name, args).map(Ok)

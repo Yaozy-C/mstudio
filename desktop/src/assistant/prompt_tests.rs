@@ -6,6 +6,44 @@ fn han(text: &str) -> bool {
     text.chars().any(|c| ('\u{3400}'..='\u{9fff}').contains(&c))
 }
 #[test]
+fn every_role_learns_the_load_before_call_contract() {
+    for profile in profiles::builtins() {
+        let text = system(
+            &json!({"agent":{"name":profile.id,"instructions":profile.instructions,"tools":profile.tool_ids,"skills":profile.skill_ids}}),
+        );
+        assert!(
+            text.contains("Loading is per run and starts empty"),
+            "{}",
+            profile.id
+        );
+        assert!(
+            text.contains("cannot be called until it is loaded"),
+            "{}",
+            profile.id
+        );
+    }
+}
+#[test]
+fn only_delegating_roles_see_the_delegate_load_rule() {
+    let by_id = |id: &str| {
+        profiles::builtins()
+            .into_iter()
+            .find(|p| p.id == id)
+            .unwrap()
+    };
+    let coordinator = system(
+        &json!({"agent":{"name":"coordinator","instructions":by_id("coordinator").instructions,"tools":by_id("coordinator").tool_ids,"skills":by_id("coordinator").skill_ids}}),
+    );
+    assert!(
+        coordinator.contains("Delegate once the goal and targets are known without probing first")
+    );
+    assert!(!coordinator.contains("mstudio_delegate itself must be loaded"));
+    let writer = system(
+        &json!({"agent":{"name":"writer","instructions":by_id("writer").instructions,"tools":by_id("writer").tool_ids,"skills":by_id("writer").skill_ids}}),
+    );
+    assert!(!writer.contains("mstudio_delegate"));
+}
+#[test]
 fn builtin_instructions_and_tool_contracts_are_english_but_content_language_is_preserved() {
     assert!(!han(&tool_schema::schema().to_string()));
     for profile in profiles::builtins() {

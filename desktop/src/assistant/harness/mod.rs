@@ -52,6 +52,10 @@ pub trait Host: Sync {
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String>;
     fn definitions(&self) -> Vec<ToolDefinition>;
+    /// Permitted-but-unloaded names, so a rejected call can name the load step.
+    fn deferred_tools(&self) -> Vec<String> {
+        vec![]
+    }
     fn parallel_safe(&self, call: &ToolCall) -> bool;
     /// Returns messages already committed to the session journal with delivery acknowledgements.
     fn injected(&self) -> Result<Vec<Message>, String> {

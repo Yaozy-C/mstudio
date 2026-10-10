@@ -163,6 +163,9 @@ impl Host for ProjectHost {
     fn definitions(&self) -> Vec<ToolDefinition> {
         self.loaded_tools.definitions(self.available_definitions())
     }
+    fn deferred_tools(&self) -> Vec<String> {
+        self.loaded_tools.deferred(&self.available_definitions())
+    }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         // Project reads are barriers relative to edits; execution is native and transactional.
         // Skill files/history/catalog are independent reads.
