@@ -43,14 +43,15 @@ pub fn validate(name: &str, size: u64) -> Result<String> {
 }
 
 // Stage each import separately so invalid media and failed thumbnail generation leave no loose files.
-pub fn import_source(
+pub(super) fn import_source_scoped(
     store: &Store,
     project: &str,
     source: &Path,
     name: &str,
     work: &Path,
+    attachment_only: bool,
 ) -> Result<Asset> {
-    import_source_to(store, Some(project), source, name, work)
+    import_source_to(store, Some(project), source, name, work, attachment_only)
 }
 
 fn import_source_to(
@@ -59,10 +60,12 @@ fn import_source_to(
     source: &Path,
     name: &str,
     work: &Path,
+    attachment_only: bool,
 ) -> Result<Asset> {
     validate(name, std::fs::metadata(source)?.len())?;
     let mut asset = media::import(source, &work.join("prepared"))?;
     asset.name = name.into();
+    asset.attachment_only = attachment_only;
     let mut moved = vec![];
     let result = (|| -> Result<Asset> {
         for (field, folder) in [
@@ -110,6 +113,15 @@ pub fn discard(store: &Store, project: &str, work: &Path) -> Result<()> {
 }
 
 pub fn import_paths(store: &Store, project: &str, paths: Vec<PathBuf>) -> Imported {
+    import_paths_scoped(store, project, paths, false)
+}
+
+fn import_paths_scoped(
+    store: &Store,
+    project: &str,
+    paths: Vec<PathBuf>,
+    attachment_only: bool,
+) -> Imported {
     let mut result = Imported::default();
     for path in paths {
         let name = path
@@ -121,7 +133,7 @@ pub fn import_paths(store: &Store, project: &str, paths: Vec<PathBuf>) -> Import
         let imported = (|| -> Result<Asset> {
             ensure!(path.is_file(), "请选择文件，不支持直接导入文件夹");
             project_storage::track_file(store, project, &work)?;
-            import_source(store, project, &path, &name, &work)
+            import_source_scoped(store, project, &path, &name, &work, attachment_only)
         })();
         match imported {
             Ok(asset) => result.assets.push(asset),
@@ -135,7 +147,11 @@ pub fn import_paths(store: &Store, project: &str, paths: Vec<PathBuf>) -> Import
 }
 
 #[tauri::command]
-pub async fn import_media(app: tauri::AppHandle, project_id: String) -> Result<Imported, String> {
+pub async fn import_media(
+    app: tauri::AppHandle,
+    project_id: String,
+    attachment_only: Option<bool>,
+) -> Result<Imported, String> {
     let guard = project_storage::working(&app.state::<Store>(), &project_id)
         .await
         .map_err(|e| e.to_string())?;
@@ -149,7 +165,12 @@ pub async fn import_media(app: tauri::AppHandle, project_id: String) -> Result<I
         .collect();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
-        import_paths(&app.state::<Store>(), &project_id, paths)
+        import_paths_scoped(
+            &app.state::<Store>(),
+            &project_id,
+            paths,
+            attachment_only.unwrap_or(false),
+        )
     })
     .await
     .map_err(|e| e.to_string())
@@ -174,7 +195,7 @@ pub async fn import_global_media(app: tauri::AppHandle) -> Result<Imported, Stri
             let path = file.path();
             let name = path.file_name().unwrap_or_default().to_string_lossy();
             let work = store.media_root().join("imports").join(media::id());
-            match import_source_to(&store, None, path, &name, &work) {
+            match import_source_to(&store, None, path, &name, &work, false) {
                 Ok(asset) => result.assets.push(asset),
                 Err(error) => result.errors.push(format!("{name}：{error}")),
             }
@@ -194,6 +215,7 @@ pub async fn import_global_media(app: tauri::AppHandle) -> Result<Imported, Stri
 pub async fn import_clipboard_files(
     app: tauri::AppHandle,
     project_id: String,
+    attachment_only: Option<bool>,
 ) -> Result<Imported, String> {
     let guard = project_storage::working(&app.state::<Store>(), &project_id)
         .await
@@ -201,7 +223,12 @@ pub async fn import_clipboard_files(
     let paths = clipboard_paths();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
-        import_paths(&app.state::<Store>(), &project_id, paths)
+        import_paths_scoped(
+            &app.state::<Store>(),
+            &project_id,
+            paths,
+            attachment_only.unwrap_or(false),
+        )
     })
     .await
     .map_err(|e| e.to_string())
@@ -250,6 +277,7 @@ mod library_tests {
             &source,
             "brief.txt",
             &root.join("imports/stage"),
+            false,
         )
         .unwrap();
         assert!(!asset.generated);
@@ -269,7 +297,8 @@ mod library_tests {
                 None,
                 &source,
                 "bad.exe",
-                &root.join("imports/invalid")
+                &root.join("imports/invalid"),
+                false,
             )
             .is_err()
         );

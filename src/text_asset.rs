@@ -38,6 +38,7 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
     std::fs::write(&target, bytes)?;
     Ok(Asset {
         missing: false,
+        attachment_only: false,
         generated: false,
         id,
         name: path

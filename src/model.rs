@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     #[serde(default)]
+    pub attachment_only: bool,
+    #[serde(default)]
     pub missing: bool,
     #[serde(default)]
     pub generated: bool,

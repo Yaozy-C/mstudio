@@ -155,6 +155,7 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
     }
     Ok(Asset {
         missing: false,
+        attachment_only: false,
         generated: false,
         id,
         name: path

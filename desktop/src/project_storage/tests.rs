@@ -29,6 +29,7 @@ impl Fixture {
     pub(super) fn asset(&self, id: &str) -> Asset {
         let asset = Asset {
             missing: false,
+            attachment_only: false,
             generated: false,
             id: id.into(),
             name: id.into(),

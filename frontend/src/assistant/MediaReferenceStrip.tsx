@@ -1,3 +1,4 @@
+import { isLibraryAsset } from "../workspace/assetLibrary";
 import { isVideoMode } from "../production/referenceMode";
 import { ZoomableImage } from "../workspace/ZoomableImage";
 import { VideoReferenceRange } from "../production/VideoReferenceRange";
@@ -203,6 +204,14 @@ export function MediaReferenceStrip(props: {
                         {role === "edit" ? t("修改这张") : t(roleLabels[role])}
                       </button>
                     ))}
+                  {a && !a.missing && !isLibraryAsset(a) && (
+                    <button
+                      type="button"
+                      onClick={() => props.draft.saveToLibrary(a)}
+                    >
+                      {t("保存为项目素材")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={task?.inputs[0]?.key === ref.key}

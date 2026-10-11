@@ -1,6 +1,12 @@
 import { expect, test } from "bun:test";
 import { newProject, type Asset } from "../model";
-import { collectAsset, isLibraryAsset, uncollectAsset } from "./assetLibrary";
+import { describeAttachment } from "../assistant/attachments";
+import {
+  collectAsset,
+  isLibraryAsset,
+  isSelectableAsset,
+  uncollectAsset,
+} from "./assetLibrary";
 
 const upload: Asset = {
   id: "upload",
@@ -53,4 +59,23 @@ test("removing library membership preserves existing usages and can be collected
   expect(
     collectAsset(removed, upload).assets.filter(isLibraryAsset),
   ).toHaveLength(1);
+});
+
+test("chat attachments stay usable without library membership until explicitly saved", () => {
+  const attachment: Asset = { ...upload, attachmentOnly: true };
+  let p = { ...newProject("chat"), assets: [attachment] };
+  expect(isLibraryAsset(attachment)).toBe(false);
+  expect(isSelectableAsset(attachment)).toBe(true);
+  expect(
+    describeAttachment(p, { kind: "asset", id: attachment.id })?.assetId,
+  ).toBe(attachment.id);
+  expect(isLibraryAsset(JSON.parse(JSON.stringify(p)).assets[0])).toBe(false);
+  p = collectAsset(p, attachment);
+  expect(isLibraryAsset(p.assets[0])).toBe(true);
+  expect(p.assets[0].generated).toBeUndefined();
+  expect(p.assets[0].path).toBe(attachment.path);
+  expect(collectAsset(p, attachment).assets).toHaveLength(1);
+  p = uncollectAsset(p, attachment.id);
+  expect(isLibraryAsset(p.assets[0])).toBe(false);
+  expect(isSelectableAsset(p.assets[0])).toBe(false);
 });

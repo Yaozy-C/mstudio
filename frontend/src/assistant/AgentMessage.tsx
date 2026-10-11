@@ -12,7 +12,7 @@ import {
 } from "@assistant-ui/react";
 import { MarkdownTextPrimitive } from "@assistant-ui/react-markdown";
 import remarkGfm from "remark-gfm";
-import type { Project } from "../model";
+import type { Asset, Project } from "../model";
 import type { Attachment } from "./attachments";
 import { AgentActivity } from "./AgentActivity";
 import { AttachmentChips } from "./AttachmentChips";
@@ -41,6 +41,7 @@ export const MessageContext = createContext<{
   >;
   canvas?: ProductionController;
   settings: () => void;
+  saveAttachment: (asset: Asset) => void;
   follow: (
     task: ProductionTask,
     text?: string,
@@ -86,7 +87,11 @@ export function AgentMessage() {
             }
           />
         )}
-        <AttachmentChips items={attached} project={context.project} />
+        <AttachmentChips
+          items={attached}
+          project={context.project}
+          save={context.saveAttachment}
+        />
         {message.role === "assistant" && turnId && (
           <AgentActivity
             key={turnId}

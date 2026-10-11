@@ -53,7 +53,7 @@ fn chunked_file_keeps_name_and_is_owned_by_project() {
     let id = transfer::begin(&f.0, "one", "参考说明.md".into(), 6).unwrap();
     transfer::append(&f.0, "one", &id, 0, b"abc").unwrap();
     transfer::append(&f.0, "one", &id, 3, b"def").unwrap();
-    let asset = transfer::finish(&f.0, "one", &id).unwrap();
+    let asset = transfer::finish(&f.0, "one", &id, false).unwrap();
     assert_eq!(asset.name, "参考说明.md");
     assert_eq!(asset.kind, "text");
     assert_eq!(std::fs::read(&asset.path).unwrap(), b"abcdef");
@@ -87,10 +87,10 @@ fn failed_finish_cleans_incomplete_and_invalid_files() {
     let f = Fixture::new();
     let partial = transfer::begin(&f.0, "one", "test.txt".into(), 8).unwrap();
     transfer::append(&f.0, "one", &partial, 0, b"partial").unwrap();
-    assert!(transfer::finish(&f.0, "one", &partial).is_err());
+    assert!(transfer::finish(&f.0, "one", &partial, false).is_err());
     let invalid = transfer::begin(&f.0, "one", "fake.png".into(), 5).unwrap();
     transfer::append(&f.0, "one", &invalid, 0, b"image").unwrap();
-    assert!(transfer::finish(&f.0, "one", &invalid).is_err());
+    assert!(transfer::finish(&f.0, "one", &invalid, false).is_err());
     assert!(f.0.assets().unwrap().is_empty());
     f.clean_work();
 }
@@ -172,5 +172,45 @@ async fn deleting_project_cleans_in_flight_uploads() {
     transfer::append(&f.0, "one", &id, 0, b"a").unwrap();
     project_storage::remove(&f.0, "one").unwrap();
     assert!(project_storage::working(&f.0, "one").await.is_err());
+    f.clean_work();
+}
+
+#[test]
+fn chat_import_scope_survives_database_reopen() {
+    let f = Fixture::new();
+    let path = f.file("brief.txt", b"chat reference");
+    let attachment = import_paths_scoped(&f.0, "one", vec![path.clone()], true);
+    assert!(attachment.errors.is_empty());
+    assert!(attachment.assets[0].attachment_only);
+    let upload = import_paths(&f.0, "one", vec![path]);
+    assert!(upload.errors.is_empty());
+    assert!(!upload.assets[0].attachment_only);
+    let id = transfer::begin(&f.0, "one", "paste.txt".into(), 3).unwrap();
+    transfer::append(&f.0, "one", &id, 0, b"abc").unwrap();
+    let pasted = transfer::finish(&f.0, "one", &id, true).unwrap();
+    assert!(pasted.attachment_only);
+    let reopened = Store::open(f.0.root.clone()).unwrap();
+    let assets = reopened.assets().unwrap();
+    assert!(
+        assets
+            .iter()
+            .find(|a| a.id == pasted.id)
+            .unwrap()
+            .attachment_only
+    );
+    assert!(
+        assets
+            .iter()
+            .find(|a| a.id == attachment.assets[0].id)
+            .unwrap()
+            .attachment_only
+    );
+    assert!(
+        !assets
+            .iter()
+            .find(|a| a.id == upload.assets[0].id)
+            .unwrap()
+            .attachment_only
+    );
     f.clean_work();
 }

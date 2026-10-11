@@ -85,6 +85,7 @@ pub async fn store_caption_animation(
                 height,
                 duration,
                 has_audio: false,
+                attachment_only: false,
                 generated: true,
                 missing: false,
             };

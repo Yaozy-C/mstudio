@@ -81,7 +81,11 @@ export async function importBrowserFile(
         Math.round((Math.min(offset + chunkSize, file.size) / file.size) * 100),
       );
     }
-    return await bridge<Asset>("finish_import", { projectId, id });
+    return await bridge<Asset>("finish_import", {
+      projectId,
+      id,
+      attachmentOnly: true,
+    });
   } catch (error) {
     await bridge("cancel_import", { projectId, id }).catch(() => {});
     throw error;

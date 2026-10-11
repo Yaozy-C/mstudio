@@ -2,6 +2,7 @@ import { importBrowserFile, type ImportedFiles } from "./fileImports";
 import type { CreativeTask } from "../creative/aiTasks";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { bridge } from "../bridge";
+import { collectAsset } from "../workspace/assetLibrary";
 import type { Asset, Project } from "../model";
 import {
   attachmentKey,
@@ -119,14 +120,14 @@ export function useAttachments(
     return enqueue(async () => {
       const result = await bridge<ImportedFiles>(
         clipboard ? "import_clipboard_files" : "import_media",
-        { projectId },
+        { projectId, attachmentOnly: true },
       );
       const overflow = receiveAssets(result.assets, receive);
       setNotice(
         [
           ...result.errors,
           ...(overflow
-            ? ["本轮最多 12 个附件，其余文件已保留在素材库，可用 @ 引用。"]
+            ? ["本轮最多 12 个附件，其余文件未添加，请先移除部分附件后重试。"]
             : []),
         ].join("\n"),
       );
@@ -143,13 +144,14 @@ export function useAttachments(
       try {
         const asset = await bridge<Asset>("import_video_url", {
           projectId,
+          attachmentOnly: true,
           url,
           id,
         });
         const overflow = receiveAssets([asset], receive);
         setNotice(
           overflow
-            ? "本轮最多 12 个附件，视频已保留在素材库，可用 @ 引用。"
+            ? "本轮最多 12 个附件，视频未添加，请先移除部分附件后重试。"
             : "",
         );
       } catch (error) {
@@ -185,7 +187,7 @@ export function useAttachments(
         [
           ...errors,
           ...(overflow
-            ? ["本轮最多 12 个附件，其余文件已保留在素材库，可用 @ 引用。"]
+            ? ["本轮最多 12 个附件，其余文件未添加，请先移除部分附件后重试。"]
             : []),
         ].join("\n"),
       );
@@ -212,6 +214,7 @@ export function useAttachments(
     add,
     remove,
     consume,
+    saveToLibrary: (asset: Asset) => change((p) => collectAsset(p, asset)),
     importFiles,
     importDroppedFiles,
     importVideoUrl,

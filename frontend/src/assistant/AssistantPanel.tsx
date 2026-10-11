@@ -150,6 +150,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
         agents: agents.agents,
         canvas: props.canvas,
         settings: props.onSettings,
+        saveAttachment: props.draft.saveToLibrary,
         follow: (task, text, kind) => {
           const next = followGeneration(latest.current.canvas, task, kind);
           if (text && next)

@@ -5,20 +5,24 @@ import {
   FilmStrip,
   MusicNote,
   X,
+  BookmarkSimple,
 } from "@phosphor-icons/react";
 import { mediaUrl } from "../bridge";
 import { useState } from "react";
 import { MediaPreview } from "../workspace/MediaPreview";
-import type { Project } from "../model";
+import { isLibraryAsset } from "../workspace/assetLibrary";
+import type { Asset, Project } from "../model";
 import { attachmentKey, type Attachment } from "./attachments";
 export function AttachmentChips({
   items,
   project,
   remove,
+  save,
 }: {
   items: Attachment[];
   project: Project;
   remove?: (item: Attachment) => void;
+  save?: (asset: Asset) => void;
 }) {
   useLanguage();
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -71,6 +75,16 @@ export function AttachmentChips({
                 <small>{kind}</small>
               </span>
             </button>
+            {asset && !asset.missing && save && !isLibraryAsset(asset) && (
+              <button
+                type="button"
+                aria-label={t("保存为项目素材")}
+                title={t("保存为项目素材")}
+                onClick={() => save(asset)}
+              >
+                <BookmarkSimple size={14} />
+              </button>
+            )}
             {remove && (
               <button
                 type="button"

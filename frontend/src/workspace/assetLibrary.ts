@@ -1,7 +1,7 @@
 import type { Asset, Project } from "../model";
 
 export const isLibraryAsset = (asset: Asset) =>
-  asset.inLibrary ?? !asset.generated;
+  asset.inLibrary ?? (!asset.generated && !asset.attachmentOnly);
 
 // Removed library items remain addressable by existing edits, but not new picks.
 export const isSelectableAsset = (asset: Asset) =>

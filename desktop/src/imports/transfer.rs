@@ -1,4 +1,4 @@
-use super::{discard, import_source, validate};
+use super::{discard, import_source_scoped, validate};
 use crate::{database::Store, project_storage};
 use anyhow::{Result, ensure};
 use serde::{Deserialize, Serialize};
@@ -92,7 +92,12 @@ pub(super) fn append(
     file.write_all(bytes)?;
     Ok(())
 }
-pub(super) fn finish(store: &Store, project: &str, id: &str) -> Result<mstudio::model::Asset> {
+pub(super) fn finish(
+    store: &Store,
+    project: &str,
+    id: &str,
+    attachment_only: bool,
+) -> Result<mstudio::model::Asset> {
     let _transfer = store.imports.lock().unwrap();
     let (work, transfer) = read(store, project, id)?;
     let result = (|| {
@@ -101,7 +106,14 @@ pub(super) fn finish(store: &Store, project: &str, id: &str) -> Result<mstudio::
             std::fs::metadata(&source)?.len() == transfer.size,
             "文件尚未传输完成"
         );
-        import_source(store, project, &source, &transfer.name, &work)
+        import_source_scoped(
+            store,
+            project,
+            &source,
+            &transfer.name,
+            &work,
+            attachment_only,
+        )
     })();
     // Ownership remains recorded if temporary cleanup fails; do not lose a successfully imported asset.
     if let Err(error) = discard(store, project, &work) {
@@ -167,13 +179,20 @@ pub async fn finish_import(
     app: tauri::AppHandle,
     project_id: String,
     id: String,
+    attachment_only: Option<bool>,
 ) -> Result<mstudio::model::Asset, String> {
     let guard = project_storage::working(&app.state::<Store>(), &project_id)
         .await
         .map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
-        finish(&app.state::<Store>(), &project_id, &id).map_err(|e| e.to_string())
+        finish(
+            &app.state::<Store>(),
+            &project_id,
+            &id,
+            attachment_only.unwrap_or(false),
+        )
+        .map_err(|e| e.to_string())
     })
     .await
     .map_err(|e| e.to_string())?

@@ -29,6 +29,7 @@ pub(super) fn fixture() -> (std::path::PathBuf, Store, Value) {
         std::fs::write(&path, b"test-source-content").unwrap();
         let asset = Asset {
             missing: false,
+            attachment_only: false,
             generated: false,
             id: id.into(),
             name: format!("test-{id}"),

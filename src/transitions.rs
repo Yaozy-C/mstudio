@@ -151,6 +151,7 @@ pub fn prepare(
             height: h,
             has_audio: false,
             missing: false,
+            attachment_only: false,
             generated: true,
         });
         spec.clips.push(Clip {

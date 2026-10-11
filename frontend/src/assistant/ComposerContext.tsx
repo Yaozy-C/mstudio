@@ -53,6 +53,7 @@ export function ComposerContext({
         items={attachments}
         project={project}
         remove={draft.remove}
+        save={draft.saveToLibrary}
       />
       <AttachmentSupport
         items={attachments}

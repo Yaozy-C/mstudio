@@ -1,5 +1,6 @@
 import type { ScriptDocument, PlannedShot } from "./creative/types";
 export type Asset = {
+  attachmentOnly?: boolean;
   generated?: boolean;
   missing?: boolean;
   inLibrary?: boolean;

@@ -96,6 +96,7 @@ pub async fn store_caption_image(
         std::fs::write(&path, bytes).map_err(|e| e.to_string())?;
         let asset = Asset {
             missing: false,
+            attachment_only: false,
             generated: true,
             id: id.clone(),
             name: "字幕画面".into(),

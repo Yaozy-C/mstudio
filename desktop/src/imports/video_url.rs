@@ -28,6 +28,7 @@ pub async fn import_video_url(
     project_id: String,
     id: String,
     url: String,
+    attachment_only: Option<bool>,
 ) -> Result<Asset, String> {
     let token = CancellationToken::new();
     {
@@ -37,7 +38,14 @@ pub async fn import_video_url(
         }
         active.insert(id.clone(), token.clone());
     }
-    let result = import(&app, &project_id, &url, &token).await;
+    let result = import(
+        &app,
+        &project_id,
+        &url,
+        &token,
+        attachment_only.unwrap_or(false),
+    )
+    .await;
     active().lock().unwrap().remove(&id);
     result.map_err(|e| crate::app_error::wire(e, "ASSET_IMPORT_FAILED", "import"))
 }
@@ -46,6 +54,7 @@ async fn import(
     project: &str,
     raw: &str,
     token: &CancellationToken,
+    attachment_only: bool,
 ) -> Result<Asset> {
     let url = parse_url(raw)?;
     let store = app.state::<Store>();
@@ -66,7 +75,7 @@ async fn import(
             let (path, name) = downloaded;
             // Probe before committing: HTML, audio-only files and corrupt downloads never enter the project.
             ensure!(media::probe(&path)?["streams"].as_array().is_some_and(|s| s.iter().any(|s| s["codec_type"] == "video")), "链接未返回有效视频");
-            super::import_source(&owner.state::<Store>(), &project, &path, &name, &staging)
+            super::import_source_scoped(&owner.state::<Store>(), &project, &path, &name, &staging, attachment_only)
         }).await?
     }.await;
     let cleanup = super::discard(&store, project, &work);
