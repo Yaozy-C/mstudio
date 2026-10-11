@@ -1,14 +1,8 @@
-import { DiscardedAssetBadge } from "./DiscardedAssetBadge";
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
+import { CanvasAssetStatus } from "./CanvasAssetStatus";
 import { memo, useEffect, useLayoutEffect, useRef } from "react";
-import {
-  Play,
-  Image,
-  VideoCamera,
-  FileText,
-  CheckCircle,
-} from "@phosphor-icons/react";
+import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { mediaUrl } from "../bridge";
 import { isLibraryAsset } from "../workspace/assetLibrary";
@@ -284,17 +278,7 @@ export const CanvasCard = memo(function CanvasCard({
         ) : (
           <p className="card-copy">{item.text || asset.name}</p>
         )}
-        {asset?.discarded && <DiscardedAssetBadge />}
-        {asset && inTimeline && (
-          <span
-            className="card-timeline-usage"
-            role="img"
-            aria-label={t("已加入时间线")}
-            title={t("已加入时间线")}
-          >
-            <CheckCircle size={20} weight="fill" aria-hidden="true" />
-          </span>
-        )}
+        <CanvasAssetStatus asset={asset} inTimeline={inTimeline} />
       </article>
     </ObjectMenu>
   );

@@ -86,3 +86,36 @@ fn director_add_shot_requires_structure_and_coordinator_cannot_author_media() {
         assert!(decode(&coordinator, name, json!({})).is_none(), "{name}");
     }
 }
+
+#[test]
+fn regeneration_accepts_replacement_prompt_and_references_without_creating_a_task() {
+    let p = profile("production");
+    let value = decode(
+        &p,
+        "mstudio_regenerate_generation",
+        json!({
+            "taskKey":"existing", "prompt":"Corrected", "references":[
+                {"assetId":"approved", "role":"first-frame", "purpose":"Product identity"}
+            ], "keepPreviousResults":false
+        }),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(value["operations"][0]["op"], "regenerate_generation");
+    assert_eq!(value["operations"][0]["taskKey"], "existing");
+    assert_eq!(value["operations"][0]["text"], "Corrected");
+    assert_eq!(
+        value["operations"][0]["references"][0]["assetId"],
+        "approved"
+    );
+    assert!(value["operations"][0].get("prompt").is_none());
+    assert!(
+        decode(
+            &p,
+            "mstudio_regenerate_generation",
+            json!({"taskKey":"existing"})
+        )
+        .unwrap()
+        .is_ok()
+    );
+}
