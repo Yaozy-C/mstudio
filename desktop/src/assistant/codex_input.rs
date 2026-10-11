@@ -163,9 +163,12 @@ mod tests {
             },
         ])
         .unwrap();
+        assert_eq!(input[2]["type"], "localImage");
         assert_eq!(
-            input[2],
-            json!({"type":"localImage", "path":path.canonicalize().unwrap()})
+            std::path::Path::new(input[2]["path"].as_str().unwrap())
+                .canonicalize()
+                .unwrap(),
+            path.canonicalize().unwrap()
         );
         assert_eq!(input[4], json!({"type":"localImage", "path":path}));
         assert_eq!(
