@@ -35,7 +35,8 @@
       },
       {
         "instructions": [
-          "ffa83c57a35a6ea4b8cd320f325e857173fa4ab3d770438c0535dd70101dca73"
+          "ffa83c57a35a6ea4b8cd320f325e857173fa4ab3d770438c0535dd70101dca73",
+          "2fc07b0e25a2867959b5475a7d432e78a510533b84db4be7d4d2594623d46d07"
         ],
         "description": "管理目标、约束、分工与交付，整合专业角色的结果",
         "skillIds": [],
