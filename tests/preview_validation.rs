@@ -27,6 +27,7 @@ fn fixture() -> (RenderSpec, Vec<Asset>) {
         captions: vec![],
     };
     let assets = vec![Asset {
+        attachment_only: false,
         id: "a".into(),
         name: "test".into(),
         kind: "video".into(),

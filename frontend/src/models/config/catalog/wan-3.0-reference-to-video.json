@@ -3,13 +3,8 @@
   "name": "Wan 3.0 · 参考生成",
   "provider": "Alibaba / 百炼",
   "kind": "video",
-  "inputs": [
-    "文本",
-    "图像 / 视频 · 参考"
-  ],
-  "outputs": [
-    "带声音的视频"
-  ],
+  "inputs": ["文本", "图像 / 视频 · 参考"],
+  "outputs": ["带声音的视频"],
   "note": "阿里云百炼官方接口。请在服务连接中填写所属地域的业务空间地址和 API Key。duration=-1 为智能时长。",
   "source": "https://help.aliyun.com/zh/model-studio/wan3-video-generation-api-reference",
   "protocol": "DashScope 异步",
@@ -52,23 +47,11 @@
     "controls": {
       "aspectRatio": {
         "path": "/parameters/ratio",
-        "values": [
-          "adaptive",
-          "21:9",
-          "16:9",
-          "4:3",
-          "1:1",
-          "3:4",
-          "9:16"
-        ]
+        "values": ["adaptive", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"]
       },
       "resolution": {
         "path": "/parameters/resolution",
-        "values": [
-          "480P",
-          "720P",
-          "1080P"
-        ]
+        "values": ["480P", "720P", "1080P"]
       },
       "duration": {
         "path": "/parameters/duration"
