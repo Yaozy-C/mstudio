@@ -23,12 +23,7 @@ test("reference mode renders the shared video composer without a conversation mo
   const draft = { items: [], busy: false } as unknown as AttachmentDraft;
   const html = renderToStaticMarkup(
     <Theme>
-      <MediaComposer
-        canvas={canvas}
-        project={fixture()}
-        draft={draft}
-        settings={() => {}}
-      />
+      <MediaComposer canvas={canvas} project={fixture()} draft={draft} />
     </Theme>,
   );
   expect(html).toContain("参考模式");

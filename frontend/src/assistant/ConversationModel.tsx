@@ -3,7 +3,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import { inputSummary } from "../models/inputCapabilities";
 import { useState } from "react";
 import { DropdownMenu } from "@radix-ui/themes";
-import { CaretDown, GearSix } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import { ModelMark } from "../ui/Identity";
 import { readyModel, selectedModel } from "../models/types";
 import "../styles/conversation-model.css";
@@ -12,18 +12,15 @@ import { useModels, modelsChanged } from "../models/useModels";
 export function ConversationModel({
   projectId,
   disabled,
-  settings,
 }: {
   projectId: string;
   disabled: boolean;
-  settings: () => void;
 }) {
   useLanguage();
   const { catalog } = useModels(projectId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const current = selectedModel(catalog);
-  const defaultModel = catalog.profiles.find((m) => m.id === catalog.defaultId);
   async function choose(id: string) {
     setBusy(true);
     setError("");
@@ -65,22 +62,10 @@ export function ConversationModel({
           align="start"
           sideOffset={10}
         >
-          <DropdownMenu.Label>{t("对话模型")}</DropdownMenu.Label>
           <DropdownMenu.RadioGroup
-            value={catalog.selectedId || ""}
+            value={current?.id || ""}
             onValueChange={(id) => void choose(id)}
           >
-            {defaultModel && (
-              <DropdownMenu.RadioItem
-                value=""
-                disabled={!readyModel(defaultModel)}
-              >
-                <span className="model-menu-copy">
-                  <span>{t("使用默认模型")}</span>
-                  <small>{defaultModel.name}</small>
-                </span>
-              </DropdownMenu.RadioItem>
-            )}
             {catalog.profiles.map((m) => (
               <DropdownMenu.RadioItem
                 value={m.id}
@@ -102,11 +87,6 @@ export function ConversationModel({
           {!catalog.profiles.length && (
             <p className="model-menu-empty">{t("尚未添加对话模型")}</p>
           )}
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item onSelect={settings}>
-            <GearSix size={18} aria-hidden="true" />
-            {t("管理模型")}
-          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       {error && <ErrorNotice error={error} />}

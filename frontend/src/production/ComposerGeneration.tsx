@@ -10,23 +10,21 @@ import {
   VideoCamera,
   ChatCircle,
   FilmStrip,
-  SlidersHorizontal,
 } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import type { ProductionController } from "./useProduction";
 import { GenerationSettings } from "./GenerationSettings";
+import { ModelMark } from "../ui/Identity";
 import { ConversationModel } from "../assistant/ConversationModel";
 import "./composer-generation.css";
 
 export function ComposerGeneration({
   canvas,
   project,
-  settings,
   running,
 }: {
   canvas: ProductionController;
   project: Project;
-  settings: () => void;
   running: boolean;
 }) {
   useLanguage();
@@ -38,7 +36,13 @@ export function ComposerGeneration({
   const kind = isVideoMode(mode) ? "video" : "image";
   const modelId =
     (mode !== "agent" && task?.modelId) || canvas.modelPreferences[kind] || "";
-  const selected = canvas.media.models.find((m) => m.id === modelId);
+  const models = canvas.media.models.filter(
+    (m) =>
+      m.kind === kind &&
+      m.enabled &&
+      (mode !== "reference" || supportsVideoReference(m)),
+  );
+  const selected = models.find((m) => m.id === modelId);
   const Icon =
     mode === "reference"
       ? FilmStrip
@@ -123,18 +127,19 @@ export function ComposerGeneration({
         </Popover.Content>
       </Popover.Root>
       {mode === "agent" && (
-        <ConversationModel
-          projectId={project.id}
-          settings={settings}
-          disabled={running}
-        />
+        <ConversationModel projectId={project.id} disabled={running} />
       )}
       {mode !== "agent" && task && (
-        <Popover.Root open={paramsOpen} onOpenChange={setParamsOpen}>
+        <Popover.Root
+          open={paramsOpen && !!selected && !running}
+          onOpenChange={(open) => setParamsOpen(open && !!selected && !running)}
+        >
           <Popover.Trigger>
             <button
               type="button"
               className="composer-setting-chip"
+              disabled={!selected || running}
+              title={!selected ? t("先选择生成模型") : undefined}
               aria-label={
                 mode === "image" ? t("图片生成参数") : t("视频生成参数")
               }
@@ -173,7 +178,14 @@ export function ComposerGeneration({
               title={selected?.name || t("选择生成模型")}
               aria-label={t("选择生成模型")}
             >
-              <SlidersHorizontal size={17} />
+              {selected ? (
+                <ModelMark
+                  identity={`${selected.name} ${selected.endpoint} ${selected.plugin}`}
+                  size={17}
+                />
+              ) : (
+                <Icon size={17} />
+              )}
               <span>{selected?.name.split(" · ").at(-1) || t("选择模型")}</span>
               <CaretDown size={12} />
             </button>
@@ -183,52 +195,33 @@ export function ComposerGeneration({
             align="end"
             className="composer-media-menu"
           >
-            <strong>{mode === "image" ? t("图片模型") : t("视频模型")}</strong>
-            {canvas.media.models
-              .filter(
-                (m) =>
-                  m.kind === kind &&
-                  m.enabled &&
-                  (mode !== "reference" || supportsVideoReference(m)),
-              )
-              .map((m) => (
-                <button
-                  type="button"
-                  className="composer-media-option"
-                  key={m.id}
-                  aria-pressed={modelId === m.id}
-                  onClick={() => {
-                    canvas.preferences({ [kind]: m.id });
-                    if (task) canvas.update(selectMediaModel(task, m));
-                    setModelOpen(false);
-                  }}
-                >
-                  <span>{m.name}</span>
-                  {modelId === m.id && <Check size={16} />}
-                </button>
-              ))}
-            {!canvas.media.models.some(
-              (m) =>
-                m.kind === kind &&
-                m.enabled &&
-                (mode !== "reference" || supportsVideoReference(m)),
-            ) && (
+            {models.map((m) => (
+              <button
+                type="button"
+                className="composer-media-option"
+                key={m.id}
+                aria-pressed={modelId === m.id}
+                onClick={() => {
+                  canvas.preferences({ [kind]: m.id });
+                  if (task) canvas.update(selectMediaModel(task, m));
+                  setModelOpen(false);
+                }}
+              >
+                <ModelMark
+                  identity={`${m.name} ${m.endpoint} ${m.plugin}`}
+                  size={18}
+                />
+                <span>{m.name}</span>
+                {modelId === m.id && <Check size={16} />}
+              </button>
+            ))}
+            {!models.length && (
               <p>
                 {t("还没有可用的")}
                 {kind === "image" ? t("图片") : t("视频")}
                 {t("模型")}
               </p>
             )}
-            <button
-              type="button"
-              className="composer-manage-models"
-              onClick={() => {
-                setModelOpen(false);
-                settings();
-              }}
-            >
-              {t("管理模型连接")}
-            </button>
           </Popover.Content>
         </Popover.Root>
       )}

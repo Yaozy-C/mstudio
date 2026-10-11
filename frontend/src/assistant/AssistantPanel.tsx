@@ -212,7 +212,6 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
               canvas={props.canvas}
               project={props.project}
               draft={props.draft}
-              settings={props.onSettings}
             />
           ) : (
             <AgentComposer

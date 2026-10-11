@@ -202,7 +202,8 @@ export function GenerationRun({
             <ActionButton
               icon={SlidersHorizontal}
               type="button"
-              disabled={busy}
+              disabled={busy || !model?.enabled}
+              title={!model?.enabled ? t("先选择生成模型") : undefined}
               onClick={() => canvas.configure(task)}
             >
               {t("设置")}

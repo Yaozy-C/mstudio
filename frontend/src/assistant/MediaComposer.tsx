@@ -18,12 +18,10 @@ export function MediaComposer({
   canvas,
   project,
   draft,
-  settings,
 }: {
   canvas: ProductionController;
   project: Project;
   draft: AttachmentDraft;
-  settings: () => void;
 }) {
   useLanguage();
   const [ime] = useState(compositionGuard);
@@ -150,7 +148,6 @@ export function MediaComposer({
               <ComposerGeneration
                 canvas={canvas}
                 project={project}
-                settings={settings}
                 running={preparing}
               />
             </div>

@@ -260,15 +260,10 @@ export function AgentComposer({
               <ComposerGeneration
                 canvas={canvas}
                 project={project}
-                settings={settings}
                 running={running}
               />
             ) : (
-              <ConversationModel
-                projectId={project.id}
-                disabled={running}
-                settings={settings}
-              />
+              <ConversationModel projectId={project.id} disabled={running} />
             )}
           </div>
           <div className="composer-submit">
