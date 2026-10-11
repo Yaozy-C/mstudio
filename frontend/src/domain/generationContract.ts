@@ -33,7 +33,7 @@ const videoParameters = object({
     "Seconds within the selected model's duration bounds from mstudio_models. Editorial duration is separate.",
   ),
 });
-const references = (roles: string[]) => ({
+export const generationReferences = (roles: string[]) => ({
   ...array({
     ...object(
       {
@@ -110,7 +110,7 @@ export const generationOperations = [
           "Generate a still image. This branch has no mode or duration.",
       },
       parameters: imageParameters,
-      references: references(["edit", "reference"]),
+      references: generationReferences(["edit", "reference"]),
     },
     ["op", "text", "mediaKind"],
   ),
@@ -130,7 +130,7 @@ export const generationOperations = [
         description:
           "Video input arrangement: single = first-frame image; ends = first-frame and last-frame images; multi = reference images; mixed = image/video references. Match references[].role: for ordinary reference images use mode=multi with role=reference; reference is a role, never a mode. For bookend images use mode=ends with first-frame and last-frame roles. Omission inherits the referenced task arrangement; without a source task it defaults to single. When supplying reference images explicitly, also set mode=multi. This is not media kind or output count.",
       },
-      references: references([
+      references: generationReferences([
         "reference",
         "first-frame",
         "last-frame",
@@ -155,7 +155,7 @@ export const generationOperations = [
         description:
           "Standalone reusable reference asset, without a shot or canvas task target.",
       },
-      references: references(["edit", "reference"]),
+      references: generationReferences(["edit", "reference"]),
     },
     ["op", "text", "mediaKind", "generationPurpose", "references"],
   ),

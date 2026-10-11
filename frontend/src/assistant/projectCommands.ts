@@ -1,7 +1,7 @@
 import { setTransition } from "../timeline/transitions";
 import { agentTimelineEdit } from "../timeline/agentEdits";
 import { patchVisual } from "../timeline/visualSettings";
-import { editTaskPrompt, regenerationDraft } from "../production/taskEditing";
+import { editTaskPrompt, regenerateTask } from "../production/taskEditing";
 import { saveTask } from "../production/document";
 import { creativeExtras, validateShotOrder } from "../creative/operations";
 import { assembleScreenplay, chooseTake } from "../creative/timeline";
@@ -171,15 +171,12 @@ export function applyOperations(
         const source = next.production?.drafts?.[string(op.taskKey, 300)];
         if (!source) throw new Error("任务不存在");
         if (source.lastRegenerationId === actionId) break;
-        const task = regenerationDraft(source);
-        if (
-          task.inputs.some((r) =>
-            next.assets.some(
-              (a) => a.id === r.assetId && a.inLibrary === false,
-            ),
-          )
-        )
-          throw new Error("参考素材已从素材库移除，请移除该参考或先恢复素材");
+        next = regenerateTask(next, source.key, {
+          text: op.text as string | undefined,
+          references: op.references,
+          keepPreviousResults: op.keepPreviousResults === true,
+        });
+        const task = next.production!.drafts![source.key];
         task.lastRegenerationId = actionId;
         task.status =
           context.turn.models.execution === "automatic" && task.modelId

@@ -14,6 +14,13 @@ export function receipt(
     stage: "commit",
     outcome: "committed",
     executionId,
+    discardedAssetIds: after.assets
+      .filter(
+        (a) =>
+          a.discarded &&
+          !before.assets.find((old) => old.id === a.id)?.discarded,
+      )
+      .map((a) => a.id),
     savedValues: savedValues(after, operations),
     savedClips: clipReceipt(before, after),
     scripts: scriptReceipt(after, operations),

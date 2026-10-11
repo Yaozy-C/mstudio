@@ -1,11 +1,12 @@
 import type { Asset, Project } from "../model";
 
 export const isLibraryAsset = (asset: Asset) =>
-  asset.inLibrary ?? (!asset.generated && !asset.attachmentOnly);
+  !asset.discarded &&
+  (asset.inLibrary ?? (!asset.generated && !asset.attachmentOnly));
 
 // Removed library items remain addressable by existing edits, but not new picks.
 export const isSelectableAsset = (asset: Asset) =>
-  !asset.missing && asset.inLibrary !== false;
+  !asset.discarded && !asset.missing && asset.inLibrary !== false;
 
 export function collectAsset(project: Project, asset: Asset): Project {
   const existing = project.assets.find((a) => a.id === asset.id);

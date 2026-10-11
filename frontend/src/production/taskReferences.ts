@@ -1,0 +1,103 @@
+import { failure } from "../errors/failure";
+import type { Project } from "../model";
+import { attachmentInput } from "./attachmentInput";
+import { productionItems } from "./items";
+import type { ProductionInput, ProductionTask } from "./types";
+
+export function replaceTaskReferences(
+  p: Project,
+  source: ProductionTask,
+  references: unknown,
+): ProductionTask {
+  const task = { ...source };
+  const kind = task.kind;
+  if (references !== undefined) {
+    if (!Array.isArray(references))
+      throw failure("VALIDATION_FAILED", "参考素材须为数组");
+    const inputs = references.map((value): ProductionInput => {
+      if (!value || typeof value !== "object")
+        throw failure("VALIDATION_FAILED", "参考素材无效");
+      const r = value as Record<string, unknown>;
+      if (typeof r.assetId !== "string")
+        throw failure("VALIDATION_FAILED", "缺少参考素材 ID");
+      const input = attachmentInput(p, { kind: "asset", id: r.assetId });
+      const asset = p.assets.find((a) => a.id === r.assetId);
+      if (!input || !asset || !["image", "video"].includes(asset.kind))
+        throw failure("VALIDATION_FAILED", "只能使用项目中已有的图片或视频");
+      const role =
+        r.role ?? (asset.kind === "video" ? "video-reference" : "reference");
+      const allowed =
+        asset.kind === "image"
+          ? kind === "image"
+            ? ["edit", "reference"]
+            : ["reference", "first-frame", "last-frame"]
+          : ["video-reference"];
+      if (!allowed.includes(String(role)))
+        throw failure("VALIDATION_FAILED", "素材用途与类型不匹配");
+      const frame = productionItems(p).find(
+        (n) => n.kind === "image" && n.assetId === asset.id,
+      );
+      for (const field of ["start", "end"])
+        if (
+          r[field] !== undefined &&
+          (typeof r[field] !== "number" || !Number.isFinite(r[field]))
+        )
+          throw failure("VALIDATION_FAILED", "视频区间必须是有效秒数");
+      const start = (r.start as number | undefined) ?? input.start;
+      const end = (r.end as number | undefined) ?? input.end;
+      if (
+        asset.kind === "video" &&
+        (start === undefined ||
+          end === undefined ||
+          start < 0 ||
+          end > asset.duration ||
+          end <= start)
+      )
+        throw failure("VALIDATION_FAILED", "请指定有效的视频参考区间");
+      return {
+        ...input,
+        key: `asset:${input.assetId}:${role}`,
+        role: role as ProductionInput["role"],
+        start,
+        end,
+        nodeId: frame?.nodeId ?? input.nodeId,
+        frame: !!frame && !!p.nodes.find((n) => n.id === frame.nodeId)?.shot,
+        purpose:
+          typeof r.purpose === "string"
+            ? r.purpose.slice(0, 1000)
+            : input.purpose,
+      };
+    });
+    if (
+      new Set(inputs.map((r) => `${r.assetId}:${r.role}`)).size !==
+      inputs.length
+    )
+      throw failure("VALIDATION_FAILED", "参考素材不能重复");
+    task.inputs = [
+      ...task.inputs.filter((r) => r.role === "script"),
+      ...inputs,
+    ];
+  }
+  return task;
+}
+
+export function assertGenerationReferences(p: Project, task: ProductionTask) {
+  for (const input of task.inputs.filter((r) => r.role !== "script")) {
+    const asset = p.assets.find((a) => a.id === input.assetId);
+    if (asset?.discarded)
+      throw failure(
+        "VALIDATION_FAILED",
+        `参考素材 ${input.assetId} 已废弃，不能用于生成，请替换该参考`,
+      );
+    if (!asset || asset.missing)
+      throw failure(
+        "VALIDATION_FAILED",
+        "参考素材已移除或不可用，请替换该参考",
+      );
+    if (asset.inLibrary === false)
+      throw failure(
+        "VALIDATION_FAILED",
+        "参考素材已从素材库移除，请移除该参考或先恢复素材",
+      );
+  }
+}

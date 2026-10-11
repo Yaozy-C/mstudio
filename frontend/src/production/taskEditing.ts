@@ -1,3 +1,7 @@
+import {
+  assertGenerationReferences,
+  replaceTaskReferences,
+} from "./taskReferences";
 import type { Project } from "../model";
 import { saveTask } from "./document";
 import type { ProductionTask } from "./types";
@@ -32,4 +36,45 @@ export function regenerationDraft(task: ProductionTask): ProductionTask {
     resultAssetId: undefined,
     resultAssetIds: undefined,
   };
+}
+
+// Replacing a result preserves its history but revokes its use as generation input.
+export function regenerateTask(
+  p: Project,
+  key: string,
+  changes: {
+    text?: string;
+    references?: unknown;
+    keepPreviousResults?: boolean;
+  } = {},
+): Project {
+  const original = p.production?.drafts?.[key];
+  if (!original) throw new Error("任务不存在");
+  let task = regenerationDraft(original);
+  if (changes.text !== undefined) {
+    if (
+      typeof changes.text !== "string" ||
+      !changes.text.trim() ||
+      changes.text.length > 12000
+    )
+      throw new Error("请提供完整生成描述（最多 12000 字）");
+    task.prompt = changes.text.trim();
+  }
+  task = replaceTaskReferences(p, task, changes.references);
+  const obsolete = new Set(
+    changes.keepPreviousResults
+      ? []
+      : [
+          ...(original.resultAssetIds ?? []),
+          ...(original.resultAssetId ? [original.resultAssetId] : []),
+        ],
+  );
+  const next = {
+    ...p,
+    assets: p.assets.map((a) =>
+      obsolete.has(a.id) ? { ...a, discarded: true } : a,
+    ),
+  };
+  assertGenerationReferences(next, task);
+  return saveTask(next, task);
 }

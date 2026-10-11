@@ -11,7 +11,10 @@ import {
   type Schema,
 } from "./schema";
 import { design, transitionKind, visual } from "./visualContract";
-import { generationOperations } from "./generationContract";
+import {
+  generationOperations,
+  generationReferences,
+} from "./generationContract";
 const reference = object(
   { assetId: id, purpose: text(400), start: number(0), end: number(0) },
   ["assetId", "purpose"],
@@ -173,7 +176,31 @@ export const operationContract = {
       },
       ["taskKey", "text"],
     ),
-    op("regenerate_generation", { taskKey: text(300) }, ["taskKey"]),
+    op(
+      "regenerate_generation",
+      {
+        taskKey: text(300),
+        text: described(
+          { ...text(12000), minLength: 1 },
+          "Optional complete replacement prompt. Omission preserves the existing prompt.",
+        ),
+        references: described(
+          generationReferences([
+            "edit",
+            "reference",
+            "first-frame",
+            "last-frame",
+            "video-reference",
+          ]),
+          "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references.",
+        ),
+        keepPreviousResults: described(
+          boolean,
+          "Defaults to false: discard replaced results so they cannot be used by later generation. Set true only when explicitly producing an additional usable variant or editing the previous result.",
+        ),
+      },
+      ["taskKey"],
+    ),
     op("set_creation", {
       intent: text(6000),
       essential: text(6000),

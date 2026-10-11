@@ -1,3 +1,4 @@
+import { isSelectableAsset } from "../workspace/assetLibrary";
 import type { Project } from "../model";
 import { mediaAdapter } from "../models/adapters";
 import type { MediaModel } from "../models/mediaRegistry";
@@ -19,7 +20,7 @@ export function setFrameInput(
 ): Partial<ProductionTask> {
   if (input) {
     const asset = project.assets.find((a) => a.id === input.assetId);
-    if (!asset || asset.kind !== "image" || asset.missing)
+    if (!asset || asset.kind !== "image" || !isSelectableAsset(asset))
       throw new Error("首尾帧只能选择可用的图片");
   }
   const inputs = task.inputs.filter((r) => r.role !== role);

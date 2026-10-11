@@ -77,7 +77,10 @@ fn add(
     nested: Option<&str>,
     description: &str,
 ) {
-    let task_prompt = matches!(op, "request_generation" | "update_generation");
+    let task_prompt = matches!(
+        op,
+        "request_generation" | "update_generation" | "regenerate_generation"
+    );
     let properties = schema["properties"].as_object_mut().unwrap();
     properties.remove("op");
     for key in fixed.keys() {

@@ -4,7 +4,7 @@ pub fn description(op: &str) -> &'static str {
             "Save a complete replacement prompt on the existing taskKey. Does not regenerate or change the shot draft."
         }
         "regenerate_generation" => {
-            "Create a new run from an existing taskKey, retaining its model, inputs and parameters. Requires an explicit regeneration request."
+            "Regenerate the existing taskKey without creating a separate task. Optionally replace prompt and the complete references list in this call; otherwise preserve them. Retain model and parameters. By default discard replaced results: keep them as history but prohibit their use as generation inputs. Set keepPreviousResults=true only for an explicitly requested usable variant or edit of the previous output. For corrections to an existing task, use this tool even when changing references, rather than generate_image/video. Requires an explicit regeneration request."
         }
         "add_node" => {
             "Create a project node with its kind, ID and title. Use only fields permitted for that kind."

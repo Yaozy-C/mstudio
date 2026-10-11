@@ -1,3 +1,4 @@
+import { assertGenerationReferences } from "./taskReferences";
 import { failure } from "../errors/failure";
 import { taskParameters } from "./parameters";
 import type { Project, Reference } from "../model";
@@ -72,6 +73,7 @@ export function inputFor(
       "VALIDATION_FAILED",
       "图片生成不能使用首尾帧，请将用途改为内容参考",
     );
+  assertGenerationReferences(p, task);
   const adapter = mediaAdapter(model);
   const options = {
     ...model.params,

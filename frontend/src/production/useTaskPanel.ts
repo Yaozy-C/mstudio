@@ -6,6 +6,7 @@ import {
   editTaskPrompt,
   canEditOriginal,
   regenerationDraft,
+  regenerateTask,
 } from "./taskEditing";
 
 export function useTaskPanel(
@@ -66,8 +67,9 @@ export function useTaskPanel(
           !["FAILED", "CANCELLED", "COMPLETED"].includes(current.status ?? "")
         )
           return p;
-        const retry = regenerationDraft(current);
-        return saveTask(p, {
+        const next = regenerateTask(p, current.key);
+        const retry = next.production!.drafts![current.key];
+        return saveTask(next, {
           ...retry,
           status: retry.modelId ? "READY" : "AWAITING_CONFIRMATION",
         });
