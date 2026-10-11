@@ -11,7 +11,7 @@ pub(super) struct Connection {
     pub usage: super::usage::NativeUsage,
 }
 impl Connection {
-    pub async fn start(model: &str, request: CompletionRequest) -> Result<Self, CompletionError> {
+    pub async fn start(model: &str, request: CompletionRequest) -> Result<Self, ProviderError> {
         let setup = async {
             let mut rpc = Rpc::start_text().await.map_err(failure)?;
             let account = rpc
@@ -31,7 +31,7 @@ impl Connection {
         mut rpc: Rpc,
         model: &str,
         request: CompletionRequest,
-    ) -> Result<Self, CompletionError> {
+    ) -> Result<Self, ProviderError> {
         let input =
             crate::assistant::codex_input::turn_input(&request.chat_history).map_err(failure)?;
         let tools: Vec<_> = request
@@ -42,7 +42,7 @@ impl Connection {
         let started = rpc.call("thread/start", json!({
             "model":model,"ephemeral":true,"cwd":std::env::temp_dir(),
             "approvalPolicy":"untrusted","sandbox":"read-only","dynamicTools":tools,
-            "developerInstructions":format!("You are the conversation model for Mstudio. Continue the provided serialized conversation history. Use only the supplied dynamic tools; Mstudio executes them. Never use built-in tools, shell, filesystem, web, MCP or plugins. Answer the user's latest request. {}",request.preamble.as_deref().unwrap_or("")),
+            "developerInstructions":format!("You are the conversation model for Mstudio. Continue the provided serialized conversation history. Use only the supplied dynamic tools; Mstudio executes them. Never use built-in tools, shell, filesystem, web, MCP or plugins. Answer the user's latest request. {}",request.system_instructions().unwrap_or("")),
             "config":{"features":{"shell_tool":false,"apply_patch_freeform":false},"web_search":"disabled"}
         })).await.map_err(failure)?;
         let thread = started["thread"]["id"]
@@ -86,7 +86,7 @@ impl Connection {
         }
         let suffix = &next.chat_history[self.request.chat_history.len()..];
         let [
-            Message::Assistant { content, .. },
+            Message::Assistant(rig_core::message::AssistantMessage { content, .. }),
             Message::User { content: results },
         ] = suffix
         else {
@@ -105,13 +105,13 @@ impl Connection {
         let [UserContent::ToolResult(result)] = results.as_slice() else {
             return None;
         };
-        (call.id.as_str() == self.pending["params"]["callId"].as_str()?
+        (call.id.wire().as_ref() == self.pending["params"]["callId"].as_str()?
             && result.call == call.id
             && result.name == call.function.name)
             .then_some(result)
     }
 }
 fn envelope(request: &CompletionRequest) -> Value {
-    json!({"tools":request.tools,"preamble":request.preamble,"output":request.output_schema,
+    json!({"tools":request.tools,"preamble":request.system_instructions(),"output":request.output_schema,
         "toolChoice":request.tool_choice,"model":request.model})
 }

@@ -139,7 +139,9 @@ fn add(
     );
     out.push(OperationTool {
         definition: ToolDefinition {
-            name: format!("mstudio_{name}"),
+            name: format!("mstudio_{name}")
+                .try_into()
+                .expect("nonempty tool name"),
             description,
             parameters: schema,
         },
@@ -185,7 +187,7 @@ pub fn is_edit(name: &str) -> bool {
                     .collect();
                 tools(&profile)
                     .into_iter()
-                    .map(|tool| tool.definition.name)
+                    .map(|tool| tool.definition.name.to_string())
                     .collect()
             })
             .contains(name)

@@ -80,10 +80,10 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
                     .iter()
                     .filter(|v| v.get("functionCall").is_some())
                     .collect();
-                assert_eq!(calls[0]["thoughtSignature"], "signature-one");
+                assert_eq!(calls[0]["thoughtSignature"], "c2lnbmF0dXJlLW9uZQ==");
                 assert_eq!(calls.len(), if step == 1 { 2 } else { 3 });
                 if step == 2 {
-                    assert_eq!(calls[2]["thoughtSignature"], "signature-two");
+                    assert_eq!(calls[2]["thoughtSignature"], "c2lnbmF0dXJlLXR3bw==");
                 }
                 assert_eq!(
                     parts
@@ -95,10 +95,10 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
             }
             let content = match step {
                 0 => {
-                    json!([{"text":"Inspect the references first.","thought":true,"thoughtSignature":"private-thought-signature"},{"functionCall":{"id":"a","name":"ping","args":{}},"thoughtSignature":"signature-one"},{"functionCall":{"id":"b","name":"ping","args":{}}}])
+                    json!([{"text":"Inspect the references first.","thought":true,"thoughtSignature":"cHJpdmF0ZS10aG91Z2h0LXNpZ25hdHVyZQ=="},{"functionCall":{"id":"a","name":"ping","args":{}},"thoughtSignature":"c2lnbmF0dXJlLW9uZQ=="},{"functionCall":{"id":"b","name":"ping","args":{}}}])
                 }
                 1 => {
-                    json!([{"functionCall":{"id":"c","name":"ping","args":{}},"thoughtSignature":"signature-two"}])
+                    json!([{"functionCall":{"id":"c","name":"ping","args":{}},"thoughtSignature":"c2lnbmF0dXJlLXR3bw=="}])
                 }
                 _ => json!([{"text":"Complete"}]),
             };
@@ -111,11 +111,7 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
             );
         }
     });
-    let model = provider::builder(&profile, "local")
-        .unwrap()
-        .build()
-        .model_handle()
-        .clone();
+    let model = provider::model(&profile, "local").unwrap();
     let host = TestHost::default();
     let result = run(
         &model,
@@ -139,7 +135,7 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
         !reasoning
             .1
             .to_string()
-            .contains("private-thought-signature")
+            .contains("cHJpdmF0ZS10aG91Z2h0LXNpZ25hdHVyZQ==")
     );
     assert!(
         events
@@ -187,11 +183,7 @@ async fn openai_stream_pairs_tool_call_ids_and_commits_visible_prefix() {
             );
         }
     });
-    let model = provider::builder(&profile, "local")
-        .unwrap()
-        .build()
-        .model_handle()
-        .clone();
+    let model = provider::model(&profile, "local").unwrap();
     let host = TestHost::default();
     let result = run(
         &model,

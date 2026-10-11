@@ -76,7 +76,7 @@ pub fn turn_input(messages: &[Message]) -> Result<Value> {
                     }
                 }
             }
-            Message::Assistant { content, .. } => {
+            Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => {
                 for part in content {
                     if let AssistantContent::Image(image) = part {
                         *part = AssistantContent::text(attach(image, &mut images)?);
@@ -142,7 +142,11 @@ mod tests {
                 .contains("file:")
         );
         let message = super::super::agent::convert(&json!({"role":"user","content":payload}));
-        let mut tool = Message::tool_result("read-1", "read_image", "reference");
+        let mut tool = Message::tool_result(
+            rig_core::message::CallId::from_wire("read-1"),
+            "read_image".try_into().expect("nonempty tool name"),
+            "reference",
+        );
         if let Message::User { content } = &mut tool
             && let UserContent::ToolResult(result) = &mut content[0]
         {
@@ -201,7 +205,11 @@ mod tests {
             media_type: Some(ImageMediaType::PNG),
             ..Default::default()
         };
-        let mut tool = Message::tool_result("call-1", "read_image", "image follows");
+        let mut tool = Message::tool_result(
+            rig_core::message::CallId::from_wire("call-1"),
+            "read_image".try_into().expect("nonempty tool name"),
+            "image follows",
+        );
         if let Message::User { content } = &mut tool
             && let UserContent::ToolResult(result) = &mut content[0]
         {

@@ -72,26 +72,18 @@ pub fn result_message(call: &ToolCall, value: &Value) -> Message {
         && let Ok(image) = serde_json::from_value::<rig_core::message::Image>(image.clone())
     {
         return Message::User {
-            content: vec![UserContent::tool_result_for(
-                call.id.clone(),
-                call.provider.clone(),
-                &call.function.name,
-                vec![
-                    ToolResultContent::text(format!(
-                        "Image {} reloaded.",
-                        value["imageId"].as_str().unwrap_or("")
-                    )),
-                    ToolResultContent::Image(image),
-                ],
-            )],
+            content: vec![UserContent::ToolResult(call.result(vec![
+                ToolResultContent::text(format!(
+                    "Image {} reloaded.",
+                    value["imageId"].as_str().unwrap_or("")
+                )),
+                ToolResultContent::Image(image),
+            ]))],
         };
     }
     Message::User {
-        content: vec![UserContent::tool_result_for(
-            call.id.clone(),
-            call.provider.clone(),
-            &call.function.name,
-            vec![ToolResultContent::text(value.to_string())],
+        content: vec![UserContent::ToolResult(
+            call.result(vec![ToolResultContent::text(value.to_string())]),
         )],
     }
 }
@@ -105,7 +97,7 @@ pub fn project_snapshot_text(message: &Message) -> Option<&str> {
 pub(super) fn consumed_prefix(messages: &[Message]) -> usize {
     messages
         .iter()
-        .rposition(|m| matches!(m, Message::Assistant { .. }))
+        .rposition(|m| matches!(m, Message::Assistant(_)))
         .unwrap_or(0)
         .min(messages.len().saturating_sub(2))
 }
@@ -139,7 +131,7 @@ pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usi
                     }
                 }
             }
-            Message::Assistant { content, .. } => {
+            Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => {
                 for (image_index, part) in content.iter_mut().enumerate() {
                     if let AssistantContent::Image(image) = part {
                         let id = format!("image-{}", mstudio::media::id());

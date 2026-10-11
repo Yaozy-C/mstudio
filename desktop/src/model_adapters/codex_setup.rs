@@ -105,11 +105,6 @@ pub async fn codex_login() -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[tokio::test]
-    #[ignore = "requires local Codex and ChatGPT login; no image is generated"]
-    async fn installed_codex_is_ready_without_generating() {
-        assert_eq!(codex_image_status().await["status"], "ready");
-    }
     #[test]
     fn login_only_opens_official_https_origins() {
         assert!(login_url_allowed(

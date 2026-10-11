@@ -27,8 +27,8 @@ reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"
 rusqlite = { version = "0.32.1", features = ["bundled"] }
 tokio = { version = "1.53.1", features = ["time", "macros", "process", "io-util", "sync"] }
 
-rig-core = { version = "=0.42.0", default-features = false, features = ["reqwest", "rustls"] }
-rig-agent = { version = "=0.42.0", default-features = false }
+rig-core = { version = "=0.44.0", default-features = false, features = ["reqwest", "rustls"] }
+rig-reqwest = { version = "=0.44.0", default-features = false, features = ["rustls"] }
 tokio-util = "0.7"
 base64 = "0.22"
 sha2 = "0.10"

@@ -37,7 +37,7 @@ async fn final_answer_discloses_child_failure_even_when_model_claims_success() {
         }
         fn definitions(&self) -> Vec<ToolDefinition> {
             vec![ToolDefinition {
-                name: "mstudio_delegate".into(),
+                name: "mstudio_delegate".try_into().expect("nonempty tool name"),
                 description: "delegate".into(),
                 parameters: json!({"type":"object"}),
             }]

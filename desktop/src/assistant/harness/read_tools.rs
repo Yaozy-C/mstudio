@@ -154,7 +154,7 @@ pub fn definitions() -> Vec<ToolDefinition> {
             };
             ((*key).into(), value)
         }).collect();
-        ToolDefinition {name:format!("mstudio_read_{kind}"),description:(*description).into(),parameters:json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})}
+        ToolDefinition {name:format!("mstudio_read_{kind}").try_into().expect("nonempty tool name"),description:(*description).into(),parameters:json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})}
     }).collect()
 }
 pub fn is_read(name: &str) -> bool {

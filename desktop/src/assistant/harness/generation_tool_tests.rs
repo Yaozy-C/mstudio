@@ -8,10 +8,10 @@ fn long_design_handoffs_keep_task_state_and_next_action_visible() {
         "continuation":{"state":"waiting_user","action":"confirm_generation","trigger":"user_confirmation"}});
     let call = ToolCall::from_wire(
         "child",
-        ToolFunction {
-            name: "mstudio_delegate".into(),
-            arguments: json!({}),
-        },
+        ToolFunction::new(
+            "mstudio_delegate".try_into().expect("nonempty tool name"),
+            json!({}),
+        ),
     );
     let result = json!({"ok":true,"stopReason":"completed","answer":"long rationale ".repeat(3000),
         "generationTasks":[task],"changes":[{"result":{"savedValues":[{"values":{"shot":{"framePrompt":"p".repeat(12000)}}}]}}]});

@@ -103,7 +103,6 @@ pub fn parts(store: &Store, asset: &Asset, profile: &Profile) -> Result<Vec<Valu
             UserContent::Audio(Audio {
                 data,
                 media_type: Some(serde_json::from_value(json!(format))?),
-                ..Default::default()
             })
         }
         "video" => {

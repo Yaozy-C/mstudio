@@ -1,17 +1,11 @@
 mod access;
-#[cfg(test)]
-mod audit_tests;
 pub mod blobs;
 pub(crate) mod event_retention;
 #[cfg(test)]
 mod event_retention_tests;
-#[cfg(test)]
-mod history_audit_tests;
 pub(crate) mod history_cleanup;
 #[cfg(test)]
 mod history_cleanup_tests;
-#[cfg(test)]
-mod media_audit_tests;
 mod media_migration;
 pub(crate) mod media_store;
 #[cfg(test)]

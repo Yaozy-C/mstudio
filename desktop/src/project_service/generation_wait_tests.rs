@@ -35,15 +35,16 @@ fn interrupted_wait_restores_current_task_facts_without_resubmitting() {
     let binding = json!({"model":"test"});
     let call = ToolCall::from_wire(
         "wait",
-        ToolFunction {
-            name: "mstudio_await_generation".into(),
-            arguments: json!({"taskKeys":["task"]}),
-        },
+        ToolFunction::new(
+            "mstudio_await_generation"
+                .try_into()
+                .expect("nonempty tool name"),
+            json!({"taskKeys":["task"]}),
+        ),
     );
-    let messages = vec![Message::Assistant {
-        id: None,
-        content: vec![AssistantContent::ToolCall(call)],
-    }];
+    let messages = vec![Message::Assistant(
+        rig_core::message::AssistantMessage::new(vec![AssistantContent::ToolCall(call)]),
+    )];
     session::start(&store, "p", "turn", binding.clone(), &messages).unwrap();
     change(&store, "p", "COMPLETED", json!(["persisted"]));
     let restored = session::restore(&store, "p", "turn", &binding)

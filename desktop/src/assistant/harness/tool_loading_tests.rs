@@ -29,7 +29,7 @@ fn available(profile: &crate::assistant::profiles::AgentProfile) -> Vec<ToolDefi
     let mut all = super::super::read_tools::definitions();
     all.extend(catalog(profile));
     let frame = |name: &str| ToolDefinition {
-        name: name.into(),
+        name: name.try_into().expect("nonempty tool name"),
         description: name.into(),
         parameters: json!({"type":"object","properties":{},"additionalProperties":false}),
     };
@@ -77,7 +77,7 @@ fn discovery_enum_lists_every_name_the_role_may_select() {
         // whole callable set: shrinking it to loaded tools alone would block all loading.
         for tool in &all {
             assert!(
-                selectable.contains(&tool.name),
+                selectable.contains(&tool.name.to_string()),
                 "{} missing in {}",
                 tool.name,
                 profile.id
@@ -90,10 +90,10 @@ fn discovery_enum_lists_every_name_the_role_may_select() {
                 &definitions,
                 &rig_core::message::ToolCall::from_wire(
                     "load",
-                    rig_core::message::ToolFunction {
-                        name: LOAD.into(),
-                        arguments: json!({"names":["mstudio_load_image"]}),
-                    },
+                    rig_core::message::ToolFunction::new(
+                        LOAD.try_into().expect("nonempty tool name"),
+                        json!({"names":["mstudio_load_image"]})
+                    ),
                 ),
                 &[]
             )
@@ -101,7 +101,7 @@ fn discovery_enum_lists_every_name_the_role_may_select() {
         );
         let first = all[0].name.clone();
         scope.load(&all, &json!({"names":[first.clone()]}));
-        assert!(discovery_enum(&scope.definitions(all)).contains(&first));
+        assert!(discovery_enum(&scope.definitions(all)).contains(&first.to_string()));
     }
 }
 #[test]
@@ -120,10 +120,10 @@ fn a_batch_mixing_an_exposed_tool_with_needed_tools_is_not_rejected() {
     ]});
     let call = rig_core::message::ToolCall::from_wire(
         "load",
-        rig_core::message::ToolFunction {
-            name: LOAD.into(),
-            arguments: requested.clone(),
-        },
+        rig_core::message::ToolFunction::new(
+            LOAD.try_into().expect("nonempty tool name"),
+            requested.clone(),
+        ),
     );
     // The rejected name must be selectable, exactly as production exposes it.
     let selectable = discovery_enum(&definitions);
@@ -144,10 +144,10 @@ fn a_batch_mixing_an_exposed_tool_with_needed_tools_is_not_rejected() {
     // A name that is neither exposed nor permitted still fails.
     let bogus = rig_core::message::ToolCall::from_wire(
         "load",
-        rig_core::message::ToolFunction {
-            name: LOAD.into(),
-            arguments: json!({"names":["mstudio_load_image"]}),
-        },
+        rig_core::message::ToolFunction::new(
+            LOAD.try_into().expect("nonempty tool name"),
+            json!({"names":["mstudio_load_image"]}),
+        ),
     );
     assert!(super::super::scheduler::validate(&definitions, &bogus, &[]).is_some());
 }
@@ -202,10 +202,12 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
     }
     let call = rig_core::message::ToolCall::from_wire(
         "c",
-        rig_core::message::ToolFunction {
-            name: "mstudio_set_video_prompt".into(),
-            arguments: json!({"id":"shot", "prompt":"Move"}),
-        },
+        rig_core::message::ToolFunction::new(
+            "mstudio_set_video_prompt"
+                .try_into()
+                .expect("nonempty tool name"),
+            json!({"id":"shot", "prompt":"Move"}),
+        ),
     );
     let rejected =
         super::super::scheduler::validate(&scope.definitions(all.clone()), &call, &deferred)
@@ -247,10 +249,12 @@ fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {
     let all = catalog(&profile("production"));
     let call = rig_core::message::ToolCall::from_wire(
         "c",
-        rig_core::message::ToolFunction {
-            name: "mstudio_set_video_prompt".into(),
-            arguments: json!({"id":"shot", "prompt":"Move"}),
-        },
+        rig_core::message::ToolFunction::new(
+            "mstudio_set_video_prompt"
+                .try_into()
+                .expect("nonempty tool name"),
+            json!({"id":"shot", "prompt":"Move"}),
+        ),
     );
     assert!(
         super::super::scheduler::validate(&scope.definitions(all.clone()), &call, &[]).is_some()

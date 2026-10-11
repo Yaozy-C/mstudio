@@ -1,13 +1,10 @@
 //! Codex app-server transport. Mstudio's harness still owns tool execution and history.
+use super::model_io::{CompletionModel, Frame, ModelStream};
 use crate::model_adapters::codex_rpc::Rpc;
-use futures::StreamExt;
 use rig_core::{
-    completion::{
-        CompletionError, CompletionModel, CompletionRequest, CompletionResponse, FinishReason,
-    },
-    streaming::{
-        RawStreamingChoice, RawStreamingToolCall, StreamFinal, StreamingCompletionResponse,
-    },
+    completion::{CompletionRequest, CompletionResponse, FinishReason},
+    error::ProviderError,
+    message::{ToolCall, ToolFunction},
 };
 use serde_json::{Value, json};
 use std::time::Duration;
@@ -37,10 +34,11 @@ impl CodexModel {
         }
     }
 }
-fn failure(error: impl std::fmt::Display) -> CompletionError {
-    CompletionError::ProviderError(format!("Codex: {error}"))
+fn failure(error: impl std::fmt::Display) -> ProviderError {
+    ProviderError::Provider(format!("Codex: {error}"))
 }
-fn tool_frame(event: &Value, names: &[String]) -> Result<RawStreamingChoice, CompletionError> {
+#[allow(clippy::result_large_err)] // Rig owns the provider error type at this boundary.
+fn tool_frame(event: &Value, names: &[String]) -> Result<Frame, ProviderError> {
     let params = &event["params"];
     let name = params["tool"]
         .as_str()
@@ -51,32 +49,22 @@ fn tool_frame(event: &Value, names: &[String]) -> Result<RawStreamingChoice, Com
     let id = params["callId"]
         .as_str()
         .ok_or_else(|| failure("Codex 工具调用 ID 缺失"))?;
-    Ok(RawStreamingChoice::ToolCall(RawStreamingToolCall::new(
-        id.to_owned(),
-        name.into(),
-        params["arguments"].clone(),
+    Ok(Frame::ToolCall(ToolCall::from_wire(
+        id,
+        ToolFunction::new(
+            name.try_into().map_err(failure)?,
+            params["arguments"].clone(),
+        ),
     )))
 }
 impl CompletionModel for CodexModel {
     async fn completion(
         &self,
         request: CompletionRequest,
-    ) -> Result<CompletionResponse, CompletionError> {
-        let mut stream = self.stream(request).await?;
-        while let Some(frame) = stream.next().await {
-            frame?;
-        }
-        let raw = stream
-            .response
-            .as_ref()
-            .map(|r| r.raw.clone())
-            .unwrap_or_default();
-        Ok(CompletionResponse::from(stream).with_raw(raw))
+    ) -> Result<CompletionResponse, ProviderError> {
+        super::model_io::collect(self.stream(request).await?).await
     }
-    async fn stream(
-        &self,
-        request: CompletionRequest,
-    ) -> Result<StreamingCompletionResponse, CompletionError> {
+    async fn stream(&self, request: CompletionRequest) -> Result<ModelStream, ProviderError> {
         request.validate_message_content().map_err(failure)?;
         let waiting = self.waiting.lock().unwrap().take();
         let connection = if let Some(mut connection) = waiting {
@@ -103,13 +91,10 @@ impl CompletionModel for CodexModel {
         };
         let owner = self.waiting.clone();
         let frames = futures::stream::try_unfold(
-            (Some(connection), None::<StreamFinal>, owner),
+            (Some(connection), None::<CompletionResponse>, owner),
             |(mut connection, terminal, owner)| async move {
                 if let Some(terminal) = terminal {
-                    return Ok(Some((
-                        RawStreamingChoice::FinalResponse(terminal),
-                        (None, None, owner),
-                    )));
+                    return Ok(Some((Frame::Done(Box::new(terminal)), (None, None, owner))));
                 }
                 let Some(run) = connection.as_mut() else {
                     return Ok(None);
@@ -136,7 +121,7 @@ impl CompletionModel for CodexModel {
                         Some("item/agentMessage/delta") => {
                             if let Some(text) = params["delta"].as_str() {
                                 return Ok(Some((
-                                    RawStreamingChoice::Message(text.into()),
+                                    Frame::Text(text.into()),
                                     (connection, None, owner),
                                 )));
                             }
@@ -154,7 +139,7 @@ impl CompletionModel for CodexModel {
                                 .request
                                 .tools
                                 .iter()
-                                .map(|t| t.name.clone())
+                                .map(|t| t.name.to_string())
                                 .collect::<Vec<_>>();
                             let frame = tool_frame(&event, &names)?;
                             if event.get("id").is_none() {
@@ -176,9 +161,7 @@ impl CompletionModel for CodexModel {
                                 ));
                             }
                             return Ok(Some((
-                                RawStreamingChoice::FinalResponse(
-                                    run.usage.finish(FinishReason::Stop),
-                                ),
+                                Frame::Done(Box::new(run.usage.finish(FinishReason::Stop))),
                                 (None, None, owner),
                             )));
                         }
@@ -187,9 +170,6 @@ impl CompletionModel for CodexModel {
                 }
             },
         );
-        Ok(StreamingCompletionResponse::stream(
-            "codex",
-            Box::pin(frames),
-        ))
+        Ok(super::model_stream::assemble(Box::pin(frames)))
     }
 }

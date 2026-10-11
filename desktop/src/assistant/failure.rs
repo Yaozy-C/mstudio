@@ -1,11 +1,7 @@
-use rig_agent::completion::PromptError;
-use rig_core::completion::CompletionError;
+use rig_core::error::{ErrorKind, ProviderError};
 use serde_json::Value;
 
-pub fn describe(error: &PromptError, key: &str) -> String {
-    if matches!(error, PromptError::PromptCancelled { .. }) {
-        return crate::app_error::cancelled();
-    }
+pub fn describe(error: &ProviderError, key: &str) -> String {
     let status = error.provider_response_status().map(|s| s.as_u16());
     let code = match status {
         Some(401) => "AUTH_REQUIRED",
@@ -13,34 +9,24 @@ pub fn describe(error: &PromptError, key: &str) -> String {
         Some(404) => "MODEL_UNAVAILABLE",
         Some(429) => "RATE_LIMITED",
         Some(500..=599) => "SERVICE_UNAVAILABLE",
-        _ if matches!(
-            error,
-            PromptError::CompletionError(CompletionError::HttpError(_))
-        ) && status.is_none() =>
-        {
-            "NETWORK_ERROR"
-        }
+        _ if error.report().kind == ErrorKind::Http => "NETWORK_ERROR",
         _ => "CHAT_FAILED",
     };
     let mut issue = crate::app_error::AppError::new(code, "chat", &describe_details(error, key));
     issue.http_status = status;
     issue.to_string()
 }
-fn describe_details(error: &PromptError, key: &str) -> String {
-    match error {
-        PromptError::CompletionError(CompletionError::ProviderError(message))
-            if message.starts_with("Codex: ") => {
-                return format!("{}。已完成的操作保留。", clean(message, key));
-            }
-        PromptError::PromptCancelled { reason, .. } => return reason.clone(),
-        PromptError::MaxTurnsError { .. } => return "本轮已达到 16 个执行步骤；已完成的操作保留，可继续下一轮。".into(),
-        PromptError::UnknownToolCall { .. } => return "模型请求了当前 Agent 未提供的工具；请重新描述任务或选择相应 Agent。已完成的操作保留。".into(),
-        PromptError::CompletionError(CompletionError::HttpError(
-            rig_core::http_client::Error::Instance(source),
-        )) if source.downcast_ref::<rig_http::Error>().is_some_and(|e| e.is_timeout()) => {
-            return "本次模型请求超时，请检查模型服务或稍后继续；已完成的操作保留。".into();
-        }
-        _ => {}
+fn describe_details(error: &ProviderError, key: &str) -> String {
+    if let ProviderError::Provider(message) = error
+        && message.starts_with("Codex: ")
+    {
+        return format!("{}。已完成的操作保留。", clean(message, key));
+    }
+    if error.report().kind == ErrorKind::Timeout
+        || matches!(error,
+        ProviderError::Http(source) if matches!(source.as_ref(), rig_core::http_client::Error::Instance(e) if e.downcast_ref::<rig_http::Error>().is_some_and(|e|e.is_timeout())))
+    {
+        return "本次模型请求超时，请检查模型服务或稍后继续；已完成的操作保留。".into();
     }
     let status = error.provider_response_status().map(|s| s.as_u16());
     let reason = error
@@ -61,17 +47,12 @@ fn describe_details(error: &PromptError, key: &str) -> String {
         Some(400 | 422) => "模型服务拒绝了请求",
         Some(500..=599) => "模型服务暂时异常，请稍后重试",
         Some(_) => "模型服务请求失败",
-        None => match error {
-            PromptError::CompletionError(CompletionError::HttpError(_)) => {
-                "无法连接模型服务，请检查网络和服务地址"
+        None => match error.report().kind {
+            ErrorKind::Http => "无法连接模型服务，请检查网络和服务地址",
+            ErrorKind::Json | ErrorKind::Response => {
+                "模型响应无法解析，请检查接口协议是否与服务一致"
             }
-            PromptError::CompletionError(
-                CompletionError::JsonError(_) | CompletionError::ResponseError(_),
-            ) => "模型响应无法解析，请检查接口协议是否与服务一致",
-            PromptError::CompletionError(CompletionError::RequestError(_)) => {
-                "无法构造模型请求，请检查接口支持的资料类型与工具格式"
-            }
-            PromptError::MemoryError(_) => "读取对话上下文失败，请重试",
+            ErrorKind::Request => "无法构造模型请求，请检查接口支持的资料类型与工具格式",
             _ => "模型执行失败，请重试",
         },
     };
@@ -84,31 +65,23 @@ fn describe_details(error: &PromptError, key: &str) -> String {
     format!("{summary}{code}{detail}。已完成的操作保留。")
 }
 
-pub fn context_overflow(error: &CompletionError) -> bool {
-    if let CompletionError::ProviderError(message) = error {
+pub fn context_overflow(error: &ProviderError) -> bool {
+    if let ProviderError::Provider(message) = error {
         return message.starts_with("Codex: ")
             && (message.contains("文字上下文超过输入长度限制")
                 || message.contains("Input exceeds the maximum length of 1048576 characters."));
     }
-    let CompletionError::HttpError(http) = error else {
-        return false;
-    };
-    use rig_core::http_client::Error;
-    let (status, body) = match http {
-        Error::InvalidStatusCode(status) => (status.as_u16(), None),
-        Error::InvalidStatusCodeWithMessage(status, body) => (status.as_u16(), Some(body.as_str())),
-        Error::InvalidStatusCodeWithDetails { status, body, .. } => {
-            (status.as_u16(), Some(body.as_str()))
-        }
-        _ => return false,
-    };
-    if status == 413 {
+    let status = error.provider_response_status().map(|s| s.as_u16());
+    if status == Some(413) {
         return true;
     }
-    if !matches!(status, 400 | 422) {
+    if !matches!(status, Some(400 | 422)) {
         return false;
     }
-    body.and_then(|body| serde_json::from_str(body).ok())
+    error
+        .provider_response_json()
+        .ok()
+        .flatten()
         .and_then(provider_message)
         .is_some_and(|message| {
             let message = message.to_ascii_lowercase();
@@ -153,14 +126,9 @@ fn clean(message: &str, key: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rig_core::http_client;
     use serde_json::json;
-    fn failure(status: u16, body: Value) -> PromptError {
-        CompletionError::HttpError(http_client::Error::InvalidStatusCodeWithMessage(
-            status.to_string().parse().unwrap(),
-            body.to_string(),
-        ))
-        .into()
+    fn failure(status: u16, body: Value) -> ProviderError {
+        ProviderError::from_http_response(status.to_string().parse().unwrap(), body.to_string())
     }
     #[test]
     fn extracts_only_message_and_redacts_credentials() {
@@ -210,21 +178,20 @@ mod tests {
     }
     #[test]
     fn parse_failure_is_distinct_from_network_failure() {
-        let parse: PromptError = CompletionError::ResponseError("invalid payload".into()).into();
+        let parse: ProviderError = ProviderError::Response("invalid payload".into());
         assert!(describe(&parse, "").contains("无法解析"));
         assert!(!describe(&failure(400, json!({})), "").contains("secret"));
     }
     #[test]
     fn codex_failure_keeps_its_reason_instead_of_claiming_a_protocol_mismatch() {
-        let error: PromptError =
-            CompletionError::ProviderError("Codex: 连接 Codex 超时".into()).into();
+        let error: ProviderError = ProviderError::Provider("Codex: 连接 Codex 超时".into());
         let message = describe(&error, "");
         assert!(message.contains("连接 Codex 超时"));
         assert!(!message.contains("接口协议"));
-        assert!(context_overflow(&CompletionError::ProviderError(
+        assert!(context_overflow(&ProviderError::Provider(
             "Codex: Codex 文字上下文超过输入长度限制，请压缩对话后继续".into()
         )));
-        assert!(!context_overflow(&CompletionError::ProviderError(
+        assert!(!context_overflow(&ProviderError::Provider(
             "Codex: 连接 Codex 超时".into()
         )));
     }

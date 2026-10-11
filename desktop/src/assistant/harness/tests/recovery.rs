@@ -35,15 +35,13 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
         Message::User {
             content: vec![UserContent::text("旧请求"), UserContent::Image(image)],
         },
-        Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::ToolCall(tool)],
-        },
+        Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+            AssistantContent::ToolCall(tool),
+        ])),
         result,
-        Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::text("images reviewed")],
-        },
+        Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+            AssistantContent::text("images reviewed"),
+        ])),
         Message::user("new request"),
         Message::user("current attachment"),
     ];
@@ -120,11 +118,15 @@ fn replay_preserves_provider_signatures_and_results_but_ui_does_not_expose_them(
     )
     .unwrap();
     let mut tool = call("c", "write", json!({}));
-    tool.signature = Some("private-provider-signature".into());
-    let message = Message::Assistant {
-        id: Some("msg-1".into()),
-        content: vec![AssistantContent::ToolCall(tool.clone())],
+    let AssistantContent::ToolCall(signed) = AssistantContent::ToolCall(tool)
+        .with_native(json!({"signature":"private-provider-signature"}))
+    else {
+        unreachable!()
     };
+    tool = signed;
+    let message = Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+        AssistantContent::ToolCall(tool.clone()),
+    ]));
     journal::append(
         &store,
         "p",

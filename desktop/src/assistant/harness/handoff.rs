@@ -66,20 +66,19 @@ mod tests {
     fn transcript() -> Vec<Message> {
         let call = ToolCall::from_wire(
             "saved-call",
-            ToolFunction {
-                name: "mstudio_edit".into(),
-                arguments: json!({"revision":1}),
-            },
+            ToolFunction::new(
+                "mstudio_edit".try_into().expect("nonempty tool name"),
+                json!({"revision":1}),
+            ),
         );
         vec![
             Message::System {
                 content: "parent-role".into(),
             },
             Message::user("选第二个"),
-            Message::Assistant {
-                id: Some("provider-id".into()),
-                content: vec![AssistantContent::ToolCall(call.clone())],
-            },
+            Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+                AssistantContent::ToolCall(call.clone()),
+            ])),
             session::result_message(&call, &json!({"applied":true})),
             Message::assistant("saved answer"),
         ]

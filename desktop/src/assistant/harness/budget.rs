@@ -1,7 +1,8 @@
 use super::{Host, session::Session};
 use crate::assistant::config::Profile;
+use crate::assistant::model_io::CompletionModel;
 use rig_core::{
-    completion::{CompletionModel, CompletionRequest},
+    completion::CompletionRequest,
     message::{AssistantContent, Message, ToolResultContent, UserContent},
 };
 use serde_json::json;
@@ -22,7 +23,6 @@ fn result_tokens(part: &ToolResultContent) -> usize {
     }
 }
 pub(crate) fn tokens(message: &Message) -> usize {
-    use rig_core::message::ReasoningContent;
     match message {
         Message::System { content } => text_tokens(content) + 4,
         Message::User { content } => {
@@ -37,7 +37,7 @@ pub(crate) fn tokens(message: &Message) -> usize {
                 })
                 .sum::<usize>()
         }
-        Message::Assistant { content, .. } => {
+        Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => {
             4 + content
                 .iter()
                 .map(|part| match part {
@@ -45,16 +45,10 @@ pub(crate) fn tokens(message: &Message) -> usize {
                     AssistantContent::ToolCall(c) => {
                         text_tokens(&c.function.name) + structural(&c.function.arguments)
                     }
-                    AssistantContent::Reasoning(r) => r
-                        .content
-                        .iter()
-                        .map(|part| match part {
-                            ReasoningContent::Text { text, .. }
-                            | ReasoningContent::Summary(text) => text_tokens(text) + 4,
-                            _ => structural(part),
-                        })
-                        .sum(),
+                    AssistantContent::Reasoning(r) => text_tokens(&r.text) + 4,
+                    AssistantContent::Opaque(o) => structural(o),
                     AssistantContent::Image(_) => 1024,
+                    _ => 1024,
                 })
                 .sum::<usize>()
         }
@@ -82,18 +76,16 @@ pub fn anchor(session: &mut Session, profile: &Profile, host: &impl Host, input:
         input.saturating_add(output),
     );
 }
-/// OpenAI cache counts are a subset of input; Anthropic reports disjoint buckets.
-/// Prefer the adapter's full total, also covering providers that only report a total.
-pub fn usage_total(profile: &Profile, usage: &rig_core::completion::Usage) -> u64 {
-    let base = usage.input_tokens.saturating_add(usage.output_tokens);
-    let base = if profile.adapter == "anthropic-native" {
-        base.saturating_add(usage.cached_input_tokens)
-            .saturating_add(usage.cache_creation_input_tokens)
-    } else {
-        base
-    };
-    base.max(usage.total_tokens)
+/// Prefer the normalized total, including providers that only report a total.
+pub fn usage_total(_profile: &Profile, usage: &rig_core::completion::Usage) -> u64 {
+    // Rig 0.44 includes cache reads/writes in input and reasoning in output on every wire.
+    usage
+        .input_tokens
+        .unwrap_or(0)
+        .saturating_add(usage.output_tokens.unwrap_or(0))
+        .max(usage.total_tokens.unwrap_or(0))
 }
+
 pub fn anchor_request(session: &mut Session, request_header: serde_json::Value, usage: u64) {
     anchor_prefix(session, request_header, usage, session.messages.len());
 }

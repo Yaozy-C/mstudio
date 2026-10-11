@@ -37,41 +37,37 @@ read()
 "#).unwrap();
     std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
     let model = CodexModel::new("test".into());
-    let mut request = model
-        .completion_request("Inspect then save.")
-        .tools(
-            ["echo", "image"]
-                .map(|name| ToolDefinition {
-                    name: name.into(),
-                    description: name.into(),
-                    parameters: json!({"type":"object"}),
-                })
-                .to_vec(),
-        )
-        .build();
+    let mut request = CompletionRequest::new("Inspect then save.").tools(
+        ["echo", "image"]
+            .map(|name| ToolDefinition {
+                name: name.try_into().expect("nonempty tool name"),
+                description: name.into(),
+                parameters: json!({"type":"object"}),
+            })
+            .to_vec(),
+    );
     let rpc = Rpc::connect(&path, "--stdio", false).await.unwrap();
     let mut connection = Connection::open(rpc, "test", request.clone())
         .await
         .unwrap();
     let pending = connection.rpc.next().await.unwrap();
-    let RawStreamingChoice::ToolCall(_) = tool_frame(&pending, &["echo".into()]).unwrap() else {
+    let Frame::ToolCall(_) = tool_frame(&pending, &["echo".into()]).unwrap() else {
         panic!()
     };
     // Use the same canonical tool pairing the harness appends after execution.
     let first = rig_core::message::ToolCall::from_wire(
         "one",
-        rig_core::message::ToolFunction {
-            name: "echo".into(),
-            arguments: json!({}),
-        },
+        rig_core::message::ToolFunction::new(
+            "echo".try_into().expect("nonempty tool name"),
+            json!({}),
+        ),
     );
-    request.chat_history.push(Message::Assistant {
-        id: None,
-        content: vec![AssistantContent::ToolCall(first)],
-    });
+    request.chat_history.push(Message::Assistant(
+        rig_core::message::AssistantMessage::new(vec![AssistantContent::ToolCall(first)]),
+    ));
     request.chat_history.push(Message::tool_result(
-        "one",
-        "echo",
+        rig_core::message::CallId::from_wire("one"),
+        "echo".try_into().expect("nonempty tool name"),
         r#"{"error":"Try a different input"}"#,
     ));
     connection.pending = pending;
@@ -84,10 +80,10 @@ read()
     assert!(connection.continuation(&altered).is_none());
     *model.waiting.lock().unwrap() = Some(connection);
     let response = model.completion(request.clone()).await.unwrap();
-    assert_eq!(response.usage.total_tokens, 1020);
+    assert_eq!(response.usage.total_tokens, Some(1020));
     assert_eq!(response.raw["tokenUsage"]["modelContextWindow"], 258400);
     assert_eq!(response.raw["contextMessageCount"], 2);
-    assert!(response.choice.iter().any(|part| matches!(part, AssistantContent::Text(t) if t.additional_params.as_ref().and_then(|p|p.get("phase"))==Some(&json!("commentary")))));
+    assert!(response.choice.iter().any(|part| matches!(part, AssistantContent::Text(t) if t.native.as_ref().and_then(|p|p.item.get("phase"))==Some(&json!("commentary")))));
     let second_call = response
         .choice
         .iter()
@@ -96,24 +92,20 @@ read()
             _ => None,
         })
         .unwrap();
-    request.chat_history.push(Message::Assistant {
-        id: None,
-        content: response.choice,
-    });
+    request.chat_history.push(Message::Assistant(
+        rig_core::message::AssistantMessage::new(response.choice),
+    ));
     request.chat_history.push(Message::User {
-        content: vec![UserContent::tool_result_for(
-            second_call.id,
-            second_call.provider,
-            "image",
-            vec![ToolResultContent::Image(rig_core::message::Image {
+        content: vec![UserContent::ToolResult(second_call.result(vec![
+            ToolResultContent::Image(rig_core::message::Image {
                 data: rig_core::message::DocumentSourceKind::Base64("AA==".into()),
                 media_type: Some(ImageMediaType::PNG),
                 ..Default::default()
-            })],
-        )],
+            }),
+        ]))],
     });
     let response = model.completion(request).await.unwrap();
-    assert_eq!(response.usage.total_tokens, 2330);
+    assert_eq!(response.usage.total_tokens, Some(2330));
     assert_eq!(response.raw["tokenUsage"]["last"]["totalTokens"], 1210);
     assert!(response.raw["contextMessageCount"].is_null());
     let text = response

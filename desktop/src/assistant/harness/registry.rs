@@ -50,7 +50,7 @@ impl ProjectHost {
         let app = t.app.clone();
         let project = t.project.clone();
         let profile = self.media_profile.clone();
-        let args = call.function.arguments.clone();
+        let args = serde_json::Value::Object(call.function.arguments.clone());
         tokio::task::spawn_blocking(move || {
             super::image_read::read(
                 &app.state::<crate::database::Store>(),
@@ -83,7 +83,7 @@ impl ProjectHost {
             definitions.push(super::generation_tool::definition());
             definitions.extend(super::read_tools::definitions());
         }
-        definitions.push(ToolDefinition { name:"mstudio_read_result".into(), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
+        definitions.push(ToolDefinition { name:"mstudio_read_result".try_into().expect("nonempty tool name"), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
             if !profiles::allows(&t.profile, action) {
                 continue;
@@ -106,19 +106,19 @@ impl ProjectHost {
                 _ => vec![],
             };
             definitions.push(ToolDefinition {
-                name: format!("mstudio_{action}"),
+                name: format!("mstudio_{action}").try_into().expect("nonempty tool name"),
                 description: (*description).into(),
                 parameters: json!({"type":"object","properties":properties,"required":required,"additionalProperties":false}),
             });
         }
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(ToolDefinition {
-                name: "mstudio_read_image".into(),
+                name: "mstudio_read_image".try_into().expect("nonempty tool name"),
                 description: "Read real image pixels or a video frame directly into the model. Use an assetId from a receipt or inspected project state. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
                 parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
             });
             definitions.push(ToolDefinition {
-                name: "mstudio_reopen_image".into(),
+                name: "mstudio_reopen_image".try_into().expect("nonempty tool name"),
                 description: "Reopen a historical offloaded image by imageId from its notice. Only offloaded images in this project are accessible; returns actual image content.".into(),
                 parameters: json!({"type":"object","properties":{"imageId":{"type":"string"}},"required":["imageId"],"additionalProperties":false}),
             });
@@ -197,9 +197,10 @@ impl Host for ProjectHost {
             return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
         }
         if call.function.name == super::tool_loading::LOAD {
-            return self
-                .loaded_tools
-                .load(&self.available_definitions(), &call.function.arguments);
+            return self.loaded_tools.load(
+                &self.available_definitions(),
+                &serde_json::Value::Object(call.function.arguments.clone()),
+            );
         }
         if call.function.name == "mstudio_delegate" {
             return super::delegation::execute(self, call).await;
@@ -221,10 +222,10 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     if t.profile.id == "video-analyst" {
         return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
     }
-    let mut args = call.function.arguments.clone();
+    let mut args = serde_json::Value::Object(call.function.arguments.clone());
     if let Some(decoded) = super::read_tools::decode(&call.function.name, args.clone()) {
         let value = t
-            .execute(decoded, format!("{}:{}", t.turn, call.id.as_str()))
+            .execute(decoded, format!("{}:{}", t.turn, call.id.wire().as_ref()))
             .await;
         return super::read_tools::result(&call.function.name, value);
     }
@@ -233,7 +234,7 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
         super::operation_tools::decode(&t.profile, &call.function.name, args.clone())
     {
         return t
-            .execute(decoded, format!("{}:{}", t.turn, call.id.as_str()))
+            .execute(decoded, format!("{}:{}", t.turn, call.id.wire().as_ref()))
             .await;
     }
 
@@ -266,7 +267,7 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
         return json!({"error":"Unknown tool", "code":"UNKNOWN_TOOL"});
     };
     args["action"] = json!(action);
-    t.execute(args, format!("{}:{}", t.turn, call.id.as_str()))
+    t.execute(args, format!("{}:{}", t.turn, call.id.wire().as_ref()))
         .await
 }
 

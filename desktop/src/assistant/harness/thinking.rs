@@ -1,20 +1,14 @@
 //! Only provider-returned readable text reaches the UI; opaque payloads stay private.
 use super::Host;
-use rig_core::message::{Reasoning, ReasoningContent};
+use rig_core::message::Reasoning;
 use serde_json::json;
 
 pub fn readable(reasoning: &Reasoning) -> String {
-    reasoning
-        .content
-        .iter()
-        .filter_map(|part| match part {
-            ReasoningContent::Text { text, .. } | ReasoningContent::Summary(text) => {
-                Some(text.as_str())
-            }
-            _ => None,
-        })
-        .collect::<Vec<_>>()
-        .join("\n\n")
+    if reasoning.redacted {
+        String::new()
+    } else {
+        reasoning.text.clone()
+    }
 }
 
 pub struct Thinking {

@@ -15,7 +15,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         .delegation
         .as_ref()
         .ok_or("No model configured for this turn")?;
-    let args = &call.function.arguments;
+    let args = &serde_json::Value::Object(call.function.arguments.clone());
     let id = args["agentId"]
         .as_str()
         .ok_or("Missing specialist agentId")?;
@@ -187,7 +187,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &child_turn,
         &child_id,
         &parent.turn,
-        call.id.as_str(),
+        call.id.wire().as_ref(),
         id,
     )
     .map_err(|e| e.to_string())?;

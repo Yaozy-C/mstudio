@@ -7,7 +7,10 @@ use serde_json::{Value, json};
 pub fn repair(store: &Store, project: &str, turn: &str, messages: &mut Vec<Message>) {
     repair_pending(messages, |call| {
         if call.function.name == "mstudio_await_generation" {
-            let keys = call.function.arguments["taskKeys"]
+            let keys = call
+                .function
+                .arguments
+                .get("taskKeys")?
                 .as_array()?
                 .iter()
                 .filter_map(|key| key.as_str().map(str::to_owned))
@@ -27,7 +30,7 @@ pub fn repair(store: &Store, project: &str, turn: &str, messages: &mut Vec<Messa
         crate::project_service::receipts::read(
             &store.db.lock().unwrap(),
             project,
-            &format!("{turn}:{}", call.id.as_str()),
+            &format!("{turn}:{}", call.id.wire().as_ref()),
         )
         .ok()
         .flatten()
@@ -43,12 +46,11 @@ pub fn repair_pending(
     let mut pending = Vec::new();
     for message in messages.iter() {
         match message {
-            Message::Assistant { content, .. } => {
-                pending.extend(content.iter().filter_map(|c| match c {
+            Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => pending
+                .extend(content.iter().filter_map(|c| match c {
                     AssistantContent::ToolCall(c) => Some(c.clone()),
                     _ => None,
-                }))
-            }
+                })),
             Message::User { content } => {
                 for part in content {
                     if let UserContent::ToolResult(result) = part {

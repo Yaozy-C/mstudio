@@ -105,17 +105,16 @@ fn supplied_snapshot_observations_and_lost_tool_acknowledgement_survive_replay()
     let args = json!({"operations":[{"op":"update_node","id":"a","text":"saved once"}]});
     let call = ToolCall::from_wire(
         "write",
-        ToolFunction {
-            name: "mstudio_edit".into(),
-            arguments: args.clone(),
-        },
+        ToolFunction::new(
+            "mstudio_edit".try_into().expect("nonempty tool name"),
+            args.clone(),
+        ),
     );
     let messages = vec![
         context_source::snapshot(context::project_snapshot(&doc, Some("a"))),
-        Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::ToolCall(call)],
-        },
+        Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+            AssistantContent::ToolCall(call),
+        ])),
     ];
     let binding = json!({"model":"synthetic"});
     session::start(&store, "p", "turn", binding.clone(), &messages).unwrap();

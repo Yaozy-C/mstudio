@@ -42,7 +42,7 @@ async fn group(
         while failure.is_none() && next < calls.len() && in_flight.len() < 4 {
             let index = next;
             let call = &calls[index];
-            if let Err(error) = host.record("tool/call", json!({"callId":call.id.as_str(),"name":call.function.name,"arguments":call.function.arguments})) {
+            if let Err(error) = host.record("tool/call", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"arguments":call.function.arguments})) {
                 failure = Some(error); break;
             }
             let invalid = validate(definitions, call, &host.deferred_tools());
@@ -76,7 +76,7 @@ async fn group(
                 },
             );
             // One durable result owns both the model history and the visible tool row.
-            let result = host.record("tool/result", json!({"callId":call.id.as_str(),"name":call.function.name,"result":value,"value":canonical,"isError":value.get("error").is_some(),"message":message}));
+            let result = host.record("tool/result", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"value":canonical,"isError":value.get("error").is_some(),"message":message}));
             if let Err(error) = result {
                 failure.get_or_insert(error);
             } else {
@@ -113,12 +113,19 @@ pub(super) fn validate(
         }
         return Some(json!({"error":"Tool not available to this Agent", "code":"UNKNOWN_TOOL"}));
     };
-    if call.function.arguments.to_string().len() > 24_000 {
+    if serde_json::to_string(&call.function.arguments)
+        .unwrap_or_default()
+        .len()
+        > 24_000
+    {
         return Some(
             json!({"error":"Tool arguments exceed 24 KB; split the operations", "code":"INVALID_ARGS"}),
         );
     }
-    let issues = super::schema::issues(&definition.parameters, &call.function.arguments);
+    let issues = super::schema::issues(
+        &definition.parameters,
+        &serde_json::Value::Object(call.function.arguments.clone()),
+    );
     (!issues.is_empty()).then(|| super::schema::rejection(issues))
 }
 
@@ -130,10 +137,10 @@ pub fn skip(
     reason: &str,
 ) -> Result<(), String> {
     for call in calls {
-        host.record("tool/call",json!({"callId":call.id.as_str(),"name":call.function.name,"arguments":call.function.arguments}))?;
+        host.record("tool/call",json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"arguments":call.function.arguments}))?;
         let value = json!({"error":reason,"code":code});
         let message = result_message(call, &value);
-        host.record("tool/result",json!({"callId":call.id.as_str(),"name":call.function.name,"result":value,"isError":true,"message":message}))?;
+        host.record("tool/result",json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"isError":true,"message":message}))?;
         session.messages.push(message);
     }
     Ok(())

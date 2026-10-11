@@ -1,8 +1,9 @@
 use super::{Host, budget, model, scheduler, session::Session};
 use crate::assistant::config::Profile;
+use crate::assistant::model_io::CompletionModel;
 use rig_core::{
-    completion::{CompletionModel, CompletionRequest, FinishReason},
-    message::{AssistantContent, Message},
+    completion::{CompletionRequest, FinishReason},
+    message::{AssistantContent, StopReason},
 };
 use serde_json::json;
 
@@ -83,16 +84,17 @@ async fn step(
     deadline: tokio::time::Instant,
 ) -> Result<Option<String>, model::RequestError> {
     super::metering::record(host, session, profile)?;
-    let request = CompletionRequest {
-        model: None,
-        preamble: None,
-        chat_history: session.messages.clone(),
-        documents: vec![],
-        tools: host.definitions(),
-        temperature: None,
-        max_tokens: (profile.adapter == "anthropic-native").then_some(8192),
-        tool_choice: None,
-        additional_params: match profile.adapter.as_str() {
+    let request = {
+        let mut request = CompletionRequest::new("");
+
+        request.model = None;
+        request.chat_history = session.messages.clone();
+        request.documents = vec![];
+        request.tools = host.definitions();
+        request.temperature = None;
+        request.max_tokens = (profile.adapter == "anthropic-native").then_some(8192);
+        request.tool_choice = None;
+        request.additional_params = match profile.adapter.as_str() {
             "openai-responses" => Some(json!({"store":false})),
             // Ask thinking-capable Gemini models for readable summaries without changing their budget.
             "gemini-native"
@@ -103,9 +105,10 @@ async fn step(
                 Some(json!({"generationConfig":{"thinkingConfig":{"includeThoughts":true}}}))
             }
             _ => None,
-        },
-        output_schema: None,
-        record_telemetry_content: false,
+        };
+        request.output_schema = None;
+        request.record_telemetry_content = false;
+        request
     };
     let request_header = budget::header(profile, &request.tools);
     let response = model::request(model, request, host, session, streaming, key, deadline).await?;
@@ -128,7 +131,10 @@ async fn step(
     let stop_reason = match response.finish_reason() {
         Some(FinishReason::Length) => Some("max-tokens"),
         Some(FinishReason::ContentFilter) => Some("refusal"),
-        _ => None,
+        _ => match response.stop() {
+            StopReason::Error(_) | StopReason::Aborted(_) => Some("provider-error"),
+            _ => None,
+        },
     };
     let calls: Vec<_> = response
         .choice
@@ -139,7 +145,7 @@ async fn step(
         })
         .collect();
     let mut ids = std::collections::HashSet::new();
-    if calls.iter().any(|call| !ids.insert(call.id.as_str())) {
+    if calls.iter().any(|call| !ids.insert(call.id.clone())) {
         return Err("模型返回重复的工具调用标识，本次操作未执行".into());
     }
     let text: String = response
@@ -158,9 +164,9 @@ async fn step(
         .iter()
         .filter_map(|c| match c {
             AssistantContent::Text(t)
-                if t.additional_params
+                if t.native
                     .as_ref()
-                    .and_then(|p| p.get("phase"))
+                    .and_then(|p| p.item.get("phase"))
                     .and_then(|v| v.as_str())
                     != Some("commentary") =>
             {
@@ -174,9 +180,9 @@ async fn step(
         .iter()
         .filter_map(|c| match c {
             AssistantContent::Text(t)
-                if t.additional_params
+                if t.native
                     .as_ref()
-                    .and_then(|p| p.get("phase"))
+                    .and_then(|p| p.item.get("phase"))
                     .and_then(|v| v.as_str())
                     == Some("commentary") =>
             {
@@ -186,13 +192,9 @@ async fn step(
         })
         .collect();
     // Preserve the full typed message: provider signatures, reasoning handles and call IDs.
-    session.append(
-        host,
-        Message::Assistant {
-            id: response.message_id,
-            content: response.choice,
-        },
-    )?;
+    if let Some(message) = response.message() {
+        session.append(host, message)?;
+    }
     budget::anchor_response(session, profile, request_header, &response.raw, usage);
     if let Some(reason) = stop_reason {
         host.record("model/stop", json!({"stopReason":reason}))?;

@@ -48,20 +48,18 @@ fn meter_does_not_scale_down_heuristic_when_usage_is_smaller() {
 }
 
 #[test]
-fn cache_usage_is_adapter_aware_and_request_header_is_fixed_at_dispatch() {
+fn normalized_cache_usage_is_included_on_every_adapter_and_request_header_is_fixed_at_dispatch() {
     use super::super::budget;
     let host = TestHost::default();
     let mut route = profile();
-    let usage = rig_core::completion::Usage {
-        input_tokens: 1000,
-        output_tokens: 100,
-        cached_input_tokens: 700,
-        cache_creation_input_tokens: 200,
-        ..Default::default()
-    };
+    let usage = rig_core::completion::Usage::new()
+        .input_tokens(1000)
+        .output_tokens(100)
+        .cached_input_tokens(700)
+        .cache_creation_input_tokens(200);
     assert_eq!(budget::usage_total(&route, &usage), 1100);
     route.adapter = "anthropic-native".into();
-    assert_eq!(budget::usage_total(&route, &usage), 2000);
+    assert_eq!(budget::usage_total(&route, &usage), 1100);
     let mut session = Session::new(vec![
         Message::user("request"),
         Message::assistant("response"),

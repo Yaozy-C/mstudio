@@ -20,7 +20,9 @@ struct LoadingHost {
 impl LoadingHost {
     fn available(&self) -> Vec<ToolDefinition> {
         vec![ToolDefinition {
-            name: "mstudio_test_save_prompt".into(),
+            name: "mstudio_test_save_prompt"
+                .try_into()
+                .expect("nonempty tool name"),
             description: "Save a synthetic test prompt; no real project is changed.".into(),
             parameters: json!({"type":"object","properties":{"prompt":{"type":"string"}},"required":["prompt"],"additionalProperties":false}),
         }]
@@ -42,7 +44,10 @@ impl Host for LoadingHost {
     }
     async fn execute(&self, call: &ToolCall) -> Value {
         match call.function.name.as_str() {
-            LOAD => self.scope.load(&self.available(), &call.function.arguments),
+            LOAD => self.scope.load(
+                &self.available(),
+                &serde_json::Value::Object(call.function.arguments.clone()),
+            ),
             "mstudio_test_save_prompt" => {
                 *self.saved.lock().unwrap() = call.function.arguments["prompt"]
                     .as_str()

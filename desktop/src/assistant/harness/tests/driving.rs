@@ -3,8 +3,7 @@ use super::{
     support::*,
 };
 use rig_core::{
-    completion::CompletionError,
-    http_client,
+    error::ProviderError,
     message::{AssistantContent, Message},
 };
 use serde_json::json;
@@ -21,10 +20,11 @@ async fn pressure_compacts_old_history_before_the_next_request() {
     }];
     for _ in 0..4 {
         messages.push(Message::user("旧问题".repeat(2000)));
-        messages.push(Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::text("旧回答".repeat(2000))],
-        });
+        messages.push(Message::Assistant(
+            rig_core::message::AssistantMessage::new(vec![AssistantContent::text(
+                "旧回答".repeat(2000),
+            )]),
+        ));
     }
     messages.push(Message::user("当前问题"));
     let mut route = profile();
@@ -55,11 +55,9 @@ async fn provider_context_overflow_compacts_and_retries_once() {
     let host = TestHost::default();
     let model = TestModel::default();
     model.responses.lock().unwrap().extend([
-        Err(CompletionError::HttpError(
-            http_client::Error::InvalidStatusCodeWithMessage(
-                400.try_into().unwrap(),
-                json!({"error":{"message":"maximum context length exceeded"}}).to_string(),
-            ),
+        Err(ProviderError::from_http_response(
+            400.try_into().unwrap(),
+            json!({"error":{"message":"maximum context length exceeded"}}).to_string(),
         )),
         Ok(reply(vec![AssistantContent::text("历史摘要")])),
         Ok(reply(vec![AssistantContent::text("完成")])),
@@ -69,10 +67,11 @@ async fn provider_context_overflow_compacts_and_retries_once() {
     }];
     for _ in 0..4 {
         messages.push(Message::user("旧问题".repeat(200)));
-        messages.push(Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::text("旧回答".repeat(200))],
-        });
+        messages.push(Message::Assistant(
+            rig_core::message::AssistantMessage::new(vec![AssistantContent::text(
+                "旧回答".repeat(200),
+            )]),
+        ));
     }
     messages.push(Message::user("当前问题"));
     let mut route = profile();
@@ -102,8 +101,9 @@ async fn retry_reuses_exact_request_and_does_not_reexecute_committed_write() {
             "write",
             json!({}),
         ))])),
-        Err(CompletionError::HttpError(
-            http_client::Error::InvalidStatusCode(503.try_into().unwrap()),
+        Err(ProviderError::from_http_response(
+            503.try_into().unwrap(),
+            "",
         )),
         Ok(reply(vec![AssistantContent::text("完成")])),
     ]);

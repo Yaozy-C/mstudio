@@ -35,7 +35,7 @@ impl LoadedTools {
             .iter()
             .filter(|t| !BASE.contains(&t.name.as_str()))
             .collect();
-        let names: Vec<_> = deferred.iter().map(|t| t.name.clone()).collect();
+        let names: Vec<_> = deferred.iter().map(|t| t.name.to_string()).collect();
         let catalog = deferred
             .iter()
             .map(|t| {
@@ -62,12 +62,13 @@ impl LoadedTools {
             available
                 .iter()
                 .filter(|t| {
-                    t.name != LOAD && (BASE.contains(&t.name.as_str()) || loaded.contains(&t.name))
+                    t.name != LOAD
+                        && (BASE.contains(&t.name.as_str()) || loaded.contains(t.name.as_str()))
                 })
-                .map(|t| t.name.clone()),
+                .map(|t| t.name.to_string()),
         );
         let discovery = ToolDefinition {
-            name: LOAD.into(),
+            name: LOAD.try_into().expect("nonempty tool name"),
             description: format!(
                 "Load tools needed for the current task from this role's permitted catalog. Only currently exposed tools can be called. Load a small related batch, then use the tools on the next step. Loading executes no project action and grants no new permission. Earlier conversation calls do not imply a tool is loaded in this run. Names already exposed are accepted and reported as alreadyAvailable. Catalog:\n{catalog}"
             ),
@@ -75,7 +76,7 @@ impl LoadedTools {
         };
         let mut active: Vec<_> = available
             .into_iter()
-            .filter(|t| BASE.contains(&t.name.as_str()) || loaded.contains(&t.name))
+            .filter(|t| BASE.contains(&t.name.as_str()) || loaded.contains(t.name.as_str()))
             .collect();
         if !names.is_empty() {
             active.push(discovery);
@@ -88,8 +89,8 @@ impl LoadedTools {
         let loaded = self.0.lock().unwrap();
         available
             .iter()
-            .filter(|t| !BASE.contains(&t.name.as_str()) && !loaded.contains(&t.name))
-            .map(|t| t.name.clone())
+            .filter(|t| !BASE.contains(&t.name.as_str()) && !loaded.contains(t.name.as_str()))
+            .map(|t| t.name.to_string())
             .collect()
     }
     pub fn load(&self, available: &[ToolDefinition], args: &Value) -> Value {

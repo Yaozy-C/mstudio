@@ -10,7 +10,10 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     let limit = if super::read_tools::is_read(&call.function.name)
         || (call.function.name == "mstudio_inspect"
             && matches!(
-                call.function.arguments["section"].as_str(),
+                call.function
+                    .arguments
+                    .get("section")
+                    .and_then(Value::as_str),
                 Some("clips" | "assets" | "tracks" | "captions" | "generation")
             ))
         || call.function.name == "mstudio_await_generation"
@@ -32,7 +35,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     {
         return value.clone();
     }
-    let mut result = json!({"detailOffloaded":true,"resultRef":call.id.as_str(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0) for this task; supply turnId for another task.","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
+    let mut result = json!({"detailOffloaded":true,"resultRef":call.id.wire().as_ref(),"turnId":turn,"readWith":"mstudio_read_result(callId=resultRef, offset=0) for this task; supply turnId for another task.","availableFields":value.as_object().map(|v|v.keys().collect::<Vec<_>>())});
     if let Some(answer) = value["answer"]
         .as_str()
         .filter(|s| s.chars().count() <= LIMIT)
@@ -155,10 +158,10 @@ mod tests {
     fn skill_body_is_delivered_without_a_second_result_pagination() {
         let call = ToolCall::from_wire(
             "skill",
-            rig_core::message::ToolFunction {
-                name: "mstudio_read_skill".into(),
-                arguments: json!({"skill":"creative-ad-director"}),
-            },
+            rig_core::message::ToolFunction::new(
+                "mstudio_read_skill".try_into().expect("nonempty tool name"),
+                json!({"skill":"creative-ad-director"}),
+            ),
         );
         let value = json!({"text":"camera method ".repeat(2000),"nextOffset":null});
         assert_eq!(project(&call, &value, Some("turn")), value);
@@ -167,10 +170,10 @@ mod tests {
     fn bounded_clip_page_is_delivered_without_a_second_model_read() {
         let call = ToolCall::from_wire(
             "clips",
-            ToolFunction {
-                name: "mstudio_inspect".into(),
-                arguments: json!({"section":"clips"}),
-            },
+            ToolFunction::new(
+                "mstudio_inspect".try_into().expect("nonempty tool name"),
+                json!({"section":"clips"}),
+            ),
         );
         let value = json!({"items":[{"visual":"x".repeat(8000)}],"nextOffset":null});
         assert_eq!(project(&call, &value, Some("t")), value);
@@ -178,10 +181,10 @@ mod tests {
         assert_eq!(project(&call, &huge, Some("t"))["detailOffloaded"], true);
         let delegate = ToolCall::from_wire(
             "child",
-            ToolFunction {
-                name: "mstudio_delegate".into(),
-                arguments: json!({}),
-            },
+            ToolFunction::new(
+                "mstudio_delegate".try_into().expect("nonempty tool name"),
+                json!({}),
+            ),
         );
         let receipt = json!({"items":[{"id":"clip","values":"x".repeat(7000)}],"complete":true});
         let delegated = json!({"answer":"a".repeat(900),"changes":[{"result":{"applied":true,"savedClips":receipt}}]});
@@ -201,10 +204,10 @@ mod tests {
             .unwrap();
         let call = ToolCall::from_wire(
             "c",
-            ToolFunction {
-                name: "mstudio_edit".into(),
-                arguments: json!({}),
-            },
+            ToolFunction::new(
+                "mstudio_edit".try_into().expect("nonempty tool name"),
+                json!({}),
+            ),
         );
         let original = json!({"applied":true,"revision":12,"items":"中".repeat(12000)});
         let projected = project(&call, &original, Some("t"));
@@ -256,10 +259,10 @@ fn delegation_view_keeps_the_complete_conclusion_and_receipts() {
     use rig_core::message::ToolFunction;
     let call = ToolCall::from_wire(
         "delegate-1",
-        ToolFunction {
-            name: "mstudio_delegate".into(),
-            arguments: json!({}),
-        },
+        ToolFunction::new(
+            "mstudio_delegate".try_into().expect("nonempty tool name"),
+            json!({}),
+        ),
     );
     let value = json!({"ok":true,"answer":"设计理由".repeat(300),"changes":[{"result":{"applied":true,"revision":7,"savedValues":[{"id":"s4","exists":true,"complete":true,"values":{"shot":{"duration":1.5}}}]}}]});
     let view = project(&call, &value, Some("turn-1"));

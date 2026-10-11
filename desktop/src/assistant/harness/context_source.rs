@@ -1,14 +1,16 @@
 //! Host provenance survives journaling but is removed from the provider wire.
 //! User-authored text, including an identical heading, never acquires ownership.
-use rig_core::message::{AdditionalParams, Message, Text, UserContent};
+use rig_core::message::{AssistantContent, Message, UserContent};
 use serde_json::{Value, json};
 pub const KEY: &str = "mstudio.context";
 pub fn message(text: String, metadata: Value) -> Message {
+    let AssistantContent::Text(text) =
+        AssistantContent::text(text).with_native(json!({KEY:metadata}))
+    else {
+        unreachable!()
+    };
     Message::User {
-        content: vec![UserContent::Text(Text {
-            text,
-            additional_params: AdditionalParams::from_entries([(KEY, metadata)]),
-        })],
+        content: vec![UserContent::Text(text)],
     }
 }
 pub fn snapshot(mut snapshot: Value) -> Message {
@@ -37,7 +39,7 @@ pub fn source(message: &Message) -> Option<(&str, &Value)> {
         let UserContent::Text(text) = part else {
             return None;
         };
-        let metadata = text.additional_params.as_ref()?.get(KEY)?;
+        let metadata = text.native.as_ref()?.item.get(KEY)?;
         (metadata["kind"] == "project").then_some((text.text.as_str(), metadata))
     })
 }
@@ -46,11 +48,12 @@ pub fn wire(messages: &mut [Message]) {
         if let Message::User { content } = message {
             for part in content {
                 if let UserContent::Text(text) = part
-                    && let Some(params) = text.additional_params.take()
+                    && text
+                        .native
+                        .as_ref()
+                        .is_some_and(|n| n.item.get(KEY).is_some())
                 {
-                    let mut fields = params.as_map().clone();
-                    fields.remove(KEY);
-                    text.additional_params = AdditionalParams::new(fields);
+                    text.native = None;
                 }
             }
         }

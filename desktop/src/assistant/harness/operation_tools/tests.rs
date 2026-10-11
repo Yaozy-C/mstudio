@@ -32,10 +32,10 @@ pub(super) fn decode(
     }
     let call = rig_core::message::ToolCall::from_wire(
         "test",
-        rig_core::message::ToolFunction {
-            name: name.into(),
-            arguments: args.clone(),
-        },
+        rig_core::message::ToolFunction::new(
+            name.try_into().expect("nonempty tool name"),
+            args.clone(),
+        ),
     );
     if let Some(error) = super::super::scheduler::validate(&definitions, &call, &[]) {
         return Some(Err(error));
@@ -261,15 +261,16 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
     }
     let call = ToolCall::from_wire(
         "call",
-        ToolFunction {
-            name: "mstudio_set_video_prompt".into(),
-            arguments: input,
-        },
+        ToolFunction::new(
+            "mstudio_set_video_prompt"
+                .try_into()
+                .expect("nonempty tool name"),
+            input,
+        ),
     );
-    let mut messages = vec![Message::Assistant {
-        id: None,
-        content: vec![AssistantContent::ToolCall(call)],
-    }];
+    let mut messages = vec![Message::Assistant(
+        rig_core::message::AssistantMessage::new(vec![AssistantContent::ToolCall(call)]),
+    )];
     super::super::session_recovery::repair(&store, "p", "turn", &mut messages);
     assert_eq!(messages.len(), 2);
     let restored = serde_json::to_string(&messages[1]).unwrap();

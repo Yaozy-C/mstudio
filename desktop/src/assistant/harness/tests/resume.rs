@@ -4,10 +4,9 @@ fn interrupted_calls_get_unknown_effect_result_never_reexecuted() {
     let tool = call("c", "write", json!({}));
     let mut messages = vec![
         Message::user("request"),
-        Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::ToolCall(tool)],
-        },
+        Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+            AssistantContent::ToolCall(tool),
+        ])),
     ];
     session::repair_pending(&mut messages, |_| None);
     assert_eq!(messages.len(), 3);

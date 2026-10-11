@@ -71,7 +71,7 @@ async fn tool_errors_return_to_model_for_correction_without_edit_specific_stop()
         }
         fn definitions(&self) -> Vec<ToolDefinition> {
             vec![ToolDefinition {
-                name: "mstudio_edit".into(),
+                name: "mstudio_edit".try_into().expect("nonempty tool name"),
                 description: "Edit".into(),
                 parameters: json!({"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}),
             }]

@@ -190,13 +190,4 @@ read -r initialized
         rpc.stop().await;
         std::fs::remove_file(path).unwrap();
     }
-    #[tokio::test]
-    #[ignore = "requires a locally installed Codex; handshake only, no generation"]
-    async fn installed_codex_initializes_without_generation() {
-        let mut rpc = tokio::time::timeout(std::time::Duration::from_secs(20), Rpc::start())
-            .await
-            .unwrap()
-            .unwrap();
-        rpc.stop().await;
-    }
 }

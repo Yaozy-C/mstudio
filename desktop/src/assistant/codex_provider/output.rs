@@ -1,18 +1,14 @@
 //! Native dynamic-tool responses keep typed images and tool failures intact.
 use anyhow::{Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD};
-use rig_core::{
-    message::{AdditionalParams, DocumentSourceKind, MimeType, ToolResult, ToolResultContent},
-    streaming::{RawStreamingChoice, StreamPartId},
-};
+use rig_core::message::{DocumentSourceKind, MimeType, ToolResult, ToolResultContent};
 use serde_json::{Value, json};
 
-pub(super) fn text_start(item: &Value) -> Option<RawStreamingChoice> {
-    Some(RawStreamingChoice::TextStart {
-        id: StreamPartId::wire(item["id"].as_str()?),
-        additional_params: AdditionalParams::from_entries(
-            item["phase"].as_str().map(|p| ("phase", json!(p))),
-        ),
+use crate::assistant::model_io::Frame;
+pub(super) fn text_start(item: &Value) -> Option<Frame> {
+    Some(Frame::TextStart {
+        id: item["id"].as_str()?.into(),
+        phase: item["phase"].as_str().map(str::to_owned),
     })
 }
 pub(super) fn tool_response(result: &ToolResult) -> Result<Value> {
@@ -71,15 +67,15 @@ pub(super) fn tool_response(result: &ToolResult) -> Result<Value> {
 }
 
 // Forward only readable notifications; never inspect encrypted reasoning handles.
-pub(super) fn reasoning_delta(method: &str, params: &Value) -> Option<RawStreamingChoice> {
+pub(super) fn reasoning_delta(method: &str, params: &Value) -> Option<Frame> {
     let (kind, index) = match method {
         "item/reasoning/summaryTextDelta" => ("summary", params["summaryIndex"].as_i64()?),
         "item/reasoning/textDelta" => ("text", params["contentIndex"].as_i64()?),
         _ => return None,
     };
-    Some(RawStreamingChoice::ReasoningDelta {
-        id: StreamPartId::wire(format!("{}:{kind}:{index}", params["itemId"].as_str()?)),
-        provider_id: None,
-        reasoning: params["delta"].as_str()?.into(),
+    Some(Frame::Reasoning {
+        id: format!("{}:{kind}:{index}", params["itemId"].as_str()?),
+        text: params["delta"].as_str()?.into(),
+        replace: false,
     })
 }

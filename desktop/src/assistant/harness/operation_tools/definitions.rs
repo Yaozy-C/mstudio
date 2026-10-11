@@ -132,7 +132,7 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                     );
                     if name == "update_shot" {
                         let source = out.last().unwrap();
-                        out.push(OperationTool { definition: ToolDefinition { name:"mstudio_update_shots".into(),description:"Atomically update multiple shots, including order swaps. Each items entry has the same direct fields as update_shot; no op or shot wrapper. The entire batch succeeds or fails together.".into(),parameters:json!({"type":"object","properties":{"items":{"type":"array","minItems":1,"maxItems":30,"items":source.definition.parameters}},"required":["items"],"additionalProperties":false}) },op:op.into(),fixed:serde_json::Map::from_iter([("expectedKind".into(), json!("shot"))]),nested:Some("shot".into()),task_prompt:false,batch:true });
+                        out.push(OperationTool { definition: ToolDefinition { name:"mstudio_update_shots".try_into().expect("nonempty tool name"),description:"Atomically update multiple shots, including order swaps. Each items entry has the same direct fields as update_shot; no op or shot wrapper. The entire batch succeeds or fails together.".into(),parameters:json!({"type":"object","properties":{"items":{"type":"array","minItems":1,"maxItems":30,"items":source.definition.parameters}},"required":["items"],"additionalProperties":false}) },op:op.into(),fixed:serde_json::Map::from_iter([("expectedKind".into(), json!("shot"))]),nested:Some("shot".into()),task_prompt:false,batch:true });
                     }
                 }
             }

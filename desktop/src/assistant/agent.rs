@@ -100,10 +100,7 @@ pub(crate) async fn complete_with_resume(
             tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
         }),
     });
-    let model = super::provider::builder(profile, key)?
-        .build()
-        .model_handle()
-        .clone();
+    let model = super::provider::model(profile, key)?;
     let mut session = Session::new(messages);
     if host
         .tool

@@ -1,10 +1,9 @@
 use super::super::Host;
+use crate::assistant::model_io::CompletionModel;
+use crate::assistant::model_io::{Frame, ModelStream};
 use rig_core::{
-    completion::{
-        CompletionError, CompletionModel, CompletionRequest, CompletionResponse, ToolDefinition,
-    },
+    completion::{CompletionRequest, CompletionResponse, ToolDefinition},
     message::{AssistantContent, Message, ToolCall, ToolFunction},
-    streaming::{RawStreamingChoice, StreamFinal, StreamingCompletionResponse},
 };
 use serde_json::{Value, json};
 use std::{
@@ -42,7 +41,7 @@ impl Host for TestHost {
         Ok(std::mem::take(&mut *self.inbox.lock().unwrap()))
     }
     fn definitions(&self) -> Vec<ToolDefinition> {
-        ["read", "write", "ping"].into_iter().map(|name|ToolDefinition {name:name.into(),description:name.into(),parameters:json!({"type":"object","properties":{"delay":{"type":"integer"},"cancel":{"type":"boolean"}},"additionalProperties":false})}).collect()
+        ["read", "write", "ping"].into_iter().map(|name|ToolDefinition {name:name.try_into().expect("nonempty tool name"),description:name.into(),parameters:json!({"type":"object","properties":{"delay":{"type":"integer"},"cancel":{"type":"boolean"}},"additionalProperties":false})}).collect()
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         call.function.name != "write"
@@ -56,18 +55,28 @@ impl Host for TestHost {
         self.trace
             .lock()
             .unwrap()
-            .push(format!("start:{}", call.id.as_str()));
-        if call.function.arguments["cancel"] == true {
+            .push(format!("start:{}", call.id.wire().as_ref()));
+        if call
+            .function
+            .arguments
+            .get("cancel")
+            .and_then(Value::as_bool)
+            == Some(true)
+        {
             self.token.cancel();
         }
         tokio::time::sleep(std::time::Duration::from_millis(
-            call.function.arguments["delay"].as_u64().unwrap_or(1),
+            call.function
+                .arguments
+                .get("delay")
+                .and_then(Value::as_u64)
+                .unwrap_or(1),
         ))
         .await;
         self.trace
             .lock()
             .unwrap()
-            .push(format!("end:{}", call.id.as_str()));
+            .push(format!("end:{}", call.id.wire().as_ref()));
         self.active.fetch_sub(1, Ordering::SeqCst);
         json!({"ok":true})
     }
@@ -75,14 +84,16 @@ impl Host for TestHost {
 pub fn call(id: &str, name: &str, args: Value) -> ToolCall {
     ToolCall::from_wire(
         id,
-        ToolFunction {
-            name: name.into(),
-            arguments: args,
-        },
+        ToolFunction::new(name.try_into().expect("nonempty tool name"), args),
     )
 }
 pub fn reply(content: Vec<AssistantContent>) -> CompletionResponse {
-    CompletionResponse::new(content, Default::default(), "test")
+    CompletionResponse::new(
+        content,
+        Default::default(),
+        rig_core::message::Origin::new("test", "test", "test"),
+        Value::Null,
+    )
 }
 pub fn profile() -> crate::assistant::config::Profile {
     crate::assistant::config::Profile {
@@ -95,7 +106,7 @@ pub fn profile() -> crate::assistant::config::Profile {
 }
 #[derive(Clone, Default)]
 pub struct TestModel {
-    pub responses: Arc<Mutex<VecDeque<Result<CompletionResponse, CompletionError>>>>,
+    pub responses: Arc<Mutex<VecDeque<Result<CompletionResponse, rig_core::ProviderError>>>>,
     pub requests: Arc<Mutex<Vec<CompletionRequest>>>,
     pub partial_then_stall: bool,
 }
@@ -103,7 +114,7 @@ impl CompletionModel for TestModel {
     async fn completion(
         &self,
         request: CompletionRequest,
-    ) -> Result<CompletionResponse, CompletionError> {
+    ) -> Result<CompletionResponse, rig_core::ProviderError> {
         self.requests.lock().unwrap().push(request);
         self.responses
             .lock()
@@ -114,21 +125,17 @@ impl CompletionModel for TestModel {
     async fn stream(
         &self,
         request: CompletionRequest,
-    ) -> Result<StreamingCompletionResponse, CompletionError> {
+    ) -> Result<ModelStream, rig_core::ProviderError> {
         use futures::StreamExt;
         self.requests.lock().unwrap().push(request);
-        let frames =
-            futures::stream::iter([Ok(RawStreamingChoice::Message("已输出的文字".into()))]);
-        let rest: rig_core::streaming::StreamingResult = if self.partial_then_stall {
+        let frames = futures::stream::iter([Ok(Frame::Text("已输出的文字".into()))]);
+        let rest: ModelStream = if self.partial_then_stall {
             Box::pin(futures::stream::pending())
         } else {
-            Box::pin(futures::stream::iter([Ok(
-                RawStreamingChoice::FinalResponse(StreamFinal::new("test", Default::default())),
-            )]))
+            Box::pin(futures::stream::iter([Ok(Frame::Done(Box::new(reply(
+                vec![AssistantContent::text("已输出的文字")],
+            ))))]))
         };
-        Ok(StreamingCompletionResponse::stream(
-            "test",
-            Box::pin(frames.chain(rest)),
-        ))
+        Ok(Box::pin(frames.chain(rest)))
     }
 }

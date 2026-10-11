@@ -1,6 +1,6 @@
 use super::super::thinking::*;
 use super::support::TestHost;
-use rig_core::message::{Reasoning, ReasoningContent};
+use rig_core::message::{AssistantContent, Reasoning};
 
 #[test]
 fn live_deltas_are_replaced_by_the_complete_block_and_saved_once() {
@@ -20,19 +20,12 @@ fn live_deltas_are_replaced_by_the_complete_block_and_saved_once() {
 
 #[test]
 fn signatures_encrypted_and_redacted_content_never_enter_display_text() {
-    let reasoning = Reasoning {
-        id: Some("private-handle".into()),
-        content: vec![
-            ReasoningContent::Text {
-                text: "可见文字".into(),
-                signature: Some("secret-signature".into()),
-            },
-            ReasoningContent::Encrypted("ciphertext".into()),
-            ReasoningContent::Redacted {
-                data: "private-data".into(),
-            },
-            ReasoningContent::Summary("摘要".into()),
-        ],
-    };
+    let AssistantContent::Reasoning(reasoning) = AssistantContent::Reasoning(Reasoning::new("可见文字\n\n摘要")).with_native(serde_json::json!({"signature":"secret-signature","encrypted":"ciphertext","data":"private-data"})) else { unreachable!() };
     assert_eq!(readable(&reasoning), "可见文字\n\n摘要");
+    let redacted = Reasoning {
+        text: "withheld".into(),
+        redacted: true,
+        ..Default::default()
+    };
+    assert_eq!(readable(&redacted), "");
 }

@@ -1,10 +1,9 @@
 //! Provider adapters own wire protocols; the harness owns attempts and visible frames.
 use super::{Host, session::Session};
+use crate::assistant::model_io::CompletionModel;
+use crate::assistant::model_io::Frame;
 use futures::StreamExt;
-use rig_core::{
-    completion::{CompletionError, CompletionModel, CompletionRequest, CompletionResponse},
-    streaming::StreamedAssistantContent,
-};
+use rig_core::completion::{CompletionRequest, CompletionResponse};
 use serde_json::json;
 
 #[derive(Debug)]
@@ -57,60 +56,46 @@ pub async fn request(
                 return model.completion(request.clone()).await;
             }
             let mut stream = model.stream(request.clone()).await?;
-            let mut finished = false;
+            let mut response = None;
             let mut pending = String::new();
             let mut last_frame = std::time::Instant::now();
             while let Some(part) = stream.next().await {
                 let part = part?;
-                if matches!(&part, StreamedAssistantContent::Final(_)) {
-                    finished = true;
-                }
                 let thought = match &part {
-                    StreamedAssistantContent::ReasoningDelta { id, reasoning, .. } => {
-                        Some(thinking.update(host, id, reasoning, false))
-                    }
-                    StreamedAssistantContent::Reasoning { id, reasoning } => {
-                        Some(thinking.update(host, id, &super::thinking::readable(reasoning), true))
+                    Frame::Reasoning { id, text, replace } => {
+                        Some(thinking.update(host, id, text, *replace))
                     }
                     _ => None,
                 };
                 if let Some(Err(error)) = thought {
                     persistence_error = Some(error);
-                    return Err(CompletionError::ResponseError("无法保存思考内容".into()));
+                    return Err(rig_core::ProviderError::Response("无法保存思考内容".into()));
                 }
-                if let StreamedAssistantContent::Text(text) = part {
-                    pending.push_str(&text.text);
+                if let Frame::Text(text) = &part {
+                    pending.push_str(text);
                     if session.text.len() == prefix
                         || pending.len() >= 128
                         || last_frame.elapsed().as_millis() >= 40
                     {
                         if let Err(error) = session.publish(host, &pending) {
                             persistence_error = Some(error);
-                            return Err(CompletionError::ResponseError("无法保存输出".into()));
+                            return Err(rig_core::ProviderError::Response("无法保存输出".into()));
                         }
                         pending.clear();
                         last_frame = std::time::Instant::now();
                     }
+                }
+                if let Frame::Done(done) = part {
+                    response = Some(*done);
                 }
             }
             if !pending.is_empty()
                 && let Err(error) = session.publish(host, &pending)
             {
                 persistence_error = Some(error);
-                return Err(CompletionError::ResponseError("无法保存输出".into()));
+                return Err(rig_core::ProviderError::Response("无法保存输出".into()));
             }
-            if !finished {
-                return Err(CompletionError::ResponseError(
-                    "模型流在完成事件前中断".into(),
-                ));
-            }
-            // Rig's stream conversion drops provider-specific terminal metadata.
-            let raw = stream
-                .response
-                .as_ref()
-                .map(|r| r.raw.clone())
-                .unwrap_or_default();
-            Ok(CompletionResponse::from(stream).with_raw(raw))
+            response.ok_or(rig_core::ProviderError::Truncated)
         };
         let result = tokio::select! {
             result = call => result,
@@ -146,23 +131,12 @@ pub async fn request(
                     }
                     continue;
                 }
-                return Err(crate::assistant::failure::describe(&error.into(), key).into());
+                return Err(crate::assistant::failure::describe(&error, key).into());
             }
         }
     }
     unreachable!()
 }
-fn retryable(error: &CompletionError) -> bool {
-    use rig_core::http_client::Error;
-    match error {
-        CompletionError::HttpError(Error::InvalidStatusCode(s))
-        | CompletionError::HttpError(Error::InvalidStatusCodeWithMessage(s, _))
-        | CompletionError::HttpError(Error::InvalidStatusCodeWithDetails { status: s, .. }) => {
-            s.as_u16() == 429 || s.is_server_error()
-        }
-        CompletionError::HttpError(Error::Instance(e)) => e
-            .downcast_ref::<rig_http::Error>()
-            .is_some_and(|e| e.is_connect() || e.is_timeout()),
-        _ => false,
-    }
+fn retryable(error: &rig_core::ProviderError) -> bool {
+    error.is_retryable()
 }

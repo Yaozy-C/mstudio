@@ -47,7 +47,7 @@ pub(super) fn compact_end(messages: &[Message], max_source: usize, retain: usize
             break;
         }
         match message {
-            Message::Assistant { content, .. } => {
+            Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => {
                 pending += content
                     .iter()
                     .filter(|c| matches!(c, AssistantContent::ToolCall(_)))
@@ -64,7 +64,7 @@ pub(super) fn compact_end(messages: &[Message], max_source: usize, retain: usize
         let tail_cost: usize = messages[index + 1..].iter().map(tokens).sum();
         if pending == 0
             && tail_cost >= retain
-            && (matches!(message, Message::Assistant { .. })
+            && (matches!(message, Message::Assistant(_))
                 || matches!(message, Message::User { content } if content.iter().any(|c| matches!(c, UserContent::ToolResult(_)))))
         {
             end = Some(index + 1);
@@ -115,18 +115,20 @@ async fn compact_with_retain(
     history.extend(old.iter().cloned());
     history.push(Message::user("Summarize the earlier conversation into concise continuation context. Preserve the original current user request, goal, target/task IDs, permitted scope and completion criteria. Distinguish explicit user decisions, existing designs and assistant proposals; do not turn historical todos into current tasks. Retain useful read locations (objects, fields, pages), findings, revisions, asset IDs and retrievable tool-result references (turnId/callId). Do not copy stale project snapshots; fresh project state is supplied separately. For images preserve actual observations and reopenable references, without substituting text for pixel verification. Record saved actions, results, exact failure causes, missing evidence and next steps to avoid repeated research or writes. Do not repeat complete rules still present; summarize removed rules only as needed and do not claim their full text remains available. Remove unrelated shot todos, duplicate outputs and long discussion. Add no goals, assumptions or invented IDs. Preserve quoted user wording and requested content language. Output only the summary; execute no tools."));
     crate::assistant::harness::context_source::wire(&mut history);
-    let request = CompletionRequest {
-        model: None,
-        preamble: None,
-        chat_history: history,
-        documents: vec![],
-        tools: host.definitions(),
-        temperature: None,
-        max_tokens: Some(8192),
-        tool_choice: Some(rig_core::message::ToolChoice::None),
-        additional_params: None,
-        output_schema: None,
-        record_telemetry_content: false,
+    let request = {
+        let mut request = CompletionRequest::new("");
+
+        request.model = None;
+        request.chat_history = history;
+        request.documents = vec![];
+        request.tools = host.definitions();
+        request.temperature = None;
+        request.max_tokens = Some(8192);
+        request.tool_choice = Some(rig_core::message::ToolChoice::None);
+        request.additional_params = None;
+        request.output_schema = None;
+        request.record_telemetry_content = false;
+        request
     };
     let response = match tokio::select! {
         result = model.completion(request) => result,
@@ -136,7 +138,7 @@ async fn compact_with_retain(
         Ok(response) => response,
         Err(error) => {
             host.record("compaction/end", json!({"status":"failed"}))?;
-            return Err(crate::assistant::failure::describe(&error.into(), ""));
+            return Err(crate::assistant::failure::describe(&error, ""));
         }
     };
     let summary: String = response

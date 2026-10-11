@@ -12,14 +12,13 @@ fn fresh_image_batch_survives_pressure_until_a_model_response() {
         .collect();
     let mut messages = vec![
         Message::user("review frames"),
-        Message::Assistant {
-            id: None,
-            content: calls
+        Message::Assistant(rig_core::message::AssistantMessage::new(
+            calls
                 .iter()
                 .cloned()
                 .map(AssistantContent::ToolCall)
                 .collect(),
-        },
+        )),
     ];
     for call in &calls {
         let image = UserContent::image_base64("aGVsbG8=", Some(ImageMediaType::PNG), None);
@@ -44,10 +43,11 @@ fn fresh_image_batch_survives_pressure_until_a_model_response() {
             .count(),
         8
     );
-    session.messages.push(Message::Assistant {
-        id: None,
-        content: vec![AssistantContent::text("reviewed all eight")],
-    });
+    session.messages.push(Message::Assistant(
+        rig_core::message::AssistantMessage::new(vec![AssistantContent::text(
+            "reviewed all eight",
+        )]),
+    ));
     session.messages.push(Message::user("next step"));
     assert_eq!(session::offload_old_images(&mut session, &host).unwrap(), 8);
     assert!(

@@ -3,8 +3,7 @@ use super::{
     support::*,
 };
 use rig_core::{
-    completion::CompletionError,
-    http_client,
+    error::ProviderError,
     message::{AssistantContent, Message},
 };
 use serde_json::json;
@@ -98,7 +97,7 @@ async fn pressure_summary_failure_continues_original_request() {
     let host = TestHost::default();
     let model = TestModel::default();
     model.responses.lock().unwrap().extend([
-        Err(CompletionError::ResponseError("summary unavailable".into())),
+        Err(ProviderError::Response("summary unavailable".into())),
         Ok(reply(vec![AssistantContent::text("完成")])),
     ]);
     let mut route = profile();
@@ -134,11 +133,9 @@ async fn provider_overflow_without_reduction_is_not_retried() {
         .responses
         .lock()
         .unwrap()
-        .push_back(Err(CompletionError::HttpError(
-            http_client::Error::InvalidStatusCodeWithMessage(
-                400.try_into().unwrap(),
-                json!({"error":{"message":"maximum context length exceeded"}}).to_string(),
-            ),
+        .push_back(Err(ProviderError::from_http_response(
+            400.try_into().unwrap(),
+            json!({"error":{"message":"maximum context length exceeded"}}).to_string(),
         )));
     assert!(
         run(

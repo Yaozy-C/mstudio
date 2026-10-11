@@ -2,7 +2,6 @@ use super::*;
 
 #[tokio::test]
 async fn commentary_is_folded_and_final_text_replaces_live_progress() {
-    use rig_core::message::{AdditionalParams, Text};
     let host = TestHost::default();
     let model = TestModel::default();
     model.responses.lock().unwrap().extend([
@@ -11,17 +10,8 @@ async fn commentary_is_folded_and_final_text_replaces_live_progress() {
             AssistantContent::ToolCall(call("read", "read", json!({}))),
         ])),
         Ok(reply(vec![
-            AssistantContent::Text(Text {
-                text: "准备保存".into(),
-                additional_params: AdditionalParams::from_entries([("phase", json!("commentary"))]),
-            }),
-            AssistantContent::Text(Text {
-                text: "分镜已保存".into(),
-                additional_params: AdditionalParams::from_entries([(
-                    "phase",
-                    json!("final_answer"),
-                )]),
-            }),
+            AssistantContent::text("准备保存").with_native(json!({"phase":"commentary"})),
+            AssistantContent::text("分镜已保存").with_native(json!({"phase":"final_answer"})),
         ])),
     ]);
     let answer = run(

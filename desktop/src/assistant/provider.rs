@@ -1,5 +1,4 @@
 use super::config::Profile;
-use rig_agent::{agent::AgentBuilder, prelude::*};
 use rig_core::providers::{anthropic, gemini, openai};
 use std::time::Duration;
 
@@ -20,36 +19,70 @@ fn configured_client(
         .map_err(|_| "无法创建 HTTP 客户端".into())
 }
 
-pub fn builder(profile: &Profile, key: &str) -> Result<AgentBuilder, String> {
-    if profile.adapter == "codex" {
-        return Ok(AgentBuilder::new(super::codex_provider::CodexModel::new(
-            profile.model.clone(),
-        )));
+pub enum ProviderModel {
+    Http(rig_core::DynModel<rig_core::operation::Completion>),
+    Codex(super::codex_provider::CodexModel),
+}
+impl super::model_io::CompletionModel for ProviderModel {
+    async fn completion(
+        &self,
+        request: rig_core::completion::CompletionRequest,
+    ) -> Result<rig_core::completion::CompletionResponse, rig_core::ProviderError> {
+        match self {
+            Self::Http(model) => model.completion(request).await,
+            Self::Codex(model) => model.completion(request).await,
+        }
     }
-    // Each model request gets its own budget, including after tool execution.
+    async fn stream(
+        &self,
+        request: rig_core::completion::CompletionRequest,
+    ) -> Result<super::model_io::ModelStream, rig_core::ProviderError> {
+        match self {
+            Self::Http(model) => super::model_io::CompletionModel::stream(model, request).await,
+            Self::Codex(model) => model.stream(request).await,
+        }
+    }
+}
+pub fn model(profile: &Profile, key: &str) -> Result<ProviderModel, String> {
+    if profile.adapter == "codex" {
+        return Ok(ProviderModel::Codex(
+            super::codex_provider::CodexModel::new(profile.model.clone()),
+        ));
+    }
     let headers = crate::models::transport::headers(&profile.endpoint, key)
         .map_err(|_| "服务认证配置无效")?;
-    let http = configured_client(Duration::from_secs(240), headers)?;
+    let http = rig_core::http_client::DynHttpClient::new(rig_reqwest::ReqwestClient::from(
+        configured_client(Duration::from_secs(240), headers)?,
+    ));
     let key = if key.is_empty() { "local" } else { key };
-    macro_rules! client {
-        ($provider:ident) => {
-            $provider::Client::builder()
-                .api_key(key)
-                .base_url(profile.endpoint.trim_end_matches('/'))
-                .http_client(http)
-                .build()
-                .map_err(|_| "无法创建模型客户端")?
-        };
-    }
-    Ok(match profile.adapter.as_str() {
-        "gemini-native" => client!(gemini).agent(&profile.model),
-        "anthropic-native" => client!(anthropic).agent(&profile.model).max_tokens(8192),
-        "openai-responses" => client!(openai)
-            .agent(&profile.model)
-            .additional_params(serde_json::json!({"store":false})),
-        "openai-compatible" => client!(openai).completions_api().agent(&profile.model),
+    let endpoint = profile.endpoint.trim_end_matches('/');
+    let model = match profile.adapter.as_str() {
+        "gemini-native" => gemini::GeminiConfig::new(key)
+            .with_base_url(endpoint)
+            .connect(http)
+            .completion(&profile.model)
+            .erase(),
+        "anthropic-native" => anthropic::AnthropicConfig::new(key)
+            .with_base_url(endpoint)
+            .connect(http)
+            .completion(&profile.model)
+            .erase(),
+        "openai-responses" => openai::OpenAIConfig::new(key)
+            .with_base_url(endpoint)
+            .connect(http)
+            .responses(&profile.model)
+            .erase(),
+        "openai-compatible" => openai::OpenAIConfig::with_key(
+            &openai::wire::Dialect::gateway("mstudio-compatible", "", ""),
+            key,
+        )
+        .with_base_url(endpoint)
+        .connect(http)
+        .chat(&profile.model)
+        .erase(),
         _ => return Err("模型协议插件未安装".into()),
-    })
+    };
+    Ok(ProviderModel::Http(model))
 }
 
 #[cfg(test)]
@@ -68,10 +101,8 @@ mod timeout_tests {
             .await
             .unwrap_err();
         assert!(error.is_timeout());
-        let error = rig_core::completion::CompletionError::HttpError(
-            rig_core::http_client::Error::Instance(Box::new(error)),
-        )
-        .into();
+        let error =
+            rig_core::ProviderError::from(rig_core::http_client::Error::Instance(Box::new(error)));
         let message = super::super::failure::describe(&error, "");
         assert!(message.contains("本次模型请求超时"));
         assert!(message.contains("已完成的操作保留"));

@@ -7,10 +7,7 @@ pub(super) async fn drive_child(
     messages: Vec<Message>,
     deadline: tokio::time::Instant,
 ) -> Result<String, String> {
-    let model = provider::builder(profile, key)?
-        .build()
-        .model_handle()
-        .clone();
+    let model = provider::model(profile, key)?;
 
     super::super::driver::run_until(
         &model,

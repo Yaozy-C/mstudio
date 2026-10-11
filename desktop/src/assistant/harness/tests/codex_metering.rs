@@ -48,19 +48,28 @@ async fn native_capacity_prevents_premature_pruning_across_real_driver_steps() {
         Message::System {
             content: "rules".into(),
         },
-        Message::Assistant {
-            id: None,
-            content: vec![AssistantContent::ToolCall(call("old", "read", json!({})))],
-        },
-        Message::tool_result("old", "read", "x".repeat(120000)),
+        Message::Assistant(rig_core::message::AssistantMessage::new(vec![
+            AssistantContent::ToolCall(call("old", "read", json!({}))),
+        ])),
+        Message::tool_result(
+            rig_core::message::CallId::from_wire("old"),
+            "read".try_into().expect("nonempty tool name"),
+            "x".repeat(120000),
+        ),
         Message::assistant("read"),
         Message::user("continue"),
     ];
-    model.responses.lock().unwrap().extend([
-        Ok(reply(vec![AssistantContent::ToolCall(call("next", "ping", json!({})))]).with_raw(
-            json!({"tokenUsage":{"modelContextWindow":258400,"last":{"totalTokens":50000},"total":{"totalTokens":900000}}}))),
-        Ok(reply(vec![AssistantContent::text("done")])),
-    ]);
+    let mut first = reply(vec![AssistantContent::ToolCall(call(
+        "next",
+        "ping",
+        json!({}),
+    ))]);
+    first.raw = json!({"tokenUsage":{"modelContextWindow":258400,"last":{"totalTokens":50000},"total":{"totalTokens":900000}}});
+    model
+        .responses
+        .lock()
+        .unwrap()
+        .extend([Ok(first), Ok(reply(vec![AssistantContent::text("done")]))]);
     assert_eq!(
         run(&model, &route, &host, Session::new(messages), false, "")
             .await
@@ -90,11 +99,19 @@ fn deterministic_pruning_keeps_loaded_skills_and_the_observed_6843_character_res
         Message::System {
             content: "rules".into(),
         },
-        Message::tool_result("skill", "mstudio_read_skill", skill.clone()),
-        Message::tool_result("short", "read", "s".repeat(6843)),
         Message::tool_result(
-            "long",
-            "read",
+            rig_core::message::CallId::from_wire("skill"),
+            "mstudio_read_skill".try_into().expect("nonempty tool name"),
+            skill.clone(),
+        ),
+        Message::tool_result(
+            rig_core::message::CallId::from_wire("short"),
+            "read".try_into().expect("nonempty tool name"),
+            "s".repeat(6843),
+        ),
+        Message::tool_result(
+            rig_core::message::CallId::from_wire("long"),
+            "read".try_into().expect("nonempty tool name"),
             format!(
                 "{}{}{}",
                 "头".repeat(4096),
@@ -108,11 +125,19 @@ fn deterministic_pruning_keeps_loaded_skills_and_the_observed_6843_character_res
     assert!(budget::prune_tool_results(&mut session, &host).unwrap());
     assert_eq!(
         session.messages[1],
-        Message::tool_result("skill", "mstudio_read_skill", skill)
+        Message::tool_result(
+            rig_core::message::CallId::from_wire("skill"),
+            "mstudio_read_skill".try_into().expect("nonempty tool name"),
+            skill
+        )
     );
     assert_eq!(
         session.messages[2],
-        Message::tool_result("short", "read", "s".repeat(6843))
+        Message::tool_result(
+            rig_core::message::CallId::from_wire("short"),
+            "read".try_into().expect("nonempty tool name"),
+            "s".repeat(6843)
+        )
     );
     let text = serde_json::to_string(&session.messages[3]).unwrap();
     assert!(text.contains(&"头".repeat(4096)));
