@@ -246,5 +246,6 @@
   "执行失败": "Execution failed",
   "删除项目素材": "Delete project media",
   "删除「{name}」及其在画布、分镜和时间线中的引用？未被其他项目或公共素材库使用的文件会永久删除，无法撤销。": "Delete “{name}” and its references on the canvas, in shots and on the timeline? Files not used by another project or the shared library will be permanently deleted. This cannot be undone.",
-  "确认删除": "Confirm deletion"
+  "确认删除": "Confirm deletion",
+  "从视频拆解脚本": "Break down a video script"
 }

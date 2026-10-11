@@ -3,10 +3,11 @@ import {
   ArrowUpRight,
   PencilSimple,
   ChatText,
+  VideoCamera,
 } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { ActionButton } from "../ui/ActionButton";
-import { requestCreativeTask } from "./aiTasks";
+import { requestCreativeTask, videoAnalysisTask } from "./aiTasks";
 import "../styles/script-start.css";
 
 const steps = [
@@ -43,6 +44,12 @@ export function ScriptAIStart({
             {t("和 Agent 开始创作")}
             <ArrowRight size={18} aria-hidden="true" />
           </button>
+          <ActionButton
+            icon={VideoCamera}
+            onClick={() => requestCreativeTask(videoAnalysisTask())}
+          >
+            {t("从视频拆解脚本")}
+          </ActionButton>
           <ActionButton icon={PencilSimple} onClick={manual}>
             {t("手动写作")}
           </ActionButton>

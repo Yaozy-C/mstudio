@@ -1,3 +1,4 @@
+import { AddAttachments } from "./AddAttachments";
 import { t, useLanguage } from "../i18n";
 import { TaskReference } from "../production/TaskReference";
 import { compositionGuard } from "./compositionGuard";
@@ -12,7 +13,7 @@ import { unsupportedAttachments } from "./AttachmentSupport";
 import { ConversationModel } from "./ConversationModel";
 import { useState, type RefObject } from "react";
 import { ComposerPrimitive } from "@assistant-ui/react";
-import { ArrowUp, At, Square, Plus } from "@phosphor-icons/react";
+import { ArrowUp, At, Square } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import type { AgentProfile } from "../agents/catalog";
 import { attachmentKey, MAX_ATTACHMENTS, type Attachment } from "./attachments";
@@ -229,22 +230,15 @@ export function AgentComposer({
         <div className="agent-compose-actions">
           <div className="composer-tools">
             <>
-              <button
-                type="button"
-                className="composer-icon-button"
-                aria-label={t("从电脑添加附件")}
-                title={t("从电脑添加附件")}
-                disabled={draft.busy || attachments.length >= MAX_ATTACHMENTS}
-                onClick={() =>
-                  void draft.importFiles(
-                    canvas?.task
-                      ? (refs) => refs.forEach((ref) => canvas.attach(ref))
-                      : undefined,
-                  )
+              <AddAttachments
+                draft={draft}
+                disabled={attachments.length >= MAX_ATTACHMENTS}
+                receive={
+                  canvas?.task
+                    ? (refs) => refs.forEach((ref) => canvas.attach(ref))
+                    : undefined
                 }
-              >
-                <Plus size={20} />
-              </button>
+              />
               <button
                 type="button"
                 className="composer-mention-trigger composer-icon-button"

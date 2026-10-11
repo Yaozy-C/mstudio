@@ -1,0 +1,26 @@
+.video-url-import > label {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+.video-url-import input {
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+.video-url-import > p {
+  font-size: 13px;
+  color: var(--desk-muted);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.video-url-import .video-url-error {
+  color: var(--red-11);
+}
+.video-url-import footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}

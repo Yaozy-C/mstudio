@@ -124,7 +124,12 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     const previous = runtime.thread.composer.getState().text;
     if (props.draft.suggestion.text.trim())
       runtime.thread.composer.setText(
-        [previous, props.draft.suggestion.text].filter(Boolean).join("\n\n"),
+        (props.draft.suggestion.isolated
+          ? [props.draft.suggestion.text]
+          : [previous, props.draft.suggestion.text]
+        )
+          .filter(Boolean)
+          .join("\n\n"),
       );
     props.draft.clearSuggestion();
     input.current?.focus();

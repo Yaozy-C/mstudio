@@ -5,6 +5,7 @@ export type CreativeTask = {
   agentId?: string;
   refs?: AttachmentRef[];
   targetNodeId?: string;
+  isolated?: boolean;
 };
 export function creativeTask(
   kind: "write" | "revise-script" | "split" | "revise-shot",
@@ -27,6 +28,14 @@ export function creativeTask(
     targetNodeId: id,
     refs: [],
     text: prompts[kind] + (idea.trim() ? `\n\n我的想法：${idea.trim()}` : ""),
+  };
+}
+export function videoAnalysisTask(): CreativeTask {
+  return {
+    agentId: "video-analyst",
+    text: "请只拆解本轮提供的原视频，按时间顺序还原画面动作、台词、画面文字与声音，整理原视频的声画脚本，并分析节奏和结构。不改写，不创作新内容。",
+    refs: [],
+    isolated: true,
   };
 }
 export function requestCreativeTask(task: CreativeTask) {

@@ -145,6 +145,8 @@ fn main() {
             projects::get_settings,
             projects::save_setting,
             imports::import_media,
+            imports::video_url::import_video_url,
+            imports::video_url::cancel_video_import,
             imports::import_clipboard_files,
             imports::transfer::begin_import,
             imports::transfer::append_import,

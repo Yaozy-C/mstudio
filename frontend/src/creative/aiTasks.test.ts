@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { creativeTask } from "./aiTasks";
+import { creativeTask, videoAnalysisTask } from "./aiTasks";
 
 test("creative tasks route each stage with an independent task target and preserve idea and scope", () => {
   const write = creativeTask("write", undefined, undefined, "A lunch bag ad");
@@ -18,4 +18,13 @@ test("creative tasks route each stage with an independent task target and preser
   expect(creativeTask("revise-shot", "s1").targetNodeId).toBe("s1");
   expect(creativeTask("split", "p1").refs).toEqual([]);
   expect(creativeTask("split", "p1").targetNodeId).toBe("p1");
+});
+
+test("video breakdown starts an isolated analyst task without targeting an existing screenplay", () => {
+  const task = videoAnalysisTask();
+  expect(task.agentId).toBe("video-analyst");
+  expect(task.isolated).toBe(true);
+  expect(task.targetNodeId).toBeUndefined();
+  expect(task.refs).toEqual([]);
+  expect(task.text).toContain("原视频");
 });

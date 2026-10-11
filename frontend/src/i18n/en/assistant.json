@@ -206,5 +206,13 @@
   "调整片段视觉效果": "Set clip visual adjustments",
   "调整片段调色": "Set clip grade",
   "清除片段调色": "Clear clip grade",
-  "清除片段视觉效果": "Clear clip visual adjustments"
+  "清除片段视觉效果": "Clear clip visual adjustments",
+  "添加附件": "Add attachment",
+  "从链接添加视频": "Add video from URL",
+  "视频链接": "Video URL",
+  "粘贴视频直链或抖音、TikTok、YouTube 视频链接。": "Paste a video file URL or a Douyin, TikTok or YouTube video link.",
+  "正在下载视频，首次使用会准备下载组件…": "Downloading video. The first download prepares the downloader…",
+  "正在取消…": "Cancelling…",
+  "下载中…": "Downloading…",
+  "下载并添加": "Download and attach"
 }

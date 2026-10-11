@@ -28,14 +28,18 @@ export function useAttachments(
       const task = (e as CustomEvent<CreativeTask>).detail;
       const refs = task.refs ?? [];
       if (
-        new Set([...current.current, ...refs].map(attachmentKey)).size >
-        MAX_ATTACHMENTS
+        new Set(
+          [...(task.isolated ? [] : current.current), ...refs].map(
+            attachmentKey,
+          ),
+        ).size > MAX_ATTACHMENTS
       ) {
         setNotice("本轮最多 12 个附件，请先移除部分附件，再发起 AI 任务。");
         return;
       }
-      update(mergeAttachments(current.current, refs));
+      update(task.isolated ? refs : mergeAttachments(current.current, refs));
       setTargetNodeId(task.targetNodeId ?? null);
+      setOmitWork(!!task.isolated);
       setNotice("");
       setSuggestion(task);
       setFocus((v) => v + 1);
@@ -128,6 +132,33 @@ export function useAttachments(
       );
     });
   }
+  async function importVideoUrl(
+    url: string,
+    id: string,
+    receive?: (refs: AttachmentRef[]) => void,
+  ) {
+    let failure = "";
+    await enqueue(async () => {
+      setNotice("正在下载视频…");
+      try {
+        const asset = await bridge<Asset>("import_video_url", {
+          projectId,
+          url,
+          id,
+        });
+        const overflow = receiveAssets([asset], receive);
+        setNotice(
+          overflow
+            ? "本轮最多 12 个附件，视频已保留在素材库，可用 @ 引用。"
+            : "",
+        );
+      } catch (error) {
+        failure = String(error);
+        setNotice(failure);
+      }
+    });
+    return failure;
+  }
   function importDroppedFiles(
     files: File[],
     receive?: (refs: AttachmentRef[]) => void,
@@ -183,6 +214,7 @@ export function useAttachments(
     consume,
     importFiles,
     importDroppedFiles,
+    importVideoUrl,
     suggestion,
     clearSuggestion: () => setSuggestion(null),
   };
