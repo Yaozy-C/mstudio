@@ -1,3 +1,4 @@
+import { DiscardedAssetBadge } from "./DiscardedAssetBadge";
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
 import { memo, useEffect, useLayoutEffect, useRef } from "react";
@@ -283,6 +284,7 @@ export const CanvasCard = memo(function CanvasCard({
         ) : (
           <p className="card-copy">{item.text || asset.name}</p>
         )}
+        {asset?.discarded && <DiscardedAssetBadge />}
         {asset && inTimeline && (
           <span
             className="card-timeline-usage"
