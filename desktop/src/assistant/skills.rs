@@ -104,6 +104,7 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     rule_summary::migrate_board_regeneration(&db, &root(app)?)?;
     rule_summary::migrate_pure_rules(&db, &root(app)?)?;
     rule_summary::migrate_object_tools(&db, &root(app)?)?;
+    rule_summary::migrate_physical_continuity(&db, &root(app)?)?;
     super::video_analysis::install(&db, &root(app)?)?;
     Ok(())
 }

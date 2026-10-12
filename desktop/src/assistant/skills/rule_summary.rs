@@ -51,6 +51,10 @@ pub(super) fn migrate_object_tools(db: &Connection, root: &Path) -> Result<()> {
     let manifest = serde_json::from_str(include_str!("object_tools_migration.json"))?;
     apply(db, root, manifest, "creative_object_tools_v1")
 }
+pub(super) fn migrate_physical_continuity(db: &Connection, root: &Path) -> Result<()> {
+    let manifest = serde_json::from_str(include_str!("physical_continuity_migration.json"))?;
+    apply(db, root, manifest, "image_physical_continuity_v1")
+}
 fn apply(db: &Connection, root: &Path, manifest: Manifest, marker: &str) -> Result<()> {
     if db.query_row(
         "SELECT EXISTS(SELECT 1 FROM settings WHERE key=?1)",
@@ -288,3 +292,7 @@ Reinspect affected areas and joins after repairs, retiming or new versions. Do n
         migrate_methods(&db, Path::new("/unavailable")).unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "physical_continuity_tests.rs"]
+mod physical_continuity_tests;

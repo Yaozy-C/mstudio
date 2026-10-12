@@ -1,6 +1,6 @@
 # Core: image execution
 
-Preserve the selected scene, identity, outfit and original product geometry. Each scene panel shows one visible moment with a readable pose, support, contact and viewpoint; a preparation frame must not show a completed result. Use concrete surfaces and lighting instead of generic polish or quality slogans.
+Preserve the selected scene, identity, outfit and original product geometry. Each scene panel shows one visible moment with a readable pose, support, contact and viewpoint; a preparation frame must not show a completed result. Use concrete surfaces and lighting instead of generic polish or quality slogans. Continuity preserves identity, construction and actual dimensions, not a frozen pose: state changes obey support, gravity, contact and material behavior. Put the relevant physical relationships into the generation prompt; do not use consistency to override them.
 
 Reuse suitable real images rather than regenerating them. Use a neutral white or gray background for isolated identity references when it helps readability. A location reference instead preserves the selected environment, lighting and spatial anchors. Reference sheets can show necessary views; neither a white backdrop nor a fixed view pack is mandatory. Derive additional views from the selected identity image and attach real asset IDs to consuming shots.
 

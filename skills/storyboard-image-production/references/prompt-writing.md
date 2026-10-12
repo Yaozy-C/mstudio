@@ -27,6 +27,16 @@ Fix the camera location relative to the subject, its viewing direction, visible 
 
 If the design requires mutually incompatible states or viewpoints, identify the exact conflict before generation rather than inventing a compromise. Ordinary missing details may be resolved within the selected design; do not reopen decisions already made by the user. Keep this reasoning out of the final prompt: write the resulting visible image in natural prose, with only supported model-specific reference syntax added afterward.
 
+## Physical state and continuity
+
+Separate stable properties from changing state. Identity, part count, attachment topology and actual dimensions persist unless the design explicitly changes them. Pose, tension, deformation, opening extent, movable-part positions, occlusion and projected shape follow the selected action, material and viewpoint. Do not lock these together in a blanket "identical in every frame" clause.
+
+For each relevant state change, establish the physical cause and resulting visible state: what applies force or releases support, what remains attached, where contact occurs, and how gravity, inertia, material stiffness and mechanism travel affect the result. Across panels, these relationships must permit the transition; each panel still depicts one instant. A static or edited image must also have plausible support and contact without requiring a motion sequence.
+
+Carry the task-relevant relationships into the final prompt as a short physical-behavior paragraph or alongside the affected panel. Describe observable consequences, not merely "obey physics": a released flexible strap becomes slack while its roots and length remain unchanged; a hinged panel rotates without shrinking its surface; a closure's moving parts correspond to its opening state. These are conditional relationships, not a requirement that all handles droop or all objects deform. Use the evidenced material and mechanism; do not invent hidden anchors, measurements or hardware to explain motion.
+
+When a consistency instruction conflicts with the requested action, retain the evidenced structure and rewrite the state constraint to allow the physically required change. Do not silently change the action or redesign the product. Explicitly surreal or stylized behavior follows the selected world rules; unrelated support, contact and identity relationships still hold. Keep unsupported structure unknown.
+
 ## Match prompt detail to actual inputs
 
 A strong supplied image can carry appearance and layout; a simple cleanup, new view or local edit may need only the requested transformation plus essential invariants. New scenes and designed multi-view assets need the missing composition, relationships and visible details. Do not impose one prompt length or field template on both.
@@ -51,6 +61,6 @@ Reference purposes are selective: geometry, identity, state, composition and lig
 
 Write the visible output, selected state, composition, light and necessary reference constraints in direct paragraphs. Specifications belong in supported parameters. Keep planning notes, review history and quality slogans out of the final text. Describe material behavior rather than adding universal negative lists.
 
-Compare actual output with the intended state, viewpoint, support/contact, identity, components and requested text. Repair the observed mismatch. Fine detail does not by itself establish realism.
+Compare actual output with the intended state, viewpoint, support/contact, identity, components and requested text. For a sequence, also check that changing support, tension, openings and movable parts follow the depicted action rather than repeating a frozen reference state. Repair the observed mismatch. Fine detail does not by itself establish realism.
 
 For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic appearance](scene-execution.md) only when that task needs the additional detail. These examples do not set the style for other projects.

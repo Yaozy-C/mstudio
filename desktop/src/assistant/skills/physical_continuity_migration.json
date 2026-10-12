@@ -1,0 +1,45 @@
+{
+  "updates": [
+    {
+      "skill": "image-production",
+      "path": "CORE.md",
+      "before": "a09e017878e36e15e0679c70adcd089e6fda7c91b0cf39ecffc70baaeaa09774"
+    },
+    {
+      "skill": "image-production",
+      "path": "SKILL.md",
+      "before": "b88e149c316e0b54a16f4cced147ec082d2045e8af464ec47bb8f85c01b22b26"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/frame-checks.md",
+      "before": "448f8041cfe3aedcd93df6b27a4c3dfc89decd2cd2ffe4461356d353b4215404"
+    },
+    {
+      "skill": "image-production",
+      "path": "references/prompt-writing.md",
+      "before": "d849712c0f8a7bfa775f5e1762acc91a16a875ffd0637a32084ac1d964d8aae4"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "CORE.md",
+      "before": "9fbdc0efb33939508baf5e4db4433884dbc5d5f2c00a44bf9c23dbbb5efe010a"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "SKILL.md",
+      "before": "2551d4fdf5ac62aa19fb3fccbf6b49c83791b7339d1459bf9f0a5db73be3e768"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/frame-checks.md",
+      "before": "448f8041cfe3aedcd93df6b27a4c3dfc89decd2cd2ffe4461356d353b4215404"
+    },
+    {
+      "skill": "storyboard-image-production",
+      "path": "references/prompt-writing.md",
+      "before": "7452804c4e746406117d78310de22c940afa2e997f7ab4d9f55648499721a195"
+    }
+  ],
+  "retired": []
+}
