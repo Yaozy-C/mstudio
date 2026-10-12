@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn project_images_use_local_files_and_remote_urls_stay_urls() {
         let (root, store, mut doc) = super::super::attachment_tests::fixture();
-        let path = root.join("assets/产品 reference #1.png");
+        let path = root.join("assets").join("产品 reference #1.png");
         let file = std::fs::File::create(&path).unwrap();
         file.set_len(20 * 1024 * 1024).unwrap();
         let mut asset: mstudio::model::Asset =

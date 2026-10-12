@@ -171,8 +171,12 @@ fn the_audited_real_brief_selects_the_methods_that_were_missing() {
     ] {
         assert!(guidance.contains(expected), "missing route: {expected}");
     }
-    // The rules that forbid writing a full operating sequence are present.
-    assert!(guidance.contains("Physical causality is not a full operating sequence"));
+    // Current rules preserve necessary physical transitions in the submitted prompt.
+    assert!(
+        guidance
+            .contains("including necessary intermediate contact, support, grip and release states")
+    );
+    assert!(guidance.contains("a continuous shot cannot skip a necessary transition"));
     // Every input must be bound to a subject and visual use.
     assert!(guidance.contains("concrete purpose"));
     drop(db);
