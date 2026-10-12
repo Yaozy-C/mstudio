@@ -79,3 +79,13 @@ test("chat attachments stay usable without library membership until explicitly s
   expect(isLibraryAsset(p.assets[0])).toBe(false);
   expect(isSelectableAsset(p.assets[0])).toBe(false);
 });
+
+test("internal annotation guides stay out of library and pickers even if collected", () => {
+  const guide = {
+    id: "guide",
+    annotationSourceId: "original",
+    inLibrary: true,
+  } as Asset;
+  expect(isLibraryAsset(guide)).toBe(false);
+  expect(isSelectableAsset(guide)).toBe(false);
+});

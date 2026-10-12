@@ -30,7 +30,10 @@ export function imageReviewController(
       ]);
       if (keys.size > MAX_ATTACHMENTS)
         throw new Error(t("本轮附件已满，请先移除部分附件再提交批注"));
-      const marked = await dependencies.importFile(project.id, file, () => {});
+      const marked = {
+        ...(await dependencies.importFile(project.id, file, () => {})),
+        annotationSourceId: original.id,
+      };
       // The project may have changed while the file was importing.
       if (
         get().id !== project.id ||
@@ -40,7 +43,7 @@ export function imageReviewController(
       change((p) => ({
         ...p,
         assets: p.assets.some((a) => a.id === marked.id)
-          ? p.assets
+          ? p.assets.map((a) => (a.id === marked.id ? marked : a))
           : [...p.assets, marked],
       }));
       dependencies.request(imageReviewTask(original, marked, comments));

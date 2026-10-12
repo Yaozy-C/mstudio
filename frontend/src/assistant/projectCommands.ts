@@ -1,7 +1,7 @@
 import { setTransition } from "../timeline/transitions";
 import { agentTimelineEdit } from "../timeline/agentEdits";
 import { patchVisual } from "../timeline/visualSettings";
-import { editTaskPrompt, regenerateTask } from "../production/taskEditing";
+import { editTask, regenerateTask } from "../production/taskEditing";
 import { saveTask } from "../production/document";
 import { creativeExtras, validateShotOrder } from "../creative/operations";
 import { assembleScreenplay, chooseTake } from "../creative/timeline";
@@ -158,11 +158,10 @@ export function applyOperations(
         next = assembleScreenplay(next, string(op.id, 80));
         break;
       case "update_generation":
-        next = editTaskPrompt(
-          next,
-          string(op.taskKey, 300),
-          string(op.text, 12000),
-        );
+        next = editTask(next, string(op.taskKey, 300), {
+          text: op.text as string | undefined,
+          references: op.references,
+        });
         break;
       case "regenerate_generation": {
         if (!context || context.turn.projectId !== next.id)

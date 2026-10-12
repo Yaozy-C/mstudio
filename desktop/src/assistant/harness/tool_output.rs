@@ -42,6 +42,9 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     {
         result["answer"] = json!(answer);
     }
+    if let Some(delivery) = value.get("delivery") {
+        result["delivery"] = delivery.clone();
+    }
     if let Some(saved) = value.get("savedWork") {
         result["savedWork"] = saved.clone();
     }
@@ -49,7 +52,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     for field in ["generationTasks", "updatedTasks"] {
         if let Some(tasks) = value[field].as_array() {
             result[field] = json!(tasks.iter().take(30).map(|task| json!({
-                "id":task["id"],"status":task["status"],"continuation":task["continuation"],
+                "id":task["id"],"kind":task["kind"],"status":task["status"],"continuation":task["continuation"],
                 "targetId":task["targetId"],"resultAssetIds":task["resultAssetIds"],"error":task["error"]
             })).collect::<Vec<_>>());
             result[format!("{field}Complete")] = json!(tasks.len() <= 30);

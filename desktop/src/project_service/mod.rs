@@ -1,3 +1,4 @@
+pub(crate) mod annotation_sources;
 mod asset_sources;
 mod dependencies;
 #[cfg(test)]
@@ -27,7 +28,9 @@ pub fn load(db: &Connection, id: &str) -> Result<Value> {
             r.get(0)
         })
         .context("Project no longer exists")?;
-    Ok(serde_json::from_str(&raw)?)
+    let mut document = serde_json::from_str(&raw)?;
+    annotation_sources::recover(db, &mut document)?;
+    Ok(document)
 }
 pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
     let id = before["id"].as_str().context("Missing project ID")?;

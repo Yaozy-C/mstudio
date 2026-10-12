@@ -68,7 +68,7 @@ pub fn resolve(
                 {
                     return Err("Referenced generation task is unavailable in this project".into());
                 }
-                manifest.push(json!({"reference":{"kind":"generation","id":id},"projectRevision":doc["revision"],"readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":id}},"authority":"Live saved generation task. Read its prompt, inputs, parameters and status directly; a generated result does not establish product facts or authorize another generation."}));
+                manifest.push(json!({"reference":{"kind":"generation","id":id},"projectRevision":doc["revision"],"savedTask":doc["production"]["drafts"][&id],"readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":id}},"authority":"Live saved generation task. Read its prompt, inputs, parameters and status directly; a generated result does not establish product facts or authorize another generation."}));
                 continue;
             }
             Artifact::Agent { id, turn_id } => {
@@ -103,6 +103,8 @@ pub fn resolve(
         let mut source = json!({"reference":{"kind":kind,"id":id},"projectRevision":doc["revision"],"readWith":reader,"authority":"Saved project source; consult the original content, not a relay's description. Project objects remain live; agent outputs are pinned to their turn."});
         if kind == "node" && item["kind"] == "shot" {
             source["savedWork"] = super::saved_work::shot_state(doc, item);
+            source["savedVideoPrompt"] = item["shot"]["prompt"].clone();
+            source["savedReferences"] = item["references"].clone();
         }
         manifest.push(source);
         attachments.push(Reference {
@@ -132,7 +134,7 @@ pub fn user_refs(original: &Value) -> Vec<Reference> {
 
 pub fn source_message(task: &str, agent: &str, turn: &str, manifest: &Value) -> String {
     format!(
-        "Delegated work from Agent {agent} in turn {turn} (not an original user statement):\n{task}\n\nHost-resolved source artifacts:\n{manifest}\nRead the referenced professional outputs directly when needed. Relay descriptions do not replace saved artifacts. Product geometry comes from original product images, never an agent's interpretation or a generated image's source prompt."
+        "Delegated work from Agent {agent} in turn {turn} (not an original user statement):\n{task}\n\nHost-resolved source artifacts:\n{manifest}\nReuse complete saved prompts and task data supplied in this manifest. Read referenced outputs only for missing content, changed state, or pixels needed for the current decision; do not restart completed research. Relay descriptions do not replace saved artifacts. Product geometry comes from original product images, never an agent's interpretation or a generated image's source prompt."
     )
 }
 

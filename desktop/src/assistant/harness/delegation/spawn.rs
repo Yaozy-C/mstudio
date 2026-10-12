@@ -166,12 +166,16 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     messages.push(crate::assistant::agent::convert(
         &json!({"role":"user","content":payload}),
     ));
-    let instruction = super::super::handoff_artifacts::source_message(
+    let mut instruction = super::super::handoff_artifacts::source_message(
         task,
         &parent.profile.id,
         &parent.turn,
         &sources.manifest,
     );
+    instruction.push_str(&format!(
+        "\nRequired generation task receipts: {}",
+        args["expectedGenerations"]
+    ));
     let payload = crate::assistant::attachments::payload(
         &store,
         &doc,
@@ -197,12 +201,20 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     }
     journal::append(&store, &parent.project, &child_turn, "subagent/created", json!({"childId":child_id,"parentTurn":parent.turn,"agentId":id,"provider":provider_name,"mode":mode})).map_err(|e|e.to_string())?;
     super::super::session::start(&store, &parent.project, &child_turn, binding, &messages)?;
+    journal::append(
+        &store,
+        &parent.project,
+        &child_turn,
+        "subagent/requirements",
+        json!({"expectedGenerations":args["expectedGenerations"]}),
+    )
+    .map_err(|e| e.to_string())?;
     journal::append(&store, &parent.project, &child_turn, "subagent/context", json!({
         "childId":child_id,"parentTurn":parent.turn,"provider":provider_name,
         "inheritedMessageCount":if provider_name=="fork" { route.fork_history.len() } else { 0 },
         "taskMessageIndex":task_message_index,
         "source":super::super::mailbox::agent_source(&parent.profile.id, &parent.turn),
-        "profile":tool.profile,"artifacts":sources.manifest
+        "profile":tool.profile,"artifacts":sources.manifest,"expectedGenerations":args["expectedGenerations"]
     })).map_err(|e| e.to_string())?;
     crate::assistant::child_activity::start(
         &store.db.lock().unwrap(),

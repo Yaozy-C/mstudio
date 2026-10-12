@@ -148,3 +148,36 @@ test("concurrent edits cannot restore removed references through merge", () => {
     ),
   ).toEqual(["b"]);
 });
+
+test("deleting a source also deletes internal guides, but preserves ordinary attachments", () => {
+  const p = fixture();
+  p.assets.push(
+    {
+      ...p.assets[0],
+      id: "guide",
+      annotationSourceId: "a",
+      attachmentOnly: true,
+    },
+    {
+      ...p.assets[0],
+      id: "upload",
+      name: "image-comments.png",
+      attachmentOnly: true,
+    },
+  );
+  const next = deleteAssets(p, ["a"]);
+  expect(next.removedAssetIds).toEqual(["a", "guide"]);
+  expect(next.assets.some((a) => a.id === "guide")).toBe(false);
+  expect(next.assets.some((a) => a.id === "upload")).toBe(true);
+  expect(restoreProject(p, next).assets.some((a) => a.id === "guide")).toBe(
+    false,
+  );
+  const legacy = {
+    ...p,
+    removedAssetIds: ["a"],
+    assets: p.assets.filter((a) => a.id !== "a"),
+  };
+  expect(deleteAssets(legacy, []).assets.some((a) => a.id === "guide")).toBe(
+    false,
+  );
+});

@@ -1,4 +1,4 @@
-import { deleteLegacyHiddenAssets } from "./deleteAssets";
+import { deleteAssets, deleteLegacyHiddenAssets } from "./deleteAssets";
 import { listen } from "@tauri-apps/api/event";
 import { normalizeAudioTrackNames } from "./normalizeAudioTrackNames";
 import { contentChanged } from "./projectRevision";
@@ -19,7 +19,10 @@ import { createProjectAutosave } from "./projectAutosave";
 export function useProject(initial: Project) {
   const [project, setProject] = useState(() =>
     deleteLegacyHiddenAssets(
-      materializeFrameCards(normalizeAudioTrackNames(initial)),
+      deleteAssets(
+        materializeFrameCards(normalizeAudioTrackNames(initial)),
+        initial.removedAssetIds ?? [],
+      ),
     ),
   );
   const [autosave] = useState(() =>

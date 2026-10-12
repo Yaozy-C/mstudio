@@ -8,6 +8,7 @@ mod content_storage_tests;
 pub(crate) mod context_boundary;
 pub(crate) mod context_source;
 pub mod delegation;
+mod delivery;
 mod driver;
 mod generation_tool;
 #[cfg(test)]
@@ -20,6 +21,7 @@ mod metering;
 mod model;
 mod operation_tools;
 mod outcomes;
+mod read_reuse;
 mod read_tools;
 mod registry;
 mod saved_work;

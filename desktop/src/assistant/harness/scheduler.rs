@@ -67,7 +67,7 @@ async fn group(
             let call = &calls[committed];
             let canonical = value;
             let value = super::tool_output::project(call, &canonical, host.result_turn());
-            let message = result_message(
+            let mut message = result_message(
                 call,
                 if canonical.get("__offloadedImage").is_some() {
                     &canonical
@@ -75,14 +75,13 @@ async fn group(
                     &value
                 },
             );
+            super::read_reuse::annotate(&session.messages, call, &canonical, &mut message);
             // One durable result owns both the model history and the visible tool row.
             let result = host.record("tool/result", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"value":canonical,"isError":value.get("error").is_some(),"message":message}));
             if let Err(error) = result {
                 failure.get_or_insert(error);
             } else {
-                if call.function.name == "mstudio_delegate" {
-                    session.delegation_outcomes.observe(&canonical);
-                }
+                session.delegation_outcomes.observe(&canonical);
                 session.messages.push(message);
             }
             committed += 1;

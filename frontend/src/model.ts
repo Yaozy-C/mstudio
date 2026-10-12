@@ -1,5 +1,6 @@
 import type { ScriptDocument, PlannedShot } from "./creative/types";
 export type Asset = {
+  annotationSourceId?: string;
   attachmentOnly?: boolean;
   generated?: boolean;
   discarded?: boolean;

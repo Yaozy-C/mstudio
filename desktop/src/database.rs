@@ -141,6 +141,7 @@ impl Store {
         rows.into_iter()
             .map(|(id, name, updated, document)| {
                 let mut document: Value = serde_json::from_str(&document)?;
+                crate::project_service::annotation_sources::recover(&db, &mut document)?;
                 if let Some(assets) = document["assets"].as_array_mut() {
                     for asset in assets {
                         asset["missing"] = json!(

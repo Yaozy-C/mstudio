@@ -124,6 +124,7 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
                     super::super::mailbox::agent_source(&parent.profile.id, &parent.turn);
                 source["callId"] = json!(call.id.wire().as_ref());
                 source["artifacts"] = sources.manifest;
+                source["expectedGenerations"] = args["expectedGenerations"].clone();
                 if let Some((turn, request)) = original {
                     source["requestTurnId"] = json!(turn);
                     source["originalRequest"] = request;

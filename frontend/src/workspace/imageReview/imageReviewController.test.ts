@@ -31,7 +31,10 @@ test("submitting a review attaches only the source and keeps the guide internal"
     },
   );
   await controller.submit(original, file, comments);
-  expect(project.assets).toEqual([original, marked]);
+  expect(project.assets).toEqual([
+    original,
+    { ...marked, annotationSourceId: original.id },
+  ]);
   expect(request?.refs).toEqual([{ kind: "asset", id: "original" }]);
   expect(request?.agentId).toBe("image");
 });

@@ -279,3 +279,21 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn update_generation_accepts_reference_only_edits_and_clear() {
+    let p = profile("production");
+    for references in [
+        json!([]),
+        json!([{"assetId":"a","role":"first-frame","purpose":"Product pose"}]),
+    ] {
+        let args = decode(
+            &p,
+            "mstudio_update_generation",
+            json!({"taskKey":"t","references":references}),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(args["operations"][0]["references"], references);
+    }
+}

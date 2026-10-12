@@ -40,7 +40,9 @@ pub async fn run_until(
             session.replace_visible(host, answer)?;
             return Ok(answer.into());
         }
-        session.messages.extend(host.injected()?);
+        let injected = host.injected()?;
+        session.delegation_outcomes.observe_messages(&injected);
+        session.messages.extend(injected);
         if budget::over_budget(&session, profile, host) {
             budget::recover(model, profile, host, &mut session, false).await?;
         }
@@ -76,7 +78,12 @@ pub async fn run_until(
             // answer. Deliver it before accepting idle, as DSH Steer does.
             let injected = host.injected()?;
             if !injected.is_empty() {
+                session.delegation_outcomes.observe_messages(&injected);
                 session.messages.extend(injected);
+                continue;
+            }
+            if let Some(recovery) = session.delegation_outcomes.recovery() {
+                session.append(host, rig_core::message::Message::user(recovery))?;
                 continue;
             }
             let notice = session.delegation_outcomes.notice();

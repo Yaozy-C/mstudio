@@ -14,12 +14,34 @@ export const canEditOriginal = (task: ProductionTask) =>
 export const canRegenerate = (task: ProductionTask) =>
   ["COMPLETED", "FAILED", "CANCELLED"].includes(task.status ?? "");
 export function editTaskPrompt(p: Project, key: string, text: string): Project {
-  const task = p.production?.drafts?.[key];
-  if (!task) throw new Error("任务不存在，请重新查询");
-  if (!text.trim() || text.length > 12000)
-    throw new Error("请提供完整生成描述（最多 12000 字）");
-  return saveTask(p, { ...normalizeTaskPrompt(task), prompt: text.trim() });
+  return editTask(p, key, { text });
 }
+export function editTask(
+  p: Project,
+  key: string,
+  changes: { text?: string; references?: unknown },
+): Project {
+  const original = p.production?.drafts?.[key];
+  if (!original) throw new Error("任务不存在，请重新查询");
+  if (changes.text === undefined && changes.references === undefined)
+    throw new Error("请提供生成描述或参考素材");
+  let task = normalizeTaskPrompt(original);
+  if (changes.text !== undefined) {
+    if (
+      typeof changes.text !== "string" ||
+      !changes.text.trim() ||
+      changes.text.length > 12000
+    )
+      throw new Error("请提供完整生成描述（最多 12000 字）");
+    task = { ...task, prompt: changes.text.trim() };
+  }
+  if (changes.references !== undefined) {
+    task = replaceTaskReferences(p, task, changes.references);
+    assertGenerationReferences(p, task);
+  }
+  return saveTask(p, task);
+}
+
 export function regenerationDraft(task: ProductionTask): ProductionTask {
   if (!canRegenerate(task) && !canEditOriginal(task))
     throw new Error("请先核查原任务状态，再重新生成");

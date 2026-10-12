@@ -171,10 +171,20 @@ export const operationContract = {
         ),
         text: described(
           { ...text(12000), minLength: 1 },
-          "Complete replacement prompt for this generation task. This operation accepts text, not prompt or shot. Saves only; does not regenerate or modify the shot draft.",
+          "Optional complete replacement prompt for this generation task. Omission preserves the existing prompt. This operation accepts text, not prompt or shot. Saves only; does not regenerate or modify the shot draft.",
+        ),
+        references: described(
+          generationReferences([
+            "edit",
+            "reference",
+            "first-frame",
+            "last-frame",
+            "video-reference",
+          ]),
+          "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references. Saves only; does not regenerate. Supply text or references.",
         ),
       },
-      ["taskKey", "text"],
+      ["taskKey"],
     ),
     op(
       "regenerate_generation",

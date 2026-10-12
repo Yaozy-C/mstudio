@@ -105,3 +105,16 @@ fn video_task_handoff_uses_saved_task_key_without_accepting_rewritten_inputs() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn followup_receives_full_saved_video_prompt_and_reference_ids() {
+    let root = std::env::temp_dir().join(format!("handoff-full-{}", mstudio::media::id()));
+    let store = Store::open(root.clone()).unwrap();
+    let prompt = "complete saved motion ".repeat(300);
+    let doc = json!({"revision":9,"nodes":[{"id":"s3","kind":"shot","shot":{"prompt":prompt},"references":[{"assetId":"board","purpose":"sequence"}]}]});
+    let result = resolve(&store, "p", &doc, Some(&json!([{"kind":"node","id":"s3"}]))).unwrap();
+    assert_eq!(result.manifest[0]["savedVideoPrompt"], prompt);
+    assert_eq!(result.manifest[0]["savedReferences"][0]["assetId"], "board");
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

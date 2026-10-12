@@ -17,6 +17,10 @@ fn agent_message(text: &str, source: &Value) -> Message {
         source["senderTurnId"].as_str().unwrap_or(""),
         source.get("artifacts").unwrap_or(&json!([])),
     ));
+    content.push_str(&format!(
+        "\nRequired generation task receipts for this follow-up: {}",
+        source["expectedGenerations"]
+    ));
     Message::user(content)
 }
 pub fn take_inbox(
@@ -47,6 +51,16 @@ pub fn take_inbox(
         .map_err(|e| e.to_string())?
     };
     for (seq, text, source) in &rows {
+        if source["expectedGenerations"].is_array() {
+            crate::assistant::journal::insert(
+                &tx,
+                project,
+                turn,
+                "subagent/requirements",
+                json!({"expectedGenerations":source["expectedGenerations"]}),
+            )
+            .map_err(|e| e.to_string())?;
+        }
         if source["requestTurnId"].is_string() {
             crate::assistant::journal::insert(
                 &tx,

@@ -193,3 +193,54 @@ test("regeneration still blocks pending and uncertain submissions", () => {
     regenerationDraft({ ...task, submissionId: "existing-submission" }),
   ).toThrow();
 });
+
+test("update_generation replaces or clears references without submitting or changing other task fields", () => {
+  const p = saveTask(fixture(), {
+    ...task,
+    status: "COMPLETED",
+    jobId: "job",
+    resultAssetIds: ["a"],
+  });
+  const next = applyOperations(p, [
+    {
+      op: "update_generation",
+      taskKey: task.key,
+      references: [{ assetId: "b", role: "first-frame", purpose: "新首帧" }],
+    },
+  ]);
+  const updated = next.production!.drafts![task.key];
+  expect(updated.inputs).toMatchObject([
+    { assetId: "b", role: "first-frame", purpose: "新首帧" },
+  ]);
+  expect({ ...updated, inputs: task.inputs }).toEqual(
+    p.production!.drafts![task.key],
+  );
+  const cleared = applyOperations(next, [
+    {
+      op: "update_generation",
+      taskKey: task.key,
+      text: "新描述",
+      references: [],
+    },
+  ]);
+  expect(cleared.production!.drafts![task.key]).toMatchObject({
+    prompt: "新描述",
+    inputs: [],
+    status: "COMPLETED",
+    jobId: "job",
+  });
+  for (const references of [
+    [{ assetId: "missing" }],
+    [{ assetId: "b", role: "edit" }],
+    "invalid",
+  ]) {
+    expect(() =>
+      applyOperations(p, [
+        { op: "update_generation", taskKey: task.key, references },
+      ]),
+    ).toThrow();
+  }
+  expect(() =>
+    applyOperations(p, [{ op: "update_generation", taskKey: task.key }]),
+  ).toThrow();
+});

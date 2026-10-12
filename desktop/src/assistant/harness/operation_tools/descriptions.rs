@@ -1,7 +1,7 @@
 pub fn description(op: &str) -> &'static str {
     match op {
         "update_generation" => {
-            "Save a complete replacement prompt on the existing taskKey. Does not regenerate or change the shot draft."
+            "Save a replacement prompt and/or complete references list on the existing taskKey. Omitted fields are preserved; references=[] clears media inputs. Supply prompt or references. Does not regenerate or change the shot draft."
         }
         "regenerate_generation" => {
             "Regenerate the existing taskKey without creating a separate task. Optionally replace prompt and the complete references list in this call; otherwise preserve them. Retain model and parameters. By default discard replaced results: keep them as history but prohibit their use as generation inputs. Set keepPreviousResults=true only for an explicitly requested usable variant or edit of the previous output. For corrections to an existing task, use this tool even when changing references, rather than generate_image/video. Requires an explicit regeneration request."

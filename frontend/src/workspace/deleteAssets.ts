@@ -8,6 +8,21 @@ import { itemKey } from "../production/types";
 export function deleteAssets(p: Project, ids: string[]): Project {
   const removed = new Set([...(p.removedAssetIds ?? []), ...ids]);
   if (!removed.size) return p;
+  // Internal annotation files belong to their source, including nested guides.
+  let expanded = true;
+  while (expanded) {
+    expanded = false;
+    for (const asset of p.assets) {
+      if (
+        asset.annotationSourceId &&
+        removed.has(asset.annotationSourceId) &&
+        !removed.has(asset.id)
+      ) {
+        removed.add(asset.id);
+        expanded = true;
+      }
+    }
+  }
   const gone = (id?: string) => !!id && removed.has(id);
   const nodeIds = new Set(
     p.nodes.filter((n) => gone(n.assetId)).map((n) => n.id),

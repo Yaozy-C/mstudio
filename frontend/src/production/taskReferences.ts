@@ -84,6 +84,11 @@ export function replaceTaskReferences(
 export function assertGenerationReferences(p: Project, task: ProductionTask) {
   for (const input of task.inputs.filter((r) => r.role !== "script")) {
     const asset = p.assets.find((a) => a.id === input.assetId);
+    if (asset?.annotationSourceId)
+      throw failure(
+        "VALIDATION_FAILED",
+        "内部批注图不能用作生成参考，请使用原图",
+      );
     if (asset?.discarded)
       throw failure(
         "VALIDATION_FAILED",

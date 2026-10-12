@@ -79,3 +79,73 @@ async fn final_answer_discloses_child_failure_even_when_model_claims_success() {
             .any(|(k, v)| k == "assistant/partial" && v["text"].as_str() == Some(answer.as_str()))
     );
 }
+
+#[test]
+fn normal_child_exit_does_not_hide_missing_generation_and_recovery_clears_it() {
+    let partial = json!({"ok":true,"childId":"first","stopReason":"completed","delivery":{
+        "complete":false,"items":[{"targetId":"s3","kind":"video","created":false}]},
+        "generationTasks":[{"id":"five","targetId":"s5","kind":"video","status":"AWAITING_CONFIRMATION"}]});
+    let mut outcomes = Outcomes::default();
+    outcomes.observe(&partial);
+    assert!(outcomes.notice().contains("s3"));
+    assert!(outcomes.recovery().is_some());
+    assert!(outcomes.recovery().is_none()); // Do not loop when a real blocker remains.
+    outcomes.observe(&json!({"childId":"second","ok":true,"stopReason":"completed",
+        "generationTasks":[{"id":"three-four","targetId":"s3","kind":"video","status":"AWAITING_CONFIRMATION"}]}));
+    assert!(outcomes.notice().is_empty());
+}
+
+#[tokio::test]
+async fn driver_reconciles_missing_receipts_before_accepting_final_answer() {
+    use super::super::driver;
+    use super::support::{TestHost, TestModel, profile, reply};
+    use rig_core::message::{AssistantContent, Message};
+    let host = TestHost::default();
+    let model = TestModel::default();
+    model.responses.lock().unwrap().extend([
+        Ok(reply(vec![AssistantContent::text("全部完成")])),
+        Ok(reply(vec![AssistantContent::text(
+            "镜头3缺少必需的参考素材，任务尚未创建。",
+        )])),
+    ]);
+    let messages = vec![
+        Message::user("创建视频任务"),
+        session::result_message(
+            &call("d", "mstudio_delegate", json!({})),
+            &json!({"ok":true,"childId":"c","stopReason":"completed","delivery":{"complete":false,
+            "items":[{"targetId":"s3","kind":"video","created":false}]}}),
+        ),
+    ];
+    let answer = driver::run(
+        &model,
+        &profile(),
+        &host,
+        session::Session::new(messages),
+        false,
+        "",
+    )
+    .await
+    .unwrap();
+    assert_eq!(model.requests.lock().unwrap().len(), 2);
+    assert!(answer.contains("任务尚未创建"));
+    assert!(answer.contains("交付未齐"));
+}
+
+#[test]
+fn asynchronous_notice_tracks_missing_work_without_repeated_recovery_loops() {
+    use rig_core::message::Message;
+    let value = json!({"outputRef":{"id":"child"},"delivery":{"complete":false,
+        "items":[{"targetId":"s3","kind":"video","created":false}]}});
+    let message = Message::user(format!(
+        "Subagent child settled this turn with status completed. Final message: {value}"
+    ));
+    let mut outcomes = Outcomes::from_messages(&[message]);
+    assert!(outcomes.recovery().is_some());
+    outcomes.observe(&json!({"childId":"retry","delivery":value["delivery"]}));
+    assert!(outcomes.recovery().is_none());
+    outcomes.observe(&json!({"generationTasks":[{"id":"t","targetId":"s3","kind":"video"}]}));
+    assert!(outcomes.notice().is_empty());
+    outcomes.observe_messages(&[Message::user(
+        "Subagent old settled this turn with status completed. Final message: []",
+    )]);
+}
