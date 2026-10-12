@@ -70,7 +70,7 @@ pub(super) fn shot_state(doc: &Value, node: &Value) -> Value {
         .collect();
     json!({"framePromptSaved":node["shot"]["framePrompt"].as_str().is_some_and(|s|!s.trim().is_empty()),
         "videoPromptSaved":node["shot"]["prompt"].as_str().is_some_and(|s|!s.trim().is_empty()),
-        "generationTasks":tasks,"guidance":"Read and reuse saved prompts and matching generation tasks. Wait for running work; use existing results when complete. Create only missing work; an explicit correction uses the existing task's regeneration tool."})
+        "generationTasks":tasks,"guidance":"Use matching generation task IDs and actual result assets. Do not read old prompts unless the user explicitly requests a prompt edit, unchanged retry or generation investigation. Wait for running work; use existing results when complete. Create only missing work; an explicit correction uses the existing task's regeneration tool."})
 }
 
 #[cfg(test)]

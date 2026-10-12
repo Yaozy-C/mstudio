@@ -30,6 +30,20 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
             if asset {
                 fixed.insert("generationPurpose".into(), json!("asset"));
             }
+            if !asset {
+                let mut draft_fixed = fixed.clone();
+                draft_fixed.insert("draftOnly".into(), json!(true));
+                add(
+                    &mut out,
+                    &format!("save_{kind}_generation"),
+                    op,
+                    operation.clone(),
+                    draft_fixed,
+                    None,
+                    "Save prompt and ordered media references together in a generation draft; never starts generation. For a shot, updates its existing unsubmitted draft. Use update_generation(taskKey,prompt,references) to edit a known task. No prompt is written to the shot.",
+                );
+            }
+            fixed.insert("draftOnly".into(), json!(false));
             add(
                 &mut out,
                 name,
@@ -92,16 +106,6 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
         } else if op == "update_node" {
             if operation["properties"].get("shot").is_some() {
                 for (name, fields, description) in [
-                    (
-                        "set_video_prompt",
-                        vec!["prompt"],
-                        "Save the video prompt draft on a shot. Does not generate video or alter dialogue, timing, staging or an existing generation task.",
-                    ),
-                    (
-                        "set_image_prompt",
-                        vec!["framePrompt"],
-                        "Save the still-image prompt draft on a shot. Does not generate an image.",
-                    ),
                     (
                         "set_shot_frames",
                         vec!["frames"],

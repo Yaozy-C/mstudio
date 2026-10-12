@@ -140,6 +140,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     props.project,
     props.canvas?.task,
     props.draft.items,
+    props.canvas?.referencedTask,
   );
   return (
     <MessageContext.Provider

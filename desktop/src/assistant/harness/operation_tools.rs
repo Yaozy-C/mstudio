@@ -175,25 +175,29 @@ mod tests;
 #[cfg(test)]
 mod tests_coordinator;
 #[cfg(test)]
+mod tests_drafts;
+#[cfg(test)]
 mod tests_objects;
 
 pub fn is_edit(name: &str) -> bool {
     static NAMES: std::sync::OnceLock<std::collections::HashSet<String>> =
         std::sync::OnceLock::new();
-    name == "mstudio_edit"
-        || NAMES
-            .get_or_init(|| {
-                let mut profile = crate::assistant::profiles::builtins().remove(0);
-                profile.tool_ids = crate::assistant::profiles::TOOL_IDS
-                    .iter()
-                    .map(|id| (*id).into())
-                    .collect();
-                tools(&profile)
-                    .into_iter()
-                    .map(|tool| tool.definition.name.to_string())
-                    .collect()
-            })
-            .contains(name)
+    matches!(
+        name,
+        "mstudio_edit" | "mstudio_set_image_prompt" | "mstudio_set_video_prompt"
+    ) || NAMES
+        .get_or_init(|| {
+            let mut profile = crate::assistant::profiles::builtins().remove(0);
+            profile.tool_ids = crate::assistant::profiles::TOOL_IDS
+                .iter()
+                .map(|id| (*id).into())
+                .collect();
+            tools(&profile)
+                .into_iter()
+                .map(|tool| tool.definition.name.to_string())
+                .collect()
+        })
+        .contains(name)
 }
 /// Translate parameters already checked by the scheduler's tool boundary.
 pub fn decode(profile: &AgentProfile, name: &str, args: Value) -> Option<Value> {

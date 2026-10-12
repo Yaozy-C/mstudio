@@ -33,7 +33,7 @@ export function requestTask(
   if (!context || context.turn.projectId !== p.id)
     throw failure("VALIDATION_FAILED", "本轮生成上下文已结束，请重新发送要求");
   const { turn, turnId, callId } = context;
-  const key = `run:${callId}:${index}`;
+  let key = `run:${callId}:${index}`;
   if (p.production?.drafts?.[key]) return p;
   if (op.generationPurpose !== undefined && op.generationPurpose !== "asset")
     throw failure("VALIDATION_FAILED", "生成用途无效");
@@ -55,13 +55,31 @@ export function requestTask(
   if (typeof op.text !== "string" || !op.text.trim() || op.text.length > 12000)
     throw failure("VALIDATION_FAILED", "请提供完整生成描述（最多 12000 字）");
   const prompt = op.text.trim();
-  const ownerId = assetTask ? undefined : (op.id ?? turn.task?.ownerId);
+  const ownerId = assetTask
+    ? undefined
+    : (op.id ?? turn.task?.targetNodeId ?? turn.task?.ownerId);
   if (ownerId && !p.nodes.some((n) => n.id === ownerId && n.shot))
     throw failure("VALIDATION_FAILED", "目标镜头不存在");
   if (op.canvasTaskKey && op.canvasTaskKey !== turn.task?.key)
     throw failure("VALIDATION_FAILED", "请使用本轮消息引用的画布任务");
+  // A saved generation draft is the only editable prompt source for a shot.
+  const saved =
+    !assetTask && typeof ownerId === "string"
+      ? runsOf(p).find(
+          (t) =>
+            t.targetNodeId === ownerId &&
+            t.kind === kind &&
+            t.status === "DRAFT" &&
+            !t.jobId &&
+            !t.submissionId,
+        )
+      : undefined;
+  if (saved) key = saved.key;
   const source =
-    !assetTask && turn.task?.ownerId === ownerId ? turn.task : undefined;
+    saved ??
+    (!assetTask && (turn.task?.targetNodeId ?? turn.task?.ownerId) === ownerId
+      ? turn.task
+      : undefined);
   let task = source ? structuredClone(source) : createTask(p, [], kind);
   task = { ...task, kind };
   if (kind === "image" && op.mode !== undefined)
@@ -87,6 +105,7 @@ export function requestTask(
   // shot's concrete media without replacing selected frame inputs.
   const shotReferences = p.nodes.find((n) => n.id === ownerId)?.references;
   if (
+    !saved &&
     op.references === undefined &&
     op.canvasTaskKey === undefined &&
     shotReferences?.length
@@ -116,7 +135,13 @@ export function requestTask(
     );
   // Explicit conversation selections are catalog-validated by the native tool.
   const modelId =
-    selectedModelId || (op.mediaModelId as string | undefined) || "";
+    selectedModelId ||
+    (op.mediaModelId as string | undefined) ||
+    saved?.modelId ||
+    "";
+  const inheritedParameters =
+    saved?.parameters ??
+    (!assetTask && turn.task?.kind === kind ? turn.task.parameters : undefined);
   const run: ProductionTask = {
     key,
     generationPurpose: assetTask ? "asset" : undefined,
@@ -128,13 +153,9 @@ export function requestTask(
     prompt,
     parameters:
       op.parameters === undefined
-        ? !assetTask && turn.task?.kind === kind
-          ? turn.task.parameters
-          : undefined
+        ? inheritedParameters
         : {
-            ...(!assetTask && turn.task?.kind === kind
-              ? turn.task.parameters
-              : {}),
+            ...inheritedParameters,
             ...(op.parameters as ProductionTask["parameters"]),
           },
     modelId,
@@ -142,11 +163,16 @@ export function requestTask(
     instruction: turn.instruction,
     createdAt: Date.now() + index,
     status:
-      turn.models.execution === "automatic" && modelId
-        ? "READY"
-        : "AWAITING_CONFIRMATION",
+      op.draftOnly === true
+        ? "DRAFT"
+        : turn.models.execution === "automatic" && modelId
+          ? "READY"
+          : "AWAITING_CONFIRMATION",
   };
-  const existing = existingShotRun(runsOf(p), run);
+  const existing = existingShotRun(
+    runsOf(p).filter((t) => t.key !== saved?.key),
+    run,
+  );
   if (existing)
     throw failure(
       "VALIDATION_FAILED",
@@ -157,6 +183,8 @@ export function requestTask(
       "VALIDATION_FAILED",
       "本批次最多创建 500 个生成任务，请在新一轮继续",
     );
-  run.position = resultPlacement(p, run, turn.canvas?.size, turn.canvas?.view);
+  run.position =
+    saved?.position ??
+    resultPlacement(p, run, turn.canvas?.size, turn.canvas?.view);
   return saveTask(p, run);
 }

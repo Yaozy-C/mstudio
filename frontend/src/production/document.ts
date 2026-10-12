@@ -121,7 +121,6 @@ export function receiveProductionResult(
               {
                 assetId: asset.id,
                 title: `画面 ${String(framesOf(node).length + 1).padStart(2, "0")}`,
-                prompt: data.task.prompt,
               },
             ],
           }
@@ -149,7 +148,7 @@ export function receiveProductionResult(
         kind: "asset",
         assetId: asset.id,
         title: asset.name,
-        text: data.task.prompt,
+        text: "",
         x: data.x,
         y: data.y,
       },

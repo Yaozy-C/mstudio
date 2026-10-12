@@ -19,6 +19,16 @@ fn original_prompt_is_resolved_by_output_identity_with_no_media_or_secret_loadin
         super::super::execute(&store,&profile,"p","turn","read",json!({"action":"inspect","section":"assets","ids":ids,"fields":["source"],"textOffset":offset})).unwrap()
     };
     let first = inspect(json!(["image"]), 0);
+    for args in [
+        json!({"action":"inspect","section":"assets","ids":["image"]}),
+        json!({"action":"inspect","section":"assets"}),
+        json!({"action":"inspect","section":"assets","ids":["image"],"fields":["name","width"]}),
+    ] {
+        let metadata =
+            super::super::execute(&store, &profile, "p", "turn", "metadata", args).unwrap();
+        assert!(metadata["items"][0].get("source").is_none());
+        assert!(!metadata.to_string().contains("原始提交文字"));
+    }
     assert_eq!(first["items"][0]["source"]["jobId"], "job");
     assert_eq!(first["items"][0]["source"]["taskKey"], "actual-task");
     let mut text = first["items"][0]["source"]["prompt"]["text"]

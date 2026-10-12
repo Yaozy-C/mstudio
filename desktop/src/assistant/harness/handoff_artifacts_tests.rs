@@ -77,15 +77,25 @@ fn video_task_handoff_uses_saved_task_key_without_accepting_rewritten_inputs() {
     let root = std::env::temp_dir().join(format!("mstudio-artifacts-{}", mstudio::media::id()));
     let store = Store::open(root.clone()).unwrap();
     let key = "run:video:exec-1:0";
-    let doc = json!({"revision":8,"production":{"drafts":{key:{
+    let doc = json!({"revision":8,"assets":[{"id":"result","kind":"video"},{"id":"discarded","discarded":true}],"production":{"drafts":{key:{
         "key":key,"turnId":"video-turn","createdAt":1,
         "kind":"video","prompt":"保持连续镜头和原台词",
         "inputs":[{"assetId":"board","role":"reference"}],
-        "parameters":{"duration":6}
+        "parameters":{"duration":6},"resultAssetId":"result","resultAssetIds":["result","discarded","missing"]
     }}}});
     let refs = json!([{"kind":"generation","id":key}]);
     let resolved = resolve(&store, "p", &doc, Some(&refs)).unwrap();
-    assert!(resolved.attachments.is_empty());
+    assert_eq!(resolved.attachments.len(), 1);
+    assert_eq!(resolved.attachments[0].id, "result");
+    assert!(resolved.manifest[0]["savedTask"].get("prompt").is_none());
+    assert_eq!(
+        resolved.manifest[0]["savedTask"]["parameters"]["duration"],
+        6
+    );
+    assert!(
+        !source_message("使用视频", "parent", "turn", &resolved.manifest)
+            .contains("保持连续镜头和原台词")
+    );
     assert_eq!(resolved.manifest[0]["projectRevision"], 8);
     assert_eq!(
         resolved.manifest[0]["readWith"],
@@ -107,13 +117,19 @@ fn video_task_handoff_uses_saved_task_key_without_accepting_rewritten_inputs() {
 }
 
 #[test]
-fn followup_receives_full_saved_video_prompt_and_reference_ids() {
+fn followup_receives_reference_ids_without_saved_video_prompt() {
     let root = std::env::temp_dir().join(format!("handoff-full-{}", mstudio::media::id()));
     let store = Store::open(root.clone()).unwrap();
     let prompt = "complete saved motion ".repeat(300);
     let doc = json!({"revision":9,"nodes":[{"id":"s3","kind":"shot","shot":{"prompt":prompt},"references":[{"assetId":"board","purpose":"sequence"}]}]});
     let result = resolve(&store, "p", &doc, Some(&json!([{"kind":"node","id":"s3"}]))).unwrap();
-    assert_eq!(result.manifest[0]["savedVideoPrompt"], prompt);
+    assert!(result.manifest[0].get("savedVideoPrompt").is_none());
+    assert!(
+        !crate::assistant::creative_context::node_context(&doc, &doc["nodes"][0])
+            .to_string()
+            .contains(&prompt)
+    );
+    assert!(!source_message("修正图片", "parent", "turn", &result.manifest).contains(&prompt));
     assert_eq!(result.manifest[0]["savedReferences"][0]["assetId"], "board");
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

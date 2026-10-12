@@ -34,6 +34,8 @@ const operations: Record<string, string> = {
   generate_image: "生成图片",
   generate_video: "生成视频",
   generate_reference_image: "生成参考图片",
+  save_video_generation: "保存视频生成草稿",
+  save_image_generation: "保存图片生成草稿",
   set_video_prompt: "修改视频提示词",
   set_image_prompt: "修改图片提示词",
   set_shot_frames: "设置分镜图片",

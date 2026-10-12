@@ -93,8 +93,16 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
             "mstudio_read_generation",
             json!({"taskKey":"task","fields":["status"]}),
         ),
+        ("mstudio_read_generation", json!({"taskKey":"task"})),
+        (
+            "mstudio_read_generation",
+            json!({"taskKey":"task","fields":["prompt"]}),
+        ),
     ] {
         let decoded = checked(name, args).unwrap();
+        let prompt_requested = decoded["fields"]
+            .as_array()
+            .is_some_and(|fields| fields.iter().any(|f| f == "prompt"));
         assert!(
             schema::issues(&crate::assistant::tool_schema::schema(), &decoded).is_empty(),
             "{name}: {decoded}"
@@ -108,7 +116,7 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
         match name {
             "mstudio_read_shots" => {
                 assert_eq!(item["text"], "Saved staging");
-                assert_eq!(item["prompt"]["text"], "Saved prompt");
+                assert!(item.get("prompt").is_none());
                 assert!(item.get("shot").is_none());
             }
             "mstudio_read_screenplay" => {
@@ -118,6 +126,11 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
             _ => {
                 assert_eq!(item["status"], "AWAITING_CONFIRMATION");
                 assert!(item["continuation"].is_object());
+                if prompt_requested {
+                    assert_eq!(item["prompt"]["text"], "Prompt");
+                } else {
+                    assert!(item.get("prompt").is_none());
+                }
             }
         }
     }

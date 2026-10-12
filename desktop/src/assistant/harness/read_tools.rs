@@ -17,7 +17,7 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "shots",
-        "Read exact shot IDs. Field names are direct: order, duration, frames, prompt. Returned items use those same names, without a shot wrapper. Omitted fields return all shot content. offset paginates frames/takes/references; textOffset paginates long text.",
+        "Read exact shot IDs. Field names are direct: order, duration, frames, prompt. Returned items use those same names, without a shot wrapper. Default reads omit generation prompts. Select prompt/framePrompt only for an explicit prompt edit, unchanged retry or generation investigation. offset paginates frames/takes/references; textOffset paginates long text.",
         &["ids", "fields", "offset", "textOffset"],
         &["ids"],
     ),
@@ -35,7 +35,7 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "assets",
-        "Read media assets by exact IDs or list a page. source gives the original generating job, prompt, model and inputs, independently of task drafts. Use textOffset to page the source prompt. Do not infer task keys from filenames.",
+        "Read media metadata by exact IDs or list a page. Default reads omit generation provenance. Only for an explicit prompt edit, unchanged retry or generation investigation, select fields=[source] for the original job, prompt, model and inputs. Use read_image to view pixels. Use textOffset to page the source prompt. Do not infer task keys from filenames.",
         &["ids", "fields", "offset", "textOffset"],
         &[],
     ),
@@ -59,7 +59,7 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "generation",
-        "Read generation tasks by taskKey or filter turnId/status. Status and continuation are always returned. Follow nextOffset. Use await_generation for backend work instead of repeated status reads. Submission is not completion.",
+        "Read generation tasks by taskKey or filter turnId/status. Default reads omit prompt; select fields=[prompt] only for an explicit prompt edit, unchanged retry or generation investigation. Status and continuation are always returned. Follow nextOffset. Use await_generation for backend work instead of repeated status reads. Submission is not completion.",
         &[
             "taskKey",
             "turnId",
@@ -174,10 +174,14 @@ pub fn decode(name: &str, mut args: Value) -> Option<Value> {
         "shots" | "nodes" => {
             let ids = object.remove("ids")?;
             object.insert("nodeIds".into(), ids);
-            let requested = object
-                .get("fields")
-                .cloned()
-                .unwrap_or_else(|| json!(fields(kind)));
+            let requested = object.get("fields").cloned().unwrap_or_else(|| {
+                json!(
+                    fields(kind)
+                        .iter()
+                        .filter(|f| !["prompt", "framePrompt"].contains(f))
+                        .collect::<Vec<_>>()
+                )
+            });
             let internal: Vec<_> = requested
                 .as_array()?
                 .iter()

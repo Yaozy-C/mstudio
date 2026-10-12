@@ -7,7 +7,7 @@ pub fn enrich(db: &Connection, project: &str, args: &Value, result: &mut Value) 
     if args["section"] != "assets"
         || args["fields"]
             .as_array()
-            .is_some_and(|f| !f.iter().any(|v| v == "source"))
+            .is_none_or(|f| !f.iter().any(|v| v == "source"))
     {
         return Ok(());
     }

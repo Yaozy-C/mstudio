@@ -6,6 +6,7 @@ import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 
 export const runStatuses: Record<string, string> = {
+  DRAFT: "草稿",
   READY: "准备执行",
   AWAITING_CONFIRMATION: "待开始",
   UPLOADING: "正在准备素材",

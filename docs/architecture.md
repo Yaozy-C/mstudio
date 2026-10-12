@@ -134,7 +134,12 @@ and project deletion retain shared files. Storage relocation includes this folde
 
 Agent handoffs accept typed `artifacts` on delegation and follow-up messages.
 Generation artifacts use `{kind: "generation", id: taskKey}` and resolve to the
-project’s saved task reader, including prompt, inputs, parameters and status.
+project’s saved task metadata and actual result-media attachments, without its prompt.
+Chat task references likewise carry result media, IDs, status and necessary settings.
+Default task/shot/asset reads omit generation prompts and asset provenance. Only an
+explicit prompt edit, unchanged retry or generation investigation reads task
+`fields=["prompt"]` or asset `fields=["source"]`. Historical requests remain saved
+for that explicit lookup; downstream media use does not automatically load them.
 The same transport applies to image, video and timeline specialists. The
 host resolves project-owned node/asset/clip references and settled agent outputs;
 it supplies the original user request separately from the coordinator's assignment.
@@ -179,4 +184,4 @@ settlement immediately folds recovery state. Referenced media use the existing b
 ownership and post-commit file cleanup. Migration v4 compacts existing data without a
 retained backup. No cleanup path sends model requests or replays tool side effects.
 
-模型侧按任务注册独立工具，不再暴露 `mstudio_edit.operations`：视频/图片生成、镜头提示词、任务提示词、剧本和镜头结构各自使用独立参数。角色权限同时裁剪工具与字段；宿主将参数转换为既有内部操作，复用事务、权限和回执恢复。镜头重排用 `mstudio_update_shots(items)` 原子提交。界面及恢复流程识别新工具名，并兼容历史回执。内部操作参数仍在操作分支及字段本身声明用途、层级、单位、枚举和省略语义。`update_node.shot.prompt/framePrompt` 保存镜头草稿，`request_generation.text` 和 `update_generation.text` 写生成任务提示词，互不隐式覆盖。图片与视频分支分别展示参数；媒体能力查询与操作契约复用 `parameterSchema`，执行侧仍按所选模型校验，不把镜头时长或工程导出规格当作生成规格。
+模型侧按任务注册独立工具，不再暴露 `mstudio_edit.operations`：视频/图片生成、生成草稿、任务编辑、剧本和镜头结构各自使用独立参数。角色权限同时裁剪工具与字段；宿主将参数转换为既有内部操作，复用事务、权限和回执恢复。镜头重排用 `mstudio_update_shots(items)` 原子提交。界面及恢复流程识别新工具名，并兼容历史回执。内部操作参数仍在操作分支及字段本身声明用途、层级、单位、枚举和省略语义。`mstudio_save_image_generation` / `mstudio_save_video_generation` 将 prompt 和参考输入一起保存到既有生成任务（内部 `request_generation.draftOnly=true`），状态为 `DRAFT`，自动模式也不执行。同镜头同媒体类型再次保存复用未提交草稿，生成时沿用该任务及省略的参考输入；已知任务用 `update_generation` 原子更新 prompt/references。旧 `shot.prompt/framePrompt` 只保留读取兼容，不再向 Agent 暴露写入；新图片卡片不复制 prompt。已执行任务的原始请求快照保留用于溯源。图片与视频分支分别展示参数；媒体能力查询与操作契约复用 `parameterSchema`，执行侧仍按所选模型校验，不把镜头时长或工程导出规格当作生成规格。

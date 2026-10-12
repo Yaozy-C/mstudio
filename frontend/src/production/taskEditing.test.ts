@@ -72,6 +72,7 @@ test("hidden records expose one prompt after migrating a saved edit", () => {
   const result = inspectProject(p, {
     section: "generation",
     taskKey: task.key,
+    fields: ["prompt", "hiddenFromList"],
   });
   expect(result.items).toMatchObject([
     {

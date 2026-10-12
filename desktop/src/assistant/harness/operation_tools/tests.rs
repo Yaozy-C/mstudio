@@ -67,27 +67,27 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     );
     let args = decode(
         &p,
-        "mstudio_set_video_prompt",
+        "mstudio_save_video_generation",
         json!({"id":"s", "prompt":"English dialogue"}),
     )
     .unwrap()
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"update_node","id":"s","expectedKind":"shot","shot":{"prompt":"English dialogue"}}]})
+        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"video","text":"English dialogue","draftOnly":true}]})
     );
     // Still authoring belongs to the image role.
-    assert!(decode(&p, "mstudio_set_image_prompt", json!({})).is_none());
+    assert!(decode(&p, "mstudio_save_image_generation", json!({})).is_none());
     let args = decode(
         &profile("image"),
-        "mstudio_set_image_prompt",
-        json!({"id":"s", "framePrompt":"English still"}),
+        "mstudio_save_image_generation",
+        json!({"id":"s", "prompt":"English still"}),
     )
     .unwrap()
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"update_node","id":"s","expectedKind":"shot","shot":{"framePrompt":"English still"}}]})
+        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"image","text":"English still","draftOnly":true}]})
     );
     for invalid in [
         json!({"id":"s","patch":{"prompt":"x"}}),
@@ -95,7 +95,7 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
         json!({"id":"s","prompt":"x","dialogue":"x"}),
     ] {
         assert!(
-            decode(&p, "mstudio_set_video_prompt", invalid)
+            decode(&p, "mstudio_save_video_generation", invalid)
                 .unwrap()
                 .is_err()
         );
@@ -209,75 +209,6 @@ fn creation_tools_fix_kind_and_keep_body_separate_from_shot_fields() {
             assert!(args["operations"][0]["shot"].get("text").is_none());
         }
     }
-}
-#[test]
-fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
-    use rig_core::message::{AssistantContent, Message, ToolCall, ToolFunction};
-    let root = std::env::temp_dir().join(format!("mstudio-split-{}", mstudio::media::id()));
-    let store = crate::database::Store::open(root.clone()).unwrap();
-    let doc = json!({"id":"p","name":"Synthetic","revision":0,"brief":"","width":1280,"height":720,"fps":30,"assets":[],"nodes":[
-        {"id":"script","kind":"screenplay","title":"Script","x":0,"y":0,"width":280,"height":218,"screenplay":{"script":[{"id":"paragraph","title":"Scene","action":"Action","duration":5}]}},
-        {"id":"shot","kind":"shot","title":"Shot","text":"Preserved staging","x":320,"y":0,"width":280,"height":218,"shot":{"screenplayId":"script","scriptId":"paragraph","order":1,"duration":5,"dialogue":"Preserved dialogue","prompt":"Old"}}
-    ],"clips":[],"tracks":[],"captions":[]});
-    crate::projects::write_document(&store, doc, true).unwrap();
-    let p = profile("production");
-    crate::project_service::execute(
-        &store,
-        &p,
-        "p",
-        "turn",
-        "read",
-        json!({"action":"inspect","nodeIds":["shot","script"]}),
-    )
-    .unwrap();
-    let input = json!({"id":"shot","prompt":"New video prompt"});
-    let args = decode(&p, "mstudio_set_video_prompt", input.clone())
-        .unwrap()
-        .unwrap();
-    let receipt =
-        crate::project_service::execute(&store, &p, "p", "turn", "turn:call", args.clone())
-            .unwrap();
-    assert_eq!(receipt["outcome"], "committed", "{receipt}");
-    assert_eq!(
-        crate::project_service::execute(&store, &p, "p", "turn", "turn:call", args).unwrap(),
-        receipt
-    );
-    let saved = crate::project_service::execute(
-        &store,
-        &p,
-        "p",
-        "turn",
-        "verify",
-        json!({"action":"inspect","nodeIds":["shot"],"fields":["prompt","dialogue","text"]}),
-    )
-    .unwrap()
-    .to_string();
-    for value in [
-        "New video prompt",
-        "Preserved dialogue",
-        "Preserved staging",
-    ] {
-        assert!(saved.contains(value), "{saved}");
-    }
-    let call = ToolCall::from_wire(
-        "call",
-        ToolFunction::new(
-            "mstudio_set_video_prompt"
-                .try_into()
-                .expect("nonempty tool name"),
-            input,
-        ),
-    );
-    let mut messages = vec![Message::Assistant(
-        rig_core::message::AssistantMessage::new(vec![AssistantContent::ToolCall(call)]),
-    )];
-    super::super::session_recovery::repair(&store, "p", "turn", &mut messages);
-    assert_eq!(messages.len(), 2);
-    let restored = serde_json::to_string(&messages[1]).unwrap();
-    assert!(restored.contains("committed"), "{restored}");
-    assert!(!restored.contains("EFFECT_UNKNOWN"));
-    drop(store);
-    std::fs::remove_dir_all(root).unwrap();
 }
 
 #[test]
