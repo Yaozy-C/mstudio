@@ -8,7 +8,13 @@ Specify the camera's starting location, viewing direction, height/distance, requ
 
 ## Contact and motion
 
-Physical causality is not a full operating sequence. Preserve the support, force, path, decisive contact and resulting state needed for the chosen action, without narrating every reach or finger movement. Keep item count, component connections and opening geometry stable. A lid pivots on its actual attachment; inserted objects pass through a sufficiently open aperture. Deformation follows material and force, then settles. Weight affects acceleration, grip, impact and rebound. Never prescribe a universal reaction order or smooth easing for every motion.
+For each selected action, derive the necessary intermediate states from the actual starting state through the result. Identify what applies force or releases a constraint, where contact begins and ends, what supports each object, and when grip or possession changes. Carry these relationships and their visible consequences into the actual generation prompt alongside the action. A list of action names, endpoints or prohibitions does not supply this chain.
+
+Keep identity, part count, attachment topology and actual dimensions stable. Let pose, tension, deformation, opening extent and occlusion change with force, gravity, inertia, material and mechanism travel. Resolve conflicts by preserving evidenced construction and allowing the state change the action requires. Do not invent hidden supports, springs or hardware to explain an otherwise missing cause; preserve explicitly designed departures from ordinary physics within their stated scope.
+
+For example, releasing a closure makes a lid free to move but does not supply its opening force: establish the opening contact/force and pivot, the response of attached flexible parts, and the supported end state. For insertion, establish an existing accessible opening, passage through it, support by the receiving object, then release of the grip. If one hand changes tools or objects in a continuous shot, account for the outgoing object and acquisition of the next. Apply only the relationships the actual action needs, without enumerating every frame or imposing one universal reaction order.
+
+A necessary phase is one whose removal leaves a change in contact, support, constraints or possession unexplained. Keep these phases even if they are brief or visually unremarkable. Repetition and idle time may be omitted; necessary physical transitions may not be treated as redundant handling. A planned cut can skip elapsed action, with compatible poses, connections and object states on either side; a continuous take must realize its transitions without hidden cuts or morphs.
 
 ## Human performance
 
@@ -16,7 +22,7 @@ Describe what the person notices, wants and does in this situation. Use specific
 
 ## Timing and selection
 
-Separate scene/action time, generation/source time and final-film time. The model's minimum duration applies to generation, not editorial shot length. Keep intended internal cuts explicit. An unreliable multi-event clip may need separate supported generations and shorter retained intervals; do not stretch a brief action to fill the minimum. Preserve essential passage/contact when it constitutes the proof. Otherwise leave redundant transport and idle tails available for trimming. Retiming cannot hide a failed action.
+Separate scene/action time, generation/source time and final-film time. The model's minimum duration applies to generation, not editorial shot length. Keep intended internal cuts explicit. An unreliable multi-event clip may need separate supported generations and shorter retained intervals; do not stretch a brief action to fill the minimum. Preserve essential passage/contact when it constitutes the proof. Transport that changes location or support remains part of the generated causal chain; only a permitted edit may omit its elapsed time. Leave idle tails and genuine repetitions available for trimming. Retiming cannot hide a failed action.
 
 Locate the useful entry, decisive change and exit. Sound corresponds to the visible event and material; a beat does not require a cut. Never invent final source timestamps before output exists. Actual source ranges belong to the saved shot and intended film interval; do not invent them before footage exists.
 

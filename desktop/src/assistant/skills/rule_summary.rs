@@ -5,7 +5,6 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::path::Path;
-
 const MARKER: &str = "creative_rule_summary_v1";
 #[derive(Deserialize)]
 struct Resource {
@@ -15,7 +14,7 @@ struct Resource {
     before: String,
 }
 #[derive(Deserialize)]
-struct Manifest {
+pub(super) struct Manifest {
     updates: Vec<Resource>,
     retired: Vec<Resource>,
 }
@@ -55,7 +54,11 @@ pub(super) fn migrate_physical_continuity(db: &Connection, root: &Path) -> Resul
     let manifest = serde_json::from_str(include_str!("physical_continuity_migration.json"))?;
     apply(db, root, manifest, "image_physical_continuity_v1")
 }
-fn apply(db: &Connection, root: &Path, manifest: Manifest, marker: &str) -> Result<()> {
+pub(super) fn migrate_video_physical_chain(db: &Connection, root: &Path) -> Result<()> {
+    let manifest = serde_json::from_str(include_str!("video_physical_chain_migration.json"))?;
+    apply(db, root, manifest, "video_physical_chain_v1")
+}
+pub(super) fn apply(db: &Connection, root: &Path, manifest: Manifest, marker: &str) -> Result<()> {
     if db.query_row(
         "SELECT EXISTS(SELECT 1 FROM settings WHERE key=?1)",
         [marker],
@@ -292,7 +295,6 @@ Reinspect affected areas and joins after repairs, retiming or new versions. Do n
         migrate_methods(&db, Path::new("/unavailable")).unwrap();
     }
 }
-
 #[cfg(test)]
 #[path = "physical_continuity_tests.rs"]
 mod physical_continuity_tests;

@@ -1,0 +1,45 @@
+{
+  "updates": [
+    {
+      "skill": "product-video-production",
+      "path": "SKILL.md",
+      "before": "9596bfec8aaa988dffc24230fa7af60278e9a6d130088f4c9fc84e8e44f86ede"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "CORE.md",
+      "before": "3798e402b9138e02fb91e65f233b375e5ae219072f7330a934ed56820f1a0fa1"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/prompt-writing.md",
+      "before": "a2ec17e70f61a4a5f6f27d384ca685028a8fc865e3a924b09a38d4c8e5dad72f"
+    },
+    {
+      "skill": "product-video-production",
+      "path": "references/shot-execution.md",
+      "before": "60c3c9f04711a96acb4904450a1b710e10f7c8d32f56ff3be96fe23369b13c8c"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "SKILL.md",
+      "before": "6dea61963e2c8c46ec4878da6aa3a52f3906b08896548a2ce3d570f3f13d64f5"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "CORE.md",
+      "before": "d339db01c99c65d9f95f63032c375f1026e627109526dd9ae20187127d680bcf"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/prompt-writing.md",
+      "before": "2d703075927ce028041174bfa9ff3f38b7bc3bd6fa7eed9937ec99572dae73d7"
+    },
+    {
+      "skill": "storyboard-video-production",
+      "path": "references/shot-execution.md",
+      "before": "60c3c9f04711a96acb4904450a1b710e10f7c8d32f56ff3be96fe23369b13c8c"
+    }
+  ],
+  "retired": []
+}

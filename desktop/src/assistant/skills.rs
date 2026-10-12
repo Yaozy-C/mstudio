@@ -1,5 +1,6 @@
 mod catalog;
 mod concept_split;
+mod director_state;
 mod isolation;
 mod metadata;
 mod rule_summary;
@@ -105,6 +106,8 @@ pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     rule_summary::migrate_pure_rules(&db, &root(app)?)?;
     rule_summary::migrate_object_tools(&db, &root(app)?)?;
     rule_summary::migrate_physical_continuity(&db, &root(app)?)?;
+    rule_summary::migrate_video_physical_chain(&db, &root(app)?)?;
+    director_state::migrate(&db, &root(app)?)?;
     super::video_analysis::install(&db, &root(app)?)?;
     Ok(())
 }

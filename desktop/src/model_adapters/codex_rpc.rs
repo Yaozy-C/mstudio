@@ -141,10 +141,9 @@ impl Rpc {
         let _ = self.child.wait().await;
     }
 }
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
-    #[cfg(unix)]
     #[tokio::test]
     async fn early_dynamic_call_is_not_declined_or_mistaken_for_rpc_response() {
         use std::os::unix::fs::PermissionsExt;
@@ -168,7 +167,6 @@ read -r response
         rpc.stop().await;
         std::fs::remove_file(path).unwrap();
     }
-    #[cfg(unix)]
     #[tokio::test]
     async fn supports_listen_transport_when_legacy_flag_is_rejected() {
         use std::os::unix::fs::PermissionsExt;

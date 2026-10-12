@@ -18,7 +18,7 @@ Use the supplied shot constraints; consult [shot grammar](shot-execution.md) whe
 
 The model text carries the current scene relationships, key change, framing/camera/cuts that show it, necessary sound and identity constraints. Do not concatenate all storyboard columns. Separate subject movement from camera movement. Detail should remove ambiguity; brevity is not the goal if it deletes essential relationships.
 
-A single event can contain multiple risky grasps, releases and occlusions. Choose readable staging, matching viewpoints and motivated cuts. Omit only nonessential preparation; user-required continuous proof remains visible. Leave unlocked performance freedom without simultaneously demanding a conflicting second-by-second schedule.
+A single event can contain multiple risky grasps, releases and occlusions. Choose readable staging, matching viewpoints and motivated cuts. Keep every intermediate phase needed to explain a change of contact, support, grip, constraint or possession; remove only preparation that changes none of these. User-required continuous proof remains visible. Leave unlocked performance freedom without simultaneously demanding a conflicting second-by-second schedule.
 
 ## Resolve the spatial shot
 
@@ -30,7 +30,7 @@ Use compatible camera and action geometry. Do not silently combine an internal v
 
 ## Describe changes the viewer can actually see
 
-Write a temporal transformation, not a still description followed by "moves naturally". Start from the actual first visible state, identify the decisive change and end in the requested state. If the clip starts mid-action, describe the ongoing phase rather than replaying preparation. Distinguish ordered events, overlaps and deliberate holds; relative cues such as "only after the opening clears" or "as contact occurs" often resolve causality better than invented millisecond schedules. Preserve exact user-locked beats without inventing impossible choreography.
+Write a temporal transformation, not a still description followed by "moves naturally". Start from the actual first visible state, describe the necessary intermediate physical states and their causes, and end in the requested state. Apply [contact and motion](shot-execution.md#contact-and-motion) to changes of support, grip, constraints and possession; put the resulting relationships into the submitted prompt, not only planning notes. If the clip starts mid-action, describe the ongoing phase rather than replaying preparation. Distinguish ordered events, overlaps and deliberate holds; relative cues such as "only after the opening clears" or "as contact occurs" often resolve causality better than invented millisecond schedules. Preserve exact user-locked beats without inventing impossible choreography.
 
 Use only the dimensions relevant to this shot:
 
@@ -61,7 +61,7 @@ Organize according to model capability; simple shots can be one paragraph:
 - Locks and permitted variation: camera relationships, direction, event order, identity/parts and required sound. Distinguish user constraints from director decisions without casually deleting the latter.
 - Material-specific anticipation, speed curve, contact response, follow-through and reaction rather than a slogan about cinematic motion or all twelve principles.
 
-Exact times/frames express targets; editorial cuts establish precise final timing. Preserve the selected shot rules and performance in the prompt.
+Exact times/frames express targets; editorial cuts establish precise final timing. Preserve the selected shot rules and performance in the prompt. If the physical chain cannot fit, resolve duration or the supported generation route within the selected design; do not meet a timestamp by deleting a necessary phase.
 
 ## Inputs and modes
 
@@ -82,7 +82,7 @@ Keep the initial location, path, contact and destination coherent; a correct end
 
 ## Final prompt and handoff
 
-Use one complete final prompt with consistent reference roles/order, input mode and supported duration. Do not replay already-completed actions, contradict single/multiple-shot intent or require impossible timing. Do not invent inaccessible service rewriting.
+Use one complete final prompt with consistent reference roles/order, input mode and supported duration. Check that every change in contact, support, grip, constraint or possession has a described cause and transition, including between board panels. Do not replay already-completed actions, contradict single/multiple-shot intent or require impossible timing. Do not invent inaccessible service rewriting.
 
 A prompt-only request ends with saving. Existing same-scope authorization remains valid. Generate only within the requested scope using supported parameters. Repair a concrete defect without adding mandatory test generations or approval rounds.
 

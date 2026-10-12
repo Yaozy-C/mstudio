@@ -25,11 +25,11 @@ Final source selection, trimming and timeline assembly belong to editing. Hand o
 
 Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
-## Physical causality is not a full operating sequence
+## Complete physical action
 
-An action has to be causally believable: its starting support, path, contact and release must be consistent, and nothing may cross a closed surface. That is a requirement on the action, not an instruction to show every step of it.
+Turn the selected action into a complete physical causal chain in the actual generation prompt. Include necessary intermediate states whenever contact, support, grip, attachment constraints or possession changes; action names and endpoints alone are insufficient. Production owns this realization within the selected design. Use [physical action rules](references/shot-execution.md#contact-and-motion) for the relevant transitions.
 
-Follow the selected design and user requirements when deciding which action phases must be visible. Preserve required continuous proof, anticipation and recognition; omit only nonessential preparation, repeated reaches, redundant handling and idle endings. Keep the supporting geometry consistent in what you do show. When a model cannot render the whole chain reliably, obtain the smallest supported segment that carries the needed event rather than lengthening the prompt to cover every stage.
+Separate editorial omission from motion generation. Within a continuous shot, do not omit a necessary transition to shorten the prompt or meet a beat. Omit only repetitions or idle time that do not change the physical state. A designed cut may omit elapsed handling, but its outgoing and incoming states must remain physically compatible. If the required chain does not fit the supported duration or route, resolve that execution constraint without silently dropping phases, adding cuts or changing the selected action.
 
 ## Bind every input to a concrete purpose
 
