@@ -22,6 +22,7 @@ mod operation_tools;
 mod outcomes;
 mod read_tools;
 mod registry;
+mod saved_work;
 mod scheduler;
 pub(crate) mod schema;
 mod schema_definition;
@@ -45,6 +46,9 @@ use std::future::Future;
 use tokio_util::sync::CancellationToken;
 
 pub trait Host: Sync {
+    fn pending_children(&self) -> bool {
+        false
+    }
     fn deadline(&self) -> Option<tokio::time::Instant> {
         None
     }

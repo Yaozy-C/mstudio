@@ -217,17 +217,9 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     tool.turn = child_turn.clone();
     // Keep the immutable user evidence; a delegated task is not a user quote.
     tool.prompt = original["prompt"].as_str().unwrap_or(&parent.prompt).into();
-    let token = if background {
-        CancellationToken::new()
-    } else {
-        host.token.clone()
-    };
+    let token = host.token.child_token();
     tool.token = token.clone();
-    tool.deadline = if background {
-        tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
-    } else {
-        route.deadline
-    };
+    tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
     let deadline = tool.deadline;
     let child = ChildHost {
         inner: ProjectHost {
@@ -242,40 +234,53 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         changes: Mutex::new(vec![]),
         terminal_reason: Mutex::new(None),
     };
+    active().lock().unwrap().insert(
+        child_id.clone(),
+        ActiveRun {
+            generation: child_turn.clone(),
+            project: parent.project.clone(),
+            token,
+        },
+    );
+    let spawned_id = child_id.clone();
+    let generation = child_turn.clone();
+    let running = json!({"ok":true,"agentId":id,"childId":child_id,"mode":mode,
+        "canContinue":mode == "continuable","status":"running",
+        "outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)});
+    let handle = tokio::spawn(async move {
+        let answer = drive_child(&child, &child_profile, &child_key, messages, deadline).await;
+        // Always publish a durable notice: the parent may stop waiting at any instant.
+        settle(&child, &spawned_id, &answer, false);
+        remove_active(&spawned_id, &generation);
+        wake_pending(&child, &spawned_id);
+        super::execution::result(&child, &spawned_id, &generation, answer)
+    });
     if background {
-        active().lock().unwrap().insert(
-            child_id.clone(),
-            ActiveRun {
-                generation: child_turn.clone(),
-                token,
-            },
-        );
-        let spawned_id = child_id.clone();
-        let generation = child_turn.clone();
-        tokio::spawn(async move {
-            let answer = drive_child(&child, &child_profile, &child_key, messages, deadline).await;
-            settle(&child, &spawned_id, &answer, false);
-            remove_active(&spawned_id, &generation);
-            wake_pending(&child, &spawned_id);
-        });
-        return Ok(
-            json!({"ok":true,"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","status":"running","outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)}),
-        );
+        return Ok(running);
     }
-    let answer = drive_child(&child, &child_profile, &child_key, messages, route.deadline).await;
-    settle(&child, &child_id, &answer, true);
-    let scripts = child.scripts.lock().unwrap().clone();
-    let changes = child.changes.lock().unwrap().clone();
-    let mut result = json!({"ok":answer.is_ok(),"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","stopReason":stop_reason(&answer, &child),"applied":!changes.is_empty(),"scripts":scripts,"changes":changes,"outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)});
-    result["generationTasks"] =
-        crate::assistant::generation_context::outcome(&store, &parent.project, &child_turn)
-            .map_err(|e| e.to_string())?["generationTasks"]
-            .clone();
-    match answer {
-        Ok(text) => {
-            result["answer"] = json!(text);
+    match super::waiting::until(handle, route.deadline).await {
+        Some(Ok(mut result)) => {
+            result["mode"] = json!(mode);
+            result["canContinue"] = json!(mode == "continuable");
+            store
+                .db
+                .lock()
+                .unwrap()
+                .execute(
+                    "UPDATE subagent_notices SET delivered=1 WHERE child_id=?1 AND delivered=0 AND json_extract(output,'$.outputRef.turnId')=?2",
+                    rusqlite::params![child_id,child_turn],
+                )
+                .map_err(|e| e.to_string())?;
+            Ok(result)
         }
-        Err(error) => result["error"] = json!(error),
+        Some(Err(error)) => Err(error.to_string()),
+        None => {
+            let mut result = running;
+            result["waitEnded"] = json!("parent_deadline");
+            result["message"] = json!(
+                "Child continues with its own time budget; await its completion notice. Do not redelegate this running work."
+            );
+            Ok(result)
+        }
     }
-    Ok(result)
 }

@@ -35,6 +35,11 @@ pub async fn run_until(
         if host.token().is_cancelled() {
             return Err(crate::app_error::cancelled());
         }
+        if tokio::time::Instant::now() >= deadline && host.pending_children() {
+            let answer = "本轮协调等待已到时限，子任务继续执行；完成后将接回结果。";
+            session.replace_visible(host, answer)?;
+            return Ok(answer.into());
+        }
         session.messages.extend(host.injected()?);
         if budget::over_budget(&session, profile, host) {
             budget::recover(model, profile, host, &mut session, false).await?;
@@ -57,6 +62,15 @@ pub async fn run_until(
             "step/end",
             json!({"step":index,"status":if result.is_ok() {"completed"} else {"failed"}}),
         )?;
+        if result.is_err()
+            && !host.token().is_cancelled()
+            && tokio::time::Instant::now() >= deadline
+            && host.pending_children()
+        {
+            let answer = "本轮协调等待已到时限，子任务继续执行；完成后将接回结果。";
+            session.replace_visible(host, answer)?;
+            return Ok(answer.into());
+        }
         if let Some(mut answer) = result.map_err(String::from)? {
             // A settlement can arrive while the model is producing its final
             // answer. Deliver it before accepting idle, as DSH Steer does.

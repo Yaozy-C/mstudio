@@ -157,3 +157,39 @@ async fn settlement_arriving_with_final_answer_reaches_parent_before_completion(
         1
     );
 }
+
+#[tokio::test]
+async fn parent_deadline_returns_waiting_without_a_failed_model_request() {
+    let host = TestHost {
+        pending_children: true,
+        ..Default::default()
+    };
+    let model = TestModel::default();
+    let answer = crate::assistant::harness::driver::run_until(
+        &model,
+        &profile(),
+        &host,
+        Session::new(vec![Message::user("make images")]),
+        true,
+        "",
+        tokio::time::Instant::now(),
+    )
+    .await
+    .unwrap();
+    assert!(answer.contains("子任务继续执行"));
+    assert!(model.requests.lock().unwrap().is_empty());
+    host.token.cancel();
+    assert!(
+        crate::assistant::harness::driver::run_until(
+            &model,
+            &profile(),
+            &host,
+            Session::new(vec![Message::user("make images")]),
+            true,
+            "",
+            tokio::time::Instant::now(),
+        )
+        .await
+        .is_err()
+    );
+}

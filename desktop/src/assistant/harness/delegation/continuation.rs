@@ -184,6 +184,7 @@ pub(super) fn start_continuation(
         id.into(),
         ActiveRun {
             generation: new_turn.clone(),
+            project: tool.project.clone(),
             token: token.clone(),
         },
     );

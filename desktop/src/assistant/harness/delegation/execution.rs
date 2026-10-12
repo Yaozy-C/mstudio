@@ -63,11 +63,18 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             .map(String::as_str)
             .unwrap_or_else(|e| e.as_str());
         let output_ref = super::super::agent_artifacts::reference(id, &tool.turn);
+        let changes = child.changes.lock().unwrap().clone();
+        let saved_work = super::super::saved_work::summary(&changes);
+        let generation =
+            crate::assistant::generation_context::outcome(&store, &tool.project, &tool.turn)
+                .unwrap_or_else(|e| json!({"error":e.to_string()}));
         let artifact = json!({"childId":id,"agentId":tool.profile.id,"status":status,
             "stopReason":stop_reason(answer, child),"output":output,
-            "changes":child.changes.lock().unwrap().clone(),
+            "changes":changes,"savedWork":saved_work,
+            "generationTasks":generation["generationTasks"],"generationStateError":generation["error"],
             "outputRef":output_ref});
         let notice = json!({"outputRef":output_ref,"stopReason":artifact["stopReason"],
+            "savedWork":saved_work,"generationTasks":generation["generationTasks"],
             "answerPreview":output.chars().take(1200).collect::<String>(),
             "readWith":"mstudio_read_agent_result(id,turnId) returns the complete original output and write receipts; pass outputRef in artifacts to the next specialist."}).to_string();
         let update = (|| -> Result<bool, String> {
@@ -115,4 +122,33 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             }
         }
     }
+}
+
+pub(super) fn result(
+    child: &ChildHost,
+    spawned_id: &str,
+    generation: &str,
+    answer: Result<String, String>,
+) -> Value {
+    let changes = child.changes.lock().unwrap().clone();
+    let mut result = json!({"ok":answer.is_ok(),"agentId":child.inner.tool.as_ref().unwrap().profile.id,
+            "childId":spawned_id,"stopReason":stop_reason(&answer,&child),
+            "applied":!changes.is_empty(),"changes":changes,
+            "savedWork":super::super::saved_work::summary(&changes),
+            "scripts":child.scripts.lock().unwrap().clone(),
+            "outputRef":super::super::agent_artifacts::reference(&spawned_id,&generation)});
+    let tool = child.inner.tool.as_ref().unwrap();
+    match crate::assistant::generation_context::outcome(
+        &tool.app.state::<Store>(),
+        &tool.project,
+        &generation,
+    ) {
+        Ok(value) => result["generationTasks"] = value["generationTasks"].clone(),
+        Err(error) => result["generationStateError"] = json!(error.to_string()),
+    }
+    match answer {
+        Ok(text) => result["answer"] = json!(text),
+        Err(error) => result["error"] = json!(error),
+    }
+    result
 }

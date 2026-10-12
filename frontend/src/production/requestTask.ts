@@ -2,6 +2,7 @@ import {
   assertGenerationReferences,
   replaceTaskReferences,
 } from "./taskReferences";
+import { existingShotRun } from "./existingShotRun";
 import { resultPlacement } from "./resultPlacement";
 import { normalizeTaskPrompt } from "./taskPrompt";
 import { failure } from "../errors/failure";
@@ -145,6 +146,12 @@ export function requestTask(
         ? "READY"
         : "AWAITING_CONFIRMATION",
   };
+  const existing = existingShotRun(runsOf(p), run);
+  if (existing)
+    throw failure(
+      "VALIDATION_FAILED",
+      `镜头已有相同生成任务 ${existing.key}（${existing.status ?? "DRAFT"}）。读取该任务并复用结果或等待完成；明确重试时使用 regenerate_generation，不要重复创建。`,
+    );
   if (runsOf(p, turnId).length >= 500)
     throw failure(
       "VALIDATION_FAILED",

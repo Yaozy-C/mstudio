@@ -42,6 +42,9 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     {
         result["answer"] = json!(answer);
     }
+    if let Some(saved) = value.get("savedWork") {
+        result["savedWork"] = saved.clone();
+    }
     // Task state is control information, not optional transcript detail.
     for field in ["generationTasks", "updatedTasks"] {
         if let Some(tasks) = value[field].as_array() {

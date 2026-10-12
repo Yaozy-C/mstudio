@@ -47,7 +47,7 @@ pub fn read_page(store: &Store, project: &str, args: &Value) -> Value {
             let total = text.chars().count();
             let offset = args["offset"].as_u64().unwrap_or(0) as usize;
             let end = offset.saturating_add(6000);
-            json!({"outputRef":reference(id,turn),"status":value["status"],"stopReason":value["stopReason"],"text":text.chars().skip(offset).take(6000).collect::<String>(),"totalCharacters":total,"nextOffset":if end<total{Some(end)}else{None}})
+            json!({"outputRef":reference(id,turn),"status":value["status"],"stopReason":value["stopReason"],"savedWork":value["savedWork"],"generationTasks":value["generationTasks"],"text":text.chars().skip(offset).take(6000).collect::<String>(),"totalCharacters":total,"nextOffset":if end<total{Some(end)}else{None}})
         }
         Err(_) => {
             json!({"error":"Saved agent result not found in this project or this turn has not settled; use the exact outputRef from its completion receipt.","code":"AGENT_RESULT_NOT_FOUND"})

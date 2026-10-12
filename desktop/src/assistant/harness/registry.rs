@@ -1,5 +1,6 @@
 use super::Host;
 use crate::assistant::{profiles, tool_schema, tools::ProjectTool};
+use crate::database::Store;
 use rig_core::{completion::ToolDefinition, message::ToolCall};
 use serde_json::{Value, json};
 use tauri::Manager;
@@ -149,6 +150,14 @@ impl ProjectHost {
     }
 }
 impl Host for ProjectHost {
+    fn pending_children(&self) -> bool {
+        let Some(tool) = &self.tool else { return false };
+        tool.app.state::<Store>().db.lock().unwrap().query_row(
+            "SELECT EXISTS(SELECT 1 FROM subagent_runs r WHERE r.project_id=?1 AND r.parent_turn=?2 AND (r.status='running' OR EXISTS(SELECT 1 FROM subagent_notices n WHERE n.child_id=r.id AND n.delivered=0)))",
+            rusqlite::params![tool.project,tool.turn], |r| r.get(0),
+        ).unwrap_or(false)
+    }
+
     fn deadline(&self) -> Option<tokio::time::Instant> {
         self.tool.as_ref().map(|t| t.deadline)
     }

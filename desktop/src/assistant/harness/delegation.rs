@@ -23,7 +23,7 @@ pub struct Context {
     pub deadline: tokio::time::Instant,
 }
 pub fn definition() -> ToolDefinition {
-    ToolDefinition { name:"mstudio_delegate".try_into().expect("nonempty tool name"), description:"Delegate a bounded goal to a specialist. Pass saved professional work through artifacts, not rewritten task prose; the host also supplies original user requirements and attachments. Returns outputRef for direct downstream reading of the exact saved specialist output. Default spawn uses independent context; fork only when completed parent history is needed. Default mode=oneShot waits for the result and cannot continue after settlement. mode=continuable runs in the background by default, returns a childId for send_message, and notifies you when it settles. Set runInBackground=false when your next action depends on the result. Select continuable for expected follow-ups. Returns mode, canContinue, stop reason, answer and actual operation results; failure does not roll back saved work.".into(), parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"task":{"type":"string","minLength":1,"maxLength":8000,"description":"Goal, scope and expected deliverable. Do not rewrite referenced artifacts or infer product construction."},"artifacts":super::handoff_artifacts::schema(),"provider":{"type":"string","enum":["spawn","fork"]},"modelId":{"type":"string"},"mode":{"type":"string","enum":["oneShot","continuable"]},"runInBackground":{"type":"boolean","description":"oneShot defaults to false; continuable defaults to true. Set false when your next action depends on the result."}},"required":["agentId","task"],"additionalProperties":false}) }
+    ToolDefinition { name:"mstudio_delegate".try_into().expect("nonempty tool name"), description:"Delegate a bounded goal to a specialist. Pass saved professional work through artifacts, not rewritten task prose; the host also supplies original user requirements and attachments. Returns outputRef for direct downstream reading of the exact saved specialist output. Default spawn uses independent context; fork only when completed parent history is needed. Default mode=oneShot waits for the result and cannot continue after settlement. Every child has its own 20-minute budget; if the parent wait expires, status=running means the child continues and will notify you. Do not delegate its work again. mode=continuable runs in the background by default, returns a childId for send_message, and notifies you when it settles. Set runInBackground=false when your next action depends on the result. Select continuable for expected follow-ups. Returns mode, canContinue, stop reason, answer and actual operation results; failure does not roll back saved work.".into(), parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"task":{"type":"string","minLength":1,"maxLength":8000,"description":"Goal, scope and expected deliverable. Do not rewrite referenced artifacts or infer product construction."},"artifacts":super::handoff_artifacts::schema(),"provider":{"type":"string","enum":["spawn","fork"]},"modelId":{"type":"string"},"mode":{"type":"string","enum":["oneShot","continuable"]},"runInBackground":{"type":"boolean","description":"oneShot defaults to false; continuable defaults to true. Set false when your next action depends on the result."}},"required":["agentId","task"],"additionalProperties":false}) }
 }
 
 pub fn control_definitions() -> Vec<ToolDefinition> {
@@ -34,6 +34,7 @@ pub fn control_definitions() -> Vec<ToolDefinition> {
     ]
 }
 struct ActiveRun {
+    project: String,
     generation: String,
     token: CancellationToken,
 }
@@ -125,11 +126,22 @@ mod continuation;
 mod control;
 mod execution;
 mod spawn;
+mod waiting;
+pub fn cancel_project(project: &str) {
+    for run in active()
+        .lock()
+        .unwrap()
+        .values()
+        .filter(|r| r.project == project)
+    {
+        run.token.cancel();
+    }
+}
 use continuation::{start_continuation, wake_pending};
 #[cfg(test)]
 use control::require_continuable;
 pub use control::{execute_control, notices};
-use execution::{drive_child, settle, stop_reason};
+use execution::{drive_child, settle};
 pub use spawn::execute;
 
 fn scoped(

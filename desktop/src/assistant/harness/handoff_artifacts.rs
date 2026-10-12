@@ -100,7 +100,11 @@ pub fn resolve(
             }
             _ => json!({"tool":"mstudio_read_nodes","arguments":{"ids":[id]}}),
         };
-        manifest.push(json!({"reference":{"kind":kind,"id":id},"projectRevision":doc["revision"],"readWith":reader,"authority":"Saved project source; consult the original content, not a relay's description. Project objects remain live; agent outputs are pinned to their turn."}));
+        let mut source = json!({"reference":{"kind":kind,"id":id},"projectRevision":doc["revision"],"readWith":reader,"authority":"Saved project source; consult the original content, not a relay's description. Project objects remain live; agent outputs are pinned to their turn."});
+        if kind == "node" && item["kind"] == "shot" {
+            source["savedWork"] = super::saved_work::shot_state(doc, item);
+        }
+        manifest.push(source);
         attachments.push(Reference {
             kind: kind.into(),
             id,

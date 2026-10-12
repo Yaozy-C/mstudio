@@ -16,6 +16,7 @@ use std::{
 use tokio_util::sync::CancellationToken;
 #[derive(Default)]
 pub struct TestHost {
+    pub pending_children: bool,
     pub token: CancellationToken,
     pub events: Mutex<Vec<(String, Value)>>,
     pub trace: Mutex<Vec<String>>,
@@ -25,6 +26,9 @@ pub struct TestHost {
     pub settlement_after_step: Mutex<Option<Message>>,
 }
 impl Host for TestHost {
+    fn pending_children(&self) -> bool {
+        self.pending_children
+    }
     fn token(&self) -> &CancellationToken {
         &self.token
     }

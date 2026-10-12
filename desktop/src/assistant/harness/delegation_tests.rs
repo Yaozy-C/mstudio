@@ -59,3 +59,26 @@ fn continuation_reports_one_shot_and_unknown_children_distinctly() {
             .contains("mstudio_list_agents")
     );
 }
+
+#[test]
+fn explicit_stop_cancels_detached_children_only_in_that_project() {
+    let id = format!("cancel-test-{}", mstudio::media::id());
+    let other = format!("{id}-other");
+    let token = CancellationToken::new();
+    let unrelated = CancellationToken::new();
+    for (key, project, token) in [(&id, &id, &token), (&other, &other, &unrelated)] {
+        active().lock().unwrap().insert(
+            key.clone(),
+            ActiveRun {
+                project: project.clone(),
+                generation: "turn".into(),
+                token: token.clone(),
+            },
+        );
+    }
+    cancel_project(&id);
+    assert!(token.is_cancelled());
+    assert!(!unrelated.is_cancelled());
+    remove_active(&id, "turn");
+    remove_active(&other, "turn");
+}

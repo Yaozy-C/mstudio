@@ -4,7 +4,9 @@ Identify the first readable cue, what the viewer expects to resolve, the actual 
 
 If the opening is vague, describe an observable event or result rather than adding camera moves. If the payoff disappoints, repair the relationship between expectation and revelation. If only the prop or effect is memorable, strengthen how the product enables or changes the event. Stronger effects alone cannot fix a product disconnect.
 
-Compare materially different viewing propositions while retaining known product facts and user constraints. Explain uncertainty without inventing performance evidence. Organic retention, purchase consideration and direct conversion are different outcomes; results from one platform or distribution context do not automatically establish another's opening rule.
+Compare materially different viewing propositions while retaining known product facts and user requirements.
+
+Identify the detail that gives the idea its character and ask what would be lost if it were removed. Preserve that contribution while repairing the weak part; a revision should make the idea work more clearly without smoothing every proposal into the same familiar formula.
 
 Concept diagnosis ends at the premise, event, payoff and product role. Full dialogue and segment timing belong to the writer; camera placement and staging belong to the director. A local execution defect does not automatically invalidate the concept.
 

@@ -115,7 +115,7 @@ pub fn notices(
 fn notice_message(id: &str, status: &str, output: &str) -> Message {
     Message::user(format!(
         "Subagent {id} settled this turn with status {status}. Final message: {}",
-        output.chars().take(4000).collect::<String>()
+        output
     ))
 }
 
