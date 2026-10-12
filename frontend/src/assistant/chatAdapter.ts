@@ -1,3 +1,4 @@
+import { canvasViewport } from "../canvas/viewportMemory";
 import type { ProductionTurn } from "../production/turnContext";
 import { defaultAgent, type WorkContext } from "./workContext";
 import { streamReply, type SubscribeProgress } from "./streamReply";
@@ -78,6 +79,12 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
           const focus = saved
             ? { target: saved.targetNodeId, agent: saved.agentId }
             : { target: p.draft.targetNodeId, agent: defaultAgent(work) };
+          const bounds =
+            typeof document !== "undefined"
+              ? document
+                  .querySelector(".creation-canvas")
+                  ?.getBoundingClientRect()
+              : undefined;
           turn = structuredClone(
             saved ?? {
               work,
@@ -98,6 +105,13 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
               selection: { clipId: null, time: 0 },
               production: {
                 projectId: p.project.id,
+                canvas: {
+                  view: canvasViewport(p.project),
+                  size:
+                    bounds && bounds.width > 0 && bounds.height > 0
+                      ? { width: bounds.width, height: bounds.height }
+                      : undefined,
+                },
                 task: p.canvas?.task,
                 referencedTask: p.canvas?.referencedTask,
                 models: {

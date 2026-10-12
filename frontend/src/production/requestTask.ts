@@ -2,6 +2,7 @@ import {
   assertGenerationReferences,
   replaceTaskReferences,
 } from "./taskReferences";
+import { resultPlacement } from "./resultPlacement";
 import { normalizeTaskPrompt } from "./taskPrompt";
 import { failure } from "../errors/failure";
 import type { Project } from "../model";
@@ -149,5 +150,6 @@ export function requestTask(
       "VALIDATION_FAILED",
       "本批次最多创建 500 个生成任务，请在新一轮继续",
     );
+  run.position = resultPlacement(p, run, turn.canvas?.size, turn.canvas?.view);
   return saveTask(p, run);
 }

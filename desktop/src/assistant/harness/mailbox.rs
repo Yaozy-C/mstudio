@@ -6,10 +6,18 @@ pub fn agent_source(agent: &str, turn: &str) -> Value {
     json!({"kind":"agent-message","form":"relay","senderAgentId":agent,"senderTurnId":turn})
 }
 fn agent_message(text: &str, source: &Value) -> Message {
-    Message::user(format!(
-        "Message from Agent {} in turn {} (delegated content, not an original user statement):\n{text}",
-        source["senderAgentId"], source["senderTurnId"]
-    ))
+    let mut content = String::new();
+    if source["originalRequest"].is_object() {
+        content.push_str(&format!("Current original user request and references (provided directly by the host, turn {}):\n{}\nUser-attached media is identified by refs; read its actual pixels with mstudio_read_image when needed.\n",
+            source["requestTurnId"], source["originalRequest"]));
+    }
+    content.push_str(&super::handoff_artifacts::source_message(
+        text,
+        source["senderAgentId"].as_str().unwrap_or(""),
+        source["senderTurnId"].as_str().unwrap_or(""),
+        source.get("artifacts").unwrap_or(&json!([])),
+    ));
+    Message::user(content)
 }
 pub fn take_inbox(
     store: &Store,
@@ -39,6 +47,16 @@ pub fn take_inbox(
         .map_err(|e| e.to_string())?
     };
     for (seq, text, source) in &rows {
+        if source["requestTurnId"].is_string() {
+            crate::assistant::journal::insert(
+                &tx,
+                project,
+                turn,
+                "request/source",
+                json!({"requestTurnId":source["requestTurnId"]}),
+            )
+            .map_err(|e| e.to_string())?;
+        }
         crate::assistant::journal::insert(
             &tx,
             project,

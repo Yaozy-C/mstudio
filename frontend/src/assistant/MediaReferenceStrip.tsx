@@ -1,6 +1,6 @@
 import { isLibraryAsset } from "../workspace/assetLibrary";
 import { isVideoMode } from "../production/referenceMode";
-import { ZoomableImage } from "../workspace/ZoomableImage";
+import { ImageReview } from "../workspace/imageReview/ImageReview";
 import { VideoReferenceRange } from "../production/VideoReferenceRange";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
@@ -259,10 +259,10 @@ export function MediaReferenceStrip(props: {
           </header>
           <div className="media-preview-stage">
             {asset?.kind === "image" ? (
-              <ZoomableImage
+              <ImageReview
                 key={asset.id}
-                src={mediaUrl(asset.path)}
-                alt={asset.name}
+                asset={asset}
+                close={() => setPreview(undefined)}
               />
             ) : asset?.kind === "video" ? (
               <video src={mediaUrl(asset.path)} controls />

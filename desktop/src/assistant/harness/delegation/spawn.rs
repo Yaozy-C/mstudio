@@ -117,17 +117,20 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             &[]
         },
     );
-    let refs = original["refs"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|r| {
-            Some(crate::assistant::attachments::Reference {
-                kind: r["kind"].as_str()?.into(),
-                id: r["id"].as_str()?.into(),
-            })
-        })
-        .collect::<Vec<_>>();
+    let sources = super::super::handoff_artifacts::resolve(
+        &store,
+        &parent.project,
+        &doc,
+        args.get("artifacts"),
+    )?;
+    if !sources.manifest.as_array().unwrap().is_empty()
+        && !profiles::allows(&tool.profile, "inspect")
+    {
+        return Err("This specialist cannot consume project artifacts".into());
+    }
+    let user_refs = super::super::handoff_artifacts::user_refs(&original);
+    let mut refs = user_refs.clone();
+    refs.extend(sources.attachments.clone());
     let selection = json!({"models":original["production"]["models"],"parameters":original["production"]["task"]["parameters"]});
     let reference = crate::assistant::task_context::delegated_snapshot(
         snapshot,
@@ -146,17 +149,37 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
     let mut instruction = format!(
-        "Original user request:{}\nDelegated task from Agent {} in turn {} (not an original user statement):{task}",
-        original["prompt"].as_str().unwrap_or(&parent.prompt),
-        parent.profile.id,
-        parent.turn
+        "Original user request (provided directly by the host):{}",
+        original["prompt"].as_str().unwrap_or(&parent.prompt)
     );
     if tool.profile.id != "video-analyst" {
         instruction.push_str(&format!("\nUser-selected production settings for this turn (preserve, including the model):{selection}"));
     }
-    let payload =
-        crate::assistant::attachments::payload(&store, &doc, &instruction, &refs, &child_profile)
-            .map_err(|e| e.to_string())?;
+    let payload = crate::assistant::attachments::payload(
+        &store,
+        &doc,
+        &instruction,
+        &user_refs,
+        &child_profile,
+    )
+    .map_err(|e| e.to_string())?;
+    messages.push(crate::assistant::agent::convert(
+        &json!({"role":"user","content":payload}),
+    ));
+    let instruction = super::super::handoff_artifacts::source_message(
+        task,
+        &parent.profile.id,
+        &parent.turn,
+        &sources.manifest,
+    );
+    let payload = crate::assistant::attachments::payload(
+        &store,
+        &doc,
+        &instruction,
+        &sources.attachments,
+        &child_profile,
+    )
+    .map_err(|e| e.to_string())?;
     messages.push(crate::assistant::agent::convert(
         &json!({"role":"user","content":payload}),
     ));
@@ -179,7 +202,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         "inheritedMessageCount":if provider_name=="fork" { route.fork_history.len() } else { 0 },
         "taskMessageIndex":task_message_index,
         "source":super::super::mailbox::agent_source(&parent.profile.id, &parent.turn),
-        "profile":tool.profile
+        "profile":tool.profile,"artifacts":sources.manifest
     })).map_err(|e| e.to_string())?;
     crate::assistant::child_activity::start(
         &store.db.lock().unwrap(),
@@ -236,14 +259,14 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             wake_pending(&child, &spawned_id);
         });
         return Ok(
-            json!({"ok":true,"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","status":"running"}),
+            json!({"ok":true,"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","status":"running","outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)}),
         );
     }
     let answer = drive_child(&child, &child_profile, &child_key, messages, route.deadline).await;
     settle(&child, &child_id, &answer, true);
     let scripts = child.scripts.lock().unwrap().clone();
     let changes = child.changes.lock().unwrap().clone();
-    let mut result = json!({"ok":answer.is_ok(),"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","stopReason":stop_reason(&answer, &child),"applied":!changes.is_empty(),"scripts":scripts,"changes":changes});
+    let mut result = json!({"ok":answer.is_ok(),"agentId":id,"childId":child_id,"mode":mode,"canContinue":mode == "continuable","stopReason":stop_reason(&answer, &child),"applied":!changes.is_empty(),"scripts":scripts,"changes":changes,"outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)});
     result["generationTasks"] =
         crate::assistant::generation_context::outcome(&store, &parent.project, &child_turn)
             .map_err(|e| e.to_string())?["generationTasks"]

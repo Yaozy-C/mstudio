@@ -19,6 +19,7 @@ pub(crate) const BASE: &[&str] = &[
     "mstudio_read_skill",
     "mstudio_read_image",
     "mstudio_read_result",
+    "mstudio_read_agent_result",
     // Delegation is what a coordinating role does first; making it load first cost a rejected
     // call whenever the goal was already known and the role instruction said to delegate.
     "mstudio_delegate",

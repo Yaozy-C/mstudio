@@ -1,3 +1,4 @@
+import { rememberViewport, forgetViewport } from "../canvas/viewportMemory";
 import { historyMessages } from "./historyMessages";
 import { expect, test } from "bun:test";
 import { ExportedMessageRepository } from "@assistant-ui/core/internal";
@@ -211,4 +212,26 @@ test("explicit new task survives retry without following the next draft", async 
   expect(f.calls[1].args.resumeTurnId).toBe(f.calls[0].args.clientTurnId);
   f.calls[1].result.resolve("完成");
   await retry;
+});
+
+test("Agent request freezes the live viewport before flushing the project", async () => {
+  const f = fixture();
+  const view = { x: -1800, y: -500, scale: 0.5 };
+  rememberViewport(f.context.project.id, view);
+  try {
+    f.thread.composer.setText("生成三张图片");
+    const sending = f.thread.composer.send();
+    await until(() => Object.keys(f.sent).length === 1);
+    rememberViewport(f.context.project.id, { x: 0, y: 0, scale: 1 });
+    f.flush.resolve();
+    await until(() => f.calls.length === 1);
+    const request = f.calls[0].args.messageContext as {
+      production: { canvas: { view: typeof view } };
+    };
+    expect(request.production.canvas.view).toEqual(view);
+    f.calls[0].result.resolve("完成");
+    await sending;
+  } finally {
+    forgetViewport(f.context.project.id);
+  }
 });

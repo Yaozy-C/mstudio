@@ -94,7 +94,7 @@ test("asset generation delivers a standalone canvas card and reusable library im
     productionItems(next).find((n) => n.assetId === image.id),
   ).toMatchObject({
     kind: "reference",
-    x: 30,
+    ...run.position,
   });
   expect(next.nodes.find((n) => n.id === "shot")).toEqual(
     p.nodes.find((n) => n.id === "shot"),

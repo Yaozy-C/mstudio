@@ -1,3 +1,4 @@
+import { ImageReviewProvider } from "./imageReview/ImageReviewProvider";
 import { requestCreativeTask } from "../creative/aiTasks";
 import { effectAgentTask, effectReference } from "./effectAgentTask";
 import { StudioTaskPanel } from "./StudioTaskPanel";
@@ -138,7 +139,7 @@ export function Studio({ initial, onBack }: StudioProps) {
   });
   const editNode = project.nodes.find((n) => n.id === editing);
   return (
-    <>
+    <ImageReviewProvider workspace={m} draft={attachments}>
       <div
         hidden={["settings", "models", "agents"].includes(dialog ?? "")}
         style={sidebarWidths.style}
@@ -291,6 +292,6 @@ export function Studio({ initial, onBack }: StudioProps) {
         project={project}
         close={() => setDialog(null)}
       />
-    </>
+    </ImageReviewProvider>
   );
 }

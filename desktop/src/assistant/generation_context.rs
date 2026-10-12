@@ -17,6 +17,16 @@ pub fn request(
         if let Some(raw) = raw {
             return Ok(Some((turn, serde_json::from_str(&raw)?)));
         }
+        // Follow-up work carries the sending turn's durable user request, not a
+        // coordinator paraphrase or the child's now-outdated creation request.
+        let followup: Option<String> = db.query_row(
+            "SELECT json_extract(payload,'$.requestTurnId') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='request/source' AND json_type(payload,'$.requestTurnId')='text' ORDER BY seq DESC LIMIT 1",
+            params![project, turn], |r| r.get(0),
+        ).optional()?;
+        if let Some(followup) = followup {
+            turn = followup;
+            continue;
+        }
         let parent: Option<String> = db
             .query_row(
                 "SELECT parent_turn FROM subagent_runs WHERE project_id=?1 AND last_turn=?2",
@@ -50,7 +60,7 @@ mod tests {
     #[test]
     fn child_and_continuation_resolve_durable_parent_without_crossing_projects() {
         let db = Connection::open_in_memory().unwrap();
-        db.execute_batch("CREATE TABLE agent_messages(project_id TEXT,role TEXT,attribution TEXT); CREATE TABLE subagent_runs(project_id TEXT,last_turn TEXT,parent_turn TEXT);").unwrap();
+        db.execute_batch("CREATE TABLE agent_messages(project_id TEXT,role TEXT,attribution TEXT); CREATE TABLE subagent_runs(project_id TEXT,last_turn TEXT,parent_turn TEXT); CREATE TABLE agent_events(seq INTEGER,project_id TEXT,turn_id TEXT,kind TEXT,payload TEXT);").unwrap();
         let meta = json!({"turnId":"root","request":{"production":{"projectId":"p","models":{"image":"selected"}}}});
         db.execute(
             "INSERT INTO agent_messages VALUES('p','user',?1)",
@@ -65,6 +75,29 @@ mod tests {
         let (_, saved) = request(&db, "p", "child-2").unwrap().unwrap();
         assert_eq!(saved["production"]["models"]["image"], "selected");
         assert!(request(&db, "other", "child-2").unwrap().is_none());
+        db.execute(
+            "INSERT INTO agent_messages VALUES('p','user',?1)",
+            [
+                json!({"turnId":"correction","request":{"prompt":"Keep original handle"}})
+                    .to_string(),
+            ],
+        )
+        .unwrap();
+        db.execute(
+            "INSERT INTO agent_events VALUES(1,'p','child-2','request/source',?1)",
+            [json!({"requestTurnId":"correction"}).to_string()],
+        )
+        .unwrap();
+        assert_eq!(
+            request(&db, "p", "child-2").unwrap().unwrap().1["prompt"],
+            "Keep original handle"
+        );
+        // The source pointer remains after session-message folding and later resumes.
+        db.execute_batch("UPDATE subagent_runs SET last_turn='child-3'; INSERT INTO agent_events VALUES(2,'p','child-3','request/source','{\"requestTurnId\":\"correction\"}');").unwrap();
+        assert_eq!(
+            request(&db, "p", "child-3").unwrap().unwrap().0,
+            "correction"
+        );
     }
 }
 

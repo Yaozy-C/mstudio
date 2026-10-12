@@ -1,4 +1,4 @@
-import { ZoomableImage } from "./ZoomableImage";
+import { ImageReview } from "./imageReview/ImageReview";
 import { t, useLanguage } from "../i18n";
 import { DocumentPreview } from "./DocumentPreview";
 import { ObjectActions } from "../ui/ObjectActions";
@@ -61,11 +61,7 @@ export function MediaPreview({
               ) : asset.kind === "text" || asset.kind === "document" ? (
                 <DocumentPreview asset={asset} />
               ) : asset.kind === "image" ? (
-                <ZoomableImage
-                  key={asset.id}
-                  src={mediaUrl(asset.path)}
-                  alt={asset.name}
-                />
+                <ImageReview key={asset.id} asset={asset} close={close} />
               ) : asset.kind === "video" ? (
                 <video src={mediaUrl(asset.path)} controls />
               ) : (

@@ -30,7 +30,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     }
     if matches!(
         call.function.name.as_str(),
-        "mstudio_read_result" | "mstudio_read_skill"
+        "mstudio_read_result" | "mstudio_read_skill" | "mstudio_read_agent_result"
     ) || value.to_string().chars().count() <= limit
     {
         return value.clone();
@@ -58,6 +58,7 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         "stopReason",
         "agentId",
         "childId",
+        "outputRef",
         "status",
         "applied",
         "stage",
