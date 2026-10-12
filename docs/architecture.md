@@ -132,6 +132,31 @@ bytes share one file. Replay reads and verifies the file and creates Base64 only
 memory for the provider. File writes complete before references commit; orphan cleanup
 and project deletion retain shared files. Storage relocation includes this folder.
 
+Agent handoffs accept typed `artifacts` on delegation and follow-up messages.
+Generation artifacts use `{kind: "generation", id: taskKey}` and resolve to the
+project’s saved task reader, including prompt, inputs, parameters and status.
+The same transport applies to image, video and timeline specialists. The
+host resolves project-owned node/asset/clip references and settled agent outputs;
+it supplies the original user request separately from the coordinator's assignment.
+`outputRef = {kind: "agent", id, turnId}` identifies the specialist's exact journal
+output and write receipts. `mstudio_read_agent_result` pages that output without
+rewriting it; later continuations cannot overwrite earlier turns. Project objects
+remain live and include their resolution revision. Failed results retain their
+status and stop reason. These references establish provenance, not factual truth.
+The coordinator still chooses tasks and dependencies; specialists must inspect
+original product images before making product-geometry claims.
+
+The result and settlement notice commit together. Durable `request/source` records
+preserve the latest user-request identity through inbox consumption, session
+folding and continuation. Agent messages remain explicitly attributed as relays.
+This follows [Anthropic's artifact handoff approach](https://www.anthropic.com/engineering/multi-agent-research-system).
+[DeepSeek Harness's subagent contract](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md)
+similarly separates model-authored relays from runtime settlement notices, retains
+child output and stop reasons, and enforces optional tool restrictions and output
+schemas. Its schema validates structure, not product facts; it does not eliminate
+semantic changes in model-authored assignments. We retain our existing scheduling
+contract and add direct artifact access rather than copying its changing API.
+
 Agent history has three lifetimes, implemented by `database/history_cleanup.rs`:
 
 - Chat messages and generation tasks keep their durable content and media references.

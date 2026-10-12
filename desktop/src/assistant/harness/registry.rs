@@ -80,6 +80,7 @@ impl ProjectHost {
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
         if profiles::allows(&t.profile, "inspect") {
+            definitions.push(super::agent_artifacts::definition());
             definitions.push(super::generation_tool::definition());
             definitions.extend(super::read_tools::definitions());
         }
@@ -177,7 +178,7 @@ impl Host for ProjectHost {
             Some("read_skill" | "skills" | "history" | "models")
         ) || matches!(
             call.function.name.as_str(),
-            "mstudio_reopen_image" | "mstudio_read_result"
+            "mstudio_reopen_image" | "mstudio_read_result" | "mstudio_read_agent_result"
         ) || matches!(
             call.function.name.as_str(),
             "mstudio_send_message" | "mstudio_interrupt_agent" | "mstudio_list_agents"
@@ -257,6 +258,9 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     }
     if call.function.name == "mstudio_read_result" {
         return super::tool_output::read(t, &args);
+    }
+    if call.function.name == "mstudio_read_agent_result" {
+        return super::agent_artifacts::read(t, &args);
     }
     let Some(action) = call
         .function

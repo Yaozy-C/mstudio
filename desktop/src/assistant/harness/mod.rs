@@ -1,5 +1,6 @@
 //! DSH-style host-owned driver: event-derived session, provider adapter, tool pipeline.
 //! See docs/architecture.md for the Rust integration boundary.
+mod agent_artifacts;
 mod binding;
 mod budget;
 #[cfg(test)]
@@ -12,6 +13,7 @@ mod generation_tool;
 #[cfg(test)]
 mod generation_tool_tests;
 pub(crate) mod handoff;
+mod handoff_artifacts;
 mod image_read;
 mod mailbox;
 mod metering;

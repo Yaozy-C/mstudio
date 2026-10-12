@@ -1,10 +1,10 @@
+import { freeResultPosition } from "./resultLayout";
 import { normalizeTaskPrompt } from "./taskPrompt";
 import { materializeFrameCards } from "./frameCards";
 import { resultOrigin } from "./resultOrigin";
 import { uid, type Asset, type Project } from "../model";
 import { takesOf, shotBasis } from "../creative/document";
 import { framesOf } from "./frames";
-import { productionItems, productionShots } from "./items";
 import { itemKey, type ProductionSource, type ProductionTask } from "./types";
 
 export function saveTask(p: Project, task: ProductionTask): Project {
@@ -104,20 +104,13 @@ export function receiveProductionResult(
     ? p.assets
     : [...p.assets, asset];
   let key: string;
-  let position = { x: data.x, y: data.y };
+  const position = freeResultPosition(
+    p,
+    data.task,
+    data.task.position ?? { x: data.x, y: data.y },
+  );
   let nodes = p.nodes;
   if (node?.shot) {
-    const x = productionShots(p).findIndex((n) => n.id === node.id) * 1600;
-    const count =
-      asset.kind === "image"
-        ? framesOf(node).length
-        : takesOf(node).filter(
-            (t) => p.assets.find((a) => a.id === t.assetId)?.kind === "video",
-          ).length;
-    position = {
-      x: x + (asset.kind === "image" ? 535 + (count % 2) * 290 : 1135),
-      y: 110 + (asset.kind === "image" ? Math.floor(count / 2) : count) * 395,
-    };
     key = itemKey(asset.kind === "image" ? "frame" : "take", node.id, asset.id);
     const shot =
       asset.kind === "image"
@@ -162,18 +155,6 @@ export function receiveProductionResult(
       },
     ];
   }
-  if (data.task.position) position = { ...data.task.position };
-  const occupied = productionItems(p).filter((n) => n.assetId !== asset.id);
-  while (
-    occupied.some(
-      (n) =>
-        n.x < position.x + 250 &&
-        n.x + n.width > position.x &&
-        n.y < position.y + 350 &&
-        n.y + n.height > position.y,
-    )
-  )
-    position.y += 395;
   return materializeFrameCards({
     ...p,
     assets,

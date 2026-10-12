@@ -85,6 +85,36 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let (status, profile_json, model_id, last_turn) = authorized_child(host, id)?;
     let parent = host.tool.as_ref().ok_or("Subagent control unavailable")?;
     let store = parent.app.state::<Store>();
+    let raw: String = store
+        .db
+        .lock()
+        .unwrap()
+        .query_row(
+            "SELECT document FROM projects WHERE id=?1",
+            [&parent.project],
+            |r| r.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    let doc: Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
+    let sources = super::super::handoff_artifacts::resolve(
+        &store,
+        &parent.project,
+        &doc,
+        args.get("artifacts"),
+    )?;
+    let child_profile: profiles::AgentProfile =
+        serde_json::from_str(&profile_json).map_err(|e| e.to_string())?;
+    if !sources.manifest.as_array().unwrap().is_empty()
+        && !profiles::allows(&child_profile, "inspect")
+    {
+        return Err("This specialist cannot consume project artifacts".into());
+    }
+    let original = crate::assistant::generation_context::request(
+        &store.db.lock().unwrap(),
+        &parent.project,
+        &parent.turn,
+    )
+    .map_err(|e| e.to_string())?;
     let message_id = {
         let db = store.db.lock().unwrap();
         db.execute(
@@ -93,6 +123,11 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
                 let mut source =
                     super::super::mailbox::agent_source(&parent.profile.id, &parent.turn);
                 source["callId"] = json!(call.id.wire().as_ref());
+                source["artifacts"] = sources.manifest;
+                if let Some((turn, request)) = original {
+                    source["requestTurnId"] = json!(turn);
+                    source["originalRequest"] = request;
+                }
                 source.to_string()
             }],
         )

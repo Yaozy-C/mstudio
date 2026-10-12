@@ -2,8 +2,26 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ZoomControls } from "../ui/ZoomControls";
 import { t, useLanguage } from "../i18n";
 
+import {
+  AnnotationOverlay,
+  type AnnotationControls,
+} from "./imageReview/AnnotationOverlay";
+import {
+  imagePoint,
+  commentRegion,
+  type Point,
+} from "./imageReview/annotations";
+
 type View = { scale: number; x: number; y: number };
-export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
+export function ZoomableImage({
+  src,
+  alt,
+  annotations,
+}: {
+  src: string;
+  alt: string;
+  annotations?: AnnotationControls;
+}) {
   useLanguage();
   const viewport = useRef<HTMLDivElement>(null);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
@@ -11,6 +29,22 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
   const [natural, setNatural] = useState({ width: 0, height: 0 });
   const [view, setView] = useState<View>({ scale: 1, x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [pending, setPending] = useState<{ start: Point; end: Point } | null>(
+    null,
+  );
+  const region = useRef<{ start: Point; end: Point } | null>(null);
+  const pointAt = (clientX: number, clientY: number) => {
+    const bounds = viewport.current?.getBoundingClientRect();
+    return bounds
+      ? imagePoint(
+          { x: clientX - bounds.left, y: clientY - bounds.top },
+          size,
+          natural,
+          view,
+        )
+      : null;
+  };
+  const transform = `translate(-50%, -50%) translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
   const fit =
     natural.width && size.width
       ? Math.min(size.width / natural.width, size.height / natural.height)
@@ -90,6 +124,8 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
   const finishDrag = () => {
     drag.current = null;
     setDragging(false);
+    region.current = null;
+    setPending(null);
   };
   return (
     <div className="zoomable-image">
@@ -97,6 +133,7 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
         ref={viewport}
         className="image-zoom-viewport"
         data-dragging={dragging}
+        data-annotating={!!annotations?.enabled}
         tabIndex={0}
         role="region"
         aria-label={t("图片细节预览")}
@@ -113,15 +150,25 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
           }
         }}
         onDoubleClick={() =>
-          Math.abs(view.scale - fit) < 0.001
-            ? zoom(Math.max(1, fit * 2))
-            : reset()
+          annotations?.enabled
+            ? undefined
+            : Math.abs(view.scale - fit) < 0.001
+              ? zoom(Math.max(1, fit * 2))
+              : reset()
         }
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           event.preventDefault();
           event.currentTarget.focus();
           event.currentTarget.setPointerCapture(event.pointerId);
+          if (annotations?.enabled) {
+            const point = pointAt(event.clientX, event.clientY);
+            if (point) {
+              region.current = { start: point, end: point };
+              setPending(region.current);
+            }
+            return;
+          }
           drag.current = {
             id: event.pointerId,
             x: event.clientX,
@@ -130,6 +177,14 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
           setDragging(true);
         }}
         onPointerMove={(event) => {
+          if (region.current) {
+            const point = pointAt(event.clientX, event.clientY);
+            if (point) {
+              region.current.end = point;
+              setPending({ ...region.current });
+            }
+            return;
+          }
           const previous = drag.current;
           if (!previous || previous.id !== event.pointerId) return;
           const dx = event.clientX - previous.x,
@@ -143,7 +198,13 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
             constrain({ ...current, x: current.x + dx, y: current.y + dy }),
           );
         }}
-        onPointerUp={finishDrag}
+        onPointerUp={() => {
+          if (region.current)
+            annotations?.add(
+              commentRegion(region.current.start, region.current.end),
+            );
+          finishDrag();
+        }}
         onPointerCancel={finishDrag}
         onLostPointerCapture={finishDrag}
       >
@@ -161,12 +222,24 @@ export function ZoomableImage({ src, alt }: { src: string; alt: string }) {
             width: natural.width || undefined,
             height: natural.height || undefined,
             visibility: natural.width ? "visible" : "hidden",
-            transform: `translate(-50%, -50%) translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
+            transform,
           }}
         />
+        {annotations && natural.width > 0 && (
+          <AnnotationOverlay
+            annotations={annotations}
+            pending={pending}
+            width={natural.width}
+            height={natural.height}
+            transform={transform}
+            scale={view.scale}
+          />
+        )}
       </div>
       <p className="image-zoom-hint">
-        {t("拖动平移 · ⌘/Ctrl + 滚轮缩放 · 双击切换")}
+        {annotations?.enabled
+          ? t("拖动框选修改区域 · ⌘/Ctrl + 滚轮缩放")
+          : t("拖动平移 · ⌘/Ctrl + 滚轮缩放 · 双击切换")}
       </p>
       <ZoomControls
         image

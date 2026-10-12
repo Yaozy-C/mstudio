@@ -2,7 +2,7 @@ import { ShotReferences } from "./ShotReferences";
 import { editReferences } from "./editReferences";
 import "./shot-editor.css";
 import { ActionButton } from "../ui/ActionButton";
-import { ZoomableImage } from "../workspace/ZoomableImage";
+import { ImageReview } from "../workspace/imageReview/ImageReview";
 import { t, useLanguage } from "../i18n";
 import { actionText, editShotText } from "../creative/shotText";
 import { useState } from "react";
@@ -81,11 +81,7 @@ export function CanvasPreview({
             {asset.missing ? (
               <MissingAsset asset={asset} />
             ) : asset.kind === "image" ? (
-              <ZoomableImage
-                key={asset.id}
-                src={mediaUrl(asset.path)}
-                alt={asset.name}
-              />
+              <ImageReview key={asset.id} asset={asset} close={close} />
             ) : asset.kind === "video" ? (
               <video src={mediaUrl(asset.path)} controls autoPlay />
             ) : (

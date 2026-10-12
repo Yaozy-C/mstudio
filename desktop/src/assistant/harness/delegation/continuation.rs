@@ -95,14 +95,14 @@ pub(super) fn start_continuation(
     snapshot["skills"] = skills::runtime_catalog(&parent.app, &profiles::skill_setting(&profile))
         .map_err(|e| e.to_string())?;
     snapshot["agent"] = crate::assistant::model_profile::role(&profile);
-    let original = crate::assistant::generation_context::request(
+    let original_source = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
         last_turn,
     )
-    .map_err(|e| e.to_string())?
-    .map(|(_, r)| r)
-    .unwrap_or(Value::Null);
+    .map_err(|e| e.to_string())?;
+    let request_turn = original_source.as_ref().map(|(turn, _)| turn.clone());
+    let original = original_source.map(|(_, r)| r).unwrap_or(Value::Null);
     crate::assistant::prompt_guidance::attach(
         &mut snapshot,
         &store.db.lock().unwrap(),
@@ -143,10 +143,18 @@ pub(super) fn start_continuation(
         &store,
         &parent.project,
         &new_turn,
+        "request/source",
+        json!({"requestTurnId":request_turn}),
+    )
+    .map_err(|e| e.to_string())?;
+    journal::append(
+        &store,
+        &parent.project,
+        &new_turn,
         "subagent/configuration",
         json!({
             "childId":id,"previousRevision":previous_revision,"revision":profile.revision,
-            "profile":profile,"restoredFrom":last_turn
+            "profile":profile,"restoredFrom":last_turn,"requestTurnId":request_turn
         }),
     )
     .map_err(|e| e.to_string())?;
