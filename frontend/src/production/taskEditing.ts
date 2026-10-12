@@ -10,7 +10,9 @@ import { normalizeTaskPrompt } from "./taskPrompt";
 export const canEditOriginal = (task: ProductionTask) =>
   !task.jobId &&
   !task.submissionId &&
-  (!task.status || task.status === "AWAITING_CONFIRMATION");
+  (!task.status ||
+    task.status === "DRAFT" ||
+    task.status === "AWAITING_CONFIRMATION");
 export const canRegenerate = (task: ProductionTask) =>
   ["COMPLETED", "FAILED", "CANCELLED"].includes(task.status ?? "");
 export function editTaskPrompt(p: Project, key: string, text: string): Project {

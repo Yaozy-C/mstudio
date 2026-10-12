@@ -37,7 +37,7 @@ export function materializeFrameCards(p: Project): Project {
               kind: "asset",
               assetId: frame.assetId,
               title: frame.title,
-              text: frame.prompt ?? "",
+              text: "",
               ...position,
             },
           ],

@@ -91,7 +91,12 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
               ...(p.newTask ? { newTask: true } : {}),
               refs:
                 (meta?.attachments as Attachment[] | undefined) ??
-                taskAttachments(p.project, p.canvas?.task, p.draft.items),
+                taskAttachments(
+                  p.project,
+                  p.canvas?.task,
+                  p.draft.items,
+                  p.canvas?.referencedTask,
+                ),
               agentId:
                 (meta?.agentId as string | undefined) ??
                 options.agent() ??

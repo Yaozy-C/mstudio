@@ -82,7 +82,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
         resultAssetId: t.resultAssetId,
         resultAssetIds: t.resultAssetIds,
         modelId: t.modelId,
-        prompt: snippet(t.prompt, detailLimit),
+        ...(wants("prompt") ? { prompt: snippet(t.prompt, detailLimit) } : {}),
         hiddenFromList: !!t.hiddenFromList,
         inputs: t.inputs,
         parameters: t.parameters,
@@ -217,7 +217,6 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
                 .map((f) => ({
                   assetId: f.assetId,
                   title: f.title,
-                  prompt: snippet(f.prompt ?? ""),
                 }))
             : undefined,
           framePrompt: wants("framePrompt")
@@ -233,7 +232,9 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
           takes: wants("takes")
             ? n.shot.takes
                 ?.slice(offset, offset + 5)
-                .map(({ basis: _basis, ...take }) => take)
+                .map(
+                  ({ basis: _basis, production: _production, ...take }) => take,
+                )
             : undefined,
         },
         shots:

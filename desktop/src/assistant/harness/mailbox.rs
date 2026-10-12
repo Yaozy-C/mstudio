@@ -8,8 +8,11 @@ pub fn agent_source(agent: &str, turn: &str) -> Value {
 fn agent_message(text: &str, source: &Value) -> Message {
     let mut content = String::new();
     if source["originalRequest"].is_object() {
+        let request = &source["originalRequest"];
+        let current = json!({"prompt":request["prompt"],"refs":request["refs"],
+            "models":request["production"]["models"],"parameters":request["production"]["task"]["parameters"]});
         content.push_str(&format!("Current original user request and references (provided directly by the host, turn {}):\n{}\nUser-attached media is identified by refs; read its actual pixels with mstudio_read_image when needed.\n",
-            source["requestTurnId"], source["originalRequest"]));
+            source["requestTurnId"], current));
     }
     content.push_str(&super::handoff_artifacts::source_message(
         text,
@@ -234,7 +237,10 @@ mod tests {
         store.db.lock().unwrap().execute_batch("INSERT INTO projects VALUES('p','p','{}',0),('other','other','{}',0);
             INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn)
             VALUES('child','p','creation-turn','coordinator','concept','continuable','running','{}','model','turn');").unwrap();
-        let source = agent_source("coordinator", "followup-turn");
+        let mut source = agent_source("coordinator", "followup-turn");
+        source["originalRequest"] = json!({"prompt":"只修图片", "refs":[{"kind":"asset","id":"image"}],
+            "production":{"task":{"prompt":"OBSOLETE_PROMPT","parameters":{"duration":6}},
+            "referencedTask":{"prompt":"OBSOLETE_REFERENCED_PROMPT"}}});
         store
             .db
             .lock()
@@ -252,6 +258,9 @@ mod tests {
                 .is_empty()
         );
         let delivered = take_inbox(&store, "child", "p", "turn").unwrap();
+        let visible = serde_json::to_string(&delivered).unwrap();
+        assert!(visible.contains("只修图片") && visible.contains("image"));
+        assert!(!visible.contains("OBSOLETE_"));
         let restored = super::super::session::restore(&store, "p", "turn", &binding)
             .unwrap()
             .unwrap();

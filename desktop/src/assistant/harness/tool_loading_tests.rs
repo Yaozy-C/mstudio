@@ -115,7 +115,7 @@ fn a_batch_mixing_an_exposed_tool_with_needed_tools_is_not_rejected() {
     let all = available(&image);
     let definitions = scope.definitions(all.clone());
     let requested = json!({"names":[
-        "mstudio_generate_image", "mstudio_set_image_prompt", "mstudio_set_shot_frames",
+        "mstudio_generate_image", "mstudio_save_image_generation", "mstudio_set_shot_frames",
         "mstudio_models", "mstudio_await_generation", "mstudio_read_generation"
     ]});
     let call = rig_core::message::ToolCall::from_wire(
@@ -194,7 +194,7 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
     assert!(
         deferred
             .iter()
-            .any(|name| name == "mstudio_set_video_prompt")
+            .any(|name| name == "mstudio_save_video_generation")
     );
     assert!(!deferred.iter().any(|name| name == LOAD));
     for base in BASE {
@@ -203,7 +203,7 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
     let call = rig_core::message::ToolCall::from_wire(
         "c",
         rig_core::message::ToolFunction::new(
-            "mstudio_set_video_prompt"
+            "mstudio_save_video_generation"
                 .try_into()
                 .expect("nonempty tool name"),
             json!({"id":"shot", "prompt":"Move"}),
@@ -219,12 +219,12 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
             .unwrap()
             .contains("mstudio_load_tools")
     );
-    scope.load(&all, &json!({"names":["mstudio_set_video_prompt"]}));
+    scope.load(&all, &json!({"names":["mstudio_save_video_generation"]}));
     assert!(
         !scope
             .deferred(&all)
             .iter()
-            .any(|n| n == "mstudio_set_video_prompt")
+            .any(|n| n == "mstudio_save_video_generation")
     );
 }
 #[test]
@@ -250,7 +250,7 @@ fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {
     let call = rig_core::message::ToolCall::from_wire(
         "c",
         rig_core::message::ToolFunction::new(
-            "mstudio_set_video_prompt"
+            "mstudio_save_video_generation"
                 .try_into()
                 .expect("nonempty tool name"),
             json!({"id":"shot", "prompt":"Move"}),
@@ -259,6 +259,6 @@ fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {
     assert!(
         super::super::scheduler::validate(&scope.definitions(all.clone()), &call, &[]).is_some()
     );
-    scope.load(&all, &json!({"names":["mstudio_set_video_prompt"]}));
+    scope.load(&all, &json!({"names":["mstudio_save_video_generation"]}));
     assert!(super::super::scheduler::validate(&scope.definitions(all), &call, &[]).is_none());
 }

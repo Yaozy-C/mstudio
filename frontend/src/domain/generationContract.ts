@@ -68,6 +68,11 @@ export const generationReferences = (roles: string[]) => ({
   maxItems: undefined,
 });
 const common = {
+  draftOnly: {
+    type: "boolean",
+    description:
+      "Save an editable generation draft without starting generation, even in automatic mode.",
+  },
   op: {
     type: "string",
     const: "request_generation",

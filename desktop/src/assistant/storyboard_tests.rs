@@ -39,21 +39,19 @@ fn shipped_roles_have_independent_edit_and_generation_boundaries() {
             role == "director",
             "{role}: staging"
         );
-        assert_eq!(
-            check(
+        assert!(
+            !check(
                 role,
                 json!({"op":"update_node","id":"s","shot":{"framePrompt":"Still"}})
             ),
-            role == "image",
-            "{role}: still prompt"
+            "{role}: legacy still prompt is read-only"
         );
-        assert_eq!(
-            check(
+        assert!(
+            !check(
                 role,
                 json!({"op":"update_node","id":"s","shot":{"prompt":"Video"}})
             ),
-            role == "production",
-            "{role}: video prompt"
+            "{role}: legacy video prompt is read-only"
         );
         for kind in ["image", "video"] {
             let allowed = role

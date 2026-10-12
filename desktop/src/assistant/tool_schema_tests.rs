@@ -154,7 +154,7 @@ fn advertised_reference_descriptions_distinguish_image_and_video_modes() {
 fn production_fields_distinguish_draft_prompt_task_prompt_and_video_settings() {
     let production = builtin("production");
     assert!(
-        issues(
+        !issues(
             &production,
             json!({"op":"update_node","id":"shot","shot":{"prompt":"Draft"}})
         )

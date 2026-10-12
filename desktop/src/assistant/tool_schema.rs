@@ -9,7 +9,7 @@ pub fn schema() -> Value {
       "path":{"type":"string","description":"Markdown path relative to the Skill root; default SKILL.md. Must stay within this Skill; cross-Skill paths are forbidden."},
       "section":{"type":"string","enum":["creation","captions","tracks","assets","clips","generation"],"description":"inspect section to read; omission returns a compact project summary."},
       "fields":{"type":"array","items":{"type":"string","enum":["title","shot","shot.order","shot.duration","shots","dialogue","screenplay","script","framePrompt","prompt","frames","takes","references","assetId","resultAssetId","shotId","start","end","trimIn","trimOut","speed","trackId","visual","volume","fadeIn","fadeOut","x","y","scale","opacity","transition","name","kind","duration","width","height","text","style","muted","hidden","status","targetNodeId","resultAssetIds","error","trackingPaused","turnId","modelId","ownerId","inputs","parameters","generationPurpose","source"]},"description":"With nodeIds, return selected fields plus id/kind. shot is basic structure; shot.order/shot.duration select order/timing; shots is a screenplay shot directory; text is action/staging. Omission returns summaries. script gives paragraph summaries; screenplay gives the full paginated script. Narrow with paragraphIds/scriptFields."},
-      "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions: exact IDs; assets include source with the original submitted prompt, model and references. fields=[source] selects provenance; source.prompt.nextTextOffset paginates original text."},
+      "ids":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect section=clips/assets/tracks/captions: exact IDs; assets omit generation provenance by default. Only for an explicit prompt edit, unchanged retry or generation investigation, fields=[source] selects the original submitted prompt, model and references; source.prompt.nextTextOffset paginates original text."},
       "nodeIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"inspect up to 12 nodes; required for script/screenplay/shots reads and paragraph filters, using screenplay node IDs for scripts; select needed fields and paginate text with textOffset."},
       "paragraphIds":{"type":"array","maxItems":12,"items":{"type":"string"},"description":"Requires nodeIds containing the screenplay node ID and fields=script/screenplay. Filters paragraphs within those nodes; missing IDs are reported."},
       "scriptFields":{"type":"array","items":{"type":"string","enum":["title","duration","action","onScreenText","dialogue","sound"]},"description":"Paragraph fields; id always returned. script defaults to title/duration; screenplay defaults to all. Paginate text with textOffset."},
@@ -76,10 +76,18 @@ pub fn for_profile(profile: &super::profiles::AgentProfile) -> Value {
                 }
             }
             if let Some(shot) = properties.get_mut("shot") {
+                if let Some(fields) =
+                    shot["properties"]["frames"]["items"]["properties"].as_object_mut()
+                {
+                    fields.remove("prompt");
+                }
                 shot["properties"]
                     .as_object_mut()
                     .unwrap()
-                    .retain(|key, _| super::permissions::allows_shot_field(profile, key));
+                    .retain(|key, _| {
+                        !["prompt", "framePrompt"].contains(&key.as_str())
+                            && super::permissions::allows_shot_field(profile, key)
+                    });
                 let keys: Vec<_> = shot["properties"]
                     .as_object()
                     .unwrap()
