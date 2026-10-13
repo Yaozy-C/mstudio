@@ -30,19 +30,6 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
             if asset {
                 fixed.insert("generationPurpose".into(), json!("asset"));
             }
-            if !asset {
-                let mut draft_fixed = fixed.clone();
-                draft_fixed.insert("draftOnly".into(), json!(true));
-                add(
-                    &mut out,
-                    &format!("save_{kind}_generation"),
-                    op,
-                    operation.clone(),
-                    draft_fixed,
-                    None,
-                    "Save prompt and ordered media references together in a generation draft; never starts generation. For a shot, updates its existing unsubmitted draft. Use update_generation(taskKey,prompt,references) to edit a known task. No prompt is written to the shot.",
-                );
-            }
             fixed.insert("draftOnly".into(), json!(false));
             add(
                 &mut out,
@@ -51,7 +38,7 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 operation.clone(),
                 fixed,
                 None,
-                "Create a generation task using prompt and actual media references. Use the selected model's capabilities for parameters. Prompt drafting alone does not authorize generation; task submission is not completion.",
+                "Create one task awaiting user confirmation using the complete prompt and actual references. Never submits to the generation service. Update an existing task instead of creating a duplicate. Only the user can start generation.",
             );
         } else if op == "add_node" {
             for kind in operation["properties"]["kind"]["enum"]

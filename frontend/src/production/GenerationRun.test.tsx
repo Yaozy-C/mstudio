@@ -33,10 +33,12 @@ test("image and video tasks retain settings after cancellation and reset executi
       />,
     );
     expect(html).toContain("已取消");
-    expect(html).toMatch(/>设置(?:<\/span>)?<\/button>/);
-    expect(html).toMatch(
-      /<button(?=[^>]*disabled="")(?=[^>]*title="先选择生成模型")/,
-    );
+    expect(html).toContain('class="task-generation-settings"');
+    expect(html).toContain("生成模型");
+    expect(html).toContain("添加参考素材");
+    expect(html).not.toMatch(/>设置(?:<\/span>)?<\/button>/);
+    expect(html).not.toContain("保存设置");
+    if (kind === "video") expect(html).toContain("生成方式");
     expect(html).toMatch(/>重试(?:<\/span>)?<\/button>/);
     expect(html).not.toContain("重新查询状态");
     const draft = regenerationDraft(task);

@@ -115,7 +115,7 @@ fn a_batch_mixing_an_exposed_tool_with_needed_tools_is_not_rejected() {
     let all = available(&image);
     let definitions = scope.definitions(all.clone());
     let requested = json!({"names":[
-        "mstudio_generate_image", "mstudio_save_image_generation", "mstudio_set_shot_frames",
+        "mstudio_generate_image", "mstudio_update_generation", "mstudio_set_shot_frames",
         "mstudio_models", "mstudio_await_generation", "mstudio_read_generation"
     ]});
     let call = rig_core::message::ToolCall::from_wire(
@@ -191,11 +191,7 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
     let scope = LoadedTools::default();
     let all = catalog(&profile("production"));
     let deferred = scope.deferred(&all);
-    assert!(
-        deferred
-            .iter()
-            .any(|name| name == "mstudio_save_video_generation")
-    );
+    assert!(deferred.iter().any(|name| name == "mstudio_generate_video"));
     assert!(!deferred.iter().any(|name| name == LOAD));
     for base in BASE {
         assert!(!deferred.iter().any(|name| name == base), "{base}");
@@ -203,7 +199,7 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
     let call = rig_core::message::ToolCall::from_wire(
         "c",
         rig_core::message::ToolFunction::new(
-            "mstudio_save_video_generation"
+            "mstudio_generate_video"
                 .try_into()
                 .expect("nonempty tool name"),
             json!({"id":"shot", "prompt":"Move"}),
@@ -219,12 +215,12 @@ fn deferred_names_drive_a_recoverable_rejection_then_disappear_once_loaded() {
             .unwrap()
             .contains("mstudio_load_tools")
     );
-    scope.load(&all, &json!({"names":["mstudio_save_video_generation"]}));
+    scope.load(&all, &json!({"names":["mstudio_generate_video"]}));
     assert!(
         !scope
             .deferred(&all)
             .iter()
-            .any(|n| n == "mstudio_save_video_generation")
+            .any(|n| n == "mstudio_generate_video")
     );
 }
 #[test]
@@ -250,7 +246,7 @@ fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {
     let call = rig_core::message::ToolCall::from_wire(
         "c",
         rig_core::message::ToolFunction::new(
-            "mstudio_save_video_generation"
+            "mstudio_generate_video"
                 .try_into()
                 .expect("nonempty tool name"),
             json!({"id":"shot", "prompt":"Move"}),
@@ -259,6 +255,27 @@ fn scheduler_rejects_unloaded_tools_then_accepts_loaded_parameters() {
     assert!(
         super::super::scheduler::validate(&scope.definitions(all.clone()), &call, &[]).is_some()
     );
-    scope.load(&all, &json!({"names":["mstudio_save_video_generation"]}));
+    scope.load(&all, &json!({"names":["mstudio_generate_video"]}));
     assert!(super::super::scheduler::validate(&scope.definitions(all), &call, &[]).is_none());
+}
+
+#[test]
+fn removed_image_draft_tool_is_not_discoverable_or_loadable() {
+    for (role, removed) in [
+        ("image", "mstudio_save_image_generation"),
+        ("production", "mstudio_save_video_generation"),
+    ] {
+        let scope = LoadedTools::default();
+        let all = available(&profile(role));
+        let definitions = scope.definitions(all);
+        assert!(!discovery_enum(&definitions).contains(&removed.to_owned()));
+        let call = rig_core::message::ToolCall::from_wire(
+            "load",
+            rig_core::message::ToolFunction::new(
+                LOAD.try_into().unwrap(),
+                json!({"names":[removed]}),
+            ),
+        );
+        assert!(super::super::scheduler::validate(&definitions, &call, &[]).is_some());
+    }
 }

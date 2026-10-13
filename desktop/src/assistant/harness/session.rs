@@ -177,6 +177,9 @@ pub(super) fn restore_through(
     let mut messages = None;
     for (kind, value) in events {
         if kind == "session/start" {
+            if value["binding"]["archiveContext"] != binding["archiveContext"] {
+                return Ok(None);
+            }
             if !super::binding::compatible(&value["binding"], binding) {
                 return Err("原任务的模型或 Agent 已变化，请重新发送消息".into());
             }

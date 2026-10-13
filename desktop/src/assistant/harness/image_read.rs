@@ -32,6 +32,12 @@ pub fn read(store: &Store, project: &str, profile: &Profile, args: &Value) -> Va
                 .is_some_and(|a| a.iter().any(|v| v["id"] == id)),
             "Asset is outside this project; obtain a current-project assetId from inspect"
         );
+        ensure!(
+            !doc["assets"]
+                .as_array()
+                .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true)),
+            "Discarded result cannot be read or reused by Agent"
+        );
         let assets = store.assets()?;
         let asset = assets
             .iter()

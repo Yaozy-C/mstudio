@@ -155,7 +155,7 @@
   "解释这张图": "Explain this image",
   "GPT Image 2.5 · Codex（型号未验证）": "GPT Image 2.5 · Codex (model unverified)",
   "OpenAI / 本机 Codex": "OpenAI / Local Codex",
-  "使用 Codex 原生生图。底层型号由 Codex 决定，无法保证或选择 Image 2.5。": "Uses native Codex image generation. Codex chooses the underlying model; Image 2.5 cannot be selected or guaranteed.",
+  "使用 Codex 登录直连生图，原样发送提示词，不经过 Agent 扩写。请求型号为 gpt-image-2，不保证 Image 2.5。": "Uses your Codex login to send image prompts directly, without agent rewriting. Requests gpt-image-2; Image 2.5 is not guaranteed.",
   "Google / 官方直连": "Google / Direct",
   "Google 官方连接，无需 fal": "Direct Google connection; no fal needed",
   "Gemini 原生": "Native Gemini",

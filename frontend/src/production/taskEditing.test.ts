@@ -110,7 +110,7 @@ test("explicit regenerate resets the existing task once with new prompt and the 
     inputs: task.inputs,
     parameters: task.parameters,
     modelId: "model",
-    status: "READY",
+    status: "AWAITING_CONFIRMATION",
     hiddenFromList: false,
   });
   expect(run.jobId).toBeUndefined();
@@ -170,7 +170,7 @@ test("explicit generation reuses an unsubmitted hidden task and respects executi
       parameters: task.parameters,
       modelId: task.modelId,
       hiddenFromList: false,
-      status: execution === "automatic" ? "READY" : "AWAITING_CONFIRMATION",
+      status: "AWAITING_CONFIRMATION",
     });
     expect(applyOperations(next, ops, context)).toEqual(next);
   }

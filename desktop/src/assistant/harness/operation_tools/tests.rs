@@ -67,27 +67,44 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     );
     let args = decode(
         &p,
-        "mstudio_save_video_generation",
+        "mstudio_generate_video",
         json!({"id":"s", "prompt":"English dialogue"}),
     )
     .unwrap()
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"video","text":"English dialogue","draftOnly":true}]})
+        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"video","text":"English dialogue","draftOnly":false}]})
     );
     // Still authoring belongs to the image role.
     assert!(decode(&p, "mstudio_save_image_generation", json!({})).is_none());
+    for profile in crate::assistant::profiles::builtins() {
+        assert!(decode(&profile, "mstudio_save_video_generation", json!({})).is_none());
+        assert!(
+            decode(
+                &profile,
+                "mstudio_save_image_generation",
+                json!({"prompt":"x"})
+            )
+            .is_none()
+        );
+    }
     let args = decode(
         &profile("image"),
-        "mstudio_save_image_generation",
+        "mstudio_generate_image",
         json!({"id":"s", "prompt":"English still"}),
     )
     .unwrap()
     .unwrap();
-    assert_eq!(
-        args,
-        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"image","text":"English still","draftOnly":true}]})
+    assert_eq!(args["operations"][0]["draftOnly"], false);
+    assert!(
+        decode(
+            &profile("image"),
+            "mstudio_generate_image",
+            json!({"prompt":"x", "draftOnly":true})
+        )
+        .unwrap()
+        .is_err()
     );
     for invalid in [
         json!({"id":"s","patch":{"prompt":"x"}}),
@@ -95,7 +112,7 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
         json!({"id":"s","prompt":"x","dialogue":"x"}),
     ] {
         assert!(
-            decode(&p, "mstudio_save_video_generation", invalid)
+            decode(&p, "mstudio_generate_video", invalid)
                 .unwrap()
                 .is_err()
         );

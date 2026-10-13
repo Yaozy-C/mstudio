@@ -59,7 +59,7 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "generation",
-        "Read generation tasks by taskKey or filter turnId/status. Default reads omit prompt; select fields=[prompt] only for an explicit prompt edit, unchanged retry or generation investigation. Status and continuation are always returned. Follow nextOffset. Use await_generation for backend work instead of repeated status reads. Submission is not completion.",
+        "Read generation tasks by taskKey or filter turnId/status. Archived tasks return only compact historical facts in listings, even with fields; supply taskKey to retrieve their full record when needed. Archiving does not authorize resubmission. Default reads omit prompt; select fields=[prompt] only for an explicit prompt edit, unchanged retry or generation investigation. Status and continuation are always returned. Follow nextOffset. Use await_generation for backend work instead of repeated status reads. Submission is not completion.",
         &[
             "taskKey",
             "turnId",

@@ -226,6 +226,9 @@ pub fn delegated_snapshot(
 }
 pub fn reference_snapshot(mut snapshot: Value) -> Value {
     if let Some(fields) = snapshot.as_object_mut() {
+        fields.remove("_historyGeneration");
+        fields.remove("_archivedPrompts");
+        fields.remove("_archivedTurns");
         fields.remove("agent");
         fields.remove("skills");
         fields.remove("promptGuidance");

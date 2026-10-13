@@ -36,6 +36,7 @@ export function describeAttachment(
           ? undefined
           : node?.resultAssetId || node?.assetId);
   const asset = project.assets.find((a) => a.id === assetId);
+  if (asset?.discarded) return null;
   if (ref.kind === "node" ? !node : !asset) return null;
   return {
     ...ref,

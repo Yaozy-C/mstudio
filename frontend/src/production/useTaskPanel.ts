@@ -1,3 +1,4 @@
+import { archiveTask } from "./archive";
 import { useState } from "react";
 import type { Project } from "../model";
 import type { ChangeProject, ProductionTask } from "./types";
@@ -53,12 +54,7 @@ export function useTaskPanel(
     editPrompt: (key: string, text: string) =>
       change((p) => editTaskPrompt(p, key, text), false),
     hideTask: (key: string, hidden: boolean) =>
-      change((p) => {
-        const current = p.production?.drafts?.[key];
-        return current
-          ? saveTask(p, { ...current, hiddenFromList: hidden })
-          : p;
-      }, false),
+      change((p) => archiveTask(p, key, hidden), false),
     retry: (task: ProductionTask) =>
       change((p) => {
         const current = p.production?.drafts?.[task.key];

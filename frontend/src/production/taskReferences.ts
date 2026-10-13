@@ -22,6 +22,8 @@ export function replaceTaskReferences(
         throw failure("VALIDATION_FAILED", "缺少参考素材 ID");
       const input = attachmentInput(p, { kind: "asset", id: r.assetId });
       const asset = p.assets.find((a) => a.id === r.assetId);
+      if (asset?.discarded)
+        throw failure("VALIDATION_FAILED", "参考素材已废弃，不能用于生成");
       if (!input || !asset || !["image", "video"].includes(asset.kind))
         throw failure("VALIDATION_FAILED", "只能使用项目中已有的图片或视频");
       const role =

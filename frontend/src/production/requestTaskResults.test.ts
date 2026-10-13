@@ -70,7 +70,7 @@ test("composer parameters survive assigning a new shot after preflight", () => {
   );
   const run = runsOf(next)[0];
   expect(run.parameters).toEqual({ aspectRatio: "9:16", resolution: "2K" });
-  expect(run.status).toBe("READY");
+  expect(run.status).toBe("AWAITING_CONFIRMATION");
 });
 
 test("a shot task does not implicitly add its images or own new generation results", () => {
@@ -119,15 +119,14 @@ test("100 generation tasks persist across tool batches without replaying the sam
       9,
     ),
   ).toBe(restored);
-  expect(
-    runsOf(
-      requestTask(
-        restored,
-        { ...op, text: "Shot 99: move closer" },
-        { ...context, callId: "replayed" },
-      ),
+  expect(() =>
+    requestTask(
+      restored,
+      { ...op, text: "Shot 99: move closer" },
+      { ...context, callId: "replayed" },
     ),
-  ).toHaveLength(101);
+  ).toThrow("相同生成任务");
+  expect(runsOf(restored)).toHaveLength(100);
 });
 
 test("a catalog model selected in conversation creates a task without a dropdown selection", () => {
@@ -138,7 +137,9 @@ test("a catalog model selected in conversation creates a task without a dropdown
   expect(run.modelId).toBe("catalog-selected-image");
   expect(run.status).toBe("AWAITING_CONFIRMATION");
   context.turn.models.execution = "automatic";
-  expect(runsOf(requestTask(p, requested, context))[0].status).toBe("READY");
+  expect(runsOf(requestTask(p, requested, context))[0].status).toBe(
+    "AWAITING_CONFIRMATION",
+  );
   expect(() => requestTask(p, { ...op, mediaModelId: 42 }, context)).toThrow(
     "模型 ID",
   );

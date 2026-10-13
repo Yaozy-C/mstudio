@@ -70,14 +70,9 @@ fn restarted_job_becomes_failed_without_resubmission() {
     std::fs::remove_dir_all(root).unwrap();
 }
 #[test]
-fn multi_image_prompt_and_restart_preserve_partial_results() {
+fn restart_preserves_partial_direct_results() {
     let root = std::env::temp_dir().join(format!("mstudio-codex-batch-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
-    let input = json!({"prompt":"FRONT, RIGHT, TOP","n":3});
-    let items = codex_request::turn_input(&input, &root).unwrap();
-    let prompt = items[0]["text"].as_str().unwrap();
-    assert!(prompt.contains("as many times as needed"));
-    assert!(!prompt.contains("exactly"));
     let config = json!({"codexRoot":root});
     let directory = directory(&config, "partial").unwrap();
     std::fs::create_dir_all(&directory).unwrap();
@@ -94,22 +89,6 @@ fn multi_image_prompt_and_restart_preserve_partial_results() {
     assert_eq!(recovered.outputs.unwrap().len(), 1);
     std::fs::remove_dir_all(root).unwrap();
 }
-#[test]
-fn tool_failure_does_not_interrupt_later_image_results() {
-    let events = [
-        json!({"type":"imageGeneration","status":"completed","result":"iVBORw0KGgo="}),
-        json!({"type":"imageGeneration","status":"failed","failure":{"message":"temporary failure"}}),
-        json!({"type":"imageGeneration","status":"completed","result":"iVBORw0KGgo="}),
-    ];
-    let mut images = Vec::new();
-    for event in events {
-        if let Some(image) = codex_request::image_result(&event).unwrap() {
-            images.push(image);
-        }
-    }
-    assert_eq!(CODEX.outputs(&json!({"data":images})).len(), 2);
-}
-
 #[tokio::test]
 async fn queued_requests_wait_for_capacity_and_can_be_cancelled() {
     let slots = tokio::sync::Semaphore::new(2);
@@ -131,28 +110,31 @@ async fn queued_requests_wait_for_capacity_and_can_be_cancelled() {
     assert_eq!(slots.available_permits(), 2);
 }
 
-#[test]
-fn retryable_connection_errors_are_visible_and_terminal_errors_fail() {
-    let root = std::env::temp_dir().join(format!("mstudio-error-{}", mstudio::media::id()));
+#[tokio::test]
+#[ignore = "requires Codex login; consumes one generation and one edit"]
+async fn live_codex_direct_generation_and_edit() {
+    let root = std::env::temp_dir().join(format!("mstudio-codex-direct-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
-    observe_error(&root, &json!({"method":"error","params":{"willRetry":true,"error":{"message":"TLS handshake EOF"}}})).unwrap();
-    let state: Value =
-        serde_json::from_slice(&std::fs::read(root.join("state.json")).unwrap()).unwrap();
-    assert_eq!(state["progress"]["stage"], "reconnecting");
-    assert!(
-        state["progress"]["message"]
-            .as_str()
-            .unwrap()
-            .contains("TLS")
-    );
-    assert!(
-        observe_error(
-            &root,
-            &json!({"method":"error","params":{"willRetry":false,"error":{"message":"offline"}}})
-        )
-        .unwrap_err()
-        .to_string()
-        .contains("offline")
-    );
-    std::fs::remove_dir_all(root).unwrap();
+    let generated = generate(
+        &json!({"prompt":"白色背景上的一个蓝色陶瓷杯。"}),
+        &root,
+        CancellationToken::new(),
+    )
+    .await
+    .unwrap();
+    let image = CODEX.outputs(&generated).remove(0).url;
+    let edited = generate(
+        &json!({"prompt":"将杯子改成红色，保持白色背景。", "image":[image]}),
+        &root,
+        CancellationToken::new(),
+    )
+    .await
+    .unwrap();
+    for (name, result) in [("generated", generated), ("edited", edited)] {
+        let outputs = CODEX.outputs(&result);
+        assert_eq!(outputs.len(), 1);
+        let (_, bytes) = super::super::image_data::image_bytes(&outputs[0].url).unwrap();
+        std::fs::write(root.join(format!("{name}.png")), bytes).unwrap();
+    }
+    println!("Direct generation and edit saved: {}", root.display());
 }

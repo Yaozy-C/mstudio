@@ -1,5 +1,6 @@
 use super::{
-    ModelOutput, ProviderAdapter, ProviderFuture, ProviderUpdate, codex_request, codex_rpc::Rpc,
+    ModelOutput, ProviderAdapter, ProviderFuture, ProviderUpdate, codex_auth, codex_http,
+    codex_request,
 };
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
@@ -83,72 +84,39 @@ async fn wait_for_slot<'a>(
         permit = slots.acquire() => Ok(permit?),
     }
 }
-fn observe_error(root: &std::path::Path, event: &Value) -> Result<()> {
-    if event["method"] == "error" {
-        let message = event["params"]["error"]["message"]
-            .as_str()
-            .unwrap_or("Codex 服务连接失败");
-        if event["params"]["willRetry"] == true {
-            phase(root, "reconnecting", &format!("连接重试：{message}"))?;
-        } else {
-            anyhow::bail!("Codex：{message}");
-        }
-    }
-    Ok(())
-}
 async fn generate(
     input: &Value,
     root: &std::path::Path,
     cancel: CancellationToken,
 ) -> Result<Value> {
-    phase(root, "connecting", "正在连接本机 Codex")?;
-    let items = codex_request::turn_input(input, root)?;
-    let mut rpc = Rpc::start().await?;
-    let result: Result<Value> = async {
-        let account = rpc.call("account/read", json!({"refreshToken":false})).await?;
-        ensure!(account["account"]["type"] == "chatgpt", "请先在本机 Codex 登录 ChatGPT 账号");
-        let capabilities = rpc.call("modelProvider/capabilities/read", json!({})).await?;
-        ensure!(capabilities["imageGeneration"] == true, "当前 Codex 不支持原生生图");
-        phase(root, "preparing", "Codex 已连接，正在准备参考素材")?;
-        let started = rpc.call("thread/start", json!({"cwd":root,"ephemeral":true,"approvalPolicy":"never","sandbox":"workspace-write","developerInstructions":"This is an image-only request. Use native imagegen. Do not run shell commands, modify project files, or use other providers.","config":{"features":{"image_generation":true}}})).await?;
-        let thread = started["thread"]["id"].as_str().context("Codex 未返回会话编号")?.to_string();
-        let started = rpc.call("turn/start", json!({"threadId":thread,"input":items})).await?;
-        let turn = started["turn"]["id"].as_str().context("Codex 未返回回合编号")?.to_string();
-        phase(root, "submitted", "请求已交给 Codex，等待调用生图工具")?;
-        let mut images = Vec::new();
-        loop {
-            let event = tokio::select! {
-                _ = cancel.cancelled() => {
-                    let _ = tokio::time::timeout(Duration::from_secs(3), rpc.call("turn/interrupt", json!({"threadId":thread,"turnId":turn}))).await;
-                    anyhow::bail!("任务已取消");
-                }
-                event = rpc.next() => event?
-            };
-            observe_error(root, &event)?;
-            if event["method"] == "item/started" && event["params"]["item"]["type"] == "imageGeneration" {
-                phase(root, "generating", &format!("已生成 {} 张，正在生成图片", images.len()))?;
-            }
-            if event["method"] == "item/completed" && event["params"]["item"]["type"] == "imageGeneration" {
-                if let Some(image) = codex_request::image_result(&event["params"]["item"])? {
-                    images.push(image);
-                    persist(root, &update("IN_PROGRESS", Some(json!({"data":images})), None))?;
-                    phase(root, "generated", &format!("已生成 {} 张图片", images.len()))?;
-                } else {
-                    phase(root, "generating", "本次生图未成功，模型正在处理")?;
-                }
-            }
-            if event["method"] == "turn/completed" {
-                let completed = &event["params"]["turn"];
-                ensure!(completed["status"] == "completed", "Codex 回合失败：{}", completed["error"]);
-                ensure!(!images.is_empty(), "Codex 未返回图片");
-                return Ok(json!({"data":images}));
-            }
-
-            rpc.decline(&event).await?;
-        }
-    }.await;
-    rpc.stop().await;
-    result
+    codex_request::validate(input)?;
+    phase(root, "connecting", "正在读取本机 Codex 登录")?;
+    let credentials = tokio::select! {
+        biased;
+        _ = cancel.cancelled() => anyhow::bail!("任务已取消"),
+        credentials = codex_auth::credentials() => credentials?,
+    };
+    let client = codex_http::client()?;
+    let count = input["n"].as_u64().unwrap_or(1);
+    let mut images = Vec::new();
+    for index in 0..count {
+        phase(
+            root,
+            "generating",
+            &format!("已生成 {index}/{count} 张，正在直接生成图片"),
+        )?;
+        let result = tokio::select! {
+            biased;
+            _ = cancel.cancelled() => anyhow::bail!("任务已取消；已提交的服务端生成可能继续完成"),
+            result = codex_http::request(&client, codex_http::BASE_URL, &credentials, input) => result?,
+        };
+        images.extend(result);
+        persist(
+            root,
+            &update("IN_PROGRESS", Some(json!({"data":images})), None),
+        )?;
+    }
+    Ok(json!({"data":images}))
 }
 impl ProviderAdapter for Codex {
     fn id(&self) -> &'static str {
@@ -232,7 +200,7 @@ impl ProviderAdapter for Codex {
                 return Ok(update(
                     "IN_PROGRESS",
                     None,
-                    Some("正在取消本机生图…".into()),
+                    Some("正在取消本地等待，服务端生成可能继续…".into()),
                 ));
             }
             Ok(state)

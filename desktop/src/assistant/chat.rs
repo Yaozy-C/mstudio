@@ -220,6 +220,17 @@ async fn execute(
     .map_err(|e| e.to_string())?;
     snapshot["agent"] = crate::assistant::model_profile::role(&agent_profile);
     snapshot["unverifiedResults"] = super::result_check::pending(&store, project_id);
+    if let Some(items) = snapshot["unverifiedResults"].as_array_mut() {
+        items.retain(|item| {
+            doc["production"]["drafts"][item["taskKey"].as_str().unwrap_or("")]["hiddenFromList"]
+                != true
+                && !doc["assets"].as_array().is_some_and(|assets| {
+                    assets
+                        .iter()
+                        .any(|a| a["id"] == item["assetId"] && a["discarded"] == true)
+                })
+        });
+    }
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     if analysis_only {
         super::video_analysis::isolate(&mut snapshot);

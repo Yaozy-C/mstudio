@@ -1,4 +1,5 @@
 mod agent;
+mod archive_context;
 mod chat;
 pub(crate) mod child_activity;
 mod codex_input;

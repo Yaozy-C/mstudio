@@ -1,0 +1,75 @@
+.reference-picker.generation-reference-dialog {
+  width: min(1040px, calc(100vw - 48px));
+  max-width: calc(100vw - 48px);
+  height: min(800px, calc(100dvh - 64px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+  overflow: hidden;
+  background: var(--desk-surface);
+  color: var(--desk-text);
+}
+.generation-reference-dialog > header,
+.generation-reference-dialog > input,
+.generation-reference-dialog > footer {
+  flex-shrink: 0;
+}
+.generation-reference-dialog header h1 {
+  margin: 0;
+}
+.generation-reference-dialog input {
+  padding: 12px;
+  font-size: 14px;
+}
+.generation-reference-dialog .reference-picker-grid {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 3px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  align-content: start;
+  gap: 20px 16px;
+}
+.generation-reference-dialog .reference-picker-grid > button > div {
+  height: auto;
+  aspect-ratio: 1;
+}
+.generation-reference-dialog .reference-picker-grid > button > span {
+  margin-top: 8px;
+  font-size: 13px;
+}
+.generation-reference-dialog
+  .reference-picker-grid
+  > button[aria-pressed="true"] {
+  opacity: 1;
+}
+.generation-reference-dialog [aria-pressed="true"] > div {
+  border: 2px solid var(--desk-accent);
+}
+.generation-reference-dialog .reference-added {
+  top: 8px;
+  right: 8px;
+  color: var(--desk-accent);
+}
+.generation-reference-dialog footer {
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--desk-rule);
+  font-size: 13px;
+}
+.generation-reference-dialog .reference-picker-empty {
+  margin: auto 0;
+  font-size: 14px;
+}
+@media (max-width: 600px) {
+  .reference-picker.generation-reference-dialog {
+    padding: 16px;
+    gap: 12px;
+  }
+  .generation-reference-dialog .reference-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+}

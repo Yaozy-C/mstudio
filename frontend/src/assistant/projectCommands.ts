@@ -1,3 +1,4 @@
+import { assertUsableAgentReferences } from "./discardedReferences";
 import { setTransition } from "../timeline/transitions";
 import { agentTimelineEdit } from "../timeline/agentEdits";
 import { patchVisual } from "../timeline/visualSettings";
@@ -78,6 +79,7 @@ export function applyOperations(
     if (!value || typeof value !== "object" || Array.isArray(value))
       throw new Error("操作格式无效");
     const op = value as Operation;
+    assertUsableAgentReferences(next, op);
     if (
       op.expectedKind !== undefined &&
       next.nodes.find((node) => node.id === op.id)?.kind !== op.expectedKind
@@ -177,10 +179,7 @@ export function applyOperations(
         });
         const task = next.production!.drafts![source.key];
         task.lastRegenerationId = actionId;
-        task.status =
-          context.turn.models.execution === "automatic" && task.modelId
-            ? "READY"
-            : "AWAITING_CONFIRMATION";
+        task.status = "AWAITING_CONFIRMATION";
         next = saveTask(next, task);
         break;
       }

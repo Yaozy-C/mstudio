@@ -24,11 +24,13 @@ pub async fn codex_image_status() -> Value {
             let capabilities = rpc
                 .call("modelProvider/capabilities/read", json!({}))
                 .await?;
-            Ok(state(if capabilities["imageGeneration"] == true {
-                "ready"
-            } else {
-                "unsupported"
-            }))
+            Ok(state(
+                if capabilities["imageGeneration"] == true && super::codex_auth::available() {
+                    "ready"
+                } else {
+                    "unsupported"
+                },
+            ))
         }
         .await;
         rpc.stop().await;

@@ -1,6 +1,8 @@
 //! Provider transport is separate from model capabilities and project job persistence.
 mod codex;
+pub(crate) mod codex_auth;
 pub(crate) mod codex_discovery;
+mod codex_http;
 mod codex_request;
 pub mod codex_rpc;
 pub mod codex_setup;

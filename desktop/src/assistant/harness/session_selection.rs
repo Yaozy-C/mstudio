@@ -35,6 +35,18 @@ pub fn bind_task(
     let scope = task_context::saved(store, project, resume.unwrap_or(turn))?
         .ok_or("缺少任务上下文，请作为新任务发送")?;
     binding["taskId"] = json!(scope.task_id);
+    let doc = crate::project_service::load(&store.db.lock().unwrap(), project)
+        .map_err(|e| e.to_string())?;
+    let archive = crate::assistant::archive_context::revision(&doc);
+    if archive["archived"]
+        .as_array()
+        .is_some_and(|v| !v.is_empty())
+        || archive["discarded"]
+            .as_array()
+            .is_some_and(|v| !v.is_empty())
+    {
+        binding["archiveContext"] = archive;
+    }
     Ok(())
 }
 

@@ -63,6 +63,9 @@ pub(super) fn shot_state(doc: &Value, node: &Value) -> Value {
         .flat_map(|tasks| tasks.values())
         .filter(|task| task["targetNodeId"] == node["id"] || task["ownerId"] == node["id"])
         .map(|task| {
+            if task["hiddenFromList"] == true {
+                return crate::assistant::archive_context::summary(doc, task);
+            }
             json!({"id":task["key"],"kind":task["kind"],"status":task["status"],
             "resultAssetIds":task["resultAssetIds"],"resultAssetId":task["resultAssetId"],
             "readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":task["key"]}}})

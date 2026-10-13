@@ -27,8 +27,10 @@ export function GenerationSettings({
   close,
   save,
   inline = false,
+  onPatch,
 }: {
   inline?: boolean;
+  onPatch?: (value: Partial<ProductionTask>) => void;
   task: ProductionTask;
   project: Project;
   models: MediaModel[];
@@ -36,7 +38,8 @@ export function GenerationSettings({
   save: (task: ProductionTask, start: boolean) => void;
 }) {
   useLanguage();
-  const [draft, setDraft] = useState(() => structuredClone(task));
+  const [localDraft, setDraft] = useState(() => structuredClone(task));
+  const draft = onPatch ? task : localDraft;
   const [error, setError] = useState("");
   const model = models.find(
     (m) => m.id === draft.modelId && m.kind === draft.kind,
@@ -44,7 +47,8 @@ export function GenerationSettings({
   const fields = parameterFields(model);
   const options = draft.parameters ?? {};
   const patch = (value: Partial<ProductionTask>) => {
-    setDraft((d) => ({ ...d, ...value }));
+    if (onPatch) onPatch(value);
+    else setDraft((d) => ({ ...d, ...value }));
     setError("");
   };
   const param = (value: GenerationParameters) =>
@@ -124,13 +128,15 @@ export function GenerationSettings({
   };
   const content = (
     <>
-      <div className="generation-settings-heading">
-        <h3>{draft.kind === "image" ? t("图片设置") : t("视频设置")}</h3>
-        <button aria-label={t("关闭生成设置")} onClick={close}>
-          <X size={18} />
-        </button>
-      </div>
-      {draft.ownerId && (
+      {!onPatch && (
+        <div className="generation-settings-heading">
+          <h3>{draft.kind === "image" ? t("图片设置") : t("视频设置")}</h3>
+          <button aria-label={t("关闭生成设置")} onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+      )}
+      {draft.ownerId && !onPatch && (
         <p className="generation-setting-note">
           {project.nodes.find((n) => n.id === draft.ownerId)?.title}
         </p>
@@ -147,6 +153,9 @@ export function GenerationSettings({
             }}
           >
             <option value="">{t("选择模型")}</option>
+            {draft.modelId && !model && (
+              <option value={draft.modelId}>{t("原模型不可用")}</option>
+            )}
             {models
               .filter((m) => m.kind === draft.kind)
               .map((m) => (
@@ -224,7 +233,7 @@ export function GenerationSettings({
           {...{ project, draft, model, frames, tail, frame, patch }}
         />
       )}
-      {!inline && (
+      {!inline && !onPatch && (
         <details className="generation-settings-prompt">
           <summary>{t("生成描述")}</summary>
           <textarea
@@ -236,15 +245,18 @@ export function GenerationSettings({
         </details>
       )}
       {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
-      <footer>
-        <button onClick={close}>{t("取消")}</button>
-        <button onClick={() => commit(false)}>{t("保存设置")}</button>
-        {task.turnId && (
-          <button onClick={() => commit(true)}>{t("生成")}</button>
-        )}
-      </footer>
+      {!onPatch && (
+        <footer>
+          <button onClick={close}>{t("取消")}</button>
+          <button onClick={() => commit(false)}>{t("保存设置")}</button>
+          {task.turnId && (
+            <button onClick={() => commit(true)}>{t("生成")}</button>
+          )}
+        </footer>
+      )}
     </>
   );
+  if (onPatch) return <div className="task-generation-settings">{content}</div>;
   if (inline)
     return <div className="generation-settings-inline">{content}</div>;
   return (

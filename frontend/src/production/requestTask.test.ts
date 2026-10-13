@@ -66,11 +66,11 @@ test("Agent creates a durable, scoped conversation task with a human-selected mo
     }),
   ).toThrow("上下文");
 });
-test("automatic execution requires explicit mode and a selected model", () => {
+test("agent creation always waits even with a legacy automatic setting", () => {
   const { p, context, op } = setup();
   context.turn.models.execution = "automatic";
   const next = requestTask(p, op, context);
-  expect(runsOf(next)[0].status).toBe("READY");
+  expect(runsOf(next)[0].status).toBe("AWAITING_CONFIRMATION");
   context.turn.models.image = "";
   expect(runsOf(requestTask(p, op, context))[0].status).toBe(
     "AWAITING_CONFIRMATION",
@@ -89,15 +89,13 @@ test("a tool retry cannot duplicate the same paid request, while subsequent user
       ),
     ),
   ).toHaveLength(2);
-  expect(
-    runsOf(
-      requestTask(first, op, {
-        ...context,
-        callId: "next",
-        turnId: "next-turn",
-      }),
-    ),
-  ).toHaveLength(2);
+  expect(() =>
+    requestTask(first, op, {
+      ...context,
+      callId: "next",
+      turnId: "next-turn",
+    }),
+  ).toThrow("相同生成任务");
   expect(() =>
     applyOperations(p, [op, { op: "unsupported_operation" }], context),
   ).toThrow();
@@ -162,7 +160,7 @@ test("a full-reference source can cover fractional editorial timing without chan
     context,
   );
   const run = runsOf(next)[0];
-  expect(run.status).toBe("READY");
+  expect(run.status).toBe("AWAITING_CONFIRMATION");
   expect(run.targetNodeId).toBe("shot");
   expect(run.modelId).toBe(selected.id);
   expect(next.nodes[1].shot!.duration).toBe(5.3);

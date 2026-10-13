@@ -162,12 +162,7 @@ export function requestTask(
     turnId,
     instruction: turn.instruction,
     createdAt: Date.now() + index,
-    status:
-      op.draftOnly === true
-        ? "DRAFT"
-        : turn.models.execution === "automatic" && modelId
-          ? "READY"
-          : "AWAITING_CONFIRMATION",
+    status: op.draftOnly === true ? "DRAFT" : "AWAITING_CONFIRMATION",
   };
   const existing = existingShotRun(
     runsOf(p).filter((t) => t.key !== saved?.key),
@@ -176,7 +171,7 @@ export function requestTask(
   if (existing)
     throw failure(
       "VALIDATION_FAILED",
-      `镜头已有相同生成任务 ${existing.key}（${existing.status ?? "DRAFT"}）。读取该任务并复用结果或等待完成；明确重试时使用 regenerate_generation，不要重复创建。`,
+      `已有相同生成任务 ${existing.key}（${existing.status ?? "DRAFT"}）。读取该任务并复用结果或等待完成；明确重试时使用 regenerate_generation，不要重复创建。`,
     );
   if (runsOf(p, turnId).length >= 500)
     throw failure(

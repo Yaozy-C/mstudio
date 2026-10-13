@@ -120,3 +120,40 @@ test("video references retain full duration across pickers and selected canvas i
     ),
   ).not.toThrow();
 });
+
+test("picker toggles selected media off at the limit and after changing models", async () => {
+  const { toggleTaskReference } = await import("./referenceSelection");
+  const p = fixture();
+  const limited = model("custom", "image", {
+    references: [
+      { key: "/images", kind: "image", role: "reference", multiple: true },
+    ],
+    referenceLimit: 1,
+  });
+  const empty = createTask(p, [], "image");
+  const selected = {
+    ...empty,
+    ...toggleTaskReference(empty, p.assets[0], limited),
+  };
+  expect(selected.inputs).toHaveLength(1);
+  expect(() => toggleTaskReference(selected, p.assets[1], limited)).toThrow();
+  expect(toggleTaskReference(selected, p.assets[0], limited).inputs).toEqual(
+    [],
+  );
+  const edit = {
+    ...selected,
+    inputs: selected.inputs.map((i) => ({ ...i, role: "edit" as const })),
+  };
+  expect(
+    toggleTaskReference(edit, p.assets[0], model("minimax/h3/image-to-video"))
+      .inputs,
+  ).toEqual([]);
+  const removed = {
+    ...edit,
+    ...toggleTaskReference(edit, p.assets[0], limited),
+  };
+  expect(
+    toggleTaskReference(removed, p.assets[1], limited).inputs?.[0].assetId,
+  ).toBe(p.assets[1].id);
+  expect(selected.inputs[0].assetId).toBe(p.assets[0].id);
+});

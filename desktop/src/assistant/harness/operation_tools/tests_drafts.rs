@@ -21,9 +21,9 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
         json!({"action":"inspect","nodeIds":["shot","script"]}),
     )
     .unwrap();
-    crate::assistant::history::append_attributed(&store, "p", "Save draft", &json!("Save draft"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"execution":"automatic"},"instruction":"Save draft"}}}))).unwrap();
+    crate::assistant::history::append_attributed(&store, "p", "Prepare video task", &json!("Prepare video task"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"execution":"automatic"},"instruction":"Prepare video task"}}}))).unwrap();
     let input = json!({"id":"shot","prompt":"New video prompt"});
-    let args = decode(&p, "mstudio_save_video_generation", input.clone())
+    let args = decode(&p, "mstudio_generate_video", input.clone())
         .unwrap()
         .unwrap();
     let receipt =
@@ -63,14 +63,14 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
         .next()
         .unwrap();
     assert_eq!(draft["prompt"], "New video prompt");
-    assert_eq!(draft["status"], "DRAFT");
+    assert_eq!(draft["status"], "AWAITING_CONFIRMATION");
     for value in ["Old", "Preserved dialogue", "Preserved staging"] {
         assert!(saved.contains(value), "{saved}");
     }
     let call = ToolCall::from_wire(
         "call",
         ToolFunction::new(
-            "mstudio_save_video_generation"
+            "mstudio_generate_video"
                 .try_into()
                 .expect("nonempty tool name"),
             input,

@@ -1,6 +1,5 @@
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
-use std::path::Path;
 
 pub fn validate(input: &Value) -> Result<()> {
     let object = input.as_object().context("请求必须是 JSON 对象")?;
@@ -31,7 +30,12 @@ pub fn validate(input: &Value) -> Result<()> {
             "原生连接不支持指定 {key}；当前只支持 {expected}"
         );
     }
-    // Legacy model presets may contain n; native tool calls determine outputs.
+    if let Some(n) = input.get("n") {
+        ensure!(
+            n.as_u64().is_some_and(|n| (1..=10).contains(&n)),
+            "图片张数须为 1–10 的整数"
+        );
+    }
     if let Some(images) = input.get("image") {
         let images = images.as_array().context("image 必须为内嵌图片数组")?;
         ensure!(!images.is_empty(), "编辑至少需要 1 张参考图片");
@@ -45,121 +49,80 @@ pub fn validate(input: &Value) -> Result<()> {
     }
     Ok(())
 }
-pub fn turn_input(input: &Value, root: &Path) -> Result<Value> {
+/// Construct the direct wire payload without changing a single prompt character.
+pub fn payload(input: &Value) -> Result<(&'static str, Value)> {
     validate(input)?;
-    let mut references = Vec::new();
-    for (i, image) in input["image"].as_array().into_iter().flatten().enumerate() {
-        let (mime, bytes) = super::image_data::image_bytes(image.as_str().unwrap())?;
-        let extension = match mime {
-            "image/jpeg" => "jpg",
-            "image/webp" => "webp",
-            _ => "png",
-        };
-        let path = root.join(format!("reference-{i}.{extension}"));
-        std::fs::write(&path, bytes)?;
-        references.push(json!({"type":"localImage","path":path}));
-    }
-    let paths: Vec<_> = references.iter().map(|item| item["path"].clone()).collect();
-    let prompt = format!(
-        "Use the native image_gen.imagegen tool to fulfill the user request. Call it as many times as needed for the requested images. Return separate images when requested. Do not use API keys, HTTP clients, other providers, shell drawing, or SVG. If the tool is unavailable, report the error. The user image description follows:\n{}",
-        input["prompt"].as_str().unwrap()
-    );
-    let prompt = if paths.is_empty() {
-        prompt
+    let mut body = json!({"model":"gpt-image-2", "prompt":input["prompt"],
+        "background":"opaque", "quality":"auto", "size":"auto"});
+    let endpoint = if let Some(images) = input["image"].as_array() {
+        body["images"] = images
+            .iter()
+            .map(|image| json!({"image_url":image}))
+            .collect();
+        "images/edits"
     } else {
-        format!(
-            "{prompt}\nReference image paths: {}. Include all these paths in referenced_image_paths when calling image_gen.imagegen; do not use num_last_images_to_include or drop references.",
-            json!(paths)
-        )
+        "images/generations"
     };
-    let mut items = vec![json!({"type":"text","text":prompt})];
-    items.extend(references);
-    Ok(json!(items))
+    Ok((endpoint, body))
 }
-pub fn image_result(item: &Value) -> Result<Option<Value>> {
-    if item["type"] != "imageGeneration" {
-        return Ok(None);
-    }
-    // App Server already returns native tool failures to the model.
-    // This event is only a notification; keep listening for its next action.
-    if !item["failure"].is_null() || matches!(item["status"].as_str(), Some("failed" | "cancelled"))
-    {
-        return Ok(None);
-    }
-    ensure!(
-        item["status"] == "completed",
-        "Codex 生图未完成：{}",
-        item["status"]
-    );
-    let encoded = item["result"]
-        .as_str()
-        .filter(|v| !v.is_empty())
+pub fn image_result(response: &Value) -> Result<Vec<Value>> {
+    let data = response["data"]
+        .as_array()
         .context("Codex 未返回图片数据")?;
-    let (_, bytes) = super::image_data::image_bytes(&format!("data:image/png;base64,{encoded}"))?;
-    ensure!(
-        bytes.starts_with(b"\x89PNG\r\n\x1a\n"),
-        "Codex 返回了非 PNG 图片"
-    );
-    Ok(Some(json!({"b64_json":encoded})))
+    ensure!(!data.is_empty(), "Codex 未返回图片数据");
+    data.iter()
+        .map(|item| {
+            let encoded = item["b64_json"]
+                .as_str()
+                .filter(|s| !s.is_empty())
+                .context("Codex 未返回图片数据")?;
+            let (_, bytes) =
+                super::image_data::image_bytes(&format!("data:image/png;base64,{encoded}"))?;
+            ensure!(
+                bytes.starts_with(b"\x89PNG\r\n\x1a\n"),
+                "Codex 返回了非 PNG 图片"
+            );
+            Ok(json!({"b64_json":encoded}))
+        })
+        .collect()
 }
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn all_references_are_forwarded_by_path_without_a_five_image_cap() {
-        let stamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let root = std::env::temp_dir().join(format!("codex-refs-{}-{stamp}", std::process::id()));
-        std::fs::create_dir_all(&root).unwrap();
-        let input =
-            json!({"prompt":"Use every reference", "image":vec!["data:image/png;base64,YQ==";12]});
-        let items = turn_input(&input, &root).unwrap();
-        assert_eq!(items.as_array().unwrap().len(), 13);
-        assert!(
-            items[0]["text"]
-                .as_str()
-                .unwrap()
-                .contains("reference-11.png")
+    fn direct_payload_preserves_prompt_and_every_reference() {
+        let prompt = "  中文\n\"Do not rewrite\" \t";
+        let input = json!({"prompt":prompt,"image":vec!["data:image/png;base64,YQ==";12],"n":3});
+        let (path, body) = payload(&input).unwrap();
+        assert_eq!(path, "images/edits");
+        assert_eq!(body["prompt"], prompt);
+        assert_eq!(body["images"].as_array().unwrap().len(), 12);
+        assert_eq!(body["images"][11]["image_url"], input["image"][11]);
+        assert!(body.get("n").is_none()); // Each job sends one request per output.
+        assert_eq!(
+            payload(&json!({"prompt":"x"})).unwrap().0,
+            "images/generations"
         );
-        assert!(
-            items[0]["text"]
-                .as_str()
-                .unwrap()
-                .contains("referenced_image_paths")
-        );
-        std::fs::remove_dir_all(root).unwrap();
     }
     #[test]
-    fn rejects_unsupported_controls_instead_of_silently_ignoring_them() {
-        assert!(validate(&json!({"prompt":"hello","model":"codex-image","n":1})).is_ok());
+    fn rejects_unsupported_controls_and_invalid_results() {
         for input in [
-            json!({"prompt":"hello","model":"gpt-image-2.5-sunburst"}),
-            json!({"prompt":"hello","size":"1024x1024"}),
-            json!({"prompt":"hello","mask":"x"}),
-            json!({"prompt":"hello","image":[]}),
+            json!({"prompt":"x","n":0}),
+            json!({"prompt":"x","n":11}),
+            json!({"prompt":"x","n":1.5}),
+            json!({"prompt":"x","size":"1024x1024"}),
+            json!({"prompt":"x","model":"gpt-image-2"}),
+            json!({"prompt":"x","image":[]}),
         ] {
             assert!(validate(&input).is_err());
         }
-    }
-    #[test]
-    fn image_failure_is_not_a_successful_generation() {
-        assert!(
-            image_result(&json!({"type":"imageGeneration","status":"completed","result":""}))
-                .is_err()
-        );
-        assert!(
-            image_result(
-                &json!({"type":"imageGeneration","failure":{"type":"usageLimitExceeded"}})
-            )
-            .unwrap()
-            .is_none()
-        );
-        assert!(
-            image_result(&json!({"type":"agentMessage","text":"done"}))
+        assert!(image_result(&json!({"data":[]})).is_err());
+        assert!(image_result(&json!({"data":[{"b64_json":"YQ=="}]})).is_err());
+        assert_eq!(
+            image_result(&json!({"data":[{"b64_json":"iVBORw0KGgo="}]}))
                 .unwrap()
-                .is_none()
+                .len(),
+            1
         );
     }
 }

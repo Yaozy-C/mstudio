@@ -1,14 +1,16 @@
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
-import { Popover } from "@radix-ui/themes";
-import { Plus, Check, VideoCamera } from "@phosphor-icons/react";
+import { Dialog } from "@radix-ui/themes";
+import { Plus, Check, VideoCamera, X } from "@phosphor-icons/react";
+import { ActionButton } from "../ui/ActionButton";
 import { mediaUrl } from "../bridge";
 import type { Project } from "../model";
 import type { MediaModel } from "../models/mediaRegistry";
 import type { ProductionTask } from "./types";
-import { addTaskReference, supportsReference } from "./referenceSelection";
+import { toggleTaskReference, supportsReference } from "./referenceSelection";
 import "../styles/reference-picker.css";
+import "./generation-reference-dialog.css";
 
 export function GenerationReferencePicker({
   project,
@@ -29,20 +31,25 @@ export function GenerationReferencePicker({
   );
   const assets = project.assets.filter(
     (a) =>
-      supportsReference(a, model) &&
+      (selected.has(a.id) || supportsReference(a, model)) &&
       a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
   return (
-    <Popover.Root>
-      <Popover.Trigger>
-        <button type="button" className="generation-add-reference">
-          <Plus size={14} />
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <ActionButton icon={Plus} className="generation-add-reference">
           {t("添加参考素材")}
-        </button>
-      </Popover.Trigger>
-      <Popover.Content className="reference-picker" side="top" align="start">
+        </ActionButton>
+      </Dialog.Trigger>
+      <Dialog.Content
+        className="reference-picker generation-reference-dialog"
+        aria-describedby={undefined}
+      >
         <header>
-          <strong>{t("添加项目参考素材")}</strong>
+          <Dialog.Title>{t("添加项目参考素材")}</Dialog.Title>
+          <Dialog.Close>
+            <ActionButton icon={X} aria-label={t("关闭")} />
+          </Dialog.Close>
         </header>
         <input
           type="search"
@@ -57,15 +64,16 @@ export function GenerationReferencePicker({
               type="button"
               key={a.id}
               title={a.name}
+              aria-pressed={selected.has(a.id)}
               aria-label={`${selected.has(a.id) ? t("已添加") : t("添加")} ${a.name}`}
               disabled={
-                selected.has(a.id) ||
-                (model?.capabilities?.referenceLimit !== undefined &&
-                  selected.size >= model.capabilities.referenceLimit)
+                !selected.has(a.id) &&
+                model?.capabilities?.referenceLimit !== undefined &&
+                selected.size >= model.capabilities.referenceLimit
               }
               onClick={() => {
                 try {
-                  patch(addTaskReference(draft, a, model));
+                  patch(toggleTaskReference(draft, a, model));
                   setError("");
                 } catch (e) {
                   setError(String(e).replace(/^Error: /, ""));
@@ -100,11 +108,11 @@ export function GenerationReferencePicker({
           <span>
             {t("已引用")} {selected.size} {t("项")}
           </span>
-          <Popover.Close>
-            <button type="button">{t("完成")}</button>
-          </Popover.Close>
+          <Dialog.Close>
+            <ActionButton icon={Check}>{t("完成")}</ActionButton>
+          </Dialog.Close>
         </footer>
-      </Popover.Content>
-    </Popover.Root>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

@@ -75,6 +75,12 @@ pub fn payload(
         };
         let asset = if let Some(id) = asset_id {
             ensure!(
+                !doc["assets"]
+                    .as_array()
+                    .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true)),
+                "废弃素材不能作为 Agent 附件引用"
+            );
+            ensure!(
                 doc["assets"]
                     .as_array()
                     .is_some_and(|a| a.iter().any(|a| a["id"] == id)),

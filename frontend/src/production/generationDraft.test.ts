@@ -35,7 +35,7 @@ test("saving and revising a draft keeps prompt and inputs together, without auto
   );
   expect(runsOf(generated)[0].key).toBe(first.key);
   expect(runsOf(generated)[0].inputs).toEqual(first.inputs);
-  expect(runsOf(generated)[0].status).toBe("READY");
+  expect(runsOf(generated)[0].status).toBe("AWAITING_CONFIRMATION");
 
   const revised = requestTask(
     saved,
@@ -51,7 +51,7 @@ test("saving and revising a draft keeps prompt and inputs together, without auto
     { ...context, callId: "generate" },
   );
   expect(runsOf(submitted)).toHaveLength(1);
-  expect(runsOf(submitted)[0].status).toBe("READY");
+  expect(runsOf(submitted)[0].status).toBe("AWAITING_CONFIRMATION");
   // Explicitly cleared inputs must not silently inherit the shot's old references.
   expect(runsOf(submitted)[0].inputs).toEqual([]);
   expect(submitted.nodes[1].shot!.framePrompt).toBe("legacy prompt");

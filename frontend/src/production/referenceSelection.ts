@@ -43,3 +43,14 @@ export function addTaskReference(
     ],
   };
 }
+
+/** Selected inputs can always be removed, even after changing models or reaching the limit. */
+export function toggleTaskReference(
+  task: ProductionTask,
+  asset: Asset,
+  model?: MediaModel,
+): Partial<ProductionTask> {
+  if (task.inputs.some((r) => r.assetId === asset.id))
+    return { inputs: task.inputs.filter((r) => r.assetId !== asset.id) };
+  return addTaskReference(task, asset, model);
+}

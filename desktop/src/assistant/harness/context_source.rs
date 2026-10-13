@@ -21,6 +21,11 @@ pub fn snapshot(mut snapshot: Value) -> Message {
     )
 }
 pub fn metadata(snapshot: &mut Value) -> Value {
+    if let Some(fields) = snapshot.as_object_mut() {
+        fields.remove("_historyGeneration");
+        fields.remove("_archivedPrompts");
+        fields.remove("_archivedTurns");
+    }
     let mut versions = snapshot
         .as_object_mut()
         .and_then(|s| s.remove("_observations"))

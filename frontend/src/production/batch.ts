@@ -22,7 +22,7 @@ export function changeBatch(
   action: "resume" | "stop" | "retry",
 ) {
   let next = p;
-  const tasks = runsOf(p, turnId);
+  const tasks = runsOf(p, turnId).filter((t) => !t.hiddenFromList);
   for (const task of tasks) {
     if (action === "stop" && task.status === "READY")
       next = saveTask(next, { ...task, status: "CANCELLED" });

@@ -69,7 +69,11 @@ pub fn resolve(
                     return Err("Referenced generation task is unavailable in this project".into());
                 }
                 let task = &doc["production"]["drafts"][&id];
-                let saved: serde_json::Map<String, Value> = [
+                if task["hiddenFromList"] == true {
+                    manifest.push(json!({"reference":{"kind":"generation","id":id},"savedTask":crate::assistant::archive_context::summary(doc, task)}));
+                    continue;
+                }
+                let mut saved: serde_json::Map<String, Value> = [
                     "key",
                     "kind",
                     "status",
@@ -106,6 +110,15 @@ pub fn resolve(
                         });
                     }
                 }
+                let usable =
+                    crate::assistant::archive_context::summary(doc, task)["resultAssetIds"].clone();
+                if !usable
+                    .as_array()
+                    .is_some_and(|ids| ids.contains(&task["resultAssetId"]))
+                {
+                    saved.remove("resultAssetId");
+                }
+                saved.insert("resultAssetIds".into(), usable);
                 manifest.push(json!({"reference":{"kind":"generation","id":id},"projectRevision":doc["revision"],"savedTask":saved,"readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":id}},"authority":"Use actual result assets and task metadata. Read fields=[prompt] only for an explicit user request to edit the prompt, retry unchanged or investigate generation. A generated result does not establish product facts or authorize another generation."}));
                 continue;
             }
@@ -127,6 +140,18 @@ pub fn resolve(
             .as_array()
             .and_then(|items| items.iter().find(|v| v["id"] == id))
             .ok_or_else(|| format!("Referenced {kind} is unavailable in this project"))?;
+        let asset_id = if kind == "asset" {
+            Some(id.as_str())
+        } else {
+            item["resultAssetId"].as_str().or(item["assetId"].as_str())
+        };
+        if asset_id.is_some_and(|id| {
+            doc["assets"]
+                .as_array()
+                .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true))
+        }) {
+            return Err("Discarded result cannot be delegated as a reference".into());
+        }
         let reader = match kind {
             "asset" => json!({"tool":"mstudio_read_assets","arguments":{"ids":[id]}}),
             "clip" => json!({"tool":"mstudio_read_clips","arguments":{"ids":[id]}}),

@@ -1,3 +1,4 @@
+import { archivedSummary } from "../production/archive";
 import { batchSummary } from "../production/batch";
 import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
@@ -69,25 +70,31 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
           (!args.taskKey || args.taskKey === t.key) &&
           (!args.status || t.status === args.status),
       )
-      .map((t) => ({
-        continuation: taskOutcome(t).continuation,
-        id: t.key,
-        turnId: t.turnId,
-        kind: t.kind,
-        generationPurpose: t.generationPurpose,
-        ownerId: t.ownerId,
-        targetNodeId: t.targetNodeId,
-        trackingPaused: t.trackingPaused,
-        status: t.status,
-        resultAssetId: t.resultAssetId,
-        resultAssetIds: t.resultAssetIds,
-        modelId: t.modelId,
-        ...(wants("prompt") ? { prompt: snippet(t.prompt, detailLimit) } : {}),
-        hiddenFromList: !!t.hiddenFromList,
-        inputs: t.inputs,
-        parameters: t.parameters,
-        error: t.error,
-      }));
+      .map((t) =>
+        t.hiddenFromList && !args.taskKey
+          ? archivedSummary(p, t)
+          : {
+              continuation: taskOutcome(t).continuation,
+              id: t.key,
+              turnId: t.turnId,
+              kind: t.kind,
+              generationPurpose: t.generationPurpose,
+              ownerId: t.ownerId,
+              targetNodeId: t.targetNodeId,
+              trackingPaused: t.trackingPaused,
+              status: t.status,
+              resultAssetId: t.resultAssetId,
+              resultAssetIds: t.resultAssetIds,
+              modelId: t.modelId,
+              ...(wants("prompt")
+                ? { prompt: snippet(t.prompt, detailLimit) }
+                : {}),
+              hiddenFromList: !!t.hiddenFromList,
+              inputs: t.inputs,
+              parameters: t.parameters,
+              error: t.error,
+            },
+      );
   if (args.section === "creation" && !ids.length)
     return {
       revision,
@@ -111,6 +118,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
   if (page && Array.isArray(args.fields)) {
     page = page.map((item) => {
       const source = item as Record<string, unknown>;
+      if (source.archived === true) return source;
       const keep = new Set([
         "id",
         ...(args.fields as string[]),
@@ -142,7 +150,9 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       revision,
       section: args.section,
       batch:
-        args.section === "generation" ? batchSummary(generation) : undefined,
+        args.section === "generation"
+          ? batchSummary(generation.filter((t) => !t.hiddenFromList))
+          : undefined,
       missingIds,
       total: page.length,
       items,

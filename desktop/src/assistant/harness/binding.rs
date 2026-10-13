@@ -61,6 +61,13 @@ mod tests {
                 .unwrap()
                 .is_none()
         );
+        let mut archived = current.clone();
+        archived["archiveContext"] = json!({"archived":["old-task"],"discarded":[]});
+        assert!(
+            session::restore(&store, "p", "turn", &archived)
+                .unwrap()
+                .is_none()
+        );
         drop(store);
         std::fs::remove_dir_all(root).unwrap();
     }

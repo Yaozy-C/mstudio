@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { t, useLanguage } from "../i18n";
 import {
@@ -5,7 +6,7 @@ import {
   X,
   Image,
   VideoCamera,
-  MinusCircle,
+  Archive,
   ArrowCounterClockwise,
 } from "@phosphor-icons/react";
 import type { Project } from "../model";
@@ -24,9 +25,10 @@ export function TaskPanel({
   settings: () => void;
 }) {
   useLanguage();
+  const [archived, setArchived] = useState(false);
   const runs = [...canvas.runs].reverse();
   const visible = runs.filter(
-    (t) => !t.hiddenFromList || t.key === canvas.activeTaskKey,
+    (t) => !!t.hiddenFromList === archived || t.key === canvas.activeTaskKey,
   );
   const selected =
     visible.find((t) => t.key === canvas.activeTaskKey) ?? visible[0];
@@ -59,6 +61,16 @@ export function TaskPanel({
       >
         <header className="task-panel-heading">
           <Dialog.Title>{t("生成任务")}</Dialog.Title>
+          <button
+            type="button"
+            aria-pressed={archived}
+            onClick={() => {
+              setArchived(!archived);
+              canvas.clearActiveTask();
+            }}
+          >
+            {archived ? t("当前任务") : t("已归档")}
+          </button>
           <Dialog.Close>
             <button type="button" aria-label={t("关闭生成任务")}>
               <X />
@@ -104,7 +116,7 @@ export function TaskPanel({
                       }
                     >
                       {t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
-                      {task.hiddenFromList ? t(" · 已移除") : ""}
+                      {task.hiddenFromList ? t(" · 已归档") : ""}
                     </span>
                   </span>
                 </button>
@@ -125,15 +137,12 @@ export function TaskPanel({
                     type="button"
                     className="task-record-action icon-button"
                     title={
-                      selected.hiddenFromList
-                        ? t("恢复到列表")
-                        : t("从列表移除")
+                      selected.hiddenFromList ? t("恢复到列表") : t("归档任务")
                     }
                     aria-label={
-                      selected.hiddenFromList
-                        ? t("恢复到列表")
-                        : t("从列表移除")
+                      selected.hiddenFromList ? t("恢复到列表") : t("归档任务")
                     }
+                    disabled={!selected.hiddenFromList && pendingRun(selected)}
                     onClick={() => {
                       canvas.hideTask(selected.key, !selected.hiddenFromList);
                       if (!selected.hiddenFromList) canvas.clearActiveTask();
@@ -142,7 +151,7 @@ export function TaskPanel({
                     {selected.hiddenFromList ? (
                       <ArrowCounterClockwise size={18} />
                     ) : (
-                      <MinusCircle size={18} />
+                      <Archive size={18} />
                     )}
                   </button>
                 }

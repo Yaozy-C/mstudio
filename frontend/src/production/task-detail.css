@@ -242,3 +242,27 @@
 .generation-results-video video {
   border-radius: 0;
 }
+
+.task-generation-settings {
+  margin: 20px 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--desk-rule);
+}
+.task-generation-settings .generation-reference-thumbnail {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+.task-generation-settings .generation-settings-references > div {
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.task-generation-settings .generation-settings-references > div:last-child {
+  border-bottom: 0;
+}
+.task-generation-settings .generation-settings-references select {
+  width: 120px;
+  min-height: 34px;
+  font-size: 12px;
+}

@@ -59,7 +59,7 @@ test("correction replaces prompt and references on one task and revokes old resu
   expect(next.production!.drafts![task.key]).toMatchObject({
     key: task.key,
     prompt: "corrected",
-    status: "READY",
+    status: "AWAITING_CONFIRMATION",
     modelId: task.modelId,
     parameters: task.parameters,
   });

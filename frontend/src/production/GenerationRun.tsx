@@ -1,5 +1,7 @@
 import { RunStatus } from "./RunStatus";
 import { t, useLanguage } from "../i18n";
+import { GenerationSettings } from "./GenerationSettings";
+import { useState } from "react";
 import { TaskPromptEditor } from "./TaskPromptEditor";
 import { canEditOriginal, canRegenerate } from "./taskEditing";
 import { UnknownRunRecovery } from "./UnknownRunRecovery";
@@ -46,6 +48,7 @@ export function GenerationRun({
   ) => void;
 }) {
   useLanguage();
+  const [startError, setStartError] = useState("");
   const { busy, check } = useRunActions(task, canvas, project.id);
   const pending = pendingRun(task);
   const editable = !pending && (canEditOriginal(task) || canRegenerate(task));
@@ -80,81 +83,62 @@ export function GenerationRun({
         </header>
         {node && <small className="run-owner">{node.title}</small>}
         <p className="run-instruction">{task.instruction || task.prompt}</p>
-        <div className="run-metadata">
-          {canEditOriginal(task) ? (
-            <select
-              aria-label={t("本次生成模型")}
-              value={task.modelId}
-              onChange={(e) => {
-                canvas.update(
-                  { modelId: e.target.value, error: undefined },
-                  task.key,
-                );
-                if (!canvas.modelPreferences[task.kind])
-                  canvas.preferences({ [task.kind]: e.target.value });
-              }}
-            >
-              <option value="">
-                {models.length ? t("选择模型") : t("尚未连接生成模型")}
-              </option>
-              {task.modelId && !model && (
-                <option value={task.modelId}>{t("原模型不可用")}</option>
-              )}
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          ) : (
+        {!editable && (
+          <div className="run-metadata">
             <span>{model?.name ?? t("所选模型")}</span>
-          )}
-          <span>
-            {task.kind === "image"
-              ? t("图片")
-              : {
-                  single: t("单图"),
-                  ends: t("首尾帧"),
-                  multi: t("多图参考"),
-                  mixed: t("视频与图片参考"),
-                }[task.mode]}
-          </span>
-        </div>
+          </div>
+        )}
         <GenerationResults task={task} project={project} canvas={canvas} />
-        <div className="run-references" aria-label={t("本次使用素材")}>
-          {task.inputs
-            .filter((r) => r.assetId)
-            .map((r) => {
-              const a = project.assets.find((a) => a.id === r.assetId);
-              return (
-                <button
-                  type="button"
-                  key={r.key}
-                  title={`${a?.name ?? t("素材已移除")} · ${t(roleLabels[r.role])}`}
-                  aria-label={t("在画布查看 {v0}", {
-                    v0: a?.name ?? t("素材"),
-                  })}
-                  onClick={() => {
-                    const item = canvas.items.find(
-                      (n) => n.assetId === r.assetId,
-                    );
-                    if (item) {
-                      canvas.choose([item.key]);
-                      canvas.focusShot(item.ownerId);
-                    }
-                  }}
-                >
-                  {a?.preview && <img src={mediaUrl(a.preview)} alt={a.name} />}
-                  <small>
-                    {t(roleLabels[r.role])}
-                    {r.start !== undefined && r.end !== undefined
-                      ? ` ${r.start}–${r.end}s`
-                      : ""}
-                  </small>
-                </button>
-              );
-            })}
-        </div>
+        {editable ? (
+          <GenerationSettings
+            task={task}
+            project={project}
+            models={models}
+            close={() => {}}
+            save={() => {}}
+            onPatch={(patch) => {
+              canvas.update(patch, task.key);
+              setStartError("");
+            }}
+          />
+        ) : (
+          <div className="run-references" aria-label={t("本次使用素材")}>
+            {task.inputs
+              .filter((r) => r.assetId)
+              .map((r) => {
+                const a = project.assets.find((a) => a.id === r.assetId);
+                return (
+                  <button
+                    type="button"
+                    key={r.key}
+                    title={`${a?.name ?? t("素材已移除")} · ${t(roleLabels[r.role])}`}
+                    aria-label={t("在画布查看 {v0}", {
+                      v0: a?.name ?? t("素材"),
+                    })}
+                    onClick={() => {
+                      const item = canvas.items.find(
+                        (n) => n.assetId === r.assetId,
+                      );
+                      if (item) {
+                        canvas.choose([item.key]);
+                        canvas.focusShot(item.ownerId);
+                      }
+                    }}
+                  >
+                    {a?.preview && (
+                      <img src={mediaUrl(a.preview)} alt={a.name} />
+                    )}
+                    <small>
+                      {t(roleLabels[r.role])}
+                      {r.start !== undefined && r.end !== undefined
+                        ? ` ${r.start}–${r.end}s`
+                        : ""}
+                    </small>
+                  </button>
+                );
+              })}
+          </div>
+        )}
         <TaskPromptEditor key={task.key} task={task} canvas={canvas} />
       </div>
       <footer className="run-footer">
@@ -162,6 +146,9 @@ export function GenerationRun({
           <ActionButton icon={PlugsConnected} onClick={settings}>
             {t("连接生成模型")}
           </ActionButton>
+        )}
+        {startError && (
+          <ErrorNotice error={startError} fallback="VALIDATION_FAILED" />
         )}
         {issue && (
           <p className="run-notice" role="status">
@@ -192,12 +179,23 @@ export function GenerationRun({
             <ActionButton
               icon={ArrowClockwise}
               type="button"
-              disabled={!native || busy}
-              onClick={() =>
-                canRegenerate(task)
-                  ? canvas.retry(task)
-                  : canvas.configure(task)
-              }
+              disabled={!native || busy || !!issue || !model?.enabled}
+              onClick={async () => {
+                try {
+                  setStartError("");
+                  if (canRegenerate(task)) canvas.retry(task);
+                  else {
+                    if (task.status === "DRAFT")
+                      canvas.update(
+                        { status: "AWAITING_CONFIRMATION" },
+                        task.key,
+                      );
+                    await canvas.submit(task);
+                  }
+                } catch (error) {
+                  setStartError(String(error));
+                }
+              }}
             >
               {canRegenerate(task)
                 ? task.status === "COMPLETED"
@@ -205,17 +203,6 @@ export function GenerationRun({
                   : t("重试")
                 : t("生成")}
             </ActionButton>
-            {editable && (
-              <ActionButton
-                icon={SlidersHorizontal}
-                type="button"
-                disabled={busy || !model?.enabled}
-                title={!model?.enabled ? t("先选择生成模型") : undefined}
-                onClick={() => canvas.configure(task)}
-              >
-                {t("设置")}
-              </ActionButton>
-            )}
             {canEditOriginal(task) && (
               <ActionButton
                 icon={X}

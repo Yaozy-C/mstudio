@@ -41,6 +41,15 @@ export function editTask(
     task = replaceTaskReferences(p, task, changes.references);
     assertGenerationReferences(p, task);
   }
+  if (
+    task.status === "READY" &&
+    !task.jobId &&
+    !task.submissionId &&
+    (task.prompt !== original.prompt ||
+      JSON.stringify(task.inputs) !== JSON.stringify(original.inputs))
+  ) {
+    task = { ...task, status: "AWAITING_CONFIRMATION", error: undefined };
+  }
   return saveTask(p, task);
 }
 

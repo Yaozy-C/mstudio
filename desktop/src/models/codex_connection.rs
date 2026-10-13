@@ -56,7 +56,7 @@ async fn inspect() -> Result<Value> {
             .call("modelProvider/capabilities/read", json!({}))
             .await
             .unwrap_or_default();
-        Ok(json!({"status":"ready","models":rows,"images":caps["imageGeneration"] == true}))
+        Ok(json!({"status":"ready","models":rows,"images":caps["imageGeneration"] == true && crate::model_adapters::codex_auth::available()}))
     }
     .await;
     rpc.stop().await;
