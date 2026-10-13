@@ -272,5 +272,15 @@
   "完成并继续标注": "Done, add another comment",
   "{v0} 条批注": "{v0} comments",
   "框选区域后输入意见，按 Enter 继续标下一处。": "Mark a region and write a comment. Press Enter to mark the next one.",
-  "继续在图上框选，添加下一条批注。": "Mark another region to add the next comment."
+  "继续在图上框选，添加下一条批注。": "Mark another region to add the next comment.",
+  "成片已保存": "Your film is saved",
+  "视频已保存": "Video saved",
+  "保存位置：{v0}": "Location: {v0}",
+  "正在打开…": "Opening…",
+  "打开所在文件夹": "Show in folder",
+  "预览确认后，将 MP4 保存到你选择的位置。": "Check the preview, then save the MP4 to a location of your choice.",
+  "另存一份…": "Save another copy…",
+  "保存 MP4…": "Save MP4…",
+  "无法打开成片所在文件夹": "Could not open the video folder",
+  "可按保存位置手动查找文件，或重试打开文件夹。": "Find the file at the saved location, or try opening the folder again."
 }

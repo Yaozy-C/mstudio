@@ -48,7 +48,6 @@
   "补齐声音与字幕": "Add sound and captions",
   "可分离视频音频并调整淡入淡出，手动添加字幕或导入 SRT，也可用本机声音生成配音。按需要为相邻底层画面添加转场、调整片段色彩。": "Detach video audio and adjust fades, add captions manually or import SRT, and generate speech with installed system voices. Add transitions between adjacent base-track visuals and adjust clip colors as needed.",
   "检查整片并导出": "Review and export",
-  "播放完整影片，检查画面、声音、字幕和结尾。点击「导出成片 → 开始导出」，完成后预览，再选择「另存为 MP4」。": "Play the entire film and check visuals, sound, captions and the ending. Choose Export film → Start export. Preview the completed result, then choose Save as MP4.",
   "裁剪保留片段速度；剪切和删除会留下空隙，不会自动移动其他片段。": "Trimming preserves clip speed. Cutting and deleting leave gaps and do not automatically move other clips.",
   "保存与素材管理": "Saving and media storage",
   "项目会自动保存，重要作品仍建议单独备份。": "Projects save automatically; keep separate backups of important work.",
@@ -122,5 +121,6 @@
   "暂无可查询的正式版本": "No stable release available to check",
   "冷灰色": "Cool slate",
   "查看对话里的工具操作结果，再到脚本、画布或时间线检查。": "Read tool results in the conversation, then inspect the script, canvas or timeline.",
-  "退出应用后备份应用数据目录；如果迁移过素材目录，也要备份设置中显示的素材文件夹。": "Quit the app before backing up its data directory. If you migrated media, also back up the media folder shown in settings."
+  "退出应用后备份应用数据目录；如果迁移过素材目录，也要备份设置中显示的素材文件夹。": "Quit the app before backing up its data directory. If you migrated media, also back up the media folder shown in settings.",
+  "播放完整影片，检查画面、声音、字幕和结尾。点击「导出成片 → 开始导出」，完成后预览，再选择「保存 MP4…」。保存后可打开所在文件夹，或点击「完成」返回编辑。": "Play the entire film and check visuals, sound, captions and the ending. Choose Export film → Start export. Preview the completed result, then choose Save MP4…. After saving, show the file in its folder or choose Done to return to editing."
 }

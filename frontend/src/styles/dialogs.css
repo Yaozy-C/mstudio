@@ -88,6 +88,58 @@
   max-height: 48vh;
   margin: auto;
 }
+.export-save-hint {
+  margin-top: 20px;
+  color: var(--desk-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.export-saved-file {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 10px;
+}
+.export-saved-file > svg {
+  flex: none;
+}
+.export-file-details {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+}
+.export-file-details strong {
+  font-weight: 500;
+}
+.export-filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.export-file-details small {
+  color: var(--desk-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: text;
+}
+.export-saved-file > button {
+  flex: none;
+}
+@media (max-width: 600px) {
+  .export-saved-file {
+    flex-wrap: wrap;
+  }
+  .export-saved-file > button {
+    margin-left: 36px;
+  }
+}
 .export-summary {
   text-align: center;
   padding: 34px;

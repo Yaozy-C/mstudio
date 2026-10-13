@@ -59,3 +59,34 @@ pub async fn save_export(app: tauri::AppHandle, path: String) -> Result<Option<S
     }
     Ok(None)
 }
+
+#[tauri::command]
+pub async fn reveal_export(path: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let file = std::path::PathBuf::from(path)
+            .canonicalize()
+            .map_err(|e| e.to_string())?;
+        if !file.is_file() {
+            return Err("成片文件不存在".into());
+        }
+        #[cfg(target_os = "macos")]
+        let status = std::process::Command::new("open")
+            .arg("-R")
+            .arg(&file)
+            .status();
+        #[cfg(target_os = "windows")]
+        let status = std::process::Command::new("explorer")
+            .arg(format!("/select,{}", file.display()))
+            .status();
+        #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+        let status = std::process::Command::new("xdg-open")
+            .arg(file.parent().ok_or("无法读取保存位置")?)
+            .status();
+        if !status.map_err(|e| e.to_string())?.success() {
+            return Err("无法打开文件夹".into());
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}

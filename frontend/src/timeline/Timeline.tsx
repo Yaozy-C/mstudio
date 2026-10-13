@@ -252,7 +252,6 @@ export const Timeline = memo(function Timeline({
                       onSelect={() => {
                         selectClip(e.clip.id);
                         clock.pause();
-                        clock.seek(e.start);
                       }}
                       onOpen={() => onOpen(e.clip.id)}
                       onReference={() => onReference(e.clip.id)}

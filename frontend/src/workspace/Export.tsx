@@ -11,6 +11,7 @@ import { endTime } from "../timeline/document";
 import { prepareProjectCaptions } from "../creation/prepareProjectCaptions";
 import { bridge, mediaUrl, native } from "../bridge";
 import { runtime } from "../plugins/runtime";
+import { ExportResult } from "./ExportResult";
 export function ExportDialog({
   project,
   onClose,
@@ -23,9 +24,11 @@ export function ExportDialog({
   const [progress, setProgress] = useState<number | null>(null);
   const rendering = useRef(false);
   const [saving, setSaving] = useState(false);
+  const [revealing, setRevealing] = useState(false);
   const [error, setError] = useState("");
   const [path, setPath] = useState("");
   const [saved, setSaved] = useState("");
+  const [revealError, setRevealError] = useState("");
   useEffect(() => {
     if (!native) return;
     const off = listen<{ done: number; total: number }>(
@@ -71,24 +74,46 @@ export function ExportDialog({
     setError("");
     try {
       const target = await bridge<string | null>("save_export", { path });
-      if (target) setSaved(target);
+      if (target) {
+        setSaved(target);
+        setRevealError("");
+      }
     } catch (e) {
       setError(String(e));
     } finally {
       setSaving(false);
     }
   }
+  async function reveal() {
+    if (revealing) return;
+    setRevealing(true);
+    setRevealError("");
+    try {
+      await bridge("reveal_export", { path: saved });
+    } catch (e) {
+      setRevealError(String(e));
+    } finally {
+      setRevealing(false);
+    }
+  }
   return (
     <div className="modal-backdrop">
-      <section className="modal export-modal">
+      <section
+        className="modal export-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-title"
+      >
         <header>
           <div>
-            <h2>{path ? t("成片已就绪") : t("导出成片")}</h2>
+            <h2 id="export-title">
+              {saved ? t("成片已保存") : path ? t("成片已就绪") : t("导出成片")}
+            </h2>
           </div>
           <button
             className="icon-button"
             aria-label={t("关闭")}
-            disabled={busy || saving}
+            disabled={busy || saving || revealing}
             onClick={onClose}
           >
             <X />
@@ -134,22 +159,20 @@ export function ExportDialog({
             fallback={path ? "EXPORT_SAVE_FAILED" : "EXPORT_FAILED"}
           />
         )}
-        {saved && (
-          <StatusMessage kind="success">
-            {t("已保存至")} {saved}
-          </StatusMessage>
+        {revealError && (
+          <ErrorNotice error={revealError} fallback="EXPORT_REVEAL_FAILED" />
         )}
-        <footer>
-          {path ? (
-            <AsyncButton
-              className="primary"
-              busy={saving}
-              busyLabel={t("保存中…")}
-              onClick={() => void save()}
-            >
-              {t("另存为 MP4")}
-            </AsyncButton>
-          ) : (
+        {path ? (
+          <ExportResult
+            saved={saved}
+            saving={saving}
+            revealing={revealing}
+            onSave={() => void save()}
+            onReveal={() => void reveal()}
+            onClose={onClose}
+          />
+        ) : (
+          <footer>
             <AsyncButton
               busy={busy}
               busyLabel={t("正在渲染…")}
@@ -160,8 +183,8 @@ export function ExportDialog({
               <ExportIcon />
               {error ? t("重试导出") : t("开始导出")}
             </AsyncButton>
-          )}
-        </footer>
+          </footer>
+        )}
       </section>
     </div>
   );

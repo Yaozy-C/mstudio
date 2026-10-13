@@ -153,7 +153,8 @@ fn main() {
             imports::transfer::finish_import,
             imports::transfer::cancel_import,
             media_commands::render_video,
-            media_commands::save_export
+            media_commands::save_export,
+            media_commands::reveal_export
         ])
         .build(tauri::generate_context!())
         .expect("启动 Mstudio 失败")

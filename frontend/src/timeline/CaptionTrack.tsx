@@ -159,7 +159,6 @@ function CaptionChip({
           run: () => {
             select();
             clock.pause();
-            clock.seek(c.start);
             open?.();
           },
         },
@@ -183,7 +182,6 @@ function CaptionChip({
           if (e.detail === 0) {
             select();
             clock.pause();
-            clock.seek(c.start);
           }
         }}
         style={{
@@ -233,7 +231,6 @@ function CaptionChip({
           e.currentTarget.releasePointerCapture(e.pointerId);
           if (d.moved)
             patch(moveCaption(c, (e.clientX - d.x) / zoom, fps, d.side));
-          else clock.seek(c.start);
         }}
         onPointerCancel={(e) => {
           drag.current = null;
@@ -251,7 +248,6 @@ function CaptionChip({
             e.preventDefault();
             select();
             clock.pause();
-            clock.seek(c.start);
           }
           if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b")
             e.preventDefault();
