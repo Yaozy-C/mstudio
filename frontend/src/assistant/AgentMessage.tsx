@@ -4,6 +4,7 @@ import { AgentMark } from "../ui/Identity";
 import { ActionButton } from "../ui/ActionButton";
 import { ArrowClockwise } from "@phosphor-icons/react";
 import { TaskTarget } from "./TaskTarget";
+import { MessageCopyButton } from "./MessageCopyButton";
 import { createContext, useContext } from "react";
 import {
   ActionBarPrimitive,
@@ -74,6 +75,10 @@ export function AgentMessage() {
     context.sent[message.id] ??
     (message.metadata.custom?.attachments as Attachment[] | undefined) ??
     [];
+  const copyText = message.content
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n\n");
   return (
     <MessagePrimitive.Root className={`agent-message ${message.role}`}>
       <div className="agent-message-header">
@@ -114,6 +119,7 @@ export function AgentMessage() {
           />
         )}
         <MessagePrimitive.Content components={contentComponents} />
+        {copyText && <MessageCopyButton text={copyText} />}
         {message.role === "assistant" && turnId && (
           <GenerationMessages turnId={turnId} />
         )}

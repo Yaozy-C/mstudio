@@ -95,3 +95,19 @@ test("editing key mapping distinguishes cut, split modifiers and platform keys",
   expect(key("c", { metaKey: true, shiftKey: true })).toBeUndefined();
   expect(key("b", { metaKey: true })).toBeUndefined();
 });
+test("selected chat text keeps native copy, cut and paste even with a clip selected", () => {
+  for (const modifier of ["metaKey", "ctrlKey"]) {
+    for (const key of ["c", "x", "v"]) {
+      const event = {
+        key,
+        metaKey: false,
+        ctrlKey: false,
+        shiftKey: false,
+        altKey: false,
+        [modifier]: true,
+      };
+      expect(editKey({ ...event, textSelected: true })).toBeUndefined();
+      expect(editKey({ ...event, textSelected: false })).toBeDefined();
+    }
+  }
+});

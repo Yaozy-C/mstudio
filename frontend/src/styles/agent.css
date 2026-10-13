@@ -65,6 +65,34 @@
   min-width: 0;
   text-align: left;
 }
+.agent-message-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.agent-message-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.radix-themes button.agent-message-copy {
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 20px;
+}
+.radix-themes button.agent-message-copy:hover {
+  color: var(--desk-text);
+}
+.agent-message-copy svg {
+  width: 14px;
+  height: 14px;
+}
 .agent-message-body > :first-child,
 .agent-message-text > :first-child {
   margin-top: 0;

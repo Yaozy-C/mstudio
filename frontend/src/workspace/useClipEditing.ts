@@ -79,6 +79,7 @@ export function useClipEditing(
         ctrlKey: e.ctrlKey,
         altKey: e.altKey,
         shiftKey: e.shiftKey,
+        textSelected: !!window.getSelection()?.toString(),
       });
       if (command && !e.repeat && edit(command)) e.preventDefault();
     };

@@ -214,5 +214,8 @@
   "剪辑后期": "Editing and finishing",
   "创意策划": "Creative planning",
   "编剧": "Screenwriter",
-  "声画编剧": "Audiovisual screenwriting"
+  "声画编剧": "Audiovisual screenwriting",
+  "复制消息": "Copy message",
+  "复制": "Copy",
+  "复制失败，请选中文字后按 ⌘C / Ctrl+C。": "Copy failed. Select the text and press ⌘C / Ctrl+C."
 }

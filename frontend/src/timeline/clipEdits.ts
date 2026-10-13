@@ -1,8 +1,15 @@
 import { duration, uid, type Clip, type Project } from "../model";
 export type ClipEdit = "copy" | "cut" | "paste" | "trim-start" | "trim-end";
 export function editKey(
-  e: Pick<KeyboardEvent, "key" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey">,
+  e: Pick<
+    KeyboardEvent,
+    "key" | "metaKey" | "ctrlKey" | "altKey" | "shiftKey"
+  > & {
+    textSelected?: boolean;
+  },
 ): ClipEdit | undefined {
+  // Native text operations take priority over the selected timeline clip.
+  if (e.textSelected) return;
   const cmd = e.metaKey || e.ctrlKey;
   if (cmd && !e.altKey && !e.shiftKey) {
     if (e.key.toLowerCase() === "c") return "copy";
