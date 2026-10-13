@@ -51,6 +51,17 @@ impl Rpc {
         if transport == "--listen" {
             command.arg("stdio://");
         }
+        // A fresh process must use HTTP immediately, rather than retrying broken
+        // WebSockets before falling back. Built-in provider IDs are reserved.
+        for config in [
+            "model_provider=\"mstudio_openai_http\"",
+            "model_providers.mstudio_openai_http.name=\"OpenAI (Mstudio HTTP)\"",
+            "model_providers.mstudio_openai_http.requires_openai_auth=true",
+            "model_providers.mstudio_openai_http.supports_websockets=false",
+            "model_providers.mstudio_openai_http.wire_api=\"responses\"",
+        ] {
+            command.args(["-c", config]);
+        }
         if images {
             command.args(["--enable", "image_generation"]);
         }
