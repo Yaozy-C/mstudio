@@ -1,0 +1,111 @@
+.production-workspace .creation-canvas {
+  background-color: color-mix(in srgb, var(--desk-bg) 75%, var(--desk-sidebar));
+  background-image: radial-gradient(
+    var(--desk-rule) 0.65px,
+    transparent 0.65px
+  );
+}
+.production-workspace .shot-area > span {
+  font-family: var(--ui-mono);
+  font-size: var(--ui-caption);
+  letter-spacing: 0.04em;
+  color: var(--desk-accent);
+}
+.production-workspace .shot-area h2 {
+  margin-left: 14px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--desk-muted);
+}
+.production-workspace .canvas-card {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: 0 2px 5px #22221f04;
+}
+.production-workspace .canvas-card.selected {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--ui-focus);
+}
+.production-workspace .canvas-card.referenced {
+  border-color: var(--reference-color);
+}
+.production-workspace .canvas-card.script {
+  padding: 20px;
+  border-radius: 5px;
+}
+.production-workspace .canvas-card.script .card-title {
+  padding-bottom: 12px;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 600;
+}
+.production-workspace .canvas-card:not(.script) .card-title {
+  font-size: var(--ui-caption);
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--desk-muted);
+}
+.production-workspace .shot-card-meta {
+  padding: 10px 0;
+  border-color: var(--ui-rule);
+  font-size: var(--ui-caption);
+  color: var(--desk-muted);
+}
+.production-workspace .shot-card-duration {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-family: var(--ui-mono);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+.production-workspace .shot-card-chapter {
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.production-workspace .shot-card-sections section {
+  margin-top: 16px;
+}
+.production-workspace .shot-card-sections h3 {
+  margin-bottom: 6px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  font-weight: 500;
+  line-height: 18px;
+}
+.production-workspace .shot-card-sections p {
+  color: var(--desk-text);
+  font-size: var(--ui-body);
+  line-height: 24px;
+}
+.production-workspace .card-video,
+.production-workspace .canvas-card > img {
+  background: var(--desk-sidebar);
+  border-radius: 4px;
+}
+.production-workspace .canvas-controls,
+.production-workspace .selection-actions {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: var(--ui-shadow);
+  padding: 3px;
+}
+.production-workspace .canvas-controls button {
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: var(--ui-caption);
+}
+.production-workspace .canvas-controls > span {
+  font-family: var(--ui-mono);
+  font-size: var(--ui-caption);
+}
+.production-workspace .canvas-help {
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 18px;
+}

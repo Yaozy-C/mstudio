@@ -130,16 +130,6 @@
   display: block;
   overflow: auto;
 }
-.agent-context {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  padding: 8px 12px;
-  font-size: 10px;
-  color: var(--desk-muted);
-  overflow: hidden;
-}
-.agent-context input,
 .agent-settings input[type="checkbox"] {
   width: auto;
 }

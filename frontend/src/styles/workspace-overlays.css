@@ -1,7 +1,6 @@
 .studio-shell {
   position: relative;
   display: block;
-  min-width: 800px;
 }
 .studio-shell > .board {
   position: absolute;
@@ -24,7 +23,6 @@
   bottom: 16px;
   left: 16px;
   right: 16px;
-  height: 224px;
   z-index: 28;
   border: 1px solid var(--desk-rule);
   border-radius: 14px;

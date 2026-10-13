@@ -34,6 +34,8 @@ pub fn init(db: &Connection) -> Result<()> {
         CREATE INDEX IF NOT EXISTS agent_events_call ON agent_events(project_id,turn_id,json_extract(payload,'$.callId'),seq) WHERE kind='tool/result';
         CREATE INDEX IF NOT EXISTS agent_messages_turn ON agent_messages(project_id,json_extract(attribution,'$.turnId'),role);
         CREATE INDEX IF NOT EXISTS jobs_project ON jobs(project_id);
+        CREATE INDEX IF NOT EXISTS projects_updated ON projects(updated DESC);
+        CREATE INDEX IF NOT EXISTS jobs_status ON jobs(json_extract(data,'$.status'));
         CREATE INDEX IF NOT EXISTS jobs_connection_status ON jobs(json_extract(data,'$.connectionId'),json_extract(data,'$.status'));
         CREATE INDEX IF NOT EXISTS project_assets_asset ON project_assets(asset_id);
         CREATE INDEX IF NOT EXISTS project_files_path ON project_files(path);

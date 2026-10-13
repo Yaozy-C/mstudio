@@ -1,0 +1,104 @@
+.studio-shell .dock-agent .agent-messages {
+  padding: 12px 20px;
+}
+.dock-agent .agent-message {
+  margin-bottom: 24px;
+  font-size: var(--ui-body);
+  line-height: 24px;
+}
+.dock-agent .agent-message-header {
+  gap: 7px;
+  margin-bottom: 8px;
+  font-size: var(--ui-caption);
+  line-height: 18px;
+}
+.dock-agent .agent-message.user > .agent-message-body {
+  border: 1px solid var(--ui-rule);
+  border-radius: 8px 8px 3px 8px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--desk-surface) 55%, var(--desk-sidebar));
+}
+.dock-agent .agent-activity-heading {
+  padding-bottom: 8px;
+  border-color: var(--ui-rule);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.dock-agent .agent-activity-timeline .agent-activity-row {
+  margin: 10px 0;
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.dock-agent .agent-activity-timeline .agent-progress-note {
+  margin: 12px 0;
+  font-size: var(--ui-body);
+  line-height: 24px;
+}
+.dock-agent .agent-task-toolbar {
+  padding: 8px 12px;
+  border-color: var(--ui-rule);
+  font-size: var(--ui-caption);
+}
+.radix-themes .dock-agent .agent-new-task:hover {
+  background: var(--ui-hover);
+}
+.dock-agent .agent-input-area {
+  padding: 12px 16px 16px;
+}
+.radix-themes .dock-agent .agent-composer {
+  padding: 10px 10px 8px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 10px;
+  background: var(--desk-surface);
+  box-shadow: 0 2px 6px #22221f05;
+}
+.radix-themes .dock-agent .agent-composer:focus-within {
+  border-color: var(--desk-control);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--desk-rule) 30%, transparent);
+}
+.radix-themes .dock-agent .agent-composer textarea {
+  font-size: var(--ui-label);
+  line-height: 22px;
+  padding: 2px 4px 10px;
+}
+.dock-agent .agent-composer .composer-tools {
+  gap: 4px;
+}
+.dock-agent .agent-clip-context {
+  padding: 8px 16px;
+  border-color: var(--ui-rule);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.radix-themes
+  :is(
+    .conversation-model-menu,
+    .attachment-popover,
+    .reference-picker:not(.generation-reference-dialog),
+    .object-actions-menu
+  ) {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: var(--ui-shadow);
+}
+.radix-themes .conversation-model-menu .rt-DropdownMenuItem {
+  min-height: 34px;
+  padding-block: 6px;
+  border-radius: 4px;
+  font-size: var(--ui-label);
+}
+.radix-themes .reference-picker-tabs {
+  padding: 3px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 7px;
+}
+.radix-themes .reference-picker-tabs button[aria-pressed="true"] {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-weight: 500;
+}
+.radix-themes .agent-welcome h3 {
+  font-size: var(--ui-heading);
+  line-height: 24px;
+}

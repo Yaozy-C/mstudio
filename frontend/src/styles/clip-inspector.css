@@ -1,0 +1,293 @@
+/* Clip inspector specimen: shared roles, compact rhythm, quiet control states. */
+.dock-inspector {
+  --inspector-inset: 20px;
+  --inspector-control-height: 32px;
+  --inspector-radius: 6px;
+  --inspector-label-size: 13px;
+  --inspector-caption-size: 12px;
+  --inspector-field: var(--desk-surface);
+  --inspector-hover: color-mix(in srgb, var(--desk-sidebar) 55%, transparent);
+  --inspector-border: color-mix(in srgb, var(--desk-rule) 75%, transparent);
+  --inspector-focus: color-mix(in srgb, var(--desk-accent) 14%, transparent);
+}
+.radix-themes .dock-inspector.precision-panel .dock-heading {
+  min-height: 60px;
+  padding: 18px var(--inspector-inset) 10px;
+  gap: 12px;
+}
+.radix-themes .dock-inspector.precision-panel .dock-heading h2 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+}
+.radix-themes .dock-inspector.precision-panel .dock-heading .icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--inspector-radius);
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector.precision-panel .dock-heading .icon-button:hover {
+  background: var(--inspector-hover);
+  color: var(--desk-text);
+}
+.radix-themes .dock-inspector.precision-panel .inspector {
+  padding: 0 var(--inspector-inset) 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--desk-rule) transparent;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-asset {
+  margin: 0 0 16px;
+  font-size: var(--inspector-caption-size);
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-tabs {
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--inspector-border);
+  border-radius: 8px;
+  background: var(--desk-bg);
+  margin-bottom: 4px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-tabs button {
+  min-width: 0;
+  min-height: 32px;
+  padding: 6px 8px;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: var(--inspector-label-size);
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-tabs button svg {
+  width: 17px;
+  height: 17px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-tabs button:hover {
+  background: var(--inspector-hover);
+  color: var(--desk-text);
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-tabs
+  button[aria-pressed="true"] {
+  border-color: var(--inspector-border);
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  box-shadow: 0 1px 2px #22221f06;
+  font-weight: 500;
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-tabs
+  button[aria-pressed="true"]
+  svg {
+  color: var(--desk-accent);
+}
+
+.radix-themes .dock-inspector.precision-panel .inspector .inspector-section {
+  padding: 20px 0;
+  gap: 14px;
+  border-bottom-color: var(--inspector-border);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-section h3,
+.radix-themes .dock-inspector.precision-panel .inspector-comparison h3,
+.radix-themes .dock-inspector.precision-panel .inspector-grade-toggle {
+  margin: 0;
+  gap: 8px;
+  font-size: var(--inspector-label-size);
+  font-weight: 600;
+  line-height: 20px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-section h3 svg {
+  width: 16px;
+  height: 16px;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-section-heading {
+  min-height: 28px;
+  gap: 12px;
+}
+.radix-themes .dock-inspector.precision-panel .action-button {
+  min-height: 28px;
+  padding: 4px 6px;
+  gap: 5px;
+  border-radius: 5px;
+  color: var(--desk-muted);
+  font-size: var(--inspector-caption-size);
+  line-height: 20px;
+}
+.radix-themes .dock-inspector.precision-panel .action-button > svg {
+  width: 16px;
+  height: 16px;
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .action-button:hover:not(:disabled),
+.radix-themes
+  .dock-inspector.precision-panel
+  .action-button[aria-pressed="true"] {
+  background: var(--inspector-hover);
+  color: var(--desk-text);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-control {
+  gap: 8px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-control-row,
+.radix-themes .dock-inspector.precision-panel .inspector-select-row {
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 128px);
+  gap: 16px;
+  min-height: var(--inspector-control-height);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-control-row > label,
+.radix-themes .dock-inspector.precision-panel .inspector-select-row {
+  margin: 0;
+  gap: 16px;
+  color: var(--desk-text);
+  font-size: var(--inspector-label-size);
+  line-height: 20px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-control-row > label,
+.radix-themes .dock-inspector.precision-panel .inspector-select-row > span {
+  gap: 8px;
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-control-row
+  > label
+  svg,
+.radix-themes .dock-inspector.precision-panel .inspector-select-row > span svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--desk-muted);
+}
+
+.radix-themes .dock-inspector.precision-panel .inspector-number {
+  min-width: 0;
+  height: var(--inspector-control-height);
+  gap: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--inspector-border);
+  border-radius: var(--inspector-radius);
+  background: var(--inspector-field);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-number:hover {
+  border-color: var(--desk-control);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-number:focus-within {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--inspector-focus);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-number input {
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--inspector-label-size);
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-number > span {
+  min-width: 14px;
+  padding: 0;
+  text-align: center;
+  font-size: var(--inspector-caption-size);
+  line-height: 20px;
+}
+.radix-themes .dock-inspector.precision-panel .inspector-number > span:empty {
+  display: none;
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-number:has([aria-invalid="true"]) {
+  border-color: var(--desk-accent);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-select-row select {
+  height: var(--inspector-control-height);
+  padding: 4px 8px;
+  border: 1px solid var(--inspector-border);
+  border-radius: var(--inspector-radius);
+  background: var(--inspector-field);
+  font-size: var(--inspector-label-size);
+  line-height: 20px;
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-select-row
+  select:hover {
+  border-color: var(--desk-control);
+}
+.radix-themes
+  .dock-inspector.precision-panel
+  .inspector-select-row
+  select:focus {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--inspector-focus);
+}
+
+.radix-themes .dock-inspector.precision-panel .inspector-range {
+  height: 18px;
+}
+.dock-inspector .inspector-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+}
+.dock-inspector .inspector-range::-webkit-slider-thumb {
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  box-shadow: 0 0 0 3px var(--desk-bg);
+}
+.dock-inspector .inspector-range::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+}
+.dock-inspector .inspector-range::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  box-shadow: 0 0 0 3px var(--desk-bg);
+}
+.dock-inspector .inspector-endpoints {
+  margin-top: -4px;
+  font-size: var(--inspector-caption-size);
+  line-height: 18px;
+}
+.dock-inspector .inspector-duration {
+  gap: 4px;
+  padding-top: 4px;
+}
+.dock-inspector .inspector-duration > span {
+  font-size: var(--inspector-caption-size);
+}
+.dock-inspector .inspector-duration output {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 28px;
+}
+.dock-inspector .inspector-duration small {
+  font-size: var(--inspector-label-size);
+  font-weight: 400;
+  color: var(--desk-muted);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-comparison {
+  padding: 16px 0;
+  border-bottom-color: var(--inspector-border);
+}
+.radix-themes .dock-inspector.precision-panel .inspector-agent textarea {
+  min-height: 88px;
+  padding: 10px 12px;
+  border-color: var(--inspector-border);
+  border-radius: var(--inspector-radius);
+  background: var(--inspector-field);
+  font-size: var(--inspector-label-size);
+  line-height: 20px;
+}

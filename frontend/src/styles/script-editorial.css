@@ -1,0 +1,295 @@
+/* Screenplay specimen: paper surfaces, editorial numbering, quiet chrome. */
+.script-workspace {
+  --script-inset: 40px;
+  --script-gutter: 40px;
+  --script-rule: color-mix(in srgb, var(--desk-rule) 72%, transparent);
+  --script-caption: 12px;
+  --script-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  container: screenplay / inline-size;
+}
+.radix-themes .script-workspace {
+  padding: 24px clamp(24px, 3vw, 48px) 64px;
+  background: var(--desk-bg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--desk-rule) transparent;
+}
+.script-workspace .script-heading {
+  max-width: 980px;
+  margin: 0 auto 16px;
+  min-height: 32px;
+  gap: 16px;
+}
+.script-workspace .script-heading h1 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+.radix-themes .script-workspace .script-reference {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--desk-muted);
+}
+.radix-themes .script-workspace .script-reference svg {
+  width: 17px;
+  height: 17px;
+}
+.radix-themes .script-workspace .script-reference:hover {
+  color: var(--desk-text);
+  background: var(--desk-sidebar);
+}
+.script-workspace .script-paper {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px var(--script-inset) 40px;
+  border: 1px solid var(--script-rule);
+  border-radius: 3px;
+  background: var(--desk-surface);
+  box-shadow: 0 2px 8px #22221f03;
+}
+.radix-themes .script-workspace .script-title {
+  height: 44px;
+  margin: 0;
+  padding: 4px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 34px;
+  letter-spacing: -0.4px;
+}
+.radix-themes .script-workspace .script-title:hover,
+.radix-themes .script-workspace .script-paragraph > header input:hover {
+  border-color: var(--script-rule);
+}
+.radix-themes .script-workspace .script-title:focus,
+.radix-themes .script-workspace .script-paragraph > header input:focus {
+  border-color: var(--desk-accent);
+}
+.script-workspace .script-timing {
+  margin: 12px 0 24px;
+  padding: 0 0 20px;
+  border: 0;
+  border-bottom: 1px solid var(--script-rule);
+}
+.script-workspace .script-timing > div {
+  gap: 20px;
+  align-items: center;
+}
+.script-workspace .script-duration {
+  margin: 0;
+  gap: 8px;
+  align-items: center;
+  color: var(--desk-muted);
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.radix-themes .script-workspace .script-duration input {
+  width: 68px;
+  height: 28px;
+  margin: 0;
+  padding: 3px 6px;
+  border: 1px solid var(--script-rule);
+  border-radius: 5px;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-family: var(--script-mono);
+  font-size: 12px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.radix-themes .script-workspace .script-duration input:hover {
+  border-color: var(--desk-control);
+}
+.radix-themes .script-workspace .script-duration input:focus {
+  border-color: var(--desk-accent);
+}
+.script-workspace .script-timing > div > span {
+  font-family: var(--script-mono);
+  font-size: var(--script-caption);
+  font-variant-numeric: tabular-nums;
+  line-height: 20px;
+}
+.script-workspace .script-timing p {
+  margin: 10px 0 0;
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.script-workspace .creative-next-step {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  border: 0;
+  border-left: 2px solid var(--desk-accent);
+  background: var(--desk-bg);
+}
+.script-workspace .creative-next-step > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+.script-workspace .creative-next-step h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+.script-workspace .creative-next-step p {
+  margin: 0;
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.radix-themes .script-workspace .creative-next-step > button {
+  min-height: 30px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: var(--script-caption);
+  line-height: 20px;
+  font-weight: 500;
+}
+.script-workspace .script-paragraph {
+  padding: 24px 0;
+  border-color: var(--script-rule);
+  scroll-margin: 24px;
+}
+.script-workspace .script-paragraph > header {
+  gap: 12px;
+  margin: 0 0 10px;
+  min-height: 32px;
+}
+.script-workspace .script-paragraph > header > span {
+  width: 28px;
+  flex-shrink: 0;
+  font-family: var(--script-mono);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.radix-themes .script-workspace .script-paragraph > header input {
+  height: 32px;
+  margin: 0;
+  padding: 3px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.script-workspace .script-paragraph > header small {
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.script-workspace .script-paragraph-time {
+  margin: 0 0 20px var(--script-gutter);
+}
+.script-workspace .creative-inline-field {
+  position: relative;
+  margin: 0 0 20px var(--script-gutter);
+}
+.script-workspace .creative-inline-field label {
+  margin: 0 0 6px;
+  gap: 6px;
+  font-size: var(--script-caption);
+  font-weight: 500;
+  line-height: 18px;
+}
+.script-workspace .creative-inline-field label svg {
+  opacity: 0;
+}
+.script-workspace .creative-inline-field:is(:hover, :focus-within) label svg {
+  opacity: 0.65;
+}
+.script-workspace .creative-inline-input {
+  margin: 0 -7px;
+}
+.script-workspace .creative-inline-input > span,
+.radix-themes .script-workspace .creative-inline-input > textarea {
+  padding: 5px 6px;
+  font-size: 15px;
+  line-height: 26px;
+}
+.radix-themes .script-workspace .creative-inline-input > textarea {
+  border-radius: 4px;
+}
+.radix-themes .script-workspace .creative-inline-input > textarea::placeholder {
+  color: var(--desk-control-strong);
+  font-size: 14px;
+}
+.radix-themes .script-workspace .creative-inline-field:hover textarea {
+  border-color: var(--script-rule);
+  background: var(--desk-bg);
+}
+.radix-themes .script-workspace .creative-inline-input > textarea:focus {
+  border-color: var(--desk-accent);
+  background: var(--desk-surface);
+}
+.script-workspace .creative-inline-hint {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0;
+  font-size: 11px;
+  line-height: 18px;
+}
+.script-workspace .script-paragraph footer {
+  gap: 4px 12px;
+  margin: 4px 0 0 var(--script-gutter);
+}
+.radix-themes .script-workspace .script-paragraph .action-button {
+  min-height: 28px;
+  padding: 4px 6px;
+  gap: 5px;
+  border-radius: 5px;
+  color: var(--desk-muted);
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.radix-themes .script-workspace .script-paragraph .action-button svg {
+  width: 16px;
+  height: 16px;
+}
+.radix-themes
+  .script-workspace
+  .script-paragraph
+  .action-button:hover:not(:disabled) {
+  background: var(--desk-bg);
+  color: var(--desk-text);
+}
+.script-workspace .script-paragraph > details {
+  margin: 14px 0 0 var(--script-gutter);
+  font-size: var(--script-caption);
+  line-height: 20px;
+}
+.radix-themes .script-workspace .script-add {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-color: var(--script-rule);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: 13px;
+}
+@container screenplay (max-width: 640px) {
+  .script-paper {
+    --script-inset: 24px;
+    --script-gutter: 0px;
+  }
+  .script-workspace .creative-next-step {
+    flex-wrap: wrap;
+  }
+  .script-workspace .script-paragraph > header {
+    flex-wrap: wrap;
+  }
+  .script-workspace .script-paragraph > header input {
+    flex-basis: 60%;
+  }
+}

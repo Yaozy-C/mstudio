@@ -35,9 +35,6 @@
   opacity: 1;
   border-radius: 0;
 }
-.timeline-clip.selected .trim-handle {
-  background: #d6452d33;
-}
 .playhead {
   border-color: var(--desk-accent);
 }

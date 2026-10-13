@@ -2,10 +2,10 @@ import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { StudioSidebar, type SettingsTab } from "./StudioSidebar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, ArrowUpRight, FilmSlate } from "@phosphor-icons/react";
 import { bridge, native, mediaUrl } from "../bridge";
-import { type Project, type ProjectEntry } from "../model";
+import { type Project, type ProjectSummary } from "../model";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { initPlugins } from "../plugins/runtime";
 import { Studio } from "./Studio";
@@ -16,7 +16,8 @@ import { UserManual } from "../manual/UserManual";
 import { forgetViewport } from "../canvas/viewportMemory";
 export function App() {
   const language = useLanguage();
-  const [entries, setEntries] = useState<ProjectEntry[]>([]);
+  const [entries, setEntries] = useState<ProjectSummary[]>([]);
+  const opening = useRef(0);
   const [project, setProject] = useState<Project | null>(null);
   const [settings, setSettings] = useState<SettingsTab | null>(null);
   const [page, setPage] = useState<"projects" | "public-assets" | "manual">(
@@ -29,16 +30,31 @@ export function App() {
   );
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const navigate = (action: () => void) => {
+    opening.current++;
+    action();
+  };
+  async function openProject(id: string) {
+    const request = ++opening.current;
+    try {
+      const document = await bridge<Project>("get_project", { projectId: id });
+      if (opening.current === request) setProject(document);
+    } catch (e) {
+      if (opening.current === request) setError(String(e));
+    }
+  }
   const refresh = () => {
+    const request = opening.current;
     setLoading(true);
-    return bridge<ProjectEntry[]>("list_projects")
-      .then((items) => {
+    return bridge<ProjectSummary[]>("list_projects")
+      .then(async (items) => {
         setEntries(items);
         setError("");
         const reopen = sessionStorage.getItem("mstudio-reopen-project");
         if (reopen) {
           sessionStorage.removeItem("mstudio-reopen-project");
-          setProject(items.find((p) => p.id === reopen)?.document ?? null);
+          if (opening.current === request && items.some((p) => p.id === reopen))
+            await openProject(reopen);
         }
       })
       .catch((e) => setError(String(e)))
@@ -83,10 +99,10 @@ export function App() {
       <StudioSidebar
         activePage={page}
         count={entries.length}
-        onProjects={() => setPage("projects")}
-        onPublicAssets={() => setPage("public-assets")}
-        onManual={() => setPage("manual")}
-        onSettings={setSettings}
+        onProjects={() => navigate(() => setPage("projects"))}
+        onPublicAssets={() => navigate(() => setPage("public-assets"))}
+        onManual={() => navigate(() => setPage("manual"))}
+        onSettings={(tab) => navigate(() => setSettings(tab))}
       />
       {page === "manual" ? (
         <UserManual onBack={() => setPage("projects")} />
@@ -99,7 +115,10 @@ export function App() {
               <div>
                 <h1>{t("项目空间")}</h1>
               </div>
-              <button className="primary" onClick={() => setCreating(true)}>
+              <button
+                className="primary"
+                onClick={() => navigate(() => setCreating(true))}
+              >
                 <Plus />
                 {t("新建项目")}
               </button>
@@ -147,16 +166,11 @@ export function App() {
                   <article className="project-card" key={p.id}>
                     <button
                       className="project-cover"
-                      onClick={() => setProject(p.document)}
+                      onClick={() => void openProject(p.id)}
                     >
-                      {p.document.assets.find((a) => a.preview && !a.missing)
-                        ?.preview ? (
+                      {p.preview ? (
                         <img
-                          src={mediaUrl(
-                            p.document.assets.find(
-                              (a) => a.preview && !a.missing,
-                            )!.preview,
-                          )}
+                          src={mediaUrl(p.preview)}
                           alt={p.name}
                           loading="lazy"
                         />
@@ -164,15 +178,15 @@ export function App() {
                         <FilmSlate className="project-empty-mark" />
                       )}
                       <span className="cover-ratio">
-                        {p.document.width}:{p.document.height}
+                        {p.width}:{p.height}
                       </span>
                       <ArrowUpRight size={20} />
                     </button>
                     <div className="project-meta">
-                      <button onClick={() => setProject(p.document)}>
+                      <button onClick={() => void openProject(p.id)}>
                         <h3>{p.name}</h3>
                         <p>
-                          {p.document.clips.length} {t("个片段 ·")}{" "}
+                          {p.clipCount} {t("个片段 ·")}{" "}
                           {new Date(p.updated * 1000).toLocaleDateString(
                             language,
                           )}
@@ -182,6 +196,7 @@ export function App() {
                         project={p}
                         onDelete={async (id) => {
                           await bridge("delete_project", { id });
+                          opening.current++;
                           forgetViewport(id);
                           localStorage.removeItem(`mstudio-chat-draft:${id}`);
                           setEntries((current) =>
@@ -194,7 +209,7 @@ export function App() {
                 ))}
               <button
                 className="new-project-card"
-                onClick={() => setCreating(true)}
+                onClick={() => navigate(() => setCreating(true))}
               >
                 <Plus size={28} />
                 <strong>{t("新建项目")}</strong>

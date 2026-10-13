@@ -133,6 +133,12 @@ export type ProjectEntry = {
   updated: number;
   document: Project;
 };
+export type ProjectSummary = Pick<ProjectEntry, "id" | "name" | "updated"> & {
+  width: number;
+  height: number;
+  clipCount: number;
+  preview: string;
+};
 export const uid = () => crypto.randomUUID();
 export const duration = (c: Clip) => (c.trimOut - c.trimIn) / c.speed;
 export const formatTime = (s: number) =>

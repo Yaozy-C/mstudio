@@ -3,16 +3,9 @@
   color-scheme: light;
 }
 .radix-themes {
-  --default-font-family:
-    "Inter", "Helvetica Neue", Arial, "PingFang SC", sans-serif;
   --color-background: var(--desk-bg);
   --color-overlay: var(--desk-overlay);
-  font-family: var(--default-font-family);
   color: var(--desk-text);
-}
-.radix-themes button {
-  border-radius: 4px;
-  font-size: 13px;
 }
 .radix-themes button:hover:not(:disabled) {
   background: transparent;
@@ -21,11 +14,6 @@
 .radix-themes button.primary {
   color: var(--desk-surface);
   background: var(--desk-text);
-  border-color: var(--desk-text);
-}
-.radix-themes button.primary:hover:not(:disabled) {
-  background: #40403b;
-  border-color: #40403b;
 }
 .radix-themes
   :is(
@@ -41,25 +29,15 @@
   background: var(--desk-surface);
   border-radius: 4px;
 }
-.radix-themes :is(input, textarea)::placeholder {
-  color: #76736c;
-}
 input[type="checkbox"],
 input[type="range"] {
   accent-color: var(--desk-accent);
 }
 .radix-themes
-  :is(
-    .nav-item.active,
-    .settings-nav button[aria-pressed="true"],
-    .hub-categories button[aria-pressed="true"]
-  ) {
+  :is(.nav-item.active, .hub-categories button[aria-pressed="true"]) {
   background: transparent;
   color: var(--desk-accent);
   font-weight: 600;
-}
-.radix-themes .settings-nav button[aria-pressed="true"] {
-  border-left-color: var(--desk-accent);
 }
 .radix-themes .brand-icon {
   color: var(--desk-text);
@@ -70,27 +48,11 @@ input[type="range"] {
 .radix-themes :is(.hub-status, .hub-status.ready) {
   color: var(--desk-muted);
 }
-.radix-themes :is(.hub-status.ready, .online-dot) {
+.radix-themes .hub-status.ready {
   color: #3c6651;
 }
 .radix-themes .modal {
   border-radius: 6px;
-}
-.radix-themes .quote-button {
-  background: transparent;
-  color: var(--desk-text);
-}
-.radix-themes .quote-button.attached {
-  color: var(--desk-accent);
-  border-color: var(--desk-accent);
-  background: transparent;
-  font-weight: 600;
-}
-.radix-themes .agent-context {
-  border-left: 3px solid var(--desk-accent);
-  margin: 16px 20px;
-  padding: 0 10px;
-  color: var(--desk-text);
 }
 .radix-themes .agent-composer {
   background: var(--desk-surface);
@@ -107,9 +69,6 @@ input[type="range"] {
   color: var(--desk-text);
   background: var(--desk-sidebar);
   border-color: var(--desk-rule);
-}
-.radix-themes .library-main {
-  padding: 52px 48px;
 }
 .library-heading h1 {
   font-size: 36px;
@@ -161,31 +120,4 @@ input[type="range"] {
 }
 .radix-themes .preview-frame {
   background: black;
-}
-.radix-themes .shot-play {
-  color: white;
-}
-.radix-themes .shot-picture-tag {
-  color: white;
-  background: #22221fcc;
-}
-.radix-themes .shot-number {
-  background: transparent;
-  border: 0;
-  color: var(--desk-text);
-  font-size: 18px;
-  font-weight: 600;
-  padding: 0;
-}
-.radix-themes .shot-picture {
-  border-radius: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0s !important;
-    animation-duration: 0s !important;
-  }
 }

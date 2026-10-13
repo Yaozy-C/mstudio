@@ -1,7 +1,9 @@
 import { mergeValue } from "./domain/merge";
 import { commandError } from "./errors/commands";
 import { invoke, convertFileSrc, isTauri } from "@tauri-apps/api/core";
-import type { Project, ProjectEntry } from "./model";
+import type { Project, ProjectEntry, ProjectSummary } from "./model";
+const previewEntries = (): ProjectEntry[] =>
+  JSON.parse(localStorage.getItem("mstudio-preview") || "[]");
 export const native = isTauri();
 export const mediaUrl = (path: string) =>
   !path
@@ -23,10 +25,22 @@ export async function bridge<T>(
     }
   }
   if (command === "list_projects")
-    return JSON.parse(localStorage.getItem("mstudio-preview") || "[]") as T;
+    return previewEntries().map(
+      ({ id, name, updated, document }) =>
+        ({
+          id,
+          name,
+          updated,
+          width: document.width,
+          height: document.height,
+          clipCount: document.clips.length,
+          preview:
+            document.assets.find((a) => a.preview && !a.missing)?.preview ?? "",
+        }) satisfies ProjectSummary,
+    ) as T;
   if (command === "save_project" || command === "create_project") {
     let p = args!.document as Project;
-    const entries = await bridge<ProjectEntry[]>("list_projects");
+    const entries = previewEntries();
     const exists = entries.some((e) => e.id === p.id);
     if (command === "save_project" && !exists) throw new Error("项目已删除");
     if (command === "create_project" && exists) throw new Error("项目已存在");
@@ -44,11 +58,10 @@ export async function bridge<T>(
     return p as T;
   }
   if (command === "get_project")
-    return (await bridge<ProjectEntry[]>("list_projects")).find(
-      (p) => p.id === args!.projectId,
-    )!.document as T;
+    return previewEntries().find((p) => p.id === args!.projectId)!
+      .document as T;
   if (command === "delete_project") {
-    const entries = await bridge<ProjectEntry[]>("list_projects");
+    const entries = previewEntries();
     localStorage.setItem(
       "mstudio-preview",
       JSON.stringify(entries.filter((e) => e.id !== args!.id)),

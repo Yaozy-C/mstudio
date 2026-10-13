@@ -44,11 +44,6 @@
   justify-content: space-between;
   gap: 20px;
 }
-.library-heading h1 {
-  font-size: 34px;
-  font-weight: 500;
-  letter-spacing: -1px;
-}
 .library-heading .primary {
   padding: 12px 19px;
 }
@@ -60,13 +55,8 @@
   border-bottom: 1px solid var(--desk-rule);
   padding-bottom: 18px;
 }
-.library-tools h3 {
-  font-size: 14px;
-}
 .library-tools h3 span {
-  font-size: 11px;
   color: var(--desk-muted);
-  margin-left: 12px;
 }
 .library-tools input {
   width: 230px;
@@ -140,15 +130,12 @@
   min-width: 0;
 }
 .project-meta h3 {
-  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .project-meta p {
-  font-size: 11px;
   color: var(--desk-muted);
-  margin-top: 8px;
 }
 .new-project-card {
   height: 254px;
@@ -178,31 +165,6 @@
   white-space: nowrap;
   color: var(--desk-muted);
   font-size: 11px;
-}
-.settings-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 14px 0 0;
-  padding: 0;
-}
-.settings-nav button {
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 12px 8px;
-  border: 0;
-  background: transparent;
-  color: var(--desk-muted);
-  text-align: left;
-}
-.settings-nav button[aria-pressed="true"] {
-  background: transparent;
-  color: var(--desk-accent);
-  font-weight: 600;
-}
-.settings-nav svg {
-  width: 17px;
-  flex-shrink: 0;
 }
 
 .sidebar-group {

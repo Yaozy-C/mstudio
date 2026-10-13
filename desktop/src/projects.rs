@@ -3,8 +3,15 @@ use serde_json::Value;
 use tauri::State;
 
 #[tauri::command]
-pub fn list_projects(store: State<Store>) -> Result<Vec<Value>, String> {
-    store.projects().map_err(|e| e.to_string())
+pub async fn list_projects(app: tauri::AppHandle) -> Result<Vec<Value>, String> {
+    use tauri::Manager;
+    tauri::async_runtime::spawn_blocking(move || {
+        app.state::<Store>()
+            .project_summaries()
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 pub fn write_document(store: &Store, mut document: Value, create: bool) -> Result<(), String> {
     store.normalize_paths(&mut document);

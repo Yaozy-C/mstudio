@@ -29,9 +29,6 @@ button {
   background: var(--desk-surface);
   padding: 8px 12px;
   font-size: 12px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
 }
 button:hover {
   background: transparent;
@@ -135,12 +132,6 @@ h4 {
   color: var(--desk-muted);
   margin: 12px 0;
 }
-.eyebrow {
-  font-size: 10px;
-  color: var(--desk-muted);
-  letter-spacing: 2.2px;
-  margin-bottom: 16px;
-}
 .brand {
   display: flex;
   align-items: center;
@@ -163,15 +154,6 @@ h4 {
   border: 1px solid var(--desk-rule);
   border-radius: 8px;
   color: var(--desk-muted);
-}
-.online-dot {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  flex-shrink: 0;
-  background: var(--desk-sidebar);
-  border-radius: 50%;
-  margin-right: 7px;
 }
 .error {
   background: var(--desk-sidebar);

@@ -1,0 +1,283 @@
+/* Settings use one content grid and the same paper/card hierarchy. */
+.settings-page .hub-main {
+  --settings-inset: max(32px, calc((100% - var(--ui-page-width)) / 2));
+}
+.radix-themes .settings-page .hub-main > .settings-heading {
+  min-height: 76px;
+  padding: 22px var(--settings-inset);
+  border-color: var(--ui-rule);
+}
+.settings-page .settings-heading h1 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  letter-spacing: -0.3px;
+}
+.radix-themes .settings-page .hub-scroll {
+  padding: 24px var(--settings-inset) 40px;
+}
+.settings-page .hub-scroll > * {
+  max-width: var(--ui-page-width);
+  margin-inline: 0;
+}
+.settings-page .settings-actions {
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.radix-themes .settings-page .settings-actions > button {
+  min-height: 34px;
+  padding: 6px 12px;
+}
+.settings-page .hub-section-head {
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.radix-themes
+  .settings-page
+  :is(
+    .hub-section-head h3,
+    .model-section-heading h3,
+    .agent-config-block > h3
+  ) {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.radix-themes
+  .settings-page
+  :is(.hub-section-head p, .model-hint, .model-default p) {
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.radix-themes
+  .settings-page
+  :is(
+    .hub-feature,
+    .hub-model-card,
+    .spec-card,
+    .agent-profile,
+    .model-default
+  ) {
+  padding: 18px 20px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: none;
+}
+.settings-page .hub-feature {
+  margin-bottom: 12px;
+}
+.settings-page .hub-feature .model-hint {
+  margin: 10px 0 12px;
+}
+.settings-page .hub-feature .model-badge {
+  flex-shrink: 0;
+}
+.settings-page .hub-feature > button {
+  padding: 5px 10px;
+  font-size: var(--ui-caption);
+}
+.radix-themes .settings-page .hub-categories {
+  padding: 3px;
+  gap: 3px;
+  margin: 0 0 24px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-bg);
+}
+.radix-themes .settings-page .hub-categories button {
+  min-height: 34px;
+  padding: 6px 10px;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: var(--ui-label);
+  font-weight: 400;
+}
+.radix-themes .settings-page .hub-categories button:hover {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.radix-themes .settings-page .hub-categories button[aria-pressed="true"] {
+  background: var(--desk-surface);
+  border-color: var(--ui-rule);
+  color: var(--desk-text);
+  font-weight: 500;
+  box-shadow: 0 1px 2px #22221f06;
+}
+.settings-page .hub-categories button[aria-pressed="true"] svg {
+  color: var(--desk-accent);
+}
+.settings-page .model-default {
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.radix-themes .settings-page .model-row {
+  padding: 18px 0;
+  gap: 12px;
+  border-color: var(--ui-rule);
+}
+.settings-page .model-row-copy strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.radix-themes .settings-page .model-row-copy :is(p, small) {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.settings-page .model-row-actions button {
+  min-height: 28px;
+  padding: 3px 8px;
+  border-color: var(--ui-rule);
+  font-size: var(--ui-caption);
+}
+.radix-themes .settings-page .agent-roster {
+  margin-top: 0;
+  border-color: var(--ui-rule);
+}
+.radix-themes .settings-page .agent-roster-row {
+  grid-template-columns: 30px minmax(240px, 1fr) auto auto auto;
+  gap: 16px;
+  padding: 18px 0;
+  border-color: var(--ui-rule);
+}
+.radix-themes .settings-page .agent-roster-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--desk-muted);
+}
+.settings-page .agent-roster-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.radix-themes .settings-page .agent-roster-info {
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+}
+.radix-themes .settings-page .agent-roster-info h3 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.radix-themes .settings-page .agent-roster-info p {
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.radix-themes .settings-page :is(.agent-roster-count, .agent-roster-toggle) {
+  font-size: var(--ui-caption);
+  gap: 8px;
+}
+.radix-themes .settings-page .agent-roster-toggle .rt-SwitchRoot {
+  --switch-width: 32px;
+  --switch-height: 18px;
+  --switch-border-radius: 999px;
+  width: 32px;
+  height: 20px;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+.settings-page .agent-roster-toggle .rt-SwitchRoot::before {
+  background-image: none;
+  background-color: var(--desk-rule);
+  box-shadow: inset 0 0 0 1px var(--ui-rule);
+}
+.settings-page
+  .agent-roster-toggle
+  .rt-SwitchRoot[data-state="checked"]::before {
+  background-color: var(--desk-text);
+  box-shadow: none;
+}
+.radix-themes .settings-page .agent-roster-row > button {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--ui-radius);
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+}
+.radix-themes .settings-page .agent-roster-row > button:hover {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.settings-page .agent-config-block {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-color: var(--ui-rule);
+}
+.settings-page .agent-profile h3 {
+  font-size: var(--ui-heading);
+  font-weight: 600;
+}
+.settings-page .agent-detail-navigation {
+  padding-block: 12px;
+  margin-bottom: 24px;
+  top: -24px;
+  border-color: var(--ui-rule);
+}
+.settings-page .skill-document {
+  padding: 24px;
+  border-radius: 3px;
+  border-color: var(--ui-rule);
+  background: var(--desk-surface);
+  font-size: var(--ui-body);
+  line-height: 1.85;
+}
+.settings-page .general-settings {
+  width: 100%;
+  padding: 24px 28px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+}
+.settings-page .general-settings h2 {
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 22px;
+}
+.settings-page :is(.general-language, .appearance-settings) {
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-color: var(--ui-rule);
+}
+.settings-page .language-option {
+  margin: 0;
+  padding: 14px 16px;
+  gap: 10px;
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-bg);
+  color: var(--desk-text);
+}
+.settings-page .language-option:has(input:checked) {
+  border-color: var(--desk-accent);
+  background: var(--ui-selected);
+}
+.settings-page .appearance-option {
+  border-radius: var(--ui-radius);
+  overflow: hidden;
+}
+.settings-page .appearance-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.settings-page .storage-location {
+  padding: 14px 16px;
+  margin: 16px 0;
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-bg);
+}
+.settings-page .storage-location code {
+  font-family: var(--ui-mono);
+  font-size: var(--ui-caption);
+}
+@media (max-width: 1200px) {
+  .radix-themes .settings-page .agent-roster-info {
+    display: block;
+  }
+  .radix-themes .settings-page .agent-roster-row {
+    grid-template-columns: 30px minmax(0, 1fr) auto auto auto;
+    gap: 12px;
+  }
+}

@@ -11,7 +11,7 @@
   font-size: 13px;
   line-height: 1.6;
   overflow-wrap: anywhere;
-  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+  animation: state-enter var(--motion-enter) var(--motion-ease);
 }
 .status-message > svg {
   flex: none;
@@ -69,13 +69,6 @@
 .radix-themes .async-button[aria-busy="true"] {
   cursor: progress;
   opacity: 0.8;
-}
-@media (prefers-reduced-motion: reduce) {
-  .status-message,
-  .status-spinner,
-  .loading-skeleton-row {
-    animation: none;
-  }
 }
 
 .run-status {

@@ -10,6 +10,7 @@ import { parameterContract, taskParameters } from "../production/parameters";
 import { equal, mergeValue } from "./merge";
 import { receipt } from "./receipt";
 import { prepareGeneration, reconcileJob } from "./generation";
+import { recoverJobs } from "./recovery";
 import { generationOutcomes } from "../production/taskOutcome";
 import type { Project } from "../model";
 import type { GenerationCommandContext } from "../production/requestTask";
@@ -28,8 +29,11 @@ type Request = {
   taskKeys: string[];
   uploaded?: import("../creation/generationInput").UploadedReference[];
   job: import("../workspace/generatedJobTracking").GeneratedJob;
+  jobs: import("../workspace/generatedJobTracking").GeneratedJob[];
 };
 function run(input: Request) {
+  if (input.action === "recover_jobs")
+    return recoverJobs(input.document, input.jobs);
   if (input.action === "prune_deleted")
     return {
       document: deleteAssets(

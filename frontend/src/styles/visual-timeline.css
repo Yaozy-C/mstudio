@@ -1,0 +1,78 @@
+.radix-themes .studio-shell .floating-timeline {
+  border-color: var(--ui-rule);
+  background: var(--desk-bg);
+}
+.studio-shell .timeline-header {
+  background: var(--desk-surface);
+  border-color: var(--ui-rule);
+  gap: 10px;
+}
+.studio-shell .timeline-header h3 {
+  font-size: var(--ui-label);
+  font-weight: 600;
+  line-height: 20px;
+}
+.radix-themes .studio-shell .timeline-header button {
+  border-radius: 5px;
+  color: var(--desk-muted);
+}
+.radix-themes .studio-shell .timeline-header button:hover:not(:disabled) {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.studio-shell :is(.time-display, .ruler span, .zoom, .preview-time) {
+  font-family: var(--ui-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.studio-shell .time-display {
+  font-size: var(--ui-caption);
+}
+.studio-shell .zoom {
+  font-size: 11px;
+}
+.studio-shell
+  :is(.track-labels, .ruler, .video-track, .audio-track, .caption-track) {
+  border-color: var(--ui-rule);
+}
+.studio-shell .track-labels {
+  background: var(--desk-bg);
+}
+.radix-themes .studio-shell .track-heading input {
+  font-size: var(--ui-caption);
+  line-height: 18px;
+}
+.radix-themes .studio-shell .timeline-clip {
+  border-color: var(--ui-rule);
+  border-radius: 5px;
+  background: var(--desk-surface);
+  font-size: var(--ui-caption);
+}
+.radix-themes .studio-shell .timeline-clip.selected {
+  border: 1px solid var(--desk-accent);
+  background: var(--ui-selected);
+  box-shadow: 0 0 0 1px var(--ui-focus);
+}
+.studio-shell .timeline-clip img {
+  border-radius: 4px 0 0 4px;
+}
+.radix-themes .studio-shell .caption-chip {
+  border-color: var(--ui-rule);
+  border-radius: 5px;
+  background: var(--desk-surface);
+}
+.studio-shell .preview-stage {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+.studio-shell .preview-transport {
+  gap: 8px;
+  padding-top: 12px;
+  font-size: var(--ui-caption);
+}
+.radix-themes .studio-shell .preview-transport button {
+  border-radius: 5px;
+}
+.radix-themes .studio-shell .preview-transport button:hover:not(:disabled) {
+  background: var(--ui-hover);
+}

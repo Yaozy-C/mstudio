@@ -72,9 +72,6 @@
 .dock-media .media-foot {
   flex-shrink: 0;
 }
-.dock-agent .agent-input-area {
-  padding: 12px 20px 16px;
-}
 .dock-agent .agent-welcome-mark {
   display: none;
 }
@@ -90,7 +87,6 @@
 .project-cover .cover-ratio {
   background: #faf9f5e6;
   color: var(--desk-text);
-  padding: 4px 6px;
 }
 .project-cover > svg:last-child {
   color: var(--desk-text);

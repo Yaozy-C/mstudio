@@ -1,0 +1,109 @@
+/* Defaults stay low-specificity so canvas, timeline and media geometry win. */
+.radix-themes button {
+  border-radius: var(--ui-radius);
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.radix-themes button.primary {
+  border-color: var(--desk-text);
+  font-weight: 500;
+}
+.radix-themes button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--desk-text) 88%, var(--desk-surface));
+  border-color: transparent;
+}
+.radix-themes :is(input, textarea, select) {
+  font-family: var(--ui-font);
+  border-radius: var(--ui-radius);
+}
+.radix-themes :is(input, textarea)::placeholder {
+  color: var(--desk-muted);
+  opacity: 0.8;
+}
+.radix-themes :is(input, textarea, select)[aria-invalid="true"] {
+  border-color: var(--desk-accent);
+}
+.radix-themes
+  :is(.modal, .settings-page)
+  :is(
+    input:not(
+      [type="range"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="color"]
+    ),
+    select
+  ) {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: var(--ui-label);
+  border-color: var(--ui-rule);
+  background: var(--desk-surface);
+}
+.radix-themes :is(.modal, .settings-page) :is(input, textarea, select):focus {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--ui-focus);
+}
+.radix-themes :is(.modal, .settings-page) textarea {
+  padding: 10px 12px;
+  font-size: var(--ui-label);
+  line-height: 22px;
+  border-color: var(--ui-rule);
+}
+.radix-themes :is(.modal, .settings-page) label {
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.radix-themes .studio-select-trigger {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--ui-radius);
+  border-color: var(--ui-rule);
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.radix-themes .studio-select-menu {
+  padding: 4px;
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: var(--ui-shadow);
+}
+.radix-themes .studio-select-menu .rt-SelectItem {
+  min-height: 32px;
+  padding-block: 6px;
+  font-size: var(--ui-label);
+  border-radius: 4px;
+}
+.radix-themes .action-button {
+  min-height: 32px;
+  padding: 5px 8px;
+  gap: 6px;
+  font-size: var(--ui-label);
+  line-height: 20px;
+  border-radius: var(--ui-radius);
+}
+.radix-themes .action-button > svg {
+  width: 17px;
+  height: 17px;
+}
+.radix-themes .action-button:hover:not(:disabled) {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.radix-themes :is(.model-badge, .hub-tags span) {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--desk-sidebar);
+  color: var(--desk-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+}
+.radix-themes ::-webkit-scrollbar-thumb {
+  background: var(--desk-rule);
+}
+.radix-themes :is(.hub-scroll, .agent-messages, .media-list, .task-panel-list) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--desk-rule) transparent;
+}

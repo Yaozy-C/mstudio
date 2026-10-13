@@ -1,5 +1,5 @@
 use super::*;
-pub(super) fn fixture() -> (Store, Value, AgentProfile) {
+pub(crate) fn fixture() -> (Store, Value, AgentProfile) {
     let root = std::env::temp_dir().join(format!("mstudio-domain-{}", mstudio::media::id()));
     let store = Store::open(root).unwrap();
     let doc = json!({"id":"p","name":"Synthetic","revision":0,"brief":"","width":1280,"height":720,"fps":30,"assets":[],"nodes":[{"id":"a","kind":"note","title":"A","text":"old","x":0,"y":0,"width":280,"height":218},{"id":"b","kind":"note","title":"B","text":"other","x":0,"y":0,"width":280,"height":218}],"clips":[],"tracks":[{"id":"video","name":"Video","kind":"video"}],"captions":[]});

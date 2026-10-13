@@ -47,7 +47,7 @@
 
 .error-notice,
 .operation-stopped {
-  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+  animation: state-enter var(--motion-enter) var(--motion-ease);
 }
 .error-notice-heading {
   display: flex;
@@ -67,10 +67,4 @@
 }
 .error-notice-actions {
   margin-top: 6px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .error-notice,
-  .operation-stopped {
-    animation: none;
-  }
 }

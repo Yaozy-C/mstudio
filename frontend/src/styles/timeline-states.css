@@ -3,9 +3,6 @@
   border: 1px solid var(--desk-rule);
   border-radius: 2px;
   box-sizing: border-box;
-  transition:
-    background-color 100ms,
-    border-color 100ms;
 }
 .radix-themes :is(.timeline-clip, .caption-chip):hover {
   background: var(--desk-sidebar);
@@ -43,7 +40,6 @@
 }
 .radix-themes .caption-chip {
   font-size: 12px;
-  padding: 6px 9px;
   cursor: grab;
 }
 .timeline-clip .trim-handle {
@@ -133,11 +129,6 @@
 .sound-clip .waveform-status {
   bottom: 1px;
   font-size: 10px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .radix-themes :is(.timeline-clip, .caption-chip) {
-    transition: none;
-  }
 }
 
 .timeline-clip[data-preview="false"] {

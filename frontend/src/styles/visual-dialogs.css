@@ -1,0 +1,179 @@
+.radix-themes
+  :is(
+    .modal,
+    .rt-DialogContent,
+    .rt-AlertDialogContent,
+    .media-preview-dialog,
+    .generation-tasks-dialog
+  ) {
+  border-radius: var(--ui-dialog-radius);
+  border-color: var(--ui-rule);
+  background-color: var(--desk-surface);
+  box-shadow:
+    0 24px 72px #22221f24,
+    0 4px 12px #22221f12;
+}
+.radix-themes .modal {
+  padding: 24px;
+}
+.radix-themes .modal h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+}
+.radix-themes .modal footer {
+  gap: 8px;
+  margin-top: 24px;
+}
+.radix-themes .modal footer > button {
+  min-height: 34px;
+  padding: 6px 12px;
+}
+.radix-themes .export-summary {
+  padding: 24px;
+  background: var(--desk-bg);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+.export-summary h3 {
+  font-size: var(--ui-body);
+  font-weight: 500;
+}
+.export-summary p {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.radix-themes .shot-editor-dialog > header {
+  padding: 20px 24px;
+  gap: 16px;
+  border-color: var(--ui-rule);
+}
+.radix-themes .shot-editor-dialog > header :is(h1, h2) {
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+.radix-themes .shot-editor-fields {
+  padding: 20px 24px;
+  gap: 20px;
+}
+.radix-themes .shot-editor-fields label {
+  gap: 8px;
+  font-size: var(--ui-label);
+}
+.radix-themes .shot-editor-fields textarea {
+  padding: 10px 12px;
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-radius);
+  font-size: var(--ui-body);
+  line-height: 24px;
+}
+.radix-themes .shot-editor-form > .shot-editor-actions {
+  justify-content: flex-end;
+  padding: 14px 24px;
+  border-color: var(--ui-rule);
+  gap: 8px;
+}
+.radix-themes .task-panel-heading {
+  padding: 16px 20px;
+  border-color: var(--ui-rule);
+}
+.task-panel-heading :is(h1, h2) {
+  font-size: var(--ui-heading);
+  line-height: 24px;
+  font-weight: 600;
+}
+.generation-tasks-dialog .task-panel-list {
+  padding: 8px;
+  background: var(--desk-bg);
+  border-color: var(--ui-rule);
+}
+.radix-themes .task-panel-list > button {
+  padding: 12px;
+  gap: 10px;
+  border-radius: var(--ui-radius);
+  font-size: var(--ui-label);
+}
+.radix-themes .task-panel-list > button.selected {
+  background: var(--desk-surface);
+  border-color: var(--ui-rule);
+  box-shadow: 0 1px 3px #22221f06;
+  font-weight: 500;
+}
+.task-panel-list strong {
+  font-weight: 500;
+  line-height: 20px;
+}
+.task-panel-list small {
+  font-size: var(--ui-caption);
+  line-height: 18px;
+}
+.generation-tasks-dialog .run-content,
+.generation-tasks-dialog .run-footer {
+  padding: 20px 24px;
+}
+.generation-tasks-dialog .run-footer {
+  border-color: var(--ui-rule);
+}
+.radix-themes .generation-reference-dialog {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-dialog-radius);
+}
+.radix-themes .generation-reference-dialog header h1 {
+  font-size: 20px;
+  line-height: 28px;
+}
+.radix-themes :is(.studio-menu, .object-menu) {
+  padding: 4px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  box-shadow: var(--ui-shadow);
+}
+.radix-themes :is(.studio-menu, .object-menu) .rt-DropdownMenuItem,
+.radix-themes .object-menu .rt-ContextMenuItem {
+  min-height: 32px;
+  padding-block: 6px;
+  border-radius: 4px;
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.radix-themes .model-form-grid {
+  gap: 16px;
+  margin-top: 20px;
+}
+.radix-themes .model-form label {
+  font-size: var(--ui-label);
+  line-height: 20px;
+  gap: 6px;
+}
+.radix-themes
+  .model-form
+  :is(input:not([type="checkbox"]), .studio-select-trigger) {
+  height: 34px;
+}
+.radix-themes .model-form small {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.radix-themes .model-form footer {
+  padding-top: 20px;
+  margin-top: 20px;
+  border-color: var(--ui-rule);
+}
+.radix-themes .effect-detail {
+  border-radius: var(--ui-dialog-radius);
+}
+.effect-detail-body h2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+.radix-themes :is(.error-notice, .model-toast, .success-toast) {
+  border-radius: var(--ui-card-radius);
+  font-size: var(--ui-label);
+  line-height: 22px;
+}

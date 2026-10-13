@@ -33,11 +33,6 @@
 .hub-intro {
   margin-bottom: 25px;
 }
-.hub-intro .eyebrow {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--desk-muted);
-}
 .hub-intro h2 {
   margin: 13px 0 10px;
   font-size: 23px;

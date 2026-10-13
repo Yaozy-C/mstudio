@@ -11,7 +11,6 @@
   border-radius: 20px;
   background: var(--desk-bg);
   box-shadow: 0 3px 12px #00000012;
-  transition: border-color 0.15s;
 }
 .agent-composer:focus-within {
   border-color: var(--desk-rule);

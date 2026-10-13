@@ -72,9 +72,21 @@ async fn submit(app: &tauri::AppHandle, project: &str, key: &str, task: &Value) 
 }
 pub fn start(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
-        if let Err(_error) = production::recover(&app.state::<Store>()) {
-            tracing::error!(event = "production_recovery_failed");
-            return;
+        let recovery = app.clone();
+        match tauri::async_runtime::spawn_blocking(move || {
+            production::recover(&recovery.state::<Store>())
+        })
+        .await
+        {
+            Ok(Ok(changed)) => {
+                for project in changed {
+                    project_service::notify(&app, &project);
+                }
+            }
+            _ => {
+                tracing::error!(event = "production_recovery_failed");
+                return;
+            }
         }
         let mut active = HashSet::new();
         let mut running: FuturesUnordered<BoxFuture<'static, (String, String)>> =

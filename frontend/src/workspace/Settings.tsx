@@ -1,5 +1,6 @@
 import { t, useLanguage } from "../i18n";
 import { StudioSidebar, sidebarPages, type SettingsTab } from "./StudioSidebar";
+import { useContentMotion } from "../ui/useContentMotion";
 import {
   useCallback,
   useEffect,
@@ -39,6 +40,7 @@ export function Settings({
     content.current?.scrollTo({ top: 0 });
   }, []);
   useLayoutEffect(resetScroll, [tab, resetScroll]);
+  useContentMotion(content, tab);
   const pages = sidebarPages();
   return (
     <main className="settings-page" aria-label={t("设置")}>

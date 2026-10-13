@@ -77,20 +77,10 @@
   color: var(--desk-text);
   background: var(--desk-sidebar);
 }
-.radix-themes .studio-top {
-  background: var(--desk-bg);
-  border-bottom: 1px solid var(--desk-rule);
-}
 .radix-themes .chrome-action {
   color: var(--desk-muted);
   background: transparent;
   border-color: transparent;
-}
-.radix-themes .chrome-action[aria-pressed="true"] {
-  background: transparent;
-  color: var(--desk-accent);
-  border-color: var(--desk-rule);
-  font-weight: 600;
 }
 .radix-themes .agent-thread {
   color: var(--desk-text);
@@ -100,12 +90,10 @@
   border-radius: 0;
   width: 32px;
   height: 32px;
-  color: var(--desk-accent);
   margin-bottom: 16px;
 }
 .radix-themes .agent-welcome h3 {
   color: var(--desk-text);
-  font-size: 21px;
   font-weight: 600;
 }
 .radix-themes .agent-welcome p {
@@ -125,15 +113,10 @@
   color: var(--desk-muted);
 }
 .radix-themes .agent-connect-callout {
-  background: var(--desk-bg);
-  color: var(--desk-text);
-  border-color: var(--desk-rule);
   font-size: 13px;
 }
 .radix-themes .agent-composer {
-  background: var(--desk-surface);
   border-color: var(--desk-control);
-  border-radius: 12px;
   box-shadow: none;
 }
 .radix-themes .agent-composer textarea {
@@ -141,9 +124,6 @@
   border: 0;
   color: var(--desk-text);
   font-size: 14px;
-}
-.radix-themes .agent-composer:focus-within {
-  border-color: var(--desk-muted);
 }
 .radix-themes :is(.agent-model-label, .save-state) {
   color: var(--desk-muted);

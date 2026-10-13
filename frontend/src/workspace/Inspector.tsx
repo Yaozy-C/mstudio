@@ -7,6 +7,7 @@ import type { Project, Clip } from "../model";
 import { ClipInspectorPanels } from "../timeline/ClipInspectorPanels";
 import { ImageSquare, Sun, SpeakerHigh, Clock } from "@phosphor-icons/react";
 import "../styles/inspector-desk.css";
+import "../styles/clip-inspector.css";
 
 type Props = {
   project: Project;

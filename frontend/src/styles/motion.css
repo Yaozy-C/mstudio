@@ -1,11 +1,40 @@
-/* Frame / Cut: brief state transitions, no decorative movement. */
+/* One timing system. Navigation fades; direct manipulation stays immediate. */
 :root {
   --motion-fast: 120ms;
+  --motion-page: 160ms;
   --motion-enter: 180ms;
+  --motion-exit: 120ms;
   --motion-progress: 240ms;
   --motion-spin: 900ms;
   --motion-pulse: 1600ms;
-  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+@keyframes state-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+@keyframes content-enter {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes state-enter {
   from {
@@ -27,19 +56,56 @@
     opacity: 0.45;
   }
 }
-.radix-themes button,
-.radix-themes .action-button {
+.radix-themes button {
   transition:
-    background-color var(--motion-fast),
-    border-color var(--motion-fast),
-    color var(--motion-fast),
-    opacity var(--motion-fast);
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
 }
-.modal,
+.radix-themes :is(.inspector-number, .agent-composer) {
+  transition:
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
+}
+.radix-themes :is(.timeline-clip, .caption-chip) {
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease);
+}
+.library-main {
+  animation: content-enter var(--motion-page) var(--motion-ease);
+}
+.modal:not(.rt-BaseDialogContent),
 .model-toast,
-.object-menu,
-.studio-select-menu[data-state="open"] {
-  animation: state-enter var(--motion-enter) var(--motion-ease) both;
+.object-actions-menu {
+  animation: state-enter var(--motion-enter) var(--motion-ease);
+}
+.rt-BaseDialogContent[data-state="open"],
+:is(
+  .object-menu,
+  .studio-menu,
+  .studio-select-menu,
+  .conversation-model-menu
+)[data-state="open"] {
+  animation: state-enter var(--motion-enter) var(--motion-ease);
+}
+.rt-BaseDialogContent[data-state="closed"],
+:is(
+  .object-menu,
+  .studio-menu,
+  .studio-select-menu,
+  .conversation-model-menu
+)[data-state="closed"] {
+  animation: state-exit var(--motion-exit) var(--motion-ease-exit) forwards;
+  pointer-events: none;
+}
+.rt-BaseDialogOverlay[data-state="open"]::before {
+  animation: overlay-enter var(--motion-enter) var(--motion-ease);
+}
+.rt-BaseDialogOverlay[data-state="closed"],
+.rt-BaseDialogOverlay[data-state="closed"]::before {
+  animation-duration: var(--motion-exit);
 }
 .progress > span {
   transition: width var(--motion-progress) var(--motion-ease);
@@ -47,15 +113,16 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-fast: 0ms;
+    --motion-page: 0ms;
     --motion-enter: 0ms;
+    --motion-exit: 0ms;
     --motion-progress: 0ms;
   }
-  .status-spinner,
-  .loading-skeleton-row,
-  .modal,
-  .model-toast,
-  .object-menu,
-  .studio-select-menu {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
     animation: none !important;
   }
 }

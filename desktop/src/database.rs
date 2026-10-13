@@ -10,6 +10,9 @@ mod media_migration;
 pub(crate) mod media_store;
 #[cfg(test)]
 pub(crate) mod media_tests;
+mod project_library;
+#[cfg(test)]
+mod project_library_tests;
 mod schema;
 pub(crate) mod session_checkpoint;
 #[cfg(test)]
@@ -22,7 +25,9 @@ use mstudio::model::Asset;
 use rusqlite::Connection;
 #[cfg(test)]
 use rusqlite::{OptionalExtension, params};
-use serde_json::{Value, json};
+use serde_json::Value;
+#[cfg(test)]
+use serde_json::json;
 use std::{path::PathBuf, sync::Mutex};
 
 pub struct Store {
@@ -36,6 +41,7 @@ pub struct Store {
 }
 impl Store {
     pub fn open(root: PathBuf) -> Result<Self> {
+        let _timing = crate::diagnostics::Timing::new("database_open");
         std::fs::create_dir_all(&root)?;
         let db = Connection::open(root.join("mstudio.sqlite3"))?;
         db.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
@@ -58,8 +64,8 @@ impl Store {
         crate::project_service::init(&db)?;
         crate::asset_library::init(&db)?;
         crate::project_storage::direct_references::migrate(&db, &root)?;
-        crate::job_recovery::recover_interrupted_submissions(&db)?;
         schema::init(&db)?;
+        crate::job_recovery::recover_interrupted_submissions(&db)?;
         media_store::init(&db)?;
         schema::migrate(&db)?;
         event_retention::migrate(&db)?;
@@ -123,6 +129,7 @@ impl Store {
         self.db.lock().unwrap().execute("INSERT INTO settings VALUES(?1,?2) ON CONFLICT(key) DO UPDATE SET value=excluded.value", params![key, value])?;
         Ok(())
     }
+    #[cfg(test)]
     pub fn projects(&self) -> Result<Vec<Value>> {
         let db = self.db.lock().unwrap();
         let generated = crate::asset_library::generated_ids(&db)?;

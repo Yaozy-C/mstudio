@@ -6,6 +6,9 @@ mod dependency_tests;
 pub mod generation_wait;
 pub(crate) mod observations;
 pub mod production;
+mod production_recovery;
+#[cfg(test)]
+mod production_recovery_tests;
 pub mod receipts;
 pub mod runtime;
 use crate::{
@@ -145,8 +148,14 @@ pub fn execute(
     Ok(value["receipt"].clone())
 }
 #[tauri::command]
-pub fn get_project(store: tauri::State<Store>, project_id: String) -> Result<Value, String> {
-    load(&*store.conn().map_err(|e| e.to_string())?, &project_id).map_err(|e| e.to_string())
+pub async fn get_project(app: tauri::AppHandle, project_id: String) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        app.state::<Store>()
+            .project(&project_id)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 pub fn notify(app: &tauri::AppHandle, project: &str) {
     let _ = app.emit("project-changed", json!({"projectId":project}));
@@ -191,7 +200,9 @@ pub async fn tool(
     value
 }
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
 
 #[cfg(test)]
 mod production_tests;
+#[cfg(test)]
+mod startup_benchmark_tests;

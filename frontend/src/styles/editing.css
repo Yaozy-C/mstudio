@@ -2,7 +2,6 @@
   height: 282px;
 }
 .timeline-body {
-  height: calc(100% - 46px);
   min-height: 0;
 }
 .timeline-header {
@@ -54,12 +53,8 @@
   background: transparent;
 }
 .radix-themes .track-heading button[aria-pressed="true"] {
-  color: var(--desk-accent);
   background: transparent;
   font-weight: 600;
-}
-.track-hidden {
-  opacity: 0.4;
 }
 .sound-clip {
   background: var(--desk-sidebar);
@@ -87,9 +82,6 @@
 }
 .trim-handle.right {
   right: 0;
-}
-.timeline-clip.selected .trim-handle {
-  background: #e7e4dc55;
 }
 .track-labels > .caption-heading {
   color: var(--desk-text);

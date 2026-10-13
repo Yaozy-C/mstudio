@@ -1,0 +1,254 @@
+.radix-themes .studio-shell .studio-top {
+  border-color: var(--ui-rule);
+  gap: 6px;
+}
+.studio-shell .studio-wordmark {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+}
+.radix-themes .studio-shell .studio-modes button {
+  font-size: var(--ui-label);
+  font-weight: 400;
+  gap: 6px;
+}
+.radix-themes .studio-shell .studio-modes button[aria-pressed="true"] {
+  color: var(--desk-text);
+  font-weight: 500;
+}
+.studio-shell .studio-modes button[aria-pressed="true"] > svg {
+  color: var(--desk-accent);
+}
+.studio-shell .studio-modes button[aria-pressed="true"]::after {
+  height: 2px;
+  border-radius: 1px;
+  bottom: 10px;
+}
+.radix-themes .studio-shell .studio-top :is(.chrome-action, .chrome-export) {
+  height: 32px;
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  gap: 6px;
+  border-radius: var(--ui-radius);
+}
+.radix-themes .studio-shell .chrome-action[aria-pressed="true"] {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+  font-weight: 500;
+}
+.studio-shell .chrome-action[aria-pressed="true"] > svg {
+  color: var(--desk-accent);
+}
+.radix-themes
+  .studio-shell
+  .studio-top
+  :is(.chrome-action, .icon-button):hover:not(:disabled) {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.studio-shell .studio-top .icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  border-radius: var(--ui-radius);
+}
+.studio-shell .dock-panel {
+  border-color: var(--ui-rule);
+}
+.studio-shell .dock-agent {
+  background: color-mix(in srgb, var(--desk-bg) 55%, var(--desk-sidebar));
+}
+.studio-shell .dock-media {
+  background: var(--desk-sidebar);
+}
+.radix-themes .studio-shell .dock-heading {
+  min-height: 60px;
+  padding: 18px 20px 10px;
+  gap: 10px;
+}
+.studio-shell .dock-heading h2 {
+  font-size: var(--ui-heading);
+  font-weight: 600;
+  line-height: 24px;
+}
+.studio-shell .dock-heading > svg {
+  width: 20px;
+  height: 20px;
+  color: var(--desk-muted);
+}
+.radix-themes .studio-shell .dock-heading .icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: var(--ui-radius);
+  color: var(--desk-muted);
+}
+.radix-themes .studio-shell .dock-heading .icon-button:hover {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.studio-shell .media-scopes {
+  gap: 3px;
+  margin-bottom: 12px;
+  padding: 3px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 7px;
+}
+.radix-themes .studio-shell .media-scopes button {
+  padding: 5px 4px;
+  min-height: 28px;
+  border-radius: 4px;
+}
+.radix-themes .studio-shell .media-scopes button[aria-pressed="true"] {
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  box-shadow: 0 1px 2px #22221f06;
+}
+.radix-themes .studio-shell .dock-media .import-box {
+  min-height: 32px;
+  padding: 5px 8px;
+  border-color: var(--desk-control);
+  border-radius: var(--ui-radius);
+  margin-bottom: 14px;
+}
+.studio-shell .dock-media .media-list {
+  padding: 0 2px;
+  gap: 16px 10px;
+}
+.radix-themes .studio-shell .dock-media .media-thumbnail {
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: color-mix(in srgb, var(--desk-bg) 45%, var(--desk-sidebar));
+}
+.radix-themes .studio-shell .media-thumbnail[aria-pressed="true"] {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--ui-focus);
+}
+.studio-shell .dock-media .media-caption span {
+  font-size: var(--ui-caption);
+  line-height: 18px;
+}
+.studio-shell .media-section-label {
+  margin-bottom: 10px;
+  font-size: var(--ui-caption);
+  line-height: 18px;
+}
+.studio-shell .media-categories {
+  margin-top: 12px;
+  padding-top: 10px;
+  gap: 2px;
+  border-color: var(--ui-rule);
+}
+.radix-themes .studio-shell .media-categories button {
+  padding: 6px 8px;
+  min-height: 32px;
+  font-size: var(--ui-caption);
+  border-radius: var(--ui-radius);
+}
+.radix-themes .studio-shell .media-categories button[aria-pressed="true"] {
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-weight: 500;
+}
+.studio-shell .media-categories button[aria-pressed="true"] > svg {
+  color: var(--desk-accent);
+}
+.radix-themes .studio-shell .dock-creation .dock-content {
+  padding: 0 20px 24px;
+}
+.radix-themes .studio-shell .dock-creation .inspector-tabs {
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+.radix-themes .studio-shell .dock-creation .inspector-tabs button {
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: var(--ui-label);
+  border-radius: 5px;
+}
+.radix-themes .studio-shell .dock-creation .inspector-tabs button.active {
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  box-shadow: inset 0 0 0 1px var(--ui-rule);
+}
+.radix-themes .studio-shell .dock-creation .creation-form label {
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.radix-themes
+  .studio-shell
+  .dock-creation
+  :is(
+    .studio-select-trigger,
+    .caption-style-fields select,
+    .caption-style-fields input[type="number"]
+  ) {
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+  font-size: var(--ui-label);
+}
+.radix-themes .studio-shell .dock-creation .caption-editor {
+  padding: 20px 0;
+  gap: 14px;
+  border-color: var(--ui-rule);
+}
+.radix-themes .studio-shell .dock-creation .creation-form textarea {
+  border-color: var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.radix-themes .studio-shell .dock-creation .inspector-control-row {
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 128px);
+  gap: 16px;
+  min-height: 32px;
+}
+.radix-themes .studio-shell .dock-creation .inspector-number {
+  min-width: 0;
+  height: 32px;
+  gap: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+}
+.radix-themes .studio-shell .dock-creation .inspector-number:hover {
+  border-color: var(--desk-control);
+}
+.radix-themes .studio-shell .dock-creation .inspector-number:focus-within {
+  border-color: var(--desk-accent);
+  box-shadow: 0 0 0 2px var(--ui-focus);
+}
+.radix-themes .studio-shell .dock-creation .inspector-number input {
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--ui-label);
+  font-variant-numeric: tabular-nums;
+}
+.radix-themes .studio-shell .dock-creation .inspector-number > span {
+  min-width: 14px;
+  padding: 0;
+  text-align: center;
+  font-size: var(--ui-caption);
+}
+.radix-themes .studio-shell .dock-creation .inspector-number > span:empty {
+  display: none;
+}
+.radix-themes .studio-shell .dock-creation .caption-editor > .inline button {
+  font-size: var(--ui-label);
+  font-variant-numeric: tabular-nums;
+}
+.radix-themes .studio-shell .dock-creation .caption-editor > .inline svg {
+  width: 17px;
+  height: 17px;
+}

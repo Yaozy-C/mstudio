@@ -11,6 +11,7 @@ import { ScriptParagraphEditor } from "./ScriptParagraphEditor";
 import { createScript, newParagraph } from "./script";
 import { shotsOf } from "./document";
 import "../styles/script.css";
+import "../styles/script-editorial.css";
 
 export function ScriptWorkspace({
   project,
@@ -101,17 +102,6 @@ export function ScriptWorkspace({
               />
             ) : (
               <>
-                <ScriptNextStep
-                  hasScript={
-                    !!script?.some((s) => s.action.trim() || s.dialogue.trim())
-                  }
-                  count={shots.length}
-                  next={() => {
-                    onSelect(screenplay.id);
-                    navigate("storyboard");
-                    requestCreativeTask(creativeTask("split", screenplay.id));
-                  }}
-                />
                 <input
                   className="script-title"
                   aria-label={t("脚本标题")}
@@ -134,6 +124,17 @@ export function ScriptWorkspace({
                     change={onChange}
                   />
                 )}
+                <ScriptNextStep
+                  hasScript={
+                    !!script?.some((s) => s.action.trim() || s.dialogue.trim())
+                  }
+                  count={shots.length}
+                  next={() => {
+                    onSelect(screenplay.id);
+                    navigate("storyboard");
+                    requestCreativeTask(creativeTask("split", screenplay.id));
+                  }}
+                />
                 <>
                   {script.map((s, i) => (
                     <ScriptParagraphEditor

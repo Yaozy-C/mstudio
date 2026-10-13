@@ -30,7 +30,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--desk-surface);
 }
 .preview-frame img,
 .preview-frame video {

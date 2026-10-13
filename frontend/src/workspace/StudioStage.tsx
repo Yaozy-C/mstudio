@@ -1,5 +1,6 @@
 import { t, useLanguage } from "../i18n";
-import type { ComponentProps } from "react";
+import { useRef, type ComponentProps } from "react";
+import { useContentMotion } from "../ui/useContentMotion";
 import { ScriptWorkspace } from "../creative/ScriptWorkspace";
 import { ProductionCanvas } from "../production/ProductionCanvas";
 import type { ProductionController } from "../production/useProduction";
@@ -22,8 +23,11 @@ export function StudioStage({
   navigate: (view: StudioView) => void;
 }) {
   useLanguage();
+  const stage = useRef<HTMLElement>(null);
+  useContentMotion(stage, view);
   return (
     <main
+      ref={stage}
       className={`studio-stage view-${view}`}
       aria-label={
         view === "script"

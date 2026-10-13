@@ -4,7 +4,7 @@ use blobs::Owner;
 fn db() -> Connection {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("PRAGMA foreign_keys=ON;
-        CREATE TABLE projects(id TEXT PRIMARY KEY);
+        CREATE TABLE projects(id TEXT PRIMARY KEY,updated INTEGER);
         CREATE TABLE pending_file_deletions(project_id TEXT,path TEXT,PRIMARY KEY(project_id,path));
         CREATE TABLE jobs(id TEXT PRIMARY KEY,project_id TEXT,data TEXT);
         CREATE TABLE agent_events(seq INTEGER PRIMARY KEY,project_id TEXT,turn_id TEXT,kind TEXT,payload TEXT);
@@ -13,7 +13,7 @@ fn db() -> Connection {
         CREATE TABLE project_files(project_id TEXT,path TEXT);
         CREATE TABLE subagent_inbox(seq INTEGER PRIMARY KEY,child_id TEXT,consumed INTEGER);
         CREATE TABLE subagent_runs(project_id TEXT,last_turn TEXT);
-        INSERT INTO projects VALUES('p');").unwrap();
+        INSERT INTO projects VALUES('p',1);").unwrap();
     schema::init(&db).unwrap();
     media_store::init(&db).unwrap();
     db
@@ -105,6 +105,14 @@ fn writes_roll_back_and_projections_do_not_load_omitted_content() {
 fn hot_queries_use_matching_indexes() {
     let db = db();
     for (query, index) in [
+        (
+            "SELECT id FROM projects ORDER BY updated DESC",
+            "projects_updated",
+        ),
+        (
+            "SELECT id FROM jobs WHERE json_extract(data,'$.status')='SUBMITTING'",
+            "jobs_status",
+        ),
         (
             "SELECT payload FROM agent_events WHERE project_id='p' AND turn_id='t' ORDER BY seq",
             "agent_events_turn",
