@@ -34,6 +34,20 @@ export function childStatus(child: ChildActivity) {
   }
   return "正在等待模型响应…";
 }
+// The original delegate result is a receipt; the child projection owns live status.
+export function childToolState(children: ChildActivity[], callId?: string) {
+  const child = children.find((item) => item.callId === callId);
+  if (!child) return;
+  return {
+    detail:
+      child.state === "running"
+        ? "子任务执行中"
+        : child.state === "completed"
+          ? "专业 Agent 已返回"
+          : childStatus(child),
+    error: child.state === "failed" || child.state === "interrupted",
+  };
+}
 export function elapsed(child: ChildActivity, now: number) {
   return Math.max(
     0,

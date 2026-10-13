@@ -24,6 +24,8 @@ import type { Project } from "../model";
 import type { PlaybackClock } from "../timeline/clock";
 import { useAgentHistory } from "./useAgentHistory";
 import { useHistorySync } from "./useHistorySync";
+import { useExecutionState } from "./useExecutionState";
+import { executionActive } from "./executionState";
 import { AgentWelcome } from "./AgentWelcome";
 import "../styles/agent-welcome.css";
 import { MessageContext } from "./AgentMessage";
@@ -71,6 +73,8 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
   agentRef.current = agentId;
   const [targets, setTargets] = useState<Record<string, MessageTarget>>({});
   const models = useAgentModel(props.project.id);
+  const execution = useExecutionState(props.project.id, setError);
+  const running = models.running || executionActive(execution);
   const routing = useRef({ agents: agents.agents, catalog: models.catalog });
   routing.current = { agents: agents.agents, catalog: models.catalog };
   const agentReady = !!chosen?.enabled;
@@ -149,6 +153,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
         sent,
         targets,
         agents: agents.agents,
+        execution,
         canvas: props.canvas,
         settings: props.onSettings,
         saveAttachment: props.draft.saveToLibrary,
@@ -167,7 +172,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
               <span>{newTask ? t("下一条将开启新任务") : t("当前对话")}</span>
               <NewTaskButton
                 active={newTask}
-                disabled={models.running}
+                disabled={running}
                 onClick={() => {
                   setNewTask((value) => !value);
                   input.current?.focus();
@@ -236,7 +241,15 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
               setText={(text) => {
                 runtime.thread.composer.setText(text);
               }}
-              running={models.running}
+              running={running}
+              stop={() => {
+                if (runtime.thread.getState().isRunning)
+                  runtime.thread.cancelRun();
+                else
+                  void bridge("cancel_assistant", {
+                    threadId: props.project.id,
+                  }).catch((e) => setError(String(e)));
+              }}
               ready={models.available && agentReady}
               model={models.selected}
               settings={props.onSettings}

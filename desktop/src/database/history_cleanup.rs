@@ -4,7 +4,7 @@ use anyhow::Result;
 use rusqlite::{Connection, params};
 use serde_json::Value;
 
-pub const ACTIVE: &str = "NOT EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND json_extract(m.attribution,'$.turnId')=e.turn_id AND m.role='assistant' AND json_extract(m.attribution,'$.status')='running') AND NOT EXISTS(SELECT 1 FROM subagent_runs r WHERE r.project_id=e.project_id AND r.last_turn=e.turn_id AND r.status='running')";
+pub const ACTIVE: &str = "NOT EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND json_extract(m.attribution,'$.turnId')=e.turn_id AND m.role='assistant' AND json_extract(m.attribution,'$.status') IN ('running','waiting')) AND NOT EXISTS(SELECT 1 FROM subagent_runs r WHERE r.project_id=e.project_id AND r.last_turn=e.turn_id AND r.status='running')";
 
 pub fn run(db: &Connection, now: i64) -> Result<()> {
     let tx = db.unchecked_transaction()?;

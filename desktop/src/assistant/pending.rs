@@ -28,11 +28,15 @@ impl PendingTurn {
     }
 }
 #[tauri::command]
-pub(crate) fn cancel_assistant(thread_id: String) {
-    super::parent_activation::close(&thread_id);
-    super::harness::delegation::cancel_project(&thread_id);
+pub(crate) fn cancel_assistant(app: tauri::AppHandle, thread_id: String) -> Result<(), String> {
+    cancel(&thread_id);
+    super::execution::cancel_waiting(&app, &thread_id).map_err(|e| e.to_string())
+}
+pub(super) fn cancel(thread_id: &str) {
+    super::parent_activation::close(thread_id);
+    super::harness::delegation::cancel_project(thread_id);
     if let Ok(pending) = PENDING.lock()
-        && let Some(token) = pending.get(&thread_id)
+        && let Some(token) = pending.get(thread_id)
     {
         token.cancel();
     }

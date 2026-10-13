@@ -4,7 +4,7 @@ use super::{
 use crate::database::Store;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use tauri::{Emitter, Manager};
+use tauri::Manager;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -37,7 +37,10 @@ impl Request {
     }
 }
 
-pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, String> {
+pub async fn run(
+    app: tauri::AppHandle,
+    request: Request,
+) -> Result<super::execution::Reply, String> {
     let pending = pending::PendingTurn::begin(&request.project_id).map_err(|e| e.to_string())?;
     super::parent_activation::close(&request.project_id);
     let store = app.state::<Store>();
@@ -73,47 +76,22 @@ pub async fn run(app: tauri::AppHandle, request: Request) -> Result<String, Stri
         &meta,
     )
     .map_err(|e| e.to_string())?;
+    super::execution::publish(&app, &request.project_id).map_err(|e| e.to_string())?;
     let result = match agent_profile {
         Ok(profile) => execute(&app, &request, &pending, profile, &scope).await,
         Err(error) => Err(error),
     };
-    let (status, error) = match &result {
-        Ok(_) => ("completed", None),
-        Err(e) => (
-            if pending.token.is_cancelled() {
-                "cancelled"
-            } else {
-                "failed"
-            },
-            Some(e.as_str()),
-        ),
-    };
-    let partial =
-        super::harness::session::partial(&store, &request.project_id, &request.client_turn_id);
-    history::finish(
-        &store,
+    let status = super::execution::finish(
+        &app,
         &request.project_id,
         &request.client_turn_id,
-        result.as_deref().unwrap_or(&partial),
-        status,
-        error,
+        &result,
+        &pending.token,
     )
     .map_err(|e| e.to_string())?;
-    journal::append(
-        &store,
-        &request.project_id,
-        &request.client_turn_id,
-        "turn/end",
-        json!({"status":status,"error":error}),
-    )
-    .map_err(|e| e.to_string())?;
-    let _ = app.emit(
-        "agent-progress",
-        json!({"projectId":request.project_id,"turnId":request.client_turn_id,"kind":"turn/end"}),
-    );
     drop(pending);
     super::parent_activation::settled(&request.project_id, &request.client_turn_id, result.is_ok());
-    result
+    result.map(|text| super::execution::Reply { text, status })
 }
 
 async fn execute(

@@ -4,6 +4,7 @@ mod chat;
 pub(crate) mod child_activity;
 mod codex_input;
 mod codex_provider;
+pub(crate) mod execution;
 mod failure;
 pub(crate) mod generation_context;
 pub(crate) mod harness;
@@ -63,7 +64,7 @@ pub fn messages(previous: &[history::Message], payload: Value) -> Value {
 pub async fn assistant_chat(
     app: tauri::AppHandle,
     request: chat::Request,
-) -> Result<String, String> {
+) -> Result<execution::Reply, String> {
     chat::run(app, request).await
 }
 

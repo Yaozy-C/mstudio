@@ -4,7 +4,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import { activityRows, type ActivityEvent } from "./activityRows";
 import { ActivityEntries } from "./ActivityEntries";
 import { ChildAgentActivity } from "./ChildAgentActivity";
-import type { ChildActivity } from "./childActivity";
+import { childToolState, type ChildActivity } from "./childActivity";
 import type { AgentProfile } from "../agents/catalog";
 
 export function AgentActivityFeed({
@@ -48,6 +48,7 @@ export function AgentActivityFeed({
         <ActivityEntries
           events={events}
           childName={childName}
+          toolState={(callId) => childToolState(children, callId)}
           afterTool={(callId) =>
             children.filter((child) => child.callId === callId).map(renderChild)
           }

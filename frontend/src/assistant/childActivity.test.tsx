@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ChildAgentActivity } from "./ChildAgentActivity";
+import { AgentActivityFeed } from "./AgentActivityFeed";
 import {
   belongsTo,
   childStatus,
@@ -43,6 +44,44 @@ test("child progress displays the actual tool, note and duration outside collaps
       <ChildAgentActivity child={child} name="分镜画手" showTools />,
     ),
   ).toContain("<details");
+});
+
+test("delegate card follows child settlement while preserving the original tool receipt", () => {
+  const events = [
+    {
+      seq: 1,
+      created: 10,
+      kind: "tool/call",
+      payload: { callId: "delegate", name: "mstudio_delegate" },
+    },
+    {
+      seq: 2,
+      created: 11,
+      kind: "tool/result",
+      payload: { callId: "delegate", result: { status: "running" } },
+    },
+  ];
+  for (const [state, expected] of [
+    ["running", "子任务执行中"],
+    ["completed", "专业 Agent 已返回"],
+    ["failed", "执行失败"],
+    ["cancelled", "已停止"],
+    ["interrupted", "执行已中断"],
+  ] as const) {
+    const html = renderToStaticMarkup(
+      <AgentActivityFeed
+        events={events}
+        children={[{ ...child, state }]}
+        seconds={10}
+        running={false}
+      />,
+    );
+    expect(html).toContain(
+      `<small class="${state === "failed" || state === "interrupted" ? "error" : ""}">${expected}</small>`,
+    );
+    if (state !== "running") expect(html).not.toContain("子任务执行中");
+  }
+  expect(events[1].payload.result?.status).toBe("running");
 });
 test("model wait, backend wait, cancellation and restart have distinct states", () => {
   expect(childStatus({ ...child, phase: { kind: "request/start" } })).toBe(

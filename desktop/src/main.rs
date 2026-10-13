@@ -105,6 +105,7 @@ fn main() {
             assistant::profiles::agent_catalog,
             assistant::profiles::save_agent,
             assistant::agent_history,
+            assistant::execution::agent_execution_state,
             assistant::skills::creative_skills,
             assistant::skills::read_creative_skill,
             assistant::skills::save_creative_skill,

@@ -36,6 +36,7 @@ export function AgentComposer({
   getText,
   setText,
   running,
+  stop,
   ready,
   model,
   settings,
@@ -53,6 +54,7 @@ export function AgentComposer({
   getText: () => string;
   setText: (text: string) => void;
   running: boolean;
+  stop: () => void;
   ready: boolean;
   model?: ModelConnection;
   settings: () => void;
@@ -200,7 +202,7 @@ export function AgentComposer({
             if (e.nativeEvent.isComposing) return;
             if (
               !query &&
-              (blocked || draft.busy) &&
+              (blocked || draft.busy || running) &&
               e.key === "Enter" &&
               !e.shiftKey
             ) {
@@ -262,12 +264,14 @@ export function AgentComposer({
           </div>
           <div className="composer-submit">
             {running ? (
-              <ComposerPrimitive.Cancel
+              <button
+                type="button"
+                onClick={stop}
                 aria-label={t("停止回答")}
                 title={t("停止回答")}
               >
                 <Square size={13} weight="fill" />
-              </ComposerPrimitive.Cancel>
+              </button>
             ) : (
               <ComposerPrimitive.Send
                 aria-label={t("发送消息")}

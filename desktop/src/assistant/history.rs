@@ -155,6 +155,7 @@ pub fn update_payload(store: &Store, project: &str, turn: &str, payload: &Value)
     Ok(())
 }
 
+#[cfg(test)]
 pub fn finish(
     store: &Store,
     project: &str,
@@ -163,16 +164,34 @@ pub fn finish(
     status: &str,
     error: Option<&str>,
 ) -> Result<()> {
+    finish_in(
+        &store.db.lock().unwrap(),
+        project,
+        turn,
+        text,
+        status,
+        error,
+    )
+}
+
+pub(super) fn finish_in(
+    db: &rusqlite::Connection,
+    project: &str,
+    turn: &str,
+    text: &str,
+    status: &str,
+    error: Option<&str>,
+) -> Result<()> {
     ensure!(
-        ["completed", "failed", "cancelled"].contains(&status),
+        ["completed", "failed", "cancelled", "waiting"].contains(&status),
         "回答状态无效"
     );
-    let count = store.db.lock().unwrap().execute("UPDATE agent_messages SET content=?3,payload=?4,attribution=json_set(attribution,'$.status',?5,'$.error',?6) WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2 AND json_extract(attribution,'$.status')='running'",rusqlite::params![project,turn,text,serde_json::json!(text).to_string(),status,error])?;
+    let count = db.execute("UPDATE agent_messages SET content=?3,payload=?4,attribution=json_set(attribution,'$.status',?5,'$.error',?6) WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2 AND json_extract(attribution,'$.status')='running'",rusqlite::params![project,turn,text,serde_json::json!(text).to_string(),status,error])?;
     ensure!(count == 1, "回答记录不存在或已结束");
     Ok(())
 }
 
 pub fn interrupt_pending(db: &rusqlite::Connection) -> Result<()> {
-    db.execute("UPDATE agent_messages SET attribution=json_set(attribution,'$.status','interrupted','$.error','上次回答因应用退出而中断，可重试') WHERE role='assistant' AND json_extract(attribution,'$.status')='running'", [])?;
+    db.execute("UPDATE agent_messages SET attribution=json_set(attribution,'$.status','interrupted','$.error','上次回答因应用退出而中断，可重试') WHERE role='assistant' AND json_extract(attribution,'$.status') IN ('running','waiting')", [])?;
     Ok(())
 }

@@ -11,10 +11,14 @@ export function ActivityEntries({
   events,
   childName = (id) => id,
   afterTool,
+  toolState,
 }: {
   events: ActivityEvent[];
   childName?: (id: string) => string;
   afterTool?: (callId?: string) => ReactNode;
+  toolState?: (
+    callId?: string,
+  ) => { detail: string; error: boolean } | undefined;
 }) {
   return activityTimeline(events).map((entry) => {
     if (entry.kind === "progress")
@@ -23,7 +27,12 @@ export function ActivityEntries({
           {entry.text}
         </p>
       );
-    const row = entry.tool;
+    const saved = entry.tool;
+    const live =
+      saved && ["执行中", "子任务执行中"].includes(saved.detail)
+        ? toolState?.(saved.callId)
+        : undefined;
+    const row = saved && live ? { ...saved, ...live } : saved;
     const call = events.find((event) => event.seq === entry.id)?.payload as
       { name?: string; arguments?: unknown } | undefined;
     const result =
@@ -44,7 +53,7 @@ export function ActivityEntries({
             />
             {row ? (
               <>
-                {row.detail === "执行中" ? (
+                {["执行中", "子任务执行中"].includes(row.detail) ? (
                   <StatusIcon kind="loading" size={16} />
                 ) : (
                   <ListChecks size={16} aria-hidden="true" />

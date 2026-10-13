@@ -16,6 +16,7 @@ function signature(messages: readonly ThreadMessageLike[]) {
               .map((part) => part.text)
               .join(""),
       status: m.status?.type === "incomplete" ? m.status : undefined,
+      executionStatus: m.metadata?.custom?.status,
     })),
   );
 }

@@ -36,10 +36,24 @@ export function useHistorySync(
       else refresh();
     });
     let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     let off: (() => void) | undefined;
     void listen<AgentProgress>("agent-progress", ({ payload }) => {
-      if (payload.projectId === projectId && payload.kind === "turn/end")
+      if (payload.projectId !== projectId) return;
+      if (["turn/start", "turn/waiting", "turn/end"].includes(payload.kind)) {
+        clearTimeout(timer);
+        timer = undefined;
         refresh();
+      } else if (
+        payload.kind === "assistant/partial" &&
+        !runtime.thread.getState().isRunning &&
+        timer === undefined
+      ) {
+        timer = setTimeout(() => {
+          timer = undefined;
+          refresh();
+        }, 100);
+      }
     })
       .then((stop) => {
         if (disposed) stop();
@@ -58,6 +72,7 @@ export function useHistorySync(
     document.addEventListener("visibilitychange", reveal);
     return () => {
       disposed = true;
+      clearTimeout(timer);
       sync.dispose();
       off?.();
       unsubscribe();

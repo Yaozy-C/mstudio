@@ -16,6 +16,7 @@ import type { Asset, Project } from "../model";
 import type { Attachment } from "./attachments";
 import { AgentActivity } from "./AgentActivity";
 import { AttachmentChips } from "./AttachmentChips";
+import type { ExecutionState } from "./executionState";
 import { GenerationMessages } from "../production/GenerationMessages";
 import type { ProductionTask } from "../production/types";
 import type { ProductionController } from "../production/useProduction";
@@ -39,6 +40,7 @@ export const MessageContext = createContext<{
     string,
     { agentId: string; agentName: string; targetNodeId?: string | null }
   >;
+  execution?: ExecutionState | null;
   canvas?: ProductionController;
   settings: () => void;
   saveAttachment: (asset: Asset) => void;
@@ -60,6 +62,14 @@ export function AgentMessage() {
     (meta?.agentName as string | undefined) ||
     context.targets[message.id]?.agentName;
   const turnId = meta?.turnId as string | undefined;
+  const executionStatus =
+    context.execution && context.execution.turnId === turnId
+      ? context.execution.status
+      : meta?.status;
+  const active =
+    message.status?.type === "running" ||
+    executionStatus === "running" ||
+    executionStatus === "waiting";
   const attached =
     context.sent[message.id] ??
     (message.metadata.custom?.attachments as Attachment[] | undefined) ??
@@ -99,7 +109,8 @@ export function AgentMessage() {
             projectId={context.project.id}
             agents={context.agents}
             turnId={turnId}
-            running={message.status?.type === "running"}
+            running={active}
+            waiting={executionStatus === "waiting"}
           />
         )}
         <MessagePrimitive.Content components={contentComponents} />
@@ -108,6 +119,7 @@ export function AgentMessage() {
         )}
 
         {message.role === "assistant" &&
+          !active &&
           message.status?.type === "incomplete" && (
             <ErrorNotice
               error={

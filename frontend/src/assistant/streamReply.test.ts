@@ -4,23 +4,26 @@ import type { bridge } from "../bridge";
 
 function fixture() {
   let receive!: (event: AgentProgress) => void;
-  let resolve!: (text: string) => void;
+  let resolve!: (text: string | { text: string; status: string }) => void;
   let reject!: (error: Error) => void;
   let subscribed = false;
   let closed = false;
   const request = { projectId: "p", clientTurnId: "t" };
-  const response = new Promise<string>((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
+  const response = new Promise<string | { text: string; status: string }>(
+    (yes, no) => {
+      resolve = yes;
+      reject = no;
+    },
+  );
   const invoke = (async () => {
     expect(subscribed).toBe(true);
     return response;
   }) as typeof bridge;
+  const controller = new AbortController();
   const stream = streamReply(
     invoke,
     request,
-    new AbortController().signal,
+    controller.signal,
     async (handler) => {
       receive = handler;
       subscribed = true;
@@ -31,7 +34,16 @@ function fixture() {
   );
   return {
     stream,
-    resolve: (s: string) => resolve(s),
+    resolve: (s: string | { text: string; status: string }) => resolve(s),
+    abort: () => controller.abort(),
+    wait: () => receive({ projectId: "p", turnId: "t", kind: "turn/waiting" }),
+    end: (status = "completed", error?: string) =>
+      receive({
+        projectId: "p",
+        turnId: "t",
+        kind: "turn/end",
+        payload: { status, error },
+      }),
     reject: (e: Error) => reject(e),
     closed: () => closed,
     emit: (text: string, turnId = "t") =>
@@ -81,4 +93,90 @@ test("clears completed progress before streaming the final answer", async () => 
   f.resolve("已保存分镜");
   expect((await final).value).toBe("已保存分镜");
   expect((await f.stream.next()).done).toBe(true);
+});
+
+test("parent wait expiry does not finish the stream; background result continues it", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Waiting for subtasks", status: "waiting" });
+  expect((await first).value).toBe("Waiting for subtasks");
+  let ended = false;
+  const next = f.stream.next().then((v) => {
+    ended = true;
+    return v;
+  });
+  await Bun.sleep(0);
+  expect(ended).toBe(false);
+  expect(f.closed()).toBe(false);
+  f.emit("Here is the saved script");
+  expect((await next).value).toBe("Here is the saved script");
+  const end = f.stream.next();
+  f.end();
+  expect((await end).done).toBe(true);
+  expect(f.closed()).toBe(true);
+});
+
+test("a fast continuation cannot be replaced by the late initial wait reply", async () => {
+  const f = fixture();
+  const next = f.stream.next();
+  await Bun.sleep(0);
+  f.emit("Final script");
+  f.end();
+  f.resolve({ text: "Old waiting text", status: "waiting" });
+  expect((await next).value).toBe("Final script");
+  expect((await f.stream.next()).done).toBe(true);
+});
+
+test("background failure is surfaced after a waiting reply", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Waiting", status: "waiting" });
+  await first;
+  const next = f.stream.next();
+  f.end("failed", "Result delivery failed");
+  await expect(next).rejects.toThrow("Result delivery failed");
+  expect(f.closed()).toBe(true);
+});
+
+test("an ongoing continuation cannot be replaced by the late initial wait reply", async () => {
+  const f = fixture();
+  const next = f.stream.next();
+  await Bun.sleep(0);
+  f.wait();
+  f.emit("Receiving the script");
+  expect((await next).value).toBe("Receiving the script");
+  const result = f.stream.next();
+  f.resolve({ text: "Old waiting text", status: "waiting" });
+  await Bun.sleep(0);
+  f.emit("Final script");
+  expect((await result).value).toBe("Final script");
+  const end = f.stream.next();
+  f.end();
+  expect((await end).done).toBe(true);
+});
+
+test("stopping a parked parent releases the stream without another model response", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Waiting", status: "waiting" });
+  await first;
+  const next = f.stream.next();
+  f.abort();
+  await expect(next).rejects.toThrow("已停止");
+  expect(f.closed()).toBe(true);
+});
+
+test("cancellation from another window is reported as cancellation", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Waiting", status: "waiting" });
+  await first;
+  const next = f.stream.next();
+  f.end("cancelled", "Stopped");
+  await expect(next).rejects.toMatchObject({ name: "AbortError" });
+  expect(f.closed()).toBe(true);
 });

@@ -35,7 +35,7 @@ fn config_and_project_history_are_isolated() {
     assert_eq!(input.as_array().unwrap().len(), 5);
     let turn = PendingTurn::begin("test-turn").unwrap();
     assert!(PendingTurn::begin("test-turn").is_err());
-    super::pending::cancel_assistant("test-turn".into());
+    super::pending::cancel("test-turn");
     assert!(turn.token.is_cancelled());
     drop(turn);
     assert!(PendingTurn::begin("test-turn").is_ok());

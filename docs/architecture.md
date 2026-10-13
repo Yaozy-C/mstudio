@@ -99,6 +99,10 @@ GES 首版按片段缓存 FFmpeg 调色/变速，复用转场与导出音频混�
 
 后台结算先事务性保存结果与通知，再交接给仍驻留的父 Agent。父 Agent 正在执行时，在模型步骤边界读取通知；通知在最后一次模型请求期间到达，也必须先交付再进入空闲。父 Agent 已空闲时，`parent_activation.rs` 恢复其原始 session、已加载工具和模型连接，继续同一任务；不伪造用户消息、不重新执行已提交的工具调用。收尾阶段重新检查已提交的通知，避免结果落在“最后一步结束”和“进入空闲”之间而丢失。取消、替换或退出中的父 Agent 只保留通知，不自动唤醒。
 
+父任务的持久状态独立于单次 IPC 和模型运行。仍有运行中的子任务或未交付的结果通知时，父轮次保存为 `waiting` 并发布 `turn/waiting`，不会发布 `turn/end`。接回结果时在同一轮次转回 `running`，所有子任务与通知处理完毕后才进入 `completed`；失败与取消分别终止。等待状态同样保留会话、事件与历史，进程重启后标记为中断，不能把失去执行器的任务继续显示为运行中。
+
+前端订阅 `agent-execution`，用 `agent_execution_state` 恢复权威状态；事件序号防止较晚到达的旧状态覆盖新状态。初次 IPC 返回 `waiting` 后继续监听同一轮次，接收后台续写和最终结束。重新打开面板或切回窗口也刷新历史与执行状态，等待期间显示“等待子任务完成”，保留停止入口并禁止重复发送。委派卡片的活动状态跟随子轮次投影更新，原始工具回执保留调用当时的结果。
+
 实现对照：[DSH 工具调度与说明](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/tool-subagent/src/index.ts)、[DSH notifySettlement/sendWaking](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/subagent/src/continuation-activation.ts)。父会话恢复和界面消息沿用 Mstudio 现有 SQLite journal/history。
 
 ## SQLite content storage

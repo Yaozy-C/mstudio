@@ -2,7 +2,7 @@
 //! running receives at a step boundary, idle follows up, closing never wakes.
 use super::{
     harness::{self, Host, ProjectHost, session::Session},
-    history, pending, provider,
+    pending, provider,
 };
 use crate::database::Store;
 use serde_json::{Value, json};
@@ -137,6 +137,12 @@ fn spawn_followup(root: Arc<Activation>) {
         Box::pin(async move {
             if let Err(error) = followup(&root).await {
                 root.delivery.lock().unwrap().phase = Phase::Closing;
+                let tool = root.host.tool.as_ref().unwrap();
+                if let Err(save_error) =
+                    super::execution::fail_delivery(&tool.app, &tool.project, &tool.turn, &error)
+                {
+                    eprintln!("parent failure persistence failed: {save_error}");
+                }
                 eprintln!("parent followup failed: {error}");
             }
         });
@@ -167,6 +173,7 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
         .ok_or("Parent session unavailable")?;
     // This is a continuation of the existing Agent, not a fabricated user request.
     reopen_response(&store, &project, &turn)?;
+    super::execution::publish(&app, &project).map_err(|e| e.to_string())?;
     host.record(
         "turn/start",
         json!({"source":"subagent-settled","agentId":agent_id}),
@@ -184,35 +191,16 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
         .await
     }
     .await;
-    let status = if result.is_ok() {
-        "completed"
-    } else if pending.token.is_cancelled() {
-        "cancelled"
-    } else {
-        "failed"
-    };
-    let partial = harness::session::partial(&store, &project, &turn);
-    history::finish(
-        &store,
-        &project,
-        &turn,
-        result.as_deref().unwrap_or(&partial),
-        status,
-        result.as_ref().err().map(String::as_str),
-    )
-    .map_err(|e| e.to_string())?;
-    host.record(
-        "turn/end",
-        json!({"status":status,"error":result.as_ref().err()}),
-    )?;
+    super::execution::finish(&app, &project, &turn, &result, &pending.token)
+        .map_err(|e| e.to_string())?;
     drop(pending);
     settled(&project, &turn, result.is_ok());
     Ok(())
 }
 
-fn reopen_response(store: &Store, project: &str, turn: &str) -> Result<(), String> {
+pub(super) fn reopen_response(store: &Store, project: &str, turn: &str) -> Result<(), String> {
     let changed = store.db.lock().unwrap().execute(
-        "UPDATE agent_messages SET attribution=json_set(attribution,'$.status','running','$.error',NULL) WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2 AND json_extract(attribution,'$.status')='completed'",
+        "UPDATE agent_messages SET attribution=json_set(attribution,'$.status','running','$.error',NULL) WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2 AND json_extract(attribution,'$.status') IN ('waiting','completed')",
         rusqlite::params![project,turn],
     ).map_err(|e|e.to_string())?;
     if changed != 1 {
@@ -224,6 +212,7 @@ fn reopen_response(store: &Store, project: &str, turn: &str) -> Result<(), Strin
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::assistant::history;
     #[test]
     fn idle_completion_wakes_once_and_running_completion_is_steered() {
         let mut d = Delivery { phase: Phase::Idle };
@@ -264,7 +253,7 @@ mod tests {
             "p",
             "parent",
             "Creative task running",
-            "completed",
+            "waiting",
             None,
         )
         .unwrap();

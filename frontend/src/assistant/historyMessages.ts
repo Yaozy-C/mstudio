@@ -12,12 +12,9 @@ export function historyMessages(
 ): ThreadMessageLike[] {
   return messages.map((m) => {
     const status = m.attribution?.status;
-    const incomplete = [
-      "failed",
-      "cancelled",
-      "interrupted",
-      "running",
-    ].includes(String(status));
+    const incomplete = ["failed", "cancelled", "interrupted"].includes(
+      String(status),
+    );
     return {
       id: `history-${m.id}`,
       role: m.role,

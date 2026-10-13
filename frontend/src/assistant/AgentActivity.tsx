@@ -26,12 +26,14 @@ export function AgentActivity({
   projectId,
   turnId,
   running,
+  waiting = false,
   agents,
   startedAt,
 }: {
   projectId: string;
   turnId: string;
   running: boolean;
+  waiting?: boolean;
   startedAt?: number;
   agents: Pick<AgentProfile, "id" | "name">[];
 }) {
@@ -178,7 +180,7 @@ export function AgentActivity({
         agents={agents}
         seconds={seconds}
         running={running}
-        status={status}
+        status={waiting ? t("等待子任务完成…") : status}
         error={error}
       />
     </>

@@ -40,7 +40,7 @@ fn remove(db: &Connection, scope: Option<(&str, &str)>) -> Result<usize> {
         "DELETE FROM agent_events WHERE kind IN (SELECT value FROM json_each(?1)) {scope_sql}
         AND NOT EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=agent_events.project_id
             AND json_extract(m.attribution,'$.turnId')=agent_events.turn_id
-            AND m.role='assistant' AND json_extract(m.attribution,'$.status')='running')
+            AND m.role='assistant' AND json_extract(m.attribution,'$.status') IN ('running','waiting'))
         AND NOT EXISTS(SELECT 1 FROM subagent_runs r WHERE r.project_id=agent_events.project_id
             AND r.last_turn=agent_events.turn_id AND r.status='running')"
     );
