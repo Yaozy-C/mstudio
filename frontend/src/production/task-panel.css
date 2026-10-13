@@ -81,7 +81,11 @@
   white-space: nowrap;
 }
 .task-panel-detail {
-  padding: 24px;
+  padding: 0;
+  overflow: hidden;
+}
+.task-panel-detail > p {
+  margin: 24px;
 }
 .task-panel-detail .generation-run {
   padding: 0;
@@ -184,9 +188,6 @@
 @media (max-width: 900px) {
   .task-panel-body {
     grid-template-columns: 135px minmax(0, 1fr);
-  }
-  .task-panel-detail {
-    padding: 10px;
   }
   .task-panel-heading {
     padding: 8px;

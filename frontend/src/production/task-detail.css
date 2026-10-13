@@ -1,20 +1,17 @@
 /* Task details: result first, aligned metadata, compact secondary editing. */
-.task-panel-detail {
-  padding: 24px;
-}
 .task-panel-detail .generation-run {
   font-size: 13px;
   line-height: 1.65;
 }
-.task-panel-detail .generation-run > header {
+.task-panel-detail .generation-run > .run-content > header {
   min-height: 36px;
   gap: 12px;
 }
-.task-panel-detail .generation-run > header strong {
+.task-panel-detail .generation-run > .run-content > header strong {
   font-size: 17px;
   font-weight: 600;
 }
-.task-panel-detail .generation-run > header > span {
+.task-panel-detail .generation-run > .run-content > header > span {
   font-size: 12px;
 }
 .radix-themes .task-record-action {
@@ -174,14 +171,14 @@
   gap: 8px;
   margin: 0;
 }
-.generation-run > .run-actions {
+.run-footer > .run-actions {
   justify-content: center;
   gap: 12px;
   padding: 16px 0;
   margin: 16px 0 0;
   border-top: 1px solid var(--desk-rule);
 }
-.generation-run > .run-actions > .run-progress {
+.run-footer > .run-actions > .run-progress {
   flex-basis: 100%;
   min-width: 0;
   text-align: center;
@@ -191,15 +188,51 @@
   display: block;
   color: var(--desk-muted);
 }
-.task-panel-detail .generation-run > .run-actions {
-  position: sticky;
-  bottom: -24px;
-  z-index: 2;
+/* Keep task content scrollable independently from status and recovery actions. */
+.task-panel-detail .generation-run {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.task-panel-detail .run-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+.task-panel-detail .run-footer {
+  flex-shrink: 0;
+  max-height: 50%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--desk-rule);
   background: var(--desk-surface);
 }
+.task-panel-detail .run-footer > .run-actions {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.task-panel-detail
+  .run-footer
+  > :is(.error-notice, .operation-stopped, .run-notice) {
+  margin: 0 0 16px;
+}
+.task-panel-detail .run-footer > .action-button {
+  margin-bottom: 12px;
+}
+.task-panel-detail .run-footer > :last-child {
+  margin-bottom: 0;
+}
 @media (max-width: 900px) {
-  .task-panel-detail .generation-run > .run-actions {
-    bottom: -10px;
+  .task-panel-detail .run-content {
+    padding: 16px;
+  }
+  .task-panel-detail .run-footer {
+    padding: 16px;
   }
 }
 
