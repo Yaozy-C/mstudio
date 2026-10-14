@@ -39,7 +39,6 @@
   "本机 Codex": "Local Codex",
   "密钥已配置": "Key configured",
   "本机连接": "Local connection",
-  "Codex · 型号未验证": "Codex · Model unverified",
   "fal · 第三方": "fal · Third-party",
   "Google · 官方直连": "Google · Direct",
   "自定义 HTTP": "Custom HTTP",
@@ -90,7 +89,6 @@
   "全部厂商": "All providers",
   "搜索型号": "Search models",
   "搜索型号…": "Search models…",
-  "本机 Codex · 无需 API Key · 型号未验证": "Local Codex · No API key · Model unverified",
   "Google 官方直连": "Google direct connection",
   "通过 fal 接入": "Via fal",
   "添加生图模型": "Add image model",
@@ -153,9 +151,7 @@
   "编辑模型 {v0}": "Edit model {v0}",
   "移除模型 {v0}": "Remove model {v0}",
   "解释这张图": "Explain this image",
-  "GPT Image 2.5 · Codex（型号未验证）": "GPT Image 2.5 · Codex (model unverified)",
   "OpenAI / 本机 Codex": "OpenAI / Local Codex",
-  "使用 Codex 登录直连生图，原样发送提示词，不经过 Agent 扩写。请求型号为 gpt-image-2，不保证 Image 2.5。": "Uses your Codex login to send image prompts directly, without agent rewriting. Requests gpt-image-2; Image 2.5 is not guaranteed.",
   "Google / 官方直连": "Google / Direct",
   "Google 官方连接，无需 fal": "Direct Google connection; no fal needed",
   "Gemini 原生": "Native Gemini",
@@ -229,5 +225,10 @@
   "API Key 格式无效": "Invalid API key format",
   "移除服务连接": "Remove service connection",
   "百炼 · 官方直连": "DashScope · Official API",
-  "阿里云百炼官方直连": "Alibaba Cloud DashScope official API"
+  "阿里云百炼官方直连": "Alibaba Cloud DashScope official API",
+  "本机 Codex · 无需 API Key · 可指定型号": "Local Codex · No API key · Selectable model",
+  "GPT Image 2.5 Sunburst · Codex": "GPT Image 2.5 Sunburst · Codex",
+  "使用 Codex 登录直连生图，原样发送提示词和配置的模型 ID。默认 gpt-image-2.5-sunburst，实际可用性取决于 Codex 账号权限。": "Uses your Codex login to send the prompt and configured model ID directly. Defaults to gpt-image-2.5-sunburst; availability depends on your Codex account access.",
+  "按此模型 ID 请求生成和编辑；实际可用性取决于 Codex 账号权限，失败时不会自动切换型号。": "Requests this model ID for generation and editing. Availability depends on your Codex account access; failures will not switch models automatically.",
+  "请填写有效的 Codex 图像模型 ID": "Enter a valid Codex image model ID"
 }

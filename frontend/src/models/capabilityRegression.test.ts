@@ -79,7 +79,7 @@ test("native builders reject declarations they would ignore", () => {
         plugin === "gemini-native"
           ? "https://generativelanguage.googleapis.com"
           : "codex://local/images",
-      params: { model: "test" },
+      params: { model: plugin === "codex-image" ? "gpt-image-2" : "test" },
       capabilities: {
         references: [
           { key: "/ignored", kind: "image", role: "reference", multiple: true },

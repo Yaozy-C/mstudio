@@ -3,6 +3,8 @@ import { mediaAdapter } from ".";
 import { validateMediaModel } from "../mediaRegistry";
 import { modelLibrary } from "../catalogSpecs";
 import type { MediaModel } from "../mediaRegistry";
+import { codexImageModel } from "../codexImageModel";
+import { presetRequest } from ".";
 const codexModel = (): MediaModel => {
   const spec = modelLibrary.find((s) => s.id === "codex-image")!;
   return {
@@ -65,4 +67,44 @@ test("Codex rejects a reference kind its request builder cannot embed", () => {
       },
     }),
   ).toThrow("图片参考");
+});
+
+test("Codex catalog requests Sunburst and preserves selected IDs in both input modes", () => {
+  expect(codexModel().params.model).toBe("gpt-image-2.5-sunburst");
+  for (const id of [
+    "gpt-image-2.5-sunburst",
+    "gpt-image-2.5-flare",
+    "gpt-image-2",
+  ]) {
+    for (const edit of [false, true]) {
+      const model = { ...codexModel(), params: { model: id } };
+      validateMediaModel(model);
+      const adapter = mediaAdapter(model);
+      const params = {
+        ...model.params,
+        ...(edit ? { image: ["data:image/png;base64,YQ=="] } : {}),
+      };
+      const encoded = adapter.encode(presetRequest(adapter, "test", params));
+      expect(encoded.model).toBe(id);
+      expect(encoded.image).toEqual(edit ? params.image : undefined);
+    }
+  }
+});
+
+test("Codex accepts legacy configurations and rejects invalid model IDs on save", () => {
+  expect(codexImageModel({})).toBe("gpt-image-2");
+  expect(codexImageModel({ model: "codex-image" })).toBe("gpt-image-2");
+  for (const id of [
+    null,
+    42,
+    "",
+    "gpt-image-",
+    "gpt-image-2\n",
+    "gpt-image-2/other",
+    "gpt-image-" + "x".repeat(100),
+  ]) {
+    expect(() =>
+      validateMediaModel({ ...codexModel(), params: { model: id } }),
+    ).toThrow("模型 ID");
+  }
 });

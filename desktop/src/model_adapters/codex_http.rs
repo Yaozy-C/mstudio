@@ -34,7 +34,9 @@ pub(super) async fn request(
         401 => bail!("Codex 登录已失效，请重新登录后提交；未自动重试"),
         403 => bail!("Codex 图片接口拒绝访问，请检查账号权限"),
         429 => bail!("Codex 图片额度不足或请求过于频繁，请稍后重试"),
-        400 | 422 => bail!("Codex 图片接口拒绝了请求，请检查描述和参考图片"),
+        400 | 404 | 422 => {
+            bail!("Codex 图片接口拒绝了请求，请检查模型 ID、账号权限、描述和参考图片；未切换型号")
+        }
         status => bail!("Codex 图片请求失败（HTTP {status}）；未自动重试"),
     }
     let mut bytes = Vec::new();
@@ -60,7 +62,13 @@ mod tests {
     use std::io::{Read, Write};
     #[tokio::test]
     async fn posts_exact_prompt_and_edit_references_and_does_not_leak_errors() {
-        for (status, edit) in [(200, false), (200, true), (401, false), (302, false)] {
+        for (status, edit) in [
+            (200, false),
+            (200, true),
+            (401, false),
+            (404, false),
+            (302, false),
+        ] {
             let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
             let base = format!("http://{}", listener.local_addr().unwrap());
             let server = std::thread::spawn(move || {
@@ -94,6 +102,7 @@ mod tests {
                     bytes.extend_from_slice(&buf[..n]);
                 }
                 let body: Value = serde_json::from_slice(&bytes[end..end + length]).unwrap();
+                assert_eq!(body["model"], "gpt-image-2.5-sunburst");
                 assert_eq!(body["prompt"], "  中文\n\"unchanged\"\t");
                 let line = String::from_utf8_lossy(&bytes[..end]);
                 assert!(line.starts_with(if edit {
@@ -111,7 +120,8 @@ mod tests {
                 };
                 write!(socket, "HTTP/1.1 {status} Test\r\nContent-Length: {}\r\nLocation: http://127.0.0.1:1/secret\r\nConnection: close\r\n\r\n{body}", body.len()).unwrap();
             });
-            let mut input = json!({"prompt":"  中文\n\"unchanged\"\t"});
+            let mut input =
+                json!({"prompt":"  中文\n\"unchanged\"\t", "model":"gpt-image-2.5-sunburst"});
             if edit {
                 input["image"] = json!(["data:image/png;base64,YQ=="]);
             }
@@ -131,6 +141,10 @@ mod tests {
                 let error = result.unwrap_err().to_string();
                 assert!(!error.contains("fake-token"));
                 assert!(!error.contains("private prompt"));
+                if status == 404 {
+                    assert!(error.contains("模型 ID"));
+                    assert!(error.contains("未切换型号"));
+                }
             }
             server.join().unwrap();
         }

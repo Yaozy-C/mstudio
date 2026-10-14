@@ -3,7 +3,7 @@ mod codex;
 pub(crate) mod codex_auth;
 pub(crate) mod codex_discovery;
 mod codex_http;
-mod codex_request;
+pub(crate) mod codex_request;
 pub mod codex_rpc;
 pub mod codex_setup;
 pub mod dashscope;

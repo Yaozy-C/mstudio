@@ -89,7 +89,7 @@ export function ModelLibrary({
             {kind !== "text" && (
               <small>
                 {m.id === "codex-image"
-                  ? t("本机 Codex · 无需 API Key · 型号未验证")
+                  ? t("本机 Codex · 无需 API Key · 可指定型号")
                   : m.id === "gemini-image-direct"
                     ? t("Google 官方直连")
                     : m.plugin === "dashscope"

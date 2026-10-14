@@ -2,6 +2,7 @@ import { parseUrl } from "./parseUrl";
 import { mediaAdapter } from "./adapters";
 import { validateCapabilities } from "./capabilities";
 import type { MediaModel } from "./mediaRegistry";
+import { codexImageModel } from "./codexImageModel";
 /**
  * A capability declaration is data, never code: field pointers, roles and enum values are
  * checked against fixed vocabularies, and a protocol that builds its own request body —
@@ -14,6 +15,7 @@ export function validateMediaModel(model: MediaModel) {
   if (model.plugin === "codex-image") {
     if (model.kind !== "image" || model.endpoint !== "codex://local/images")
       throw new Error("Codex 仅支持本机图像连接");
+    codexImageModel(model.params);
   } else if (model.plugin === "fal") {
     if (
       !/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*(?:\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/.test(

@@ -1,5 +1,6 @@
 {
   "codex-image": {
+    "legacyModel": "gpt-image-2",
     "allowedFields": [
       "prompt",
       "model",
@@ -10,7 +11,6 @@
       "image"
     ],
     "fixedValues": {
-      "model": "codex-image",
       "size": "auto",
       "quality": "auto",
       "output_format": "png"

@@ -37,6 +37,7 @@ pub fn validate(model: &MediaModel) -> Result<()> {
     crate::model_adapters::provider(&model.plugin)?.validate_endpoint(&model.endpoint)?;
     if model.plugin == "codex-image" {
         ensure!(model.kind == "image", "Codex 仅支持图像输出");
+        crate::model_adapters::codex_request::model(&model.params)?;
     }
     if model.plugin == "gemini-native" {
         ensure!(model.kind == "image", "Gemini 此适配器仅支持图像输出");

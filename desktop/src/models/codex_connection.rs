@@ -162,7 +162,7 @@ fn sync(
                 kind: "image".into(),
                 plugin: "codex-image".into(),
                 endpoint: "codex://local/images".into(),
-                params: json!({"model":"codex-image","n":1}),
+                params: json!({"model":"gpt-image-2.5-sunburst","n":1}),
                 enabled: true,
                 http: None,
                 capabilities: None,
@@ -197,6 +197,11 @@ mod tests {
             let report = json!({"models":[{"id":"test-model","displayName":"Test","isDefault":true}],"images":true});
             let saved = sync(&db, service.clone(), &report).unwrap();
             assert_eq!(saved.model_count, 2);
+            let mut configured = media::read(&db).unwrap();
+            assert_eq!(configured[0].params["model"], "gpt-image-2.5-sunburst");
+            configured[0].params["model"] = json!("gpt-image-2.5-flare");
+            media::validate(&configured[0]).unwrap();
+            media::write(&db, &configured).unwrap();
             let saved_again = sync(&db, service, &report).unwrap();
             assert_eq!(saved_again.id, saved.id);
             assert_eq!(saved_again.model_count, 2);
@@ -207,6 +212,10 @@ mod tests {
             assert_eq!(images.len(), 1);
             assert_eq!(images[0].connection_id.as_deref(), Some("local-codex"));
             assert!(!images[0].has_key);
+            assert_eq!(images[0].params["model"], "gpt-image-2.5-flare");
+            let mut invalid = images[0].clone();
+            invalid.params["model"] = json!("bad model");
+            assert!(media::validate(&invalid).is_err());
         }
         drop(store);
         std::fs::remove_dir_all(root).unwrap();
