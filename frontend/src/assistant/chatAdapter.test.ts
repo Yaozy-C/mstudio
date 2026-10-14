@@ -51,6 +51,13 @@ test("failed canvas request retries original context without consuming the next 
   first.result.reject(new Error("模拟网络失败"));
   await sending;
   await until(() => f.thread.messages.at(-1)?.status?.type !== "running");
+  // The failed message owns this error; do not also pin it above the composer.
+  expect(f.thread.messages.at(-1)?.status).toMatchObject({
+    type: "incomplete",
+    reason: "error",
+    error: { message: "模拟网络失败" },
+  });
+  expect(f.panelErrors.filter(Boolean)).toEqual([]);
   const userId = f.thread.messages.find((m) => m.role === "user")!.id;
   const retry = f.thread.startRun({
     parentId: userId,

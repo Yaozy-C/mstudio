@@ -93,3 +93,48 @@ test("unchanged history with different runtime IDs does not reset the thread", a
   await refresh;
   expect(f.applied).toHaveLength(0);
 });
+
+test("returning from film view cannot replace a long chat with a recent window", async () => {
+  const all = Array.from({ length: 66 }, (_, i) =>
+    message(`turn-${i}`, `回答 ${i}`),
+  );
+  const f = fixture(all);
+  const refresh = f.sync.refresh();
+  const truncated = all.slice(-60);
+  truncated[59] = message("turn-65", "后台更新的回答");
+  f.pending[0]!(truncated);
+  await refresh;
+  expect(f.applied).toHaveLength(0);
+});
+
+test("a complete refresh updates the latest answer and preserves every older message", async () => {
+  const all = Array.from({ length: 66 }, (_, i) =>
+    message(`turn-${i}`, `回答 ${i}`),
+  );
+  const f = fixture(all);
+  const saved = [...all];
+  saved[65] = message("turn-65", "后台更新的回答");
+  const refresh = f.sync.refresh();
+  f.pending[0]!(saved);
+  await refresh;
+  expect(f.applied).toEqual([saved]);
+  expect(f.applied[0]![0]).toEqual(all[0]);
+});
+
+test("an empty or shorter refresh preserves a failed local send without a turn ID", async () => {
+  for (const saved of [[], [message("old", "旧记录")]]) {
+    const f = fixture([
+      message("old", "旧记录"),
+      { role: "user", content: "本地请求" },
+      {
+        role: "assistant",
+        content: "",
+        status: { type: "incomplete", reason: "error", error: "连接失败" },
+      },
+    ]);
+    const refresh = f.sync.refresh();
+    f.pending[0]!(saved);
+    await refresh;
+    expect(f.applied).toHaveLength(0);
+  }
+});

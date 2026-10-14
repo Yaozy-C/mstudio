@@ -10,7 +10,6 @@ export function useHistorySync(
   projectId: string,
   runtime: AssistantRuntime,
   visible: boolean,
-  view: string | undefined,
   onError: (message: string) => void,
 ) {
   useEffect(() => {
@@ -79,5 +78,5 @@ export function useHistorySync(
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", reveal);
     };
-  }, [projectId, runtime, visible, view, onError]);
+  }, [projectId, runtime, visible, onError]);
 }

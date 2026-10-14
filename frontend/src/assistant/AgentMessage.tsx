@@ -128,6 +128,7 @@ export function AgentMessage() {
           !active &&
           message.status?.type === "incomplete" && (
             <ErrorNotice
+              variant="conversation"
               error={
                 message.status.reason === "cancelled"
                   ? t("已停止回答")

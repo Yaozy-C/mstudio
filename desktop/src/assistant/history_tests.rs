@@ -112,3 +112,49 @@ fn attachment_enrichment_and_deleted_project_cannot_erase_or_resurrect_sent_mess
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn visible_history_keeps_more_than_sixty_messages_across_refresh_and_reopen() {
+    let (root, store, _) = fixture();
+    for i in 0..35 {
+        let turn = format!("history-{i}");
+        begin(&store, &turn).unwrap();
+        history::finish(
+            &store,
+            "p",
+            &turn,
+            &format!("answer-{i}"),
+            "completed",
+            None,
+        )
+        .unwrap();
+    }
+    let before = history::read(&store, "p").unwrap();
+    assert_eq!(before.len(), 70);
+    assert_eq!(before[1].content, "answer-0");
+    assert_eq!(before[69].content, "answer-34");
+    let ids: Vec<_> = before.iter().map(|m| m.id).collect();
+    // A background update changes the tail while the user is in film view.
+    store
+        .db
+        .lock()
+        .unwrap()
+        .execute(
+            "UPDATE agent_messages SET content='updated' WHERE id=?1",
+            [ids[69]],
+        )
+        .unwrap();
+    let refreshed = history::read(&store, "p").unwrap();
+    assert_eq!(refreshed.len(), 70);
+    assert_eq!(refreshed[1].content, "answer-0");
+    assert_eq!(refreshed[69].content, "updated");
+    drop(store);
+    let store = Store::open(root.clone()).unwrap();
+    let reopened = history::read(&store, "p").unwrap();
+    assert_eq!(reopened.iter().map(|m| m.id).collect::<Vec<_>>(), ids);
+    assert_eq!(reopened[0].payload[0]["attachments"][0]["id"], "image");
+    assert_eq!(reopened[1].content, "answer-0");
+    assert!(history::read(&store, "other").unwrap().is_empty());
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

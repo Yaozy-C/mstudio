@@ -68,3 +68,38 @@
 .error-notice-actions {
   margin-top: 6px;
 }
+.error-notice-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.error-notice-details > summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  list-style: none;
+}
+.error-notice-details > summary::-webkit-details-marker {
+  display: none;
+}
+.error-notice-details > summary > svg {
+  transform: rotate(-90deg);
+}
+.error-notice-details[open] > summary > svg {
+  transform: none;
+}
+.error-notice-copy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.error-notice-copy button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.error-notice-copy small {
+  margin: 0;
+}

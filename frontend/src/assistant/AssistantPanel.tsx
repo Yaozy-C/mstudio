@@ -113,13 +113,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
     }),
   );
   const runtime = useLocalRuntime(adapter, { initialMessages: props.history });
-  useHistorySync(
-    props.project.id,
-    runtime,
-    props.visible !== false,
-    props.work?.view,
-    setError,
-  );
+  useHistorySync(props.project.id, runtime, props.visible !== false, setError);
   useComposerDraft(props.project.id, runtime);
   useEffect(() => {
     if (!props.draft.suggestion) return;
@@ -206,12 +200,14 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
             <ErrorNotice
               error={error || models.error || agents.error}
               fallback="OPERATION_FAILED"
+              variant="conversation"
             />
           )}
           {props.canvas?.task?.error && (
             <ErrorNotice
               error={props.canvas.task.error}
               fallback="VALIDATION_FAILED"
+              variant="conversation"
             />
           )}
           {props.draft.notice && (

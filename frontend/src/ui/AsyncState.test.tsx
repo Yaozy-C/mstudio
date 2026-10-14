@@ -37,8 +37,8 @@ test("failures retain recovery and collapsed diagnostics while cancellation is n
   );
   expect(html).toContain('role="alert"');
   expect(html).toContain("<button>Retry</button>");
-  expect(html).toContain("<details>");
-  expect(html).not.toContain("<details open");
+  expect(html).toMatch(/<details(?:\s[^>]*)?>/);
+  expect(html).not.toMatch(/<details\b[^>]*\bopen(?:[\s=>])/);
   const cancelled = render(
     <ErrorNotice error={JSON.stringify({ code: "CHAT_STOPPED" })} />,
   );

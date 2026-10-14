@@ -98,6 +98,106 @@
   color: var(--desk-text);
   font-weight: 500;
 }
+.radix-themes .conversation-notice.error-notice {
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.agent-message .conversation-notice {
+  margin: 12px 0 0;
+}
+.agent-thread > .conversation-notice {
+  flex-shrink: 0;
+  margin: 8px 16px 0;
+}
+.conversation-notice .error-notice-heading {
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.conversation-notice .error-notice-heading > svg {
+  color: var(--desk-accent);
+  margin: 0;
+}
+.conversation-notice .error-notice-recovery {
+  padding-left: 26px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.conversation-notice .error-notice-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--ui-rule);
+}
+.conversation-notice .error-notice-footer > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+  margin: 0;
+}
+.conversation-notice .error-notice-actions {
+  position: relative;
+  z-index: 1;
+  align-self: start;
+  justify-self: start;
+  max-width: calc(100% - 100px);
+}
+.radix-themes .conversation-notice .error-notice-actions .action-button {
+  min-height: 32px;
+  padding: 4px 0;
+  gap: 6px;
+  font-size: var(--ui-caption);
+  line-height: 24px;
+}
+.conversation-notice .error-notice-details > summary {
+  min-height: 32px;
+  margin-left: auto;
+  gap: 6px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+}
+.conversation-notice .error-notice-details > summary:hover {
+  color: var(--desk-text);
+}
+.conversation-notice .error-notice-details > summary:focus-visible {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.conversation-notice .error-notice-diagnostics {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-bg);
+}
+.conversation-notice .error-notice-diagnostics pre {
+  margin: 0 0 10px;
+  font-family: var(--ui-mono);
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--desk-muted);
+}
+.radix-themes .conversation-notice .error-notice-copy button {
+  min-height: 28px;
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 22px;
+}
+.radix-themes .conversation-notice .error-notice-copy button:hover {
+  color: var(--desk-text);
+}
 .radix-themes .agent-welcome h3 {
   font-size: var(--ui-heading);
   line-height: 24px;

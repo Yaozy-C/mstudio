@@ -204,9 +204,6 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
         )) {
           yield { content: [{ type: "text", text }], metadata: { custom } };
         }
-      } catch (e) {
-        options.error(String(e));
-        throw e;
       } finally {
         options.running(false);
         abortSignal.removeEventListener("abort", cancel);

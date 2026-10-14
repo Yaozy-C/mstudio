@@ -19,7 +19,8 @@ pub fn init(db: &rusqlite::Connection) -> Result<()> {
 }
 pub fn read(store: &Store, project: &str) -> Result<Vec<Message>> {
     let db = store.db.lock().unwrap();
-    let mut stmt=db.prepare("SELECT role,content,model,payload,attribution,id FROM (SELECT * FROM agent_messages WHERE project_id=?1 ORDER BY id DESC LIMIT 60) ORDER BY id")?;
+    // This is the visible conversation, not the model's bounded context window.
+    let mut stmt=db.prepare("SELECT role,content,model,payload,attribution,id FROM agent_messages WHERE project_id=?1 ORDER BY id")?;
     let rows = stmt
         .query_map([project], |r| {
             Ok((

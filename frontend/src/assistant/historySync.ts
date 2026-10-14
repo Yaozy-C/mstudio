@@ -48,21 +48,22 @@ export function historySync(options: {
           disposed ||
           request !== revision ||
           current.isRunning ||
-          current.messages !== before.messages
+          current.messages !== before.messages ||
+          messages.length < current.messages.length
         )
           return;
         // A failed local send may not have reached persistence. Keep it retryable.
         const turns = new Set(messages.map((m) => m.metadata?.custom?.turnId));
-        const recent = current.messages.slice(-messages.length);
         if (
-          recent.some(
+          current.messages.some(
             (m) =>
               m.metadata?.custom?.turnId &&
               !turns.has(m.metadata.custom.turnId),
           )
         )
           return;
-        if (signature(recent) !== signature(messages)) options.apply(messages);
+        if (signature(current.messages) !== signature(messages))
+          options.apply(messages);
       } catch (error) {
         if (!disposed && request === revision) options.error(error);
       }

@@ -91,6 +91,7 @@ export function fixture(
   let agent: string | null = initialAgent;
   let savedAgents = structuredClone(defaultAgents);
   let catalogReads = 0;
+  const panelErrors: string[] = [];
   const adapter = createChatAdapter({
     context: () => context,
     routing: () => ({
@@ -104,7 +105,7 @@ export function fixture(
     },
     target: () => {},
     running: () => {},
-    error: () => {},
+    error: (value) => panelErrors.push(value),
     invoke: async <T>(
       command: string,
       args?: Record<string, unknown>,
@@ -135,6 +136,7 @@ export function fixture(
     flush,
     sent,
     calls,
+    panelErrors,
     thread,
     get catalogReads() {
       return catalogReads;
