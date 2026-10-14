@@ -3,12 +3,15 @@ param([string]$DependencyRoot = "$PSScriptRoot/../desktop/native/vendor/windows"
 $ErrorActionPreference = 'Stop'
 $DependencyRoot = [IO.Path]::GetFullPath($DependencyRoot)
 New-Item -ItemType Directory -Force $DependencyRoot | Out-Null
-function Download-Verified($Url, $Destination, $Sha256) {
-    & python "$PSScriptRoot/download_verified.py" $Url $Destination $Sha256
+function Download-Verified($Url, $Destination, $Sha256, $FallbackUrl) {
+    $downloadArgs = @("$PSScriptRoot/download_verified.py", $Url, $Destination, $Sha256)
+    if ($FallbackUrl) { $downloadArgs += @('--fallback-url', $FallbackUrl) }
+    & python @downloadArgs
     if ($LASTEXITCODE -ne 0) { throw "Dependency download failed: $Destination" }
 }
 $installer = Join-Path $DependencyRoot 'gstreamer-1.28.7.exe'
-Download-Verified 'https://gstreamer.freedesktop.org/data/pkg/windows/1.28.7/msvc/gstreamer-1.0-msvc-x86_64-1.28.7.exe' $installer '032fc6062b8539838fc8da22589cb9b24c5d820baa7f8cc160af9ea08395badf'
+$gstPath = 'data/pkg/windows/1.28.7/msvc/gstreamer-1.0-msvc-x86_64-1.28.7.exe'
+Download-Verified "https://origin.gstreamer.freedesktop.org/$gstPath" $installer '032fc6062b8539838fc8da22589cb9b24c5d820baa7f8cc160af9ea08395badf' -FallbackUrl "https://gstreamer.freedesktop.org/$gstPath"
 $gst = Join-Path $DependencyRoot 'gstreamer'
 if (!(Test-Path "$gst/lib/pkgconfig/gst-editing-services-1.0.pc")) {
     $process = Start-Process $installer -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CURRENTUSER', '/TYPE=devel', "/DIR=`"$gst`"") -Wait -PassThru

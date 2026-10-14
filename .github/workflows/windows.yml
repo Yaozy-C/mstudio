@@ -31,6 +31,14 @@ jobs:
         run: |
           python scripts/test_download_verified.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Restore verified native downloads
+        id: native-downloads
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            desktop/native/vendor/windows/*.exe
+            desktop/native/vendor/windows/*.zip
+          key: windows-native-x64-${{ hashFiles('scripts/setup-windows.ps1') }}
       - name: Restore Rust build cache
         id: rust-cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
@@ -44,6 +52,14 @@ jobs:
           restore-keys: windows-msvc-1.97.1-${{ hashFiles('Cargo.lock', 'desktop/Cargo.lock') }}-
       - name: Set up pinned native dependencies
         run: ./scripts/setup-windows.ps1
+      - name: Save verified native downloads
+        if: steps.native-downloads.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            desktop/native/vendor/windows/*.exe
+            desktop/native/vendor/windows/*.zip
+          key: ${{ steps.native-downloads.outputs.cache-primary-key }}
       - name: Build and test frontend
         working-directory: frontend
         run: |

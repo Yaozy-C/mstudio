@@ -37,6 +37,15 @@ class DownloadVerifiedTests(unittest.TestCase):
         self.opener.assert_not_called()
         self.sleep.assert_not_called()
 
+    def test_corrupt_cdn_response_uses_fallback_and_still_checks_the_pinned_hash(self):
+        self.opener.side_effect = [io.BytesIO(b'incomplete'), io.BytesIO(self.data)]
+        urls = ['https://cdn.example.com/sdk.zip', 'https://origin.example.com/sdk.zip']
+        downloader.download_verified(
+            urls[0], self.destination, self.sha256, fallback_urls=urls[1:],
+        )
+        self.assertEqual([call.args[0] for call in self.opener.call_args_list], urls)
+        self.assertEqual(self.destination.read_bytes(), self.data)
+
     def test_stream_failure_retries_and_publishes_only_verified_bytes(self):
         class Interrupted(io.BytesIO):
             def read(self, size=-1):

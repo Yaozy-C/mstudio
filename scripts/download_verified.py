@@ -18,7 +18,7 @@ def file_hash(path):
     return digest.hexdigest()
 
 
-def download_verified(url, destination, sha256, attempts=4):
+def download_verified(url, destination, sha256, attempts=4, fallback_urls=()):
     destination = Path(destination)
     if not re.fullmatch(r'[0-9a-fA-F]{64}', sha256) or attempts < 1:
         raise ValueError('A SHA256 checksum and at least one attempt are required')
@@ -26,6 +26,7 @@ def download_verified(url, destination, sha256, attempts=4):
     if destination.is_file() and file_hash(destination) == sha256:
         return
     destination.parent.mkdir(parents=True, exist_ok=True)
+    sources = (url, *fallback_urls)
     for attempt in range(1, attempts + 1):
         partial = None
         try:
@@ -35,7 +36,8 @@ def download_verified(url, destination, sha256, attempts=4):
             ) as output:
                 partial = Path(output.name)
                 digest = hashlib.sha256()
-                with urlopen(url, timeout=60) as response:
+                source = sources[(attempt - 1) % len(sources)]
+                with urlopen(source, timeout=60) as response:
                     while chunk := response.read(1024 * 1024):
                         output.write(chunk)
                         digest.update(chunk)
@@ -61,5 +63,6 @@ if __name__ == '__main__':
     parser.add_argument('url')
     parser.add_argument('destination', type=Path)
     parser.add_argument('sha256')
+    parser.add_argument('--fallback-url', action='append', default=[])
     args = parser.parse_args()
-    download_verified(args.url, args.destination, args.sha256)
+    download_verified(args.url, args.destination, args.sha256, fallback_urls=args.fallback_url)
