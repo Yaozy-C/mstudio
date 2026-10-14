@@ -27,6 +27,10 @@ jobs:
         with:
           toolchain: 1.97.1
           components: rustfmt, clippy
+      - name: Test dependency download recovery
+        run: |
+          python scripts/test_download_verified.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: Restore Rust build cache
         id: rust-cache
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830

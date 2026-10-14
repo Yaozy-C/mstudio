@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 python3 scripts/check_skills.py
 python3 scripts/check_source_release.py
 python3 scripts/test_source_release.py
+python3 scripts/test_download_verified.py
 python3 scripts/check_source_size.py
 cargo fmt --all -- --check
 cargo fmt --manifest-path desktop/Cargo.toml -- --check

@@ -4,10 +4,8 @@ $ErrorActionPreference = 'Stop'
 $DependencyRoot = [IO.Path]::GetFullPath($DependencyRoot)
 New-Item -ItemType Directory -Force $DependencyRoot | Out-Null
 function Download-Verified($Url, $Destination, $Sha256) {
-    if (!(Test-Path $Destination) -or (Get-FileHash $Destination -Algorithm SHA256).Hash -ne $Sha256) {
-        Invoke-WebRequest $Url -OutFile $Destination
-    }
-    if ((Get-FileHash $Destination -Algorithm SHA256).Hash -ne $Sha256) { throw "Checksum mismatch: $Destination" }
+    & python "$PSScriptRoot/download_verified.py" $Url $Destination $Sha256
+    if ($LASTEXITCODE -ne 0) { throw "Dependency download failed: $Destination" }
 }
 $installer = Join-Path $DependencyRoot 'gstreamer-1.28.7.exe'
 Download-Verified 'https://gstreamer.freedesktop.org/data/pkg/windows/1.28.7/msvc/gstreamer-1.0-msvc-x86_64-1.28.7.exe' $installer '032fc6062b8539838fc8da22589cb9b24c5d820baa7f8cc160af9ea08395badf'
