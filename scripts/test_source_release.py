@@ -81,6 +81,16 @@ class SourceReleaseTests(unittest.TestCase):
         (docs / 'image-storyboard-cases.md').write_text('-----BEGIN ' + 'PRIVATE KEY-----')
         self.assertNotEqual(self.check_release().returncode, 0)
 
+    def test_public_visual_spec_passes_and_still_receives_content_scan(self):
+        docs = self.root / 'docs'
+        docs.mkdir()
+        spec = docs / 'visual-system.md'
+        spec.write_text('# Public visual system\n')
+        result = self.check_release()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        spec.write_text('-----BEGIN ' + 'PRIVATE KEY-----')
+        self.assertNotEqual(self.check_release().returncode, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

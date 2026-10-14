@@ -17,6 +17,7 @@ forbidden_parts = {
 forbidden_extensions = {'.mp4', '.mov', '.wav', '.mp3', '.dylib', '.dll', '.so', '.exe', '.zip', '.gz', '.db', '.pem', '.key', '.p12', '.pfx'}
 published_docs = {
     'docs/architecture.md', 'docs/development.md', 'docs/image-storyboard-cases.md',
+    'docs/visual-system.md',
 }
 patterns = [
     re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
