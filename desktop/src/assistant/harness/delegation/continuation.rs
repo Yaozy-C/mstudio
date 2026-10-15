@@ -74,27 +74,12 @@ pub(super) fn start_continuation(
     let mut messages =
         super::super::session::restore(&store, &parent.project, last_turn, &binding)?
             .ok_or("Cannot restore child session")?;
-    let document: String = store
-        .db
-        .lock()
-        .unwrap()
-        .query_row(
-            "SELECT document FROM projects WHERE id=?1",
-            [&parent.project],
-            |r| r.get(0),
-        )
-        .map_err(|e| e.to_string())?;
-    let mut snapshot = if profiles::allows(&profile, "inspect") {
-        context::project_snapshot(
-            &serde_json::from_str::<Value>(&document).map_err(|e| e.to_string())?,
-            None,
-        )
-    } else {
-        json!({})
-    };
-    snapshot["skills"] = skills::runtime_catalog(&parent.app, &profiles::skill_setting(&profile))
-        .map_err(|e| e.to_string())?;
-    snapshot["agent"] = crate::assistant::model_profile::role(&profile);
+    let mut tool = parent.clone();
+    tool.profile = profile;
+    tool.turn = last_turn.into();
+    crate::assistant::turn_context::refresh(&mut tool, &mut messages)?;
+    let previous_revision = binding["revision"].clone();
+    binding["revision"] = json!(tool.profile.revision);
     let original_source = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
@@ -102,26 +87,13 @@ pub(super) fn start_continuation(
     )
     .map_err(|e| e.to_string())?;
     let request_turn = original_source.as_ref().map(|(turn, _)| turn.clone());
-    let original = original_source.map(|(_, r)| r).unwrap_or(Value::Null);
-    crate::assistant::prompt_guidance::attach(
-        &mut snapshot,
-        &store.db.lock().unwrap(),
-        &profile,
-        &original["production"],
-        &serde_json::from_str(&document).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())?;
-    // Preserve this child's exact transcript; only refresh its configured role at the turn boundary.
-    messages =
-        super::super::handoff::messages(crate::assistant::prompts::system(&snapshot), &messages);
-    let previous_revision = binding["revision"].clone();
-    binding["revision"] = json!(profile.revision);
-    let snapshot = crate::assistant::task_context::reference_snapshot(snapshot);
-    let mut current = vec![super::super::context_source::snapshot(snapshot)];
-    super::super::context_boundary::refresh_snapshot(&mut messages, &mut current);
-    messages.extend(current);
-    let user_request = original["prompt"].as_str().unwrap_or_default().to_owned();
-    messages.push(Message::user(format!("Original user request:{user_request}; subsequent delegated messages are not original user statements.")));
+    tool.prompt = original_source
+        .and_then(|(_, request)| {
+            request["production"]["instruction"]
+                .as_str()
+                .map(str::to_owned)
+        })
+        .unwrap_or_default();
     let claimed = store.db.lock().unwrap().execute(
         "UPDATE subagent_runs SET status='running',updated=unixepoch() WHERE id=?1 AND last_turn=?2 AND status!='running'",
         rusqlite::params![id,last_turn],
@@ -153,12 +125,12 @@ pub(super) fn start_continuation(
         &new_turn,
         "subagent/configuration",
         json!({
-            "childId":id,"previousRevision":previous_revision,"revision":profile.revision,
-            "profile":profile,"restoredFrom":last_turn,"requestTurnId":request_turn
+            "childId":id,"previousRevision":previous_revision,"revision":tool.profile.revision,
+            "profile":tool.profile,"restoredFrom":last_turn,"requestTurnId":request_turn
         }),
     )
     .map_err(|e| e.to_string())?;
-    store.db.lock().unwrap().execute("UPDATE subagent_runs SET last_turn=?2,profile=?4,notified=0,updated=unixepoch() WHERE id=?1 AND last_turn=?3",rusqlite::params![id,new_turn,last_turn,serde_json::to_string(&profile).map_err(|e|e.to_string())?]).map_err(|e|e.to_string())?;
+    store.db.lock().unwrap().execute("UPDATE subagent_runs SET last_turn=?2,profile=?4,notified=0,updated=unixepoch() WHERE id=?1 AND last_turn=?3",rusqlite::params![id,new_turn,last_turn,serde_json::to_string(&tool.profile).map_err(|e|e.to_string())?]).map_err(|e|e.to_string())?;
     let source: String = store.db.lock().unwrap().query_row("SELECT source FROM subagent_inbox WHERE child_id=?1 AND consumed=0 ORDER BY seq LIMIT 1",[id],|r|r.get(0)).map_err(|e|e.to_string())?;
     let source: Value = serde_json::from_str(&source).map_err(|e| e.to_string())?;
     crate::assistant::child_activity::start(
@@ -168,14 +140,10 @@ pub(super) fn start_continuation(
         id,
         source["senderTurnId"].as_str().unwrap_or(&parent.turn),
         source["callId"].as_str().unwrap_or(""),
-        &profile.id,
+        &tool.profile.id,
     )
     .map_err(|e| e.to_string())?;
-    let mut tool = parent.clone();
-    tool.profile = profile;
-    tool.skill_setting = profiles::skill_setting(&tool.profile);
     tool.turn = new_turn.clone();
-    tool.prompt = user_request;
     let token = CancellationToken::new();
     tool.token = token.clone();
     tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
@@ -190,7 +158,6 @@ pub(super) fn start_continuation(
     );
     let child = ChildHost {
         inner: ProjectHost {
-            loaded_tools: Default::default(),
             media_profile: route.clone(),
             tool: Some(tool),
             token,

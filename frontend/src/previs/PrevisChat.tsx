@@ -2,6 +2,7 @@ import { PaperPlaneTilt, Stop } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import { readyModel } from "../models/types";
 import { StudioSelect } from "../ui/StudioSelect";
+import { ErrorNotice } from "../errors/ErrorNotice";
 import type { PrevisEditorState } from "./usePrevisEditor";
 
 export function PrevisChat({ state }: { state: PrevisEditorState }) {
@@ -46,8 +47,8 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
         <div ref={chatEnd} />
       </div>
       {error && (
-        <div role="alert" className="previs-error">
-          {error}
+        <div className="previs-error">
+          <ErrorNotice error={error} fallback="PREVIS_CHAT_FAILED" />
         </div>
       )}
       <form

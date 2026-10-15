@@ -31,9 +31,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     if !["oneShot", "continuable"].contains(&mode) {
         return Err("Invalid subagent mode".into());
     }
-    let background = args["runInBackground"]
-        .as_bool()
-        .unwrap_or(mode == "continuable");
+    let background = background(args);
     if id == parent.profile.id || id == "coordinator" {
         return Err("Cannot delegate to the coordinator or self".into());
     }
@@ -61,14 +59,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         )
         .map_err(|e| e.to_string())?;
     let doc: Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
-    let mut snapshot = if profiles::allows(&tool.profile, "inspect") {
-        context::project_snapshot(&doc, None)
-    } else {
-        json!({})
-    };
-    snapshot["skills"] =
-        skills::runtime_catalog(&parent.app, &tool.skill_setting).map_err(|e| e.to_string())?;
-    snapshot["agent"] = crate::assistant::model_profile::role(&tool.profile);
     let original = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,
@@ -77,14 +67,13 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     .map_err(|e| e.to_string())?
     .map(|(_, request)| request)
     .unwrap_or(Value::Null);
-    crate::assistant::prompt_guidance::attach(
-        &mut snapshot,
-        &store.db.lock().unwrap(),
+    let snapshot = crate::assistant::turn_context::snapshot(
+        &parent.app,
         &tool.profile,
-        &original["production"],
         &doc,
-    )
-    .map_err(|e| e.to_string())?;
+        &original["production"],
+        None,
+    )?;
     let system = crate::assistant::prompts::system(&snapshot);
     let (child_profile, child_key, model_id) = if let Some(id) = args["modelId"].as_str() {
         let catalog = crate::models::catalog(&store.db.lock().unwrap(), Some(&parent.project))
@@ -131,7 +120,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let user_refs = super::super::handoff_artifacts::user_refs(&original);
     let mut refs = user_refs.clone();
     refs.extend(sources.attachments.clone());
-    let selection = json!({"models":original["production"]["models"],"parameters":original["production"]["task"]["parameters"]});
     let reference = crate::assistant::task_context::delegated_snapshot(
         snapshot,
         &doc,
@@ -139,68 +127,40 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &parent.turn,
         &refs,
     );
-    let mut reference = reference;
-    if tool.profile.id == "video-analyst" {
-        crate::assistant::video_analysis::validate_video(&store, &refs, &child_profile)
-            .map_err(|e| e.to_string())?;
-        crate::assistant::video_analysis::isolate(&mut reference);
-    }
     let mut reference = vec![super::super::context_source::snapshot(reference)];
     super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
     messages.extend(reference);
-    let mut instruction = format!(
-        "Original user request (provided directly by the host):{}",
-        original["prompt"].as_str().unwrap_or(&parent.prompt)
-    );
-    if tool.profile.id != "video-analyst" {
-        instruction.push_str(&format!("\nUser-selected production settings for this turn (preserve, including the model):{selection}"));
-    }
-    let payload = crate::assistant::attachments::payload(
+    let source = json!({"kind":"agent-message", "senderAgentId":parent.profile.id,
+        "senderTurnId":parent.turn, "originalRequest":original, "artifacts":sources.manifest,
+        "refs":refs, "expectedGenerations":args["expectedGenerations"]});
+    messages.push(super::super::handoff_artifacts::message(
         &store,
         &doc,
-        &instruction,
-        &user_refs,
         &child_profile,
-    )
-    .map_err(|e| e.to_string())?;
-    messages.push(crate::assistant::agent::convert(
-        &json!({"role":"user","content":payload}),
-    ));
-    let mut instruction = super::super::handoff_artifacts::source_message(
+        &tool.profile,
         task,
-        &parent.profile.id,
-        &parent.turn,
-        &sources.manifest,
-    );
-    instruction.push_str(&format!(
-        "\nRequired generation task receipts: {}",
-        args["expectedGenerations"]
-    ));
-    let payload = crate::assistant::attachments::payload(
-        &store,
-        &doc,
-        &instruction,
-        &sources.attachments,
-        &child_profile,
-    )
-    .map_err(|e| e.to_string())?;
-    messages.push(crate::assistant::agent::convert(
-        &json!({"role":"user","content":payload}),
-    ));
+        &source,
+    )?);
     let task_message_index = messages.len() - 1;
     let child_id = format!("subagent-{}", mstudio::media::id());
     let child_turn = format!("{child_id}-1");
     let binding = json!({"provider":child_profile.adapter,"endpoint":child_profile.endpoint,"model":child_profile.model,"agentId":tool.profile.id,"revision":tool.profile.revision});
     {
         let db = store.db.lock().unwrap();
-        let count:i64 = db.query_row("SELECT count(*) FROM subagent_runs WHERE project_id=?1 AND parent_agent_id=?2 AND mode='continuable' AND status='running'", rusqlite::params![parent.project,parent.profile.id], |r|r.get(0)).map_err(|e|e.to_string())?;
-        if mode == "continuable" && count >= 8 {
-            return Err("At most 8 continuable subagents can run simultaneously".into());
-        }
         db.execute("INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn) VALUES(?1,?2,?3,?4,?5,?6,'running',?7,?8,?9)",rusqlite::params![child_id,parent.project,parent.turn,parent.profile.id,id,mode,serde_json::to_string(&tool.profile).map_err(|e|e.to_string())?,model_id,child_turn]).map_err(|e|e.to_string())?;
     }
     journal::append(&store, &parent.project, &child_turn, "subagent/created", json!({"childId":child_id,"parentTurn":parent.turn,"agentId":id,"provider":provider_name,"mode":mode})).map_err(|e|e.to_string())?;
     super::super::session::start(&store, &parent.project, &child_turn, binding, &messages)?;
+    if !user_refs.is_empty() {
+        journal::append(
+            &store,
+            &parent.project,
+            &child_turn,
+            "media/forwarded",
+            json!({"childId":child_id,"requestTurnId":parent.turn}),
+        )
+        .map_err(|e| e.to_string())?;
+    }
     journal::append(
         &store,
         &parent.project,
@@ -228,14 +188,16 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     .map_err(|e| e.to_string())?;
     tool.turn = child_turn.clone();
     // Keep the immutable user evidence; a delegated task is not a user quote.
-    tool.prompt = original["prompt"].as_str().unwrap_or(&parent.prompt).into();
+    tool.prompt = original["production"]["instruction"]
+        .as_str()
+        .unwrap_or(&parent.prompt)
+        .into();
     let token = host.token.child_token();
     tool.token = token.clone();
     tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
     let deadline = tool.deadline;
     let child = ChildHost {
         inner: ProjectHost {
-            loaded_tools: Default::default(),
             media_profile: child_profile.clone(),
             token: token.clone(),
             tool: Some(tool),

@@ -3,7 +3,7 @@ use super::Host;
 #[cfg(test)]
 pub use super::session_recovery::repair_pending;
 use crate::{assistant::journal, database::Store};
-use rig_core::message::{AssistantContent, Message, ToolCall, ToolResultContent, UserContent};
+use rig_core::message::{Message, ToolCall, ToolResultContent, UserContent};
 use serde_json::{Value, json};
 
 pub struct Session {
@@ -68,6 +68,26 @@ impl Session {
     }
 }
 pub fn result_message(call: &ToolCall, value: &Value) -> Message {
+    if let Some(media) = value.get("__offloadedMedia")
+        && let Ok(media) = serde_json::from_value::<UserContent>(media.clone())
+        && matches!(
+            media,
+            UserContent::Audio(_)
+                | UserContent::Video(_)
+                | UserContent::Document(_)
+                | UserContent::Text(_)
+        )
+    {
+        return Message::User {
+            content: vec![
+                UserContent::ToolResult(call.result(vec![ToolResultContent::text(format!(
+                    "Media {} reloaded.",
+                    value["mediaId"]
+                ))])),
+                media,
+            ],
+        };
+    }
     if let Some(image) = value.get("__offloadedImage")
         && let Ok(image) = serde_json::from_value::<rig_core::message::Image>(image.clone())
     {
@@ -99,65 +119,8 @@ pub(super) fn consumed_prefix(messages: &[Message]) -> usize {
         .iter()
         .rposition(|m| matches!(m, Message::Assistant(_)))
         .unwrap_or(0)
-        .min(messages.len().saturating_sub(2))
 }
-pub fn offload_old_images(session: &mut Session, host: &impl Host) -> Result<usize, String> {
-    let mut total = 0;
-    for index in 0..consumed_prefix(&session.messages) {
-        let mut replacement = session.messages[index].clone();
-        let mut changed = vec![];
-        let mut offloads = vec![];
-        match &mut replacement {
-            Message::User { content } => {
-                for (image_index, part) in content.iter_mut().enumerate() {
-                    if let UserContent::Image(image) = part {
-                        let id = format!("image-{}", mstudio::media::id());
-                        offloads.push(json!({"id":id,"image":image}));
-                        *part = UserContent::text(format!(
-                            "[Earlier image attachment #{image_index} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
-                        ));
-                        changed.push(image_index);
-                    } else if let UserContent::ToolResult(result) = part {
-                        for (nested, item) in result.content.iter_mut().enumerate() {
-                            if let ToolResultContent::Image(image) = item {
-                                let id = format!("image-{}", mstudio::media::id());
-                                offloads.push(json!({"id":id,"image":image}));
-                                *item = ToolResultContent::text(format!(
-                                    "[Earlier tool image #{image_index}.{nested} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
-                                ));
-                                changed.push(image_index);
-                            }
-                        }
-                    }
-                }
-            }
-            Message::Assistant(rig_core::message::AssistantMessage { content, .. }) => {
-                for (image_index, part) in content.iter_mut().enumerate() {
-                    if let AssistantContent::Image(image) = part {
-                        let id = format!("image-{}", mstudio::media::id());
-                        offloads.push(json!({"id":id,"image":image}));
-                        *part = AssistantContent::text(format!(
-                            "[Earlier assistant image #{image_index} offloaded; reopen with mstudio_reopen_image(imageId=\"{id}\").]"
-                        ));
-                        changed.push(image_index);
-                    }
-                }
-            }
-            Message::System { .. } => {}
-        }
-        if changed.is_empty() {
-            continue;
-        }
-        host.record(
-            "image/offload",
-            json!({"messageIndex":index,"imageIndexes":changed,"message":replacement,"offloads":offloads}),
-        )?;
-        session.messages[index] = replacement;
-        // The anchor survives rewrites; the meter accounts for signed reductions.
-        total += changed.len();
-    }
-    Ok(total)
-}
+pub use super::media_retention::offload_consumed_media;
 pub fn restore(
     store: &Store,
     project: &str,
@@ -187,7 +150,7 @@ pub(super) fn restore_through(
                 serde_json::from_value::<Vec<Message>>(value["messages"].clone())
                     .map_err(|e| e.to_string())?,
             );
-        } else if kind == "image/offload" {
+        } else if matches!(kind.as_str(), "image/offload" | "media/offload") {
             if let Some(messages) = &mut messages {
                 let index = value["messageIndex"].as_u64().ok_or("图片卸载位置无效")? as usize;
                 let slot = messages.get_mut(index).ok_or("图片卸载记录已损坏")?;

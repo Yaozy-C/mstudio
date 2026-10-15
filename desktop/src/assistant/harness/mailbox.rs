@@ -1,95 +1,138 @@
-//! Delivery acknowledgement and canonical session messages commit together.
+//! Media resolution happens before the transaction; message and acknowledgement commit together.
+use crate::assistant::{config::Profile, profiles::AgentProfile};
 use crate::database::Store;
 use rig_core::message::Message;
 use serde_json::{Value, json};
+
 pub fn agent_source(agent: &str, turn: &str) -> Value {
     json!({"kind":"agent-message","form":"relay","senderAgentId":agent,"senderTurnId":turn})
 }
-fn agent_message(text: &str, source: &Value) -> Message {
-    let mut content = String::new();
-    if source["originalRequest"].is_object() {
-        let request = &source["originalRequest"];
-        let current = json!({"prompt":request["prompt"],"refs":request["refs"],
-            "models":request["production"]["models"],"parameters":request["production"]["task"]["parameters"]});
-        content.push_str(&format!("Current original user request and references (provided directly by the host, turn {}):\n{}\nUser-attached media is identified by refs; read its actual pixels with mstudio_read_image when needed.\n",
-            source["requestTurnId"], current));
-    }
-    content.push_str(&super::handoff_artifacts::source_message(
-        text,
-        source["senderAgentId"].as_str().unwrap_or(""),
-        source["senderTurnId"].as_str().unwrap_or(""),
-        source.get("artifacts").unwrap_or(&json!([])),
-    ));
-    content.push_str(&format!(
-        "\nRequired generation task receipts for this follow-up: {}",
-        source["expectedGenerations"]
-    ));
-    Message::user(content)
-}
+
 pub fn take_inbox(
     store: &Store,
     child_id: &str,
     project: &str,
     turn: &str,
+    model: &Profile,
+    role: &AgentProfile,
 ) -> Result<Vec<Message>, String> {
+    let (rows, doc) = {
+        let db = store.db.lock().unwrap();
+        let mut stmt = db.prepare("SELECT i.seq,i.text,i.source FROM subagent_inbox i JOIN subagent_runs r ON r.id=i.child_id WHERE i.child_id=?1 AND r.project_id=?2 AND i.consumed=0 ORDER BY i.seq").map_err(|e|e.to_string())?;
+        let rows = stmt
+            .query_map(rusqlite::params![child_id, project], |r| {
+                Ok((
+                    r.get::<_, i64>(0)?,
+                    r.get::<_, String>(1)?,
+                    r.get::<_, String>(2)?,
+                ))
+            })
+            .map_err(|e| e.to_string())?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        if rows.is_empty() {
+            return Ok(vec![]);
+        }
+        let doc = crate::project_service::load(&db, project).map_err(|e| e.to_string())?;
+        (rows, doc)
+    };
+    let mut forwarded = std::collections::HashSet::new();
+    let messages = rows
+        .into_iter()
+        .map(|(seq, text, raw)| {
+            let source: Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
+            let request_turn = source["requestTurnId"].as_str()
+                .or_else(|| source["senderTurnId"].as_str()).unwrap_or_default().to_owned();
+            let refs = super::handoff_artifacts::user_refs(&source["originalRequest"]);
+            let already_sent: bool = store.db.lock().unwrap().query_row(
+                "SELECT EXISTS(SELECT 1 FROM agent_events WHERE project_id=?1 AND kind='media/forwarded' AND json_extract(payload,'$.childId')=?2 AND json_extract(payload,'$.requestTurnId')=?3)",
+                rusqlite::params![project,child_id,request_turn], |r|r.get(0)).map_err(|e|e.to_string())?;
+            let send = !refs.is_empty() && !already_sent && forwarded.insert(request_turn.clone());
+            let mut input = source.clone();
+            if !send && !refs.is_empty() {
+                input["attachmentsAlreadyProvided"] = json!(true);
+                input["originalRequest"]["refs"] = json!([]);
+                if let Some(all) = input["refs"].as_array_mut() {
+                    all.retain(|r| !refs.iter().any(|old| r["kind"]==old.kind && r["id"]==old.id));
+                }
+            }
+            let message =
+                super::handoff_artifacts::message(store, &doc, model, role, &text, &input)?;
+            Ok((seq, source, message, send.then_some(request_turn)))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
     let mut db = store.db.lock().unwrap();
     let tx = db.transaction().map_err(|e| e.to_string())?;
-    let rows = {
-        let mut stmt = tx
-            .prepare(
-                "SELECT i.seq,i.text,i.source,r.parent_agent_id,r.parent_turn FROM subagent_inbox i JOIN subagent_runs r ON r.id=i.child_id WHERE i.child_id=?1 AND r.project_id=?2 AND i.consumed=0 ORDER BY i.seq",
+    let mut delivered = Vec::new();
+    for (seq, source, message, forwarded) in messages {
+        let changed = tx
+            .execute(
+                "UPDATE subagent_inbox SET consumed=1 WHERE seq=?1 AND consumed=0",
+                [seq],
             )
             .map_err(|e| e.to_string())?;
-        stmt.query_map(rusqlite::params![child_id, project], |r| {
-            let saved: String = r.get(2)?;
-            let mut source: Value = serde_json::from_str(&saved).unwrap_or(json!({}));
-            if source["kind"] != "agent-message" {
-                source = agent_source(&r.get::<_, String>(3)?, &r.get::<_, String>(4)?);
-                source["legacy"] = json!(true);
-            }
-            Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?, source))
-        })
-        .map_err(|e| e.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| e.to_string())?
-    };
-    for (seq, text, source) in &rows {
-        if source["expectedGenerations"].is_array() {
+        if changed == 0 {
+            continue;
+        }
+        if let Some(request_turn) = forwarded {
             crate::assistant::journal::insert(
                 &tx,
                 project,
                 turn,
-                "subagent/requirements",
-                json!({"expectedGenerations":source["expectedGenerations"]}),
+                "media/forwarded",
+                json!({"childId":child_id,"requestTurnId":request_turn}),
             )
             .map_err(|e| e.to_string())?;
         }
-        if source["requestTurnId"].is_string() {
-            crate::assistant::journal::insert(
-                &tx,
-                project,
-                turn,
-                "request/source",
-                json!({"requestTurnId":source["requestTurnId"]}),
-            )
-            .map_err(|e| e.to_string())?;
+        for (kind, key) in [
+            ("subagent/requirements", "expectedGenerations"),
+            ("request/source", "requestTurnId"),
+        ] {
+            if !source[key].is_null() {
+                crate::assistant::journal::insert(
+                    &tx,
+                    project,
+                    turn,
+                    kind,
+                    json!({key:source[key]}),
+                )
+                .map_err(|e| e.to_string())?;
+            }
         }
         crate::assistant::journal::insert(
             &tx,
             project,
             turn,
             "session/message",
-            json!({"message":agent_message(text, source),"source":source}),
+            json!({"message":message,"source":source}),
         )
         .map_err(|e| e.to_string())?;
-        tx.execute("UPDATE subagent_inbox SET consumed=1 WHERE seq=?1", [seq])
-            .map_err(|e| e.to_string())?;
+        delivered.push(message);
     }
     tx.commit().map_err(|e| e.to_string())?;
-    Ok(rows
-        .into_iter()
-        .map(|(_, text, source)| agent_message(&text, &source))
-        .collect())
+    Ok(delivered)
+}
+
+// Same-turn notices and earlier turns in the same task are eligible; a new task is isolated.
+const NOTICES: &str = "SELECT n.seq,n.child_id,n.status,n.output FROM subagent_notices n
+JOIN subagent_runs r ON r.id=n.child_id
+LEFT JOIN agent_messages parent ON parent.project_id=r.project_id AND parent.role='user' AND json_extract(parent.attribution,'$.turnId')=r.parent_turn
+LEFT JOIN agent_messages current ON current.project_id=n.project_id AND current.role='user' AND json_extract(current.attribution,'$.turnId')=?3
+WHERE n.project_id=?1 AND n.parent_agent_id=?2 AND n.delivered=0
+AND (r.parent_turn=?3 OR json_extract(parent.attribution,'$.taskScope.taskId')=json_extract(current.attribution,'$.taskScope.taskId')) ORDER BY n.seq";
+
+pub fn pending(
+    db: &rusqlite::Connection,
+    project: &str,
+    agent: &str,
+    turn: &str,
+) -> Result<bool, String> {
+    db.query_row(
+        &format!("SELECT EXISTS({NOTICES})"),
+        rusqlite::params![project, agent, turn],
+        |r| r.get(0),
+    )
+    .map_err(|e| e.to_string())
 }
 pub fn notices(
     store: &Store,
@@ -100,8 +143,8 @@ pub fn notices(
     let mut db = store.db.lock().unwrap();
     let tx = db.transaction().map_err(|e| e.to_string())?;
     let rows = {
-        let mut stmt = tx.prepare("SELECT seq,child_id,status,output FROM subagent_notices WHERE project_id=?1 AND parent_agent_id=?2 AND delivered=0 ORDER BY seq").map_err(|e|e.to_string())?;
-        stmt.query_map(rusqlite::params![project, agent], |r| {
+        let mut stmt = tx.prepare(NOTICES).map_err(|e| e.to_string())?;
+        stmt.query_map(rusqlite::params![project, agent, turn], |r| {
             Ok((
                 r.get::<_, i64>(0)?,
                 r.get::<_, String>(1)?,
@@ -137,153 +180,5 @@ fn notice_message(id: &str, status: &str, output: &str) -> Message {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn delivery_rolls_back_on_journal_failure_and_retries_once() {
-        let root = std::env::temp_dir().join(format!("mstudio-mailbox-{}", mstudio::media::id()));
-        let store = Store::open(root.clone()).unwrap();
-        {
-            let db = store.db.lock().unwrap();
-            db.execute_batch("INSERT INTO projects VALUES('p','p','{}',0);
-                INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn)
-                VALUES('child','p','parent','coordinator','concept','continuable','running','{}','model','turn');
-                INSERT INTO subagent_inbox(child_id,text) VALUES('child','first'),('child','second');
-                INSERT INTO subagent_notices(child_id,project_id,parent_agent_id,status,output)
-                VALUES('child','p','coordinator','idle','done');
-                CREATE TRIGGER fail_journal BEFORE INSERT ON agent_events
-                WHEN (SELECT count(*) FROM agent_events) >= 1
-                BEGIN SELECT RAISE(ABORT,'disk failure'); END;").unwrap();
-        }
-        // The second write fails: neither the first message nor its acknowledgement may survive.
-        assert!(take_inbox(&store, "child", "p", "turn").is_err());
-        {
-            let db = store.db.lock().unwrap();
-            assert_eq!(
-                db.query_row("SELECT sum(consumed) FROM subagent_inbox", [], |r| r
-                    .get::<_, i64>(0))
-                    .unwrap(),
-                0
-            );
-            assert_eq!(
-                db.query_row("SELECT count(*) FROM agent_events", [], |r| r
-                    .get::<_, i64>(0))
-                    .unwrap(),
-                0
-            );
-            db.execute_batch("DROP TRIGGER fail_journal;").unwrap();
-        }
-        assert_eq!(take_inbox(&store, "child", "p", "turn").unwrap().len(), 2);
-        assert!(take_inbox(&store, "child", "p", "turn").unwrap().is_empty());
-        let raw: String = store.db.lock().unwrap().query_row(
-            "SELECT payload FROM agent_events WHERE kind='session/message' ORDER BY seq LIMIT 1",
-            [], |r| r.get(0),
-        ).unwrap();
-        let event: Value = serde_json::from_str(&raw).unwrap();
-        assert_eq!(event["source"]["kind"], "agent-message");
-        assert_eq!(event["source"]["senderAgentId"], "coordinator");
-        assert_eq!(event["source"]["legacy"], true);
-        assert!(
-            event["message"]
-                .to_string()
-                .contains("not an original user statement")
-        );
-
-        store.db.lock().unwrap().execute_batch("CREATE TRIGGER fail_journal BEFORE INSERT ON agent_events BEGIN SELECT RAISE(ABORT,'disk failure'); END;").unwrap();
-        assert!(notices(&store, "p", "coordinator", "parent").is_err());
-        {
-            let db = store.db.lock().unwrap();
-            assert_eq!(
-                db.query_row("SELECT delivered FROM subagent_notices", [], |r| r
-                    .get::<_, i64>(0))
-                    .unwrap(),
-                0
-            );
-            db.execute_batch("DROP TRIGGER fail_journal;").unwrap();
-        }
-        assert_eq!(
-            notices(&store, "p", "coordinator", "parent").unwrap().len(),
-            1
-        );
-        drop(store);
-        // Reopening uses committed messages; it does not deliver them a second time.
-        let store = Store::open(root.clone()).unwrap();
-        assert!(take_inbox(&store, "child", "p", "turn").unwrap().is_empty());
-        assert!(
-            notices(&store, "p", "coordinator", "parent")
-                .unwrap()
-                .is_empty()
-        );
-        assert_eq!(
-            store
-                .db
-                .lock()
-                .unwrap()
-                .query_row(
-                    "SELECT count(*) FROM agent_events WHERE kind='session/message'",
-                    [],
-                    |r| r.get::<_, i64>(0)
-                )
-                .unwrap(),
-            3
-        );
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-    #[test]
-    fn sender_provenance_survives_delivery_and_restore_without_becoming_user_evidence() {
-        let root = std::env::temp_dir().join(format!("mstudio-source-{}", mstudio::media::id()));
-        let store = Store::open(root.clone()).unwrap();
-        store.db.lock().unwrap().execute_batch("INSERT INTO projects VALUES('p','p','{}',0),('other','other','{}',0);
-            INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn)
-            VALUES('child','p','creation-turn','coordinator','concept','continuable','running','{}','model','turn');").unwrap();
-        let mut source = agent_source("coordinator", "followup-turn");
-        source["originalRequest"] = json!({"prompt":"只修图片", "refs":[{"kind":"asset","id":"image"}],
-            "production":{"task":{"prompt":"OBSOLETE_PROMPT","parameters":{"duration":6}},
-            "referencedTask":{"prompt":"OBSOLETE_REFERENCED_PROMPT"}}});
-        store
-            .db
-            .lock()
-            .unwrap()
-            .execute(
-                "INSERT INTO subagent_inbox(child_id,text,source) VALUES('child','只写脚本',?1)",
-                [source.to_string()],
-            )
-            .unwrap();
-        let binding = json!({"agentId":"concept"});
-        super::super::session::start(&store, "p", "turn", binding.clone(), &[]).unwrap();
-        assert!(
-            take_inbox(&store, "child", "other", "turn")
-                .unwrap()
-                .is_empty()
-        );
-        let delivered = take_inbox(&store, "child", "p", "turn").unwrap();
-        let visible = serde_json::to_string(&delivered).unwrap();
-        assert!(visible.contains("只修图片") && visible.contains("image"));
-        assert!(!visible.contains("OBSOLETE_"));
-        let restored = super::super::session::restore(&store, "p", "turn", &binding)
-            .unwrap()
-            .unwrap();
-        assert_eq!(
-            serde_json::to_value(delivered).unwrap(),
-            serde_json::to_value(restored).unwrap()
-        );
-        let raw: String = store
-            .db
-            .lock()
-            .unwrap()
-            .query_row(
-                "SELECT payload FROM agent_events WHERE kind='session/message'",
-                [],
-                |r| r.get(0),
-            )
-            .unwrap();
-        assert_eq!(
-            serde_json::from_str::<Value>(&raw).unwrap()["source"],
-            source
-        );
-        assert!(take_inbox(&store, "child", "p", "turn").unwrap().is_empty());
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-}
+#[path = "mailbox_tests.rs"]
+mod tests;

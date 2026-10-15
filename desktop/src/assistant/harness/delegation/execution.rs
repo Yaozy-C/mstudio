@@ -1,5 +1,23 @@
 use super::*;
 
+static SLOTS: tokio::sync::Semaphore =
+    tokio::sync::Semaphore::const_new(super::super::MAX_CONCURRENCY);
+
+async fn acquire(
+    token: &CancellationToken,
+    deadline: tokio::time::Instant,
+) -> Result<tokio::sync::SemaphorePermit<'static>, String> {
+    if tokio::time::Instant::now() >= deadline {
+        return Err("等待子任务执行名额超时".into());
+    }
+    tokio::select! {
+        biased;
+        _ = token.cancelled() => Err(crate::app_error::cancelled()),
+        _ = tokio::time::sleep_until(deadline) => Err("等待子任务执行名额超时".into()),
+        permit = SLOTS.acquire() => permit.map_err(|e|e.to_string()),
+    }
+}
+
 pub(super) async fn drive_child(
     child: &ChildHost,
     profile: &Profile,
@@ -7,6 +25,7 @@ pub(super) async fn drive_child(
     messages: Vec<Message>,
     deadline: tokio::time::Instant,
 ) -> Result<String, String> {
+    let _permit = acquire(child.token(), deadline).await?;
     let model = provider::model(profile, key)?;
 
     super::super::driver::run_until(
@@ -113,19 +132,7 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             eprintln!("subagent settlement failed: {error}");
         }
         if notify_parent {
-            let parent_turn: Option<String> = store
-                .db
-                .lock()
-                .unwrap()
-                .query_row(
-                    "SELECT parent_turn FROM subagent_runs WHERE id=?1",
-                    [id],
-                    |r| r.get(0),
-                )
-                .ok();
-            if let Some(parent_turn) = parent_turn {
-                crate::assistant::parent_activation::notify(&tool.project, &parent_turn);
-            }
+            crate::assistant::parent_activation::notify(&tool.project);
         }
     }
 }
@@ -163,4 +170,37 @@ pub(super) fn result(
         Err(error) => result["error"] = json!(error),
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn all_child_modes_share_capacity_and_cancel_queued_work() {
+        let token = CancellationToken::new();
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
+        let mut permits = Vec::new();
+        for _ in 0..super::super::super::MAX_CONCURRENCY {
+            permits.push(acquire(&token, deadline).await.unwrap());
+        }
+        let waiting = acquire(&token, deadline);
+        tokio::pin!(waiting);
+        assert!(futures::poll!(&mut waiting).is_pending());
+        permits.pop();
+        let next = waiting.await.unwrap();
+        assert_eq!(SLOTS.available_permits(), 0);
+        let cancelled = token.child_token();
+        let waiting = acquire(&cancelled, deadline);
+        tokio::pin!(waiting);
+        assert!(futures::poll!(&mut waiting).is_pending());
+        cancelled.cancel();
+        assert!(waiting.await.is_err());
+        drop(next);
+        drop(permits);
+        assert_eq!(
+            SLOTS.available_permits(),
+            super::super::super::MAX_CONCURRENCY
+        );
+        assert!(acquire(&token, tokio::time::Instant::now()).await.is_err());
+    }
 }

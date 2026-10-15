@@ -16,7 +16,9 @@ mod generation_tool_tests;
 pub(crate) mod handoff;
 mod handoff_artifacts;
 mod image_read;
-mod mailbox;
+pub(crate) mod mailbox;
+mod media_retention;
+mod media_tools;
 mod metering;
 mod model;
 mod operation_tools;
@@ -36,8 +38,9 @@ mod stored_image;
 #[cfg(test)]
 mod tests;
 mod thinking;
-pub(crate) mod tool_loading;
 mod tool_output;
+
+pub const MAX_CONCURRENCY: usize = 4;
 
 use rig_core::{
     completion::ToolDefinition,
@@ -60,10 +63,6 @@ pub trait Host: Sync {
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String>;
     fn definitions(&self) -> Vec<ToolDefinition>;
-    /// Permitted-but-unloaded names, so a rejected call can name the load step.
-    fn deferred_tools(&self) -> Vec<String> {
-        vec![]
-    }
     fn parallel_safe(&self, call: &ToolCall) -> bool;
     /// Returns messages already committed to the session journal with delivery acknowledgements.
     fn injected(&self) -> Result<Vec<Message>, String> {

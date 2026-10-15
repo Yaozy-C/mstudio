@@ -62,6 +62,7 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     return dirty ? await save(draft) : file;
   }
   async function chat(text: string): Promise<PrevisFile> {
+    if (mounted.current) setPrompt(text);
     if (!model || !readyModel(model))
       throw Error(t("请先选择已连接的对话模型"));
     const saved = await persist();

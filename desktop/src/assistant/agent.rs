@@ -26,7 +26,6 @@ pub(crate) async fn complete_with_resume(
 ) -> Result<String, String> {
     let token = tool.as_ref().map(|t| t.token.clone()).unwrap_or_default();
     let mut host = ProjectHost {
-        loaded_tools: Default::default(),
         media_profile: profile.clone(),
         tool,
         token,
@@ -142,7 +141,12 @@ pub(crate) fn convert(value: &Value) -> Message {
         .into_iter()
         .flatten()
         .filter_map(|part| match part["type"].as_str()? {
-            "text" => Some(UserContent::text(part["text"].as_str().unwrap_or(""))),
+            "text" => Some(match part["attachmentId"].as_str() {
+                Some(id) => {
+                    harness::context_source::attachment(part["text"].as_str().unwrap_or(""), id)
+                }
+                None => UserContent::text(part["text"].as_str().unwrap_or("")),
+            }),
             "image_url" => {
                 let url = part["image_url"]["url"].as_str()?;
                 if let Some((mime, data)) = url

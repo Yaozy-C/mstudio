@@ -1,6 +1,4 @@
-use super::{
-    agent, attachments, context, history, journal, pending, profiles, skills, task_target, tools,
-};
+use super::{agent, attachments, context, history, journal, pending, profiles, task_target, tools};
 use crate::database::Store;
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -41,6 +39,9 @@ pub async fn run(
     app: tauri::AppHandle,
     request: Request,
 ) -> Result<super::execution::Reply, String> {
+    if request.prompt.trim().is_empty() || request.prompt.chars().count() > 8000 {
+        return Err("消息需为 1–8000 个字符".into());
+    }
     let pending = pending::PendingTurn::begin(&request.project_id).map_err(|e| e.to_string())?;
     super::parent_activation::close(&request.project_id);
     let store = app.state::<Store>();
@@ -136,22 +137,19 @@ async fn execute(
     let doc: Value = serde_json::from_str(&document).map_err(|e| e.to_string())?;
     let refs = attachments.clone().unwrap_or_default();
     let analysis_only = agent_profile.id == "video-analyst";
-    if analysis_only {
-        super::video_analysis::validate_video(&store, &refs, &profile)
-            .map_err(|e| e.to_string())?;
-    }
     let mut payload =
-        attachments::payload(&store, &doc, prompt, &refs, &profile).map_err(|e| e.to_string())?;
+        super::turn_context::payload(&store, &doc, prompt, &refs, &profile, &agent_profile)?;
     if !analysis_only {
         task_target::attach(&mut payload, &doc, task_node_id.as_deref())
             .map_err(|e| e.to_string())?;
     }
-    let mut snapshot = if profiles::allows(&agent_profile, "inspect") {
-        context::project_snapshot(&doc, selected_node_id.as_deref())
-    } else {
-        json!({"id":project_id})
-    };
-    snapshot["skills"] = skills::runtime_catalog(app, &skill_setting).map_err(|e| e.to_string())?;
+    let mut snapshot = super::turn_context::snapshot(
+        app,
+        &agent_profile,
+        &doc,
+        &request.message_context["production"],
+        selected_node_id.as_deref(),
+    )?;
     if let Some(scope) = selection
         .clone()
         .filter(|_| profiles::allows(&agent_profile, "inspect"))
@@ -171,16 +169,6 @@ async fn execute(
         });
         snapshot["selection"] = json!({"time":time,"clip":clip,"sourceTime":source_time});
     }
-    if profiles::allows(&agent_profile, "delegate") {
-        snapshot["specialists"] = json!(
-            profiles::read(&store.db.lock().unwrap())
-                .map_err(|e| e.to_string())?
-                .into_iter()
-                .filter(|p| p.enabled && p.id != agent_profile.id && p.id != "coordinator")
-                .map(|p| crate::assistant::model_profile::summary(&p))
-                .collect::<Vec<_>>()
-        );
-    }
     if !analysis_only {
         snapshot["workspace"] = super::work_context::resolve(
             &doc,
@@ -188,31 +176,7 @@ async fn execute(
             task_node_id.as_deref(),
         )?;
     }
-    super::prompt_guidance::attach(
-        &mut snapshot,
-        &store.db.lock().unwrap(),
-        &agent_profile,
-        &request.message_context["production"],
-        &doc,
-    )
-    .map_err(|e| e.to_string())?;
-    snapshot["agent"] = crate::assistant::model_profile::role(&agent_profile);
-    snapshot["unverifiedResults"] = super::result_check::pending(&store, project_id);
-    if let Some(items) = snapshot["unverifiedResults"].as_array_mut() {
-        items.retain(|item| {
-            doc["production"]["drafts"][item["taskKey"].as_str().unwrap_or("")]["hiddenFromList"]
-                != true
-                && !doc["assets"].as_array().is_some_and(|assets| {
-                    assets
-                        .iter()
-                        .any(|a| a["id"] == item["assetId"] && a["discarded"] == true)
-                })
-        });
-    }
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
-    if analysis_only {
-        super::video_analysis::isolate(&mut snapshot);
-    }
     let input = context::assemble_with_budget(
         &previous,
         payload.clone(),

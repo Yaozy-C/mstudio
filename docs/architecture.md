@@ -29,7 +29,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript、Radix UI 和 Phosphor 图标。
 
 生成操作按图片、视频和独立参考资产分支声明。资产角色只暴露要求 `generationPurpose=asset` 和显式 `references` 的独立图片分支；视频组合 `mode` 不出现在图片参数中。模式、引用角色、状态、比例和分辨率使用有限值约束，比例与分辨率集合和模型适配器共用来源。模型说明使用 `inputDescription` 描述输入语义，避免把 `mode:image` 混入工具参数。联合类型校验根据已知判别字段定位分支，一次返回可定位的缺失、非法值和多余字段；不纠正字段别名或静默忽略参数。
 
-Skill 的 `CORE.md` 提供关键专业原则，入口文档提供工作方法与条件阅读路径。模型默认只收到技能目录，入口、核心规则、写作指南和其他参考统一按需读取；一次返回所选文档全文，不再按 4,000 字符拆页，也不重复自动注入正文。默认主 Agent 可直接编辑和制作，专业角色按需委派。公共保存、查询和任务生命周期规则由运行时维护。已有安装通过一次性事务更新已识别的默认正文、移除已合并的默认文档，并保留自定义正文、角色权限和启停状态；剪辑角色已知的强制复查句及 Skill 中过期的自动加载说明单独替换。数据库仍是用户可编辑规则的事实来源。
+Skill 的 `CORE.md` 提供专业原则，入口文档提供工作方法与条件阅读路径。模型默认收到本角色的技能目录，规则正文按需完整读取。应用启动时安装当前包中缺少的规则；运行时读取不执行初始化或迁移。角色默认值只用于首次创建配置，已保存配置直接读取，不再维护旧默认指纹、文本替换和历史迁移。数据库中的规则仍可编辑。
 
 `desktop/src/project_service` 管理读取、授权、对象观察、事务和回执。纯 TypeScript 领域函数在构建时由 Bun 编译为嵌入包，由受内存、栈和时间限制的 QuickJS 执行；不需要随应用携带 Node/Bun，不暴露 DOM、文件或网络。界面与后端复用纯领域规则，不维护 Rust/TypeScript 两套业务实现。已删除 WebView 工具执行事件、回调和 30 秒应答超时路径。
 
@@ -95,9 +95,11 @@ GES 首版按片段缓存 FFmpeg 调色/变速，复用转场与导出音频混�
 
 ### 子 Agent 完成后的父 Agent 交接
 
-委派沿用 DSH 的调度契约：`oneShot` 默认等待结果；`continuable` 默认后台运行。下一步依赖结果时明确设置 `runInBackground=false`，工具说明及参数说明直接向模型声明这一点。
+委派区分并发执行与后台返回：`oneShot`、`continuable` 均默认等待结果；只有显式 `runInBackground=true` 才提前返回。主 Agent 在同一轮回复中派发互相独立、写入目标不重叠的子任务，同一专业角色可以有多个子任务。工具调度池和全部子任务执行共用 `MAX_CONCURRENCY=4` 的上限；前台、后台及续接子任务都必须取得执行名额，等待期间支持取消和截止时间。工具调度器以滚动池执行，等待整批前台结果后才进入下一轮模型请求，回执仍按模型调用顺序提交。共享决策先统一确定，已有工程内容通过 artifacts 交接，主 Agent 不为派发而重复读图、复述分镜。工程直接读写仍是顺序屏障；子任务内部写入通过领域服务和 SQLite 事务提交。
 
-后台结算先事务性保存结果与通知，再交接给仍驻留的父 Agent。父 Agent 正在执行时，在模型步骤边界读取通知；通知在最后一次模型请求期间到达，也必须先交付再进入空闲。父 Agent 已空闲时，`parent_activation.rs` 恢复其原始 session、已加载工具和模型连接，继续同一任务；不伪造用户消息、不重新执行已提交的工具调用。收尾阶段重新检查已提交的通知，避免结果落在“最后一步结束”和“进入空闲”之间而丢失。取消、替换或退出中的父 Agent 只保留通知，不自动唤醒。
+模型侧内容按职责装配：统筹角色只说明范围、分工与结果整合；宿主提示保留公共执行规则，参数语义归工具，专业方法归 Skill。委派参数分别说明任务内容、源资料引用、继承上下文、可继续模式及等待选项，角色目录只出现在 `agentId` 参数中。无绑定 Skill 时不注入 Skill 加载说明；分镜板格式与媒体制作规则留在专业角色的 Skill 和工具中。已授权工具从首轮直接提供，不再经过加载步骤。
+
+后台结算先事务性保存结果与通知，再交接给仍驻留的父 Agent。父 Agent 正在执行时，在模型步骤边界读取通知；通知在最后一次模型请求期间到达，也必须先交付再进入空闲。父 Agent 已空闲时，`parent_activation.rs` 恢复其原始 session 和模型连接，并按当前角色配置刷新上下文，继续同一任务；不伪造用户消息、不重新执行已提交的工具调用。收尾阶段重新检查已提交的通知，避免结果落在“最后一步结束”和“进入空闲”之间而丢失。取消、替换或退出中的父 Agent 只保留通知，不自动唤醒。
 
 父任务的持久状态独立于单次 IPC 和模型运行。仍有运行中的子任务或未交付的结果通知时，父轮次保存为 `waiting` 并发布 `turn/waiting`，不会发布 `turn/end`。接回结果时在同一轮次转回 `running`，所有子任务与通知处理完毕后才进入 `completed`；失败与取消分别终止。等待状态同样保留会话、事件与历史，进程重启后标记为中断，不能把失去执行器的任务继续显示为运行中。
 
@@ -138,7 +140,9 @@ and project deletion retain shared files. Storage relocation includes this folde
 
 Agent handoffs accept typed `artifacts` on delegation and follow-up messages.
 Generation artifacts use `{kind: "generation", id: taskKey}` and resolve to the
-project’s saved task metadata and actual result-media attachments, without its prompt.
+project’s saved task metadata and result-media references, without its prompt.
+Delegated artifacts provide IDs and read instructions; specialists load needed content
+with their permitted tools. Explicit user attachments still supply actual media.
 Chat task references likewise carry result media, IDs, status and necessary settings.
 Default task/shot/asset reads omit generation prompts and asset provenance. Only an
 explicit prompt edit, unchanged retry or generation investigation reads task
@@ -199,3 +203,9 @@ A named model module exports `createModel({THREE})` and returns a fresh Object3D
 The Runtime serves a frozen snapshot from a token-scoped, loopback-only resource server. Three.js is vendored with its license and requires neither a CDN nor Python. The cross-origin iframe has no Tauri IPC privileges; its CSP allows only its own module resources, and parent messages check source, origin, and session identity. Runtime executes code and renders; the model makes one plain completion, with no tools or automatic repair loop. Plain requests include only the current file, model name/usage/version inventory, and six recent text messages. Code replies are not repeated in chat history. Unique exact patches and expected revisions prevent overwriting concurrent edits.
 
 Export samples frames at `frameIndex / fps`, sends one bounded PNG at a time through binary IPC, and uses the existing bundled FFmpeg encoder. A render freezes the shot and all referenced model revisions. Exported videos remain private and never become shot takes automatically. The explicit “Share with Agent” checkbox imports a media-only copy into ordinary project assets; source code, models, and private chat are never promoted. Unsharing removes the current project media projection and refuses to create dangling shot/task/timeline references. It cannot retract content already sent in a conversation. The private original survives deletion of a shared copy. Storage migration moves source directories and rewrites private export paths without moving the SQLite database.
+
+主动读取媒体由 `media-read` 单独授权，并依赖 `project-read`；素材目录、文本和状态仍使用 `project-read`。统筹默认没有原图、视频帧及历史图片的主动读取工具，专业角色保留原有权限。用户在聊天中明确发送的附件照常提供给所选模型，并可转交专业角色，不受主动读取开关影响。新建配置使用当前默认权限，保存和读取不进行自动迁移。
+
+附件生命周期与上下文压缩分开：图片、工具返回画面、音视频、PDF 及带宿主来源标记的文本文件，在获得后续模型响应后立即从运行消息中卸载，保留可按需重读的引用；尚未处理的新附件继续保留。每次模型请求前也清理已处理的恢复上下文，续接、唤醒与 fork 因此不会复活旧附件内容。清理事件与会话快照共同持久化，原文件及附件存档不删除。文本附件标记只供宿主识别，发往模型前移除。同一子任务仅首次转交某条用户消息的附件，重复指令只转交要求；新的用户消息明确附带附件时可以重新提供。
+
+普通聊天、首次委派、子任务续接和父任务唤醒共用 `assistant/turn_context.rs` 装配角色、项目状态与模型规则。首次委派和后续消息共用附件解析：用户明确发送的附件提供实际媒体并去重，Agent 选择的 artifacts 只传保存对象引用与读取入口，由专业角色按需读取。无工具的视频拆解角色仍直接收到交接原视频。原始用户要求统一读取持久化的 `production.instruction`。通知按项目、角色及任务身份筛选，同任务跨轮次可以收取，新任务不会消费旧任务通知。已移除无消费方的“待检查结果”台账；任务状态、写入回执及版本冲突检查仍由原领域服务负责。

@@ -48,6 +48,7 @@ pub async fn request(
             return Err(crate::app_error::cancelled().into());
         }
         host.record("request/start", json!({"attempt":attempt + 1}))?;
+        let started = std::time::Instant::now();
         let prefix = session.text.len();
         let mut persistence_error = None;
         let mut thinking = super::thinking::Thinking::new();
@@ -115,6 +116,11 @@ pub async fn request(
         match result {
             Ok(response) => return Ok(response),
             Err(error) => {
+                host.record(
+                    "request/error",
+                    json!({"attempt":attempt + 1,"elapsedMs":started.elapsed().as_millis(),
+                        "error":crate::assistant::failure::describe(&error, key)}),
+                )?;
                 if session.text.len() == prefix
                     && crate::assistant::failure::context_overflow(&error)
                 {

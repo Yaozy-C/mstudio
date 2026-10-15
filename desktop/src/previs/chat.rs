@@ -110,7 +110,9 @@ pub async fn previs_chat(app: tauri::AppHandle, request: Request) -> Result<Valu
         }
         active.insert(request.request_id.clone(), token.clone());
     }
-    let result = run(&app, &request, &token).await.map_err(|e| e.to_string());
+    let result = run(&app, &request, &token)
+        .await
+        .map_err(|e| crate::app_error::wire(e, "PREVIS_CHAT_FAILED", "previs_chat"));
     app.state::<Chats>()
         .0
         .lock()

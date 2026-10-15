@@ -23,10 +23,14 @@ export function AgentTools({
       selected.delete(id);
       if (id === "project-read")
         for (const tool of selected)
-          if (tool.startsWith("project-")) selected.delete(tool);
+          if (tool.startsWith("project-") || tool === "media-read")
+            selected.delete(tool);
     } else {
       selected.add(id);
-      if (id.startsWith("project-") && id !== "project-read")
+      if (
+        (id.startsWith("project-") && id !== "project-read") ||
+        id === "media-read"
+      )
         selected.add("project-read");
     }
     onChange({ ...profile, toolIds: [...selected] });

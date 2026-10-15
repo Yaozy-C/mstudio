@@ -3,6 +3,20 @@
 use rig_core::message::{AssistantContent, Message, UserContent};
 use serde_json::{Value, json};
 pub const KEY: &str = "mstudio.context";
+const ATTACHMENT: &str = "mstudio.attachment";
+pub fn attachment(text: &str, id: &str) -> UserContent {
+    let AssistantContent::Text(text) =
+        AssistantContent::text(text).with_native(json!({ATTACHMENT:id}))
+    else {
+        unreachable!()
+    };
+    UserContent::Text(text)
+}
+pub fn is_attachment(text: &rig_core::message::Text) -> bool {
+    text.native
+        .as_ref()
+        .is_some_and(|n| n.item.get(ATTACHMENT).is_some())
+}
 pub fn message(text: String, metadata: Value) -> Message {
     let AssistantContent::Text(text) =
         AssistantContent::text(text).with_native(json!({KEY:metadata}))
@@ -53,10 +67,9 @@ pub fn wire(messages: &mut [Message]) {
         if let Message::User { content } = message {
             for part in content {
                 if let UserContent::Text(text) = part
-                    && text
-                        .native
-                        .as_ref()
-                        .is_some_and(|n| n.item.get(KEY).is_some())
+                    && text.native.as_ref().is_some_and(|n| {
+                        n.item.get(KEY).is_some() || n.item.get(ATTACHMENT).is_some()
+                    })
                 {
                     text.native = None;
                 }

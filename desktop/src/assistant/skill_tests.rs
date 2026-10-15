@@ -21,7 +21,7 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
         let system = super::prompts::system(&snapshot);
         assert_eq!(
             system.contains("mstudio_read_skill"),
-            profile.id != "video-analyst"
+            !profile.skill_ids.is_empty() && profile.id != "video-analyst"
         );
         assert!(!system.contains("UNLOADED_SKILL_BODY"));
         assert!(!snapshot.to_string().contains("UNLOADED_SKILL_BODY"));
@@ -46,5 +46,5 @@ fn role_catalog_does_not_eagerly_load_detailed_rule_bodies() {
         skills::storage::read(&db, "", "creative-ad-director", "SKILL.md", 0, true).unwrap()["text"],
         "Updated current instructions"
     );
-    assert!(skills::guidance(&skills::storage::catalog(&db, "[]").unwrap()).contains("Skills: []"));
+    assert!(skills::guidance(&skills::storage::catalog(&db, "[]").unwrap()).is_empty());
 }

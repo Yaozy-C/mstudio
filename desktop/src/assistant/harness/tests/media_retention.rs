@@ -35,7 +35,10 @@ fn fresh_image_batch_survives_pressure_until_a_model_response() {
     session
         .messages
         .push(Message::user("current project snapshot"));
-    assert_eq!(session::offload_old_images(&mut session, &host).unwrap(), 0);
+    assert_eq!(
+        session::offload_consumed_media(&mut session, &host).unwrap(),
+        0
+    );
     assert_eq!(
         serde_json::to_string(&session.messages)
             .unwrap()
@@ -49,7 +52,10 @@ fn fresh_image_batch_survives_pressure_until_a_model_response() {
         )]),
     ));
     session.messages.push(Message::user("next step"));
-    assert_eq!(session::offload_old_images(&mut session, &host).unwrap(), 8);
+    assert_eq!(
+        session::offload_consumed_media(&mut session, &host).unwrap(),
+        8
+    );
     assert!(
         !serde_json::to_string(&session.messages)
             .unwrap()

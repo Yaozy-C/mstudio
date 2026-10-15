@@ -1,9 +1,9 @@
 use crate::database::Store;
 use anyhow::{Context, Result, ensure};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::HashSet;
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Reference {
     pub kind: String,
@@ -20,10 +20,7 @@ pub fn payload(
     refs: &[Reference],
     profile: &super::config::Profile,
 ) -> Result<Value> {
-    ensure!(
-        !prompt.trim().is_empty() && prompt.len() <= 24000,
-        "消息需为 1–8000 个字符"
-    );
+    ensure!(!prompt.trim().is_empty(), "消息不能为空");
     let mut metadata = vec![];
     let mut contexts = vec![];
     let mut images = vec![];

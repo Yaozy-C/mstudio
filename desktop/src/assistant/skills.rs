@@ -1,11 +1,4 @@
-mod catalog;
-mod concept_handoff;
-mod concept_split;
-mod director_state;
-mod isolation;
 mod metadata;
-mod rule_summary;
-mod storyboard;
 use metadata::{model_catalog, model_metadata};
 pub mod storage;
 use anyhow::{Context, Result, ensure};
@@ -90,31 +83,10 @@ fn enabled(setting: &str, id: &str) -> Result<bool> {
 pub fn initialize(app: &tauri::AppHandle) -> Result<()> {
     let store = app.state::<crate::database::Store>();
     let db = store.db.lock().unwrap();
-    storage::init(&db)?;
-    if !storage::initialized(&db)? {
-        storage::seed(&db, &root(app)?)?;
-    }
-    catalog::migrate(&db, &root(app)?)?;
-    concept_split::migrate(&db, &root(app)?)?;
-    isolation::migrate(&db, &root(app)?)?;
-    rule_summary::migrate(&db, &root(app)?)?;
-    rule_summary::migrate_methods(&db, &root(app)?)?;
-    rule_summary::migrate_video_motion(&db, &root(app)?)?;
-    rule_summary::migrate_image_storyboard(&db, &root(app)?)?;
-    rule_summary::migrate_image_cases(&db, &root(app)?)?;
-    storyboard::migrate(&db, &root(app)?)?;
-    rule_summary::migrate_board_regeneration(&db, &root(app)?)?;
-    rule_summary::migrate_pure_rules(&db, &root(app)?)?;
-    rule_summary::migrate_object_tools(&db, &root(app)?)?;
-    rule_summary::migrate_physical_continuity(&db, &root(app)?)?;
-    rule_summary::migrate_video_physical_chain(&db, &root(app)?)?;
-    director_state::migrate(&db, &root(app)?)?;
-    concept_handoff::migrate(&db, &root(app)?)?;
-    super::video_analysis::install(&db, &root(app)?)?;
+    storage::seed(&db, &root(app)?)?;
     Ok(())
 }
 pub fn runtime_catalog(app: &tauri::AppHandle, setting: &str) -> Result<Value> {
-    initialize(app)?;
     storage::catalog(
         &app.state::<crate::database::Store>().db.lock().unwrap(),
         setting,
@@ -131,18 +103,15 @@ pub fn read_creative_skill(
     path: Option<String>,
     offset: Option<usize>,
 ) -> Result<Value, String> {
-    (|| {
-        initialize(&app)?;
-        storage::read(
-            &app.state::<crate::database::Store>().db.lock().unwrap(),
-            "",
-            &id,
-            path.as_deref().unwrap_or("SKILL.md"),
-            offset.unwrap_or(0),
-            false,
-        )
-    })()
-    .map_err(|e: anyhow::Error| e.to_string())
+    storage::read(
+        &app.state::<crate::database::Store>().db.lock().unwrap(),
+        "",
+        &id,
+        path.as_deref().unwrap_or("SKILL.md"),
+        offset.unwrap_or(0),
+        false,
+    )
+    .map_err(|e| e.to_string())
 }
 #[tauri::command]
 pub fn save_creative_skill(
@@ -152,20 +121,16 @@ pub fn save_creative_skill(
     text: String,
     revision: i64,
 ) -> Result<Value, String> {
-    (|| {
-        initialize(&app)?;
-        storage::save(
-            &app.state::<crate::database::Store>().db.lock().unwrap(),
-            &id,
-            &path,
-            &text,
-            revision,
-        )
-    })()
-    .map_err(|e: anyhow::Error| e.to_string())
+    storage::save(
+        &app.state::<crate::database::Store>().db.lock().unwrap(),
+        &id,
+        &path,
+        &text,
+        revision,
+    )
+    .map_err(|e| e.to_string())
 }
 pub fn tool(app: &tauri::AppHandle, setting: &str, args: &Value) -> Result<Value> {
-    initialize(app)?;
     let store = app.state::<crate::database::Store>();
     let db = store.db.lock().unwrap();
     if args["action"] == "skills" {
@@ -191,8 +156,11 @@ pub fn guidance(catalog: &Value) -> String {
             json!({"id":s["id"],"name":s["name"],"description":s["description"]})
         })
         .collect();
+    if available.is_empty() {
+        return String::new();
+    }
     format!(
-        "Available Skills: {}. This catalog contains only this role's bound Skills, with descriptions rather than loaded instructions. Use the relevant SKILL.md for specialized work; load it with mstudio_read_skill only when its current full text is missing. Each read returns the complete remaining document and its own resources. Read local references only for a concrete task need; reuse current full text already in context. Each Skill is an isolated root: cross-directory paths are forbidden, even when another Skill is also bound. For work outside this role's capability, hand off the required task and project evidence to the responsible role instead of loading its Skill. Skills define domain constraints, not mandatory inspection, audit or approval workflows. Do not infer extra tool calls from a rule. Skill methods do not expand tool permissions or authorize generation. Database documents are authoritative. Use current tool schemas for writes, not legacy examples in documents.",
+        "Available Skills: {}. Read the relevant SKILL.md on demand with mstudio_read_skill; reuse its complete current text. Read local methods only for this task. Each Skill is an isolated root and cannot grant extra permissions. Hand work outside your role to the appropriate specialist. Database documents are authoritative.",
         json!(available)
     )
 }

@@ -12,7 +12,6 @@ pub struct ProjectHost {
     pub media_profile: crate::assistant::config::Profile,
     pub token: CancellationToken,
     pub delegation: Option<super::delegation::Context>,
-    pub loaded_tools: super::tool_loading::LoadedTools,
 }
 const ACTIONS: &[(&str, &str, &[&str])] = &[
     (
@@ -43,8 +42,8 @@ impl ProjectHost {
         let Some(t) = &self.tool else {
             return json!({"error":"Tool unavailable"});
         };
-        if !profiles::allows(&t.profile, "inspect") {
-            return json!({"error":"Project read permission required","code":"FORBIDDEN"});
+        if let Err(error) = super::media_tools::check(&t.profile) {
+            return error;
         }
         let store = t.app.state::<crate::database::Store>();
         let _files = store.files.read().await;
@@ -113,37 +112,12 @@ impl ProjectHost {
                 parameters: json!({"type":"object","properties":properties,"required":required,"additionalProperties":false}),
             });
         }
-        if profiles::allows(&t.profile, "inspect") {
-            definitions.push(ToolDefinition {
-                name: "mstudio_read_image".try_into().expect("nonempty tool name"),
-                description: "Read real image pixels or a video frame directly into the model. Use an assetId from a receipt or inspected project state. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
-                parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
-            });
-            definitions.push(ToolDefinition {
-                name: "mstudio_reopen_image".try_into().expect("nonempty tool name"),
-                description: "Reopen a historical offloaded image by imageId from its notice. Only offloaded images in this project are accessible; returns actual image content.".into(),
-                parameters: json!({"type":"object","properties":{"imageId":{"type":"string"}},"required":["imageId"],"additionalProperties":false}),
-            });
-        }
+        definitions.extend(super::media_tools::definitions(&t.profile));
         if profiles::allows(&t.profile, "delegate") {
-            let mut definition = super::delegation::definition();
             let catalog =
                 profiles::read(&t.app.state::<crate::database::Store>().db.lock().unwrap())
                     .unwrap_or_default();
-            let ids: Vec<_> = catalog
-                .iter()
-                .filter(|p| p.enabled && p.id != t.profile.id && p.id != "coordinator")
-                .map(|p| p.id.clone())
-                .collect();
-            definition.parameters["properties"]["agentId"]["enum"] = json!(ids);
-            let roster: Vec<_> = catalog
-                .iter()
-                .filter(|p| ids.contains(&p.id))
-                .map(|p| json!({"id":p.id,"tools":p.tool_ids}))
-                .collect();
-            definition.description.push_str(&format!("Available roles and permissions: {}. Shared subject/location reference assets require project-assets; scripts project-script; shots project-shots; image prompts/images project-frames; video prompts/videos project-production; timeline project-timeline. Generation additionally requires media-generation.",json!(roster)));
-
-            definitions.push(definition);
+            definitions.push(super::delegation::for_profiles(&t.profile.id, &catalog));
             definitions.extend(super::delegation::control_definitions());
         }
         definitions
@@ -176,10 +150,7 @@ impl Host for ProjectHost {
         }
     }
     fn definitions(&self) -> Vec<ToolDefinition> {
-        self.loaded_tools.definitions(self.available_definitions())
-    }
-    fn deferred_tools(&self) -> Vec<String> {
-        self.loaded_tools.deferred(&self.available_definitions())
+        self.available_definitions()
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         // Project reads are barriers relative to edits; execution is native and transactional.
@@ -189,10 +160,16 @@ impl Host for ProjectHost {
             Some("read_skill" | "skills" | "history" | "models")
         ) || matches!(
             call.function.name.as_str(),
-            "mstudio_reopen_image" | "mstudio_read_result" | "mstudio_read_agent_result"
+            "mstudio_reopen_image"
+                | "mstudio_reopen_media"
+                | "mstudio_read_result"
+                | "mstudio_read_agent_result"
         ) || matches!(
             call.function.name.as_str(),
-            "mstudio_send_message" | "mstudio_interrupt_agent" | "mstudio_list_agents"
+            "mstudio_delegate"
+                | "mstudio_send_message"
+                | "mstudio_interrupt_agent"
+                | "mstudio_list_agents"
         )
     }
     fn injected(&self) -> Result<Vec<rig_core::message::Message>, String> {
@@ -208,12 +185,6 @@ impl Host for ProjectHost {
         if t.profile.id == "video-analyst" {
             return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
         }
-        if call.function.name == super::tool_loading::LOAD {
-            return self.loaded_tools.load(
-                &self.available_definitions(),
-                &serde_json::Value::Object(call.function.arguments.clone()),
-            );
-        }
         if call.function.name == "mstudio_delegate" {
             return super::delegation::execute(self, call).await;
         }
@@ -226,11 +197,15 @@ impl Host for ProjectHost {
         if call.function.name == "mstudio_read_image" {
             return self.read_image(call).await;
         }
-        execute_local(t, call).await
+        execute_local(t, call, &self.media_profile).await
     }
 }
 
-pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
+pub async fn execute_local(
+    t: &ProjectTool,
+    call: &ToolCall,
+    media_profile: &crate::assistant::config::Profile,
+) -> Value {
     if t.profile.id == "video-analyst" {
         return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
     }
@@ -253,9 +228,23 @@ pub async fn execute_local(t: &ProjectTool, call: &ToolCall) -> Value {
     if call.function.name == "mstudio_await_generation" {
         return super::generation_tool::execute(t, &args).await;
     }
+    if call.function.name == "mstudio_reopen_media" {
+        if let Err(error) = super::media_tools::check(&t.profile) {
+            return error;
+        }
+        let Some(id) = args["mediaId"]
+            .as_str()
+            .filter(|id| id.starts_with("media-") && id.len() < 100)
+        else {
+            return json!({"error":"Use a mediaId from an offload notice","code":"INVALID_ARGS"});
+        };
+        let store = t.app.state::<Store>();
+        let db = store.db.lock().unwrap();
+        return super::media_retention::read(&db, &t.project, id, media_profile);
+    }
     if call.function.name == "mstudio_reopen_image" {
-        if !profiles::allows(&t.profile, "inspect") {
-            return json!({"error":"Project read permission required","code":"FORBIDDEN"});
+        if let Err(error) = super::media_tools::check(&t.profile) {
+            return error;
         }
         let Some(id) = args["imageId"]
             .as_str()

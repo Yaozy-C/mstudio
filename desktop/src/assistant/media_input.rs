@@ -77,7 +77,10 @@ pub fn parts(store: &Store, asset: &Asset, profile: &Profile) -> Result<Vec<Valu
     if asset.kind == "text" {
         ensure!(bytes.len() <= 120_000, "文本资料最多 120 KB，请拆分后导入");
         let text = std::str::from_utf8(&bytes)?;
-        return Ok(vec![label, json!({"type":"text","text":text})]);
+        return Ok(vec![
+            label,
+            json!({"type":"text","text":text,"attachmentId":asset.id}),
+        ]);
     }
     let ext = path
         .extension()

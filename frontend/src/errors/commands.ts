@@ -1,6 +1,6 @@
 import { errorText, type ErrorCode } from "./catalog";
 const commandCodes: Record<string, ErrorCode> = {
-  previs_chat: "CHAT_FAILED",
+  previs_chat: "PREVIS_CHAT_FAILED",
   save_previs_file: "SAVE_FAILED",
   previs_workspace: "STORAGE_READ_FAILED",
   open_previs_runtime: "PREVIEW_FAILED",

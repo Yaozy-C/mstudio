@@ -13,18 +13,8 @@ pub fn init(db: &Connection) -> Result<()> {
     )?;
     Ok(())
 }
-pub fn initialized(db: &Connection) -> Result<bool> {
-    Ok(db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM settings WHERE key='skills_initialized')",
-        [],
-        |r| r.get(0),
-    )?)
-}
 pub fn seed(db: &Connection, root: &Path) -> Result<()> {
     init(db)?;
-    if initialized(db)? {
-        return Ok(());
-    }
     let tx = db.unchecked_transaction()?;
     for (id, _, _) in SKILLS {
         let base = root.join(id);
@@ -34,14 +24,10 @@ pub fn seed(db: &Connection, root: &Path) -> Result<()> {
         );
         seed_directory(&tx, id, &base, &base)?;
     }
-    tx.execute(
-        "INSERT INTO settings(key,value) VALUES('skills_initialized','true')",
-        [],
-    )?;
     tx.commit()?;
     Ok(())
 }
-pub(super) fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
+fn seed_directory(db: &Connection, id: &str, base: &Path, dir: &Path) -> Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         ensure!(

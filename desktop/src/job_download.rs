@@ -34,12 +34,6 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         let mut asset: Asset = serde_json::from_value(asset.clone())?;
         asset.generated = true;
         asset.missing = !std::path::Path::new(&asset.path).is_file();
-        crate::assistant::result_check::record(
-            &store,
-            &project,
-            &job,
-            &serde_json::to_value(&asset)?,
-        )?;
         return Ok(asset);
     }
     ensure!(
@@ -128,7 +122,6 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         assets.resize(assets.len().max(index + 1), serde_json::Value::Null);
         assets[index] = value.clone();
     }
-    crate::assistant::result_check::record(&store, &project, &job, &value)?;
     if index == 0 {
         job["asset"] = value;
     }

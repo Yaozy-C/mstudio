@@ -3,6 +3,8 @@ pub(crate) mod chat;
 pub(crate) mod files;
 mod provider;
 #[cfg(test)]
+mod provider_stream_tests;
+#[cfg(test)]
 mod provider_tests;
 pub(crate) mod render;
 pub(crate) mod runtime;

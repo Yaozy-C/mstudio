@@ -18,16 +18,15 @@ mod model_profile;
 mod model_stream;
 pub(crate) mod parent_activation;
 pub(crate) mod permissions;
-mod profile_instructions;
 pub mod profiles;
 mod progress;
 mod prompt_guidance;
 mod prompt_routing;
 mod prompts;
 mod provider;
-pub(crate) mod result_check;
 mod task_context;
 mod task_target;
+mod turn_context;
 mod video_analysis;
 mod work_context;
 #[cfg(test)]

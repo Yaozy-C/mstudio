@@ -67,7 +67,7 @@ pub fn append(store: &Store, project: &str, turn: &str, kind: &str, payload: Val
 }
 pub fn page(store: &Store, project: &str, before: Option<i64>) -> Result<Vec<Value>> {
     let db = store.db.lock().unwrap();
-    let mut stmt=db.prepare("SELECT seq,turn_id,kind,CASE WHEN kind='tool/result' THEN json_remove(payload,'$.message','$.value') ELSE payload END,created FROM agent_events WHERE project_id=?1 AND kind NOT IN ('session/start','session/message','session/compaction','image/offload','subagent/context','subagent/configuration') AND kind != 'assistant/partial' AND seq<?2 ORDER BY seq DESC LIMIT 40")?;
+    let mut stmt=db.prepare("SELECT seq,turn_id,kind,CASE WHEN kind='tool/result' THEN json_remove(payload,'$.message','$.value') ELSE payload END,created FROM agent_events WHERE project_id=?1 AND kind NOT IN ('session/start','session/message','session/compaction','image/offload','media/offload','media/forwarded','subagent/context','subagent/configuration') AND kind != 'assistant/partial' AND seq<?2 ORDER BY seq DESC LIMIT 40")?;
     let values = stmt
         .query_map(
             rusqlite::params![project, before.unwrap_or(i64::MAX)],
@@ -100,7 +100,7 @@ pub fn turn_page(
     before: Option<i64>,
 ) -> Result<Vec<Value>> {
     let db = store.db.lock().unwrap();
-    let mut stmt = db.prepare("SELECT seq,kind,CASE WHEN kind='tool/result' THEN json_remove(payload,'$.message','$.value') ELSE payload END,created FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind NOT IN ('session/start','session/message','session/compaction','image/offload','subagent/context','subagent/configuration') AND kind != 'assistant/partial' AND seq<?3 ORDER BY seq DESC LIMIT 40")?;
+    let mut stmt = db.prepare("SELECT seq,kind,CASE WHEN kind='tool/result' THEN json_remove(payload,'$.message','$.value') ELSE payload END,created FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind NOT IN ('session/start','session/message','session/compaction','image/offload','media/offload','media/forwarded','subagent/context','subagent/configuration') AND kind != 'assistant/partial' AND seq<?3 ORDER BY seq DESC LIMIT 40")?;
     let rows = stmt
         .query_map(
             rusqlite::params![project, turn, before.unwrap_or(i64::MAX)],

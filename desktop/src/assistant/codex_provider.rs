@@ -12,8 +12,6 @@ use std::time::Duration;
 mod connection;
 #[cfg(all(test, unix))]
 mod continuation_tests;
-#[cfg(test)]
-mod loading_tests;
 mod output;
 #[cfg(test)]
 mod tests;

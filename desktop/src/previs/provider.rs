@@ -5,6 +5,9 @@ use serde_json::{Value, json};
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
+#[path = "provider_response.rs"]
+mod response;
+
 pub async fn complete(
     model: &Model,
     key: &str,
@@ -17,16 +20,21 @@ pub async fn complete(
             return codex(&model.profile.model, system, context).await;
         }
         let headers = crate::models::transport::headers(&model.profile.endpoint, key)?;
-        let client = reqwest::Client::builder()
+        let mut client = reqwest::Client::builder()
             .default_headers(headers)
             .redirect(reqwest::redirect::Policy::none())
-            .timeout(Duration::from_secs(240))
-            .build()?;
+            .connect_timeout(Duration::from_secs(30))
+            .timeout(Duration::from_secs(900));
+        if model.profile.adapter == "openai-compatible" {
+            // Active streams may run for minutes; only silence is a read timeout.
+            client = client.read_timeout(Duration::from_secs(120));
+        }
+        let client = client.build()?;
         let base = model.profile.endpoint.trim_end_matches('/');
         let (url, body) = match model.profile.adapter.as_str() {
             "openai-compatible" => (
                 format!("{base}/chat/completions"),
-                json!({"model":model.profile.model,"messages":[{"role":"system","content":system},{"role":"user","content":context}]}),
+                json!({"model":model.profile.model,"stream":true,"messages":[{"role":"system","content":system},{"role":"user","content":context}]}),
             ),
             "openai-responses" => (
                 format!("{base}/responses"),
@@ -53,23 +61,14 @@ pub async fn complete(
             "gemini-native" => req.header("x-goog-api-key", key),
             _ => req.bearer_auth(if key.is_empty() { "local" } else { key }),
         };
-        let mut response = req.send().await.context("预演 Chat 连接失败")?;
-        ensure!(
-            response.status().is_success(),
-            "预演 Chat 请求失败（HTTP {}）",
-            response.status().as_u16()
-        );
-        let mut bytes = Vec::new();
-        while let Some(chunk) = response.chunk().await? {
-            ensure!(bytes.len() + chunk.len() <= 2_000_000, "模型回复超过 2 MB");
-            bytes.extend_from_slice(&chunk);
-        }
-        let value: Value = serde_json::from_slice(&bytes).context("模型响应不是有效 JSON")?;
-        text(&model.profile.adapter, &value)
+        let response = req.send().await.context("预演 Chat 连接失败")?;
+        response::read(response, &model.profile.adapter).await
     };
     tokio::select! {
-        r = tokio::time::timeout(Duration::from_secs(300),request) => r.context("预演 Chat 超时，文件未修改")?,
-        _ = token.cancelled() => bail!("预演 Chat 已停止，文件未修改"),
+        r = tokio::time::timeout(Duration::from_secs(900),request) => r.map_err(|_| {
+            crate::app_error::AppError::new("NETWORK_ERROR", "previs_chat", "预演 Chat 超时，文件未修改")
+        })?,
+        _ = token.cancelled() => Err(crate::app_error::AppError::new("CHAT_STOPPED", "previs_chat", "预演 Chat 已停止，文件未修改").into()),
     }
 }
 pub fn text(adapter: &str, v: &Value) -> Result<String> {

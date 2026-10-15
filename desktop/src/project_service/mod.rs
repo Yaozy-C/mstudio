@@ -203,6 +203,9 @@ pub async fn tool(
 pub(crate) mod tests;
 
 #[cfg(test)]
+mod concurrent_tests;
+
+#[cfg(test)]
 mod production_tests;
 #[cfg(test)]
 mod startup_benchmark_tests;

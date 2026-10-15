@@ -2,6 +2,71 @@ use super::*;
 use crate::assistant::{harness::agent_artifacts, journal};
 
 #[test]
+fn delegation_preserves_the_persisted_user_instruction() {
+    let (root, store, doc) = crate::assistant::attachment_tests::fixture();
+    let model = crate::assistant::attachment_tests::multimodal();
+    let role = crate::assistant::profiles::builtins().remove(0);
+    let source = json!({
+        "senderAgentId":"coordinator", "senderTurnId":"parent",
+        "originalRequest":{"production":{"instruction":"生成镜头吧"},"refs":[]},
+        "artifacts":[], "refs":[], "expectedGenerations":[]
+    });
+    let message = message(&store, &doc, &model, &role, "导演设计五个镜头", &source).unwrap();
+    let text = serde_json::to_string(&message).unwrap();
+    assert!(text.contains("Original user request (provided directly by the host): 生成镜头吧"));
+    assert!(text.contains("导演设计五个镜头"));
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn artifact_images_stay_references_while_explicit_attachments_keep_pixels() {
+    use rig_core::message::{Message, UserContent};
+    let (root, store, doc) = crate::assistant::attachment_tests::fixture();
+    let model = crate::assistant::attachment_tests::multimodal();
+    let role = crate::assistant::profiles::builtins()
+        .into_iter()
+        .find(|p| p.id == "director")
+        .unwrap();
+    let refs = json!([{"kind":"asset","id":"image"}]);
+    let resolved = resolve(&store, "p", &doc, Some(&refs)).unwrap();
+    let mut source = json!({
+        "senderAgentId":"coordinator", "senderTurnId":"parent",
+        "originalRequest":{"production":{"instruction":"设计镜头"},"refs":[]},
+        "artifacts":resolved.manifest, "refs":refs, "expectedGenerations":[]
+    });
+    // Saved artifact references remain usable even when their pixels are unavailable.
+    std::fs::remove_file(root.join("assets/image.jpg")).unwrap();
+    let reference = message(&store, &doc, &model, &role, "设计镜头", &source).unwrap();
+    let text = serde_json::to_string(&reference).unwrap();
+    assert!(text.contains("mstudio_read_assets") && text.contains("image"));
+    let Message::User { content } = reference else {
+        panic!("Expected user message")
+    };
+    assert!(
+        !content
+            .iter()
+            .any(|part| matches!(part, UserContent::Image(_)))
+    );
+    // The user's explicit attachment still supplies actual pixels, without duplicates.
+    std::fs::write(root.join("assets/image.jpg"), b"test-source-content").unwrap();
+    source["originalRequest"]["refs"] = refs;
+    let explicit = message(&store, &doc, &model, &role, "设计镜头", &source).unwrap();
+    let Message::User { content } = explicit else {
+        panic!("Expected user message")
+    };
+    assert_eq!(
+        content
+            .iter()
+            .filter(|part| matches!(part, UserContent::Image(_)))
+            .count(),
+        1
+    );
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn references_preserve_exact_output_across_pages_reopen_and_later_turns() {
     let root = std::env::temp_dir().join(format!("mstudio-artifacts-{}", mstudio::media::id()));
     let store = Store::open(root.clone()).unwrap();

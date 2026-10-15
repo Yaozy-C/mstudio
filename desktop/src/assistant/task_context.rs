@@ -167,6 +167,9 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
                         > if *k == "intent" { 2000 } else { 1500 }
                 )
     );
+    if scope.agent_id == "video-analyst" {
+        super::video_analysis::isolate(&mut snapshot);
+    }
     snapshot
 }
 

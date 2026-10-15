@@ -200,6 +200,56 @@ pub fn source_message(task: &str, agent: &str, turn: &str, manifest: &Value) -> 
     )
 }
 
+/// Forward explicit user attachments; specialists open saved artifacts on demand.
+pub fn message(
+    store: &Store,
+    doc: &Value,
+    model: &crate::assistant::config::Profile,
+    role: &crate::assistant::profiles::AgentProfile,
+    task: &str,
+    source: &Value,
+) -> Result<rig_core::message::Message, String> {
+    let original = &source["originalRequest"];
+    let mut text = format!(
+        "Original user request (provided directly by the host): {}\n",
+        original["production"]["instruction"]
+            .as_str()
+            .unwrap_or_default()
+    );
+    if role.id != "video-analyst" && original["production"].is_object() {
+        text.push_str(&format!("User-selected production settings: {}\n", json!({"models":original["production"]["models"],"parameters":original["production"]["task"]["parameters"]})));
+    }
+    text.push_str(&source_message(
+        task,
+        source["senderAgentId"].as_str().unwrap_or(""),
+        source["senderTurnId"].as_str().unwrap_or(""),
+        &source["artifacts"],
+    ));
+    text.push_str(&format!(
+        "\nRequired generation task receipts: {}",
+        source["expectedGenerations"]
+    ));
+    let refs: Vec<Reference> = if role.id == "video-analyst" {
+        // This isolated role has no tools and must receive the original video.
+        serde_json::from_value(source.get("refs").cloned().unwrap_or_else(|| json!([])))
+            .map_err(|e| e.to_string())?
+    } else {
+        user_refs(original)
+    };
+    let payload = if role.id == "video-analyst"
+        && source["attachmentsAlreadyProvided"] == true
+        && refs.is_empty()
+    {
+        crate::assistant::attachments::payload(store, doc, &text, &refs, model)
+            .map_err(|e| e.to_string())?
+    } else {
+        crate::assistant::turn_context::payload(store, doc, &text, &refs, model, role)?
+    };
+    Ok(crate::assistant::agent::convert(
+        &json!({"role":"user","content":payload}),
+    ))
+}
+
 #[cfg(test)]
 #[path = "handoff_artifacts_tests.rs"]
 mod tests;

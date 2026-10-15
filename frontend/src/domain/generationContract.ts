@@ -41,7 +41,7 @@ export const generationReferences = (roles: string[]) => ({
         purpose: {
           ...text(400),
           description:
-            "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role.",
+            "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Use at most 200 characters. Put descriptive text here, never in role.",
         },
         role: {
           ...choices(...roles),

@@ -1,6 +1,6 @@
 //! A bounded, non-recursive specialist run. Child events never pollute parent replay.
 use super::{Host, ProjectHost, registry, session::Session};
-use crate::assistant::{config::Profile, context, journal, profiles, provider, skills};
+use crate::assistant::{config::Profile, journal, profiles, provider};
 use crate::database::Store;
 use rig_core::{
     completion::ToolDefinition,
@@ -22,13 +22,47 @@ pub struct Context {
     pub fork_history: Vec<Message>,
     pub deadline: tokio::time::Instant,
 }
+fn background(args: &Value) -> bool {
+    args["runInBackground"].as_bool().unwrap_or(false)
+}
 pub fn definition() -> ToolDefinition {
-    ToolDefinition { name:"mstudio_delegate".try_into().expect("nonempty tool name"), description:"Delegate a bounded goal to a specialist. Pass saved professional work through artifacts, not rewritten task prose; the host also supplies original user requirements and attachments. Returns outputRef for direct downstream reading of the exact saved specialist output. Default spawn uses independent context; fork only when completed parent history is needed. Default mode=oneShot waits for the result and cannot continue after settlement. Every child has its own 20-minute budget; if the parent wait expires, status=running means the child continues and will notify you. Do not delegate its work again. mode=continuable runs in the background by default, returns a childId for send_message, and notifies you when it settles. Set runInBackground=false when your next action depends on the result. Select continuable for expected follow-ups. Returns mode, canContinue, stop reason, answer and actual operation results; failure does not roll back saved work.".into(), parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"task":{"type":"string","minLength":1,"maxLength":8000,"description":"Goal, scope and expected deliverable. Do not rewrite referenced artifacts or infer product construction."},"artifacts":super::handoff_artifacts::schema(),"expectedGenerations":super::delivery::schema(),"provider":{"type":"string","enum":["spawn","fork"]},"modelId":{"type":"string"},"mode":{"type":"string","enum":["oneShot","continuable"]},"runInBackground":{"type":"boolean","description":"oneShot defaults to false; continuable defaults to true. Set false when your next action depends on the result."}},"required":["agentId","task","expectedGenerations"],"additionalProperties":false}) }
+    ToolDefinition {
+        name: "mstudio_delegate".try_into().expect("nonempty tool name"),
+        description: "Assign a bounded task to a specialist. Returns outputRef, committed changes, delivery and current generationTasks; child completion is not media completion. If status=running after the wait expires, the child continues: await its notice rather than redelegating.".into(),
+        parameters: json!({"type":"object","properties":{
+            "agentId":{"type":"string","description":"Specialist role ID."},
+            "task":{"type":"string","minLength":1,"maxLength":8000,"description":"Brief goal, assigned targets, boundaries and deliverable. The host forwards the original user request and attachments; use artifacts for saved sources instead of restating them. For spawn, include needed decisions absent from those sources; for fork, state only new requirements."},
+            "artifacts":super::handoff_artifacts::schema(),
+            "expectedGenerations":super::delivery::schema(),
+            "provider":{"type":"string","enum":["spawn","fork"],"description":"spawn (default): independent context. fork: inherits completed parent turns, excluding the current in-flight turn."},
+            "modelId":{"type":"string","description":"Optional chat model connection ID for spawn; omission inherits the parent's chat model. Does not select the image or video model."},
+            "mode":{"type":"string","enum":["oneShot","continuable"],"description":"oneShot (default) ends after this task. continuable supports later send_message calls using the returned childId."},
+            "runInBackground":{"type":"boolean","description":"false (default in both modes): wait for the result. true: return the childId immediately and receive completion through a later notice."}
+        },"required":["agentId","task","expectedGenerations"],"additionalProperties":false}),
+    }
+}
+pub(super) fn for_profiles(parent: &str, catalog: &[profiles::AgentProfile]) -> ToolDefinition {
+    let mut tool = definition();
+    let available: Vec<_> = catalog
+        .iter()
+        .filter(|profile| profile.enabled && profile.id != parent && profile.id != "coordinator")
+        .collect();
+    tool.parameters["properties"]["agentId"]["enum"] =
+        json!(available.iter().map(|p| &p.id).collect::<Vec<_>>());
+    let roles: Vec<_> = available
+        .into_iter()
+        .map(crate::assistant::model_profile::summary)
+        .collect();
+    tool.parameters["properties"]["agentId"]["description"] = json!(format!(
+        "Specialist role. Available roles and permissions: {}",
+        json!(roles)
+    ));
+    tool
 }
 
 pub fn control_definitions() -> Vec<ToolDefinition> {
     vec![
-        ToolDefinition {name:"mstudio_send_message".try_into().expect("nonempty tool name"),description:"Send follow-up work to a direct continuable child. Running children read it at the next model step; idle children start a new turn. agentId is the returned childId, only with canContinue=true. For oneShot, delegate again with existing results. Pass saved source artifacts instead of rewriting professional outputs; the host also forwards the current original user request. Returns only the accepted message ID.".into(),parameters:json!({"type":"object","properties":{"agentId":{"type":"string"},"message":{"type":"string","maxLength":8000},"artifacts":super::handoff_artifacts::schema(),"expectedGenerations":super::delivery::schema()},"required":["agentId","message","expectedGenerations"],"additionalProperties":false})},
+        ToolDefinition {name:"mstudio_send_message".try_into().expect("nonempty tool name"),description:"Send follow-up work to a direct continuable child. Running children receive it at the next step; idle children resume. Returns an accepted message ID, with completion delivered later.".into(),parameters:json!({"type":"object","properties":{"agentId":{"type":"string","description":"Returned childId of a child with canContinue=true."},"message":{"type":"string","maxLength":8000,"description":"New scope or correction. The host forwards current original user requirements; reference saved sources in artifacts."},"artifacts":super::handoff_artifacts::schema(),"expectedGenerations":super::delivery::schema()},"required":["agentId","message","expectedGenerations"],"additionalProperties":false})},
         ToolDefinition {name:"mstudio_interrupt_agent".try_into().expect("nonempty tool name"),description:"Interrupt the current turn of a direct continuable child; it can still receive follow-up messages.".into(),parameters:json!({"type":"object","properties":{"agentId":{"type":"string"}},"required":["agentId"],"additionalProperties":false})},
         ToolDefinition {name:"mstudio_list_agents".try_into().expect("nonempty tool name"),description:"List direct continuable children and their running, idle or resumable state. Only scope=children is supported; omission selects children.".into(),parameters:json!({"type":"object","properties":{"scope":{"type":"string","enum":["children"]}},"additionalProperties":false})},
     ]
@@ -68,9 +102,6 @@ impl Host for ChildHost {
     fn definitions(&self) -> Vec<ToolDefinition> {
         self.inner.definitions()
     }
-    fn deferred_tools(&self) -> Vec<String> {
-        self.inner.deferred_tools()
-    }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         self.inner.parallel_safe(call)
     }
@@ -85,6 +116,8 @@ impl Host for ChildHost {
             &self.id,
             &tool.project,
             &tool.turn,
+            &self.inner.media_profile,
+            &tool.profile,
         )
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String> {
@@ -110,16 +143,15 @@ impl Host for ChildHost {
         Ok(())
     }
     async fn execute(&self, call: &ToolCall) -> Value {
-        if call.function.name == super::tool_loading::LOAD {
-            return self.inner.loaded_tools.load(
-                &self.inner.available_definitions(),
-                &serde_json::Value::Object(call.function.arguments.clone()),
-            );
-        }
         if call.function.name == "mstudio_read_image" {
             return self.inner.read_image(call).await;
         }
-        registry::execute_local(self.inner.tool.as_ref().unwrap(), call).await
+        registry::execute_local(
+            self.inner.tool.as_ref().unwrap(),
+            call,
+            &self.inner.media_profile,
+        )
+        .await
     }
 }
 mod continuation;

@@ -7,7 +7,7 @@ pub async fn recover(
     overflow: bool,
 ) -> Result<bool, String> {
     let before = raw_pressure(session, host);
-    super::super::session::offload_old_images(session, host)?;
+    super::super::session::offload_consumed_media(session, host)?;
     prune_tool_results(session, host)?;
     let result = if overflow {
         compact_manual(model, profile, host, session).await

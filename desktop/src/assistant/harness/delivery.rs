@@ -129,7 +129,15 @@ mod tests {
             let source = json!({"kind":"agent-message","expectedGenerations":[{"targetId":"s4","kind":"video"}]});
             db.execute("INSERT INTO subagent_inbox(child_id,text,source) VALUES('child','finish remaining video',?1)", [source.to_string()]).unwrap();
         }
-        let messages = super::super::mailbox::take_inbox(&store, "child", "p", "next").unwrap();
+        let messages = super::super::mailbox::take_inbox(
+            &store,
+            "child",
+            "p",
+            "next",
+            &Default::default(),
+            &crate::assistant::profiles::defaults(""),
+        )
+        .unwrap();
         assert!(
             serde_json::to_string(&messages)
                 .unwrap()

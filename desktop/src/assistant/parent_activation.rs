@@ -81,11 +81,10 @@ pub fn close_all() {
 }
 
 /// Called only after the settlement notification transaction has committed.
-pub fn notify(project: &str, parent_turn: &str) {
+pub fn notify(project: &str) {
     let root = ROOTS.lock().unwrap().get(project).cloned();
     if let Some(root) = root {
-        let tool = root.host.tool.as_ref().unwrap();
-        if tool.turn != parent_turn {
+        if !undelivered(&root).unwrap_or(false) {
             return;
         }
         let wake = root.delivery.lock().unwrap().notify();
@@ -97,10 +96,12 @@ pub fn notify(project: &str, parent_turn: &str) {
 
 fn undelivered(root: &Activation) -> Result<bool, String> {
     let tool = root.host.tool.as_ref().unwrap();
-    tool.app.state::<Store>().db.lock().unwrap().query_row(
-        "SELECT EXISTS(SELECT 1 FROM subagent_notices n JOIN subagent_runs r ON r.id=n.child_id WHERE n.project_id=?1 AND r.parent_turn=?2 AND n.delivered=0)",
-        rusqlite::params![tool.project, tool.turn], |r| r.get(0),
-    ).map_err(|e|e.to_string())
+    harness::mailbox::pending(
+        &tool.app.state::<Store>().db.lock().unwrap(),
+        &tool.project,
+        &tool.profile.id,
+        &tool.turn,
+    )
 }
 
 /// The caller releases PendingTurn first, so followup can acquire execution.
@@ -169,8 +170,12 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
     let app = tool.app.clone();
     let agent_id = tool.profile.id.clone();
     let store = app.state::<Store>();
-    let messages = harness::session::restore(&store, &project, &turn, &root.binding)?
+    let mut messages = harness::session::restore(&store, &project, &turn, &root.binding)?
         .ok_or("Parent session unavailable")?;
+    let tool = host.tool.as_mut().unwrap();
+    tool.profile = super::profiles::resolve(&store.db.lock().unwrap(), Some(&tool.profile.id))
+        .map_err(|e| e.to_string())?;
+    super::turn_context::refresh(tool, &mut messages)?;
     // This is a continuation of the existing Agent, not a fabricated user request.
     reopen_response(&store, &project, &turn)?;
     super::execution::publish(&app, &project).map_err(|e| e.to_string())?;

@@ -45,7 +45,7 @@ fn database_edits_survive_seed_changes_and_missing_bundle() {
         page["revision"].as_i64().unwrap(),
     )
     .unwrap();
-    seed(&db, Path::new("/missing-bundle")).unwrap();
+    seed(&db, &root).unwrap();
     assert_eq!(
         read(&db, "", "image-production", "SKILL.md", 0, true).unwrap()["text"],
         "My maintained rules"
@@ -110,7 +110,6 @@ fn database_reads_complete_unicode_documents_and_enforces_isolation() {
 fn failed_seed_does_not_leave_partial_defaults() {
     let db = db();
     assert!(seed(&db, Path::new("/missing-bundle")).is_err());
-    assert!(!initialized(&db).unwrap());
     assert_eq!(
         db.query_row("SELECT count(*) FROM skill_resources", [], |r| r
             .get::<_, i64>(0))

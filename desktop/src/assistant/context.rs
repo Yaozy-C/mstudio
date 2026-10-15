@@ -10,7 +10,9 @@ pub fn text_only(payload: &Value) -> Value {
         Some(parts) => json!(
             parts
                 .iter()
-                .filter(|p| p["type"] != "image_url" && p["type"] != "media")
+                .filter(|p| p["type"] != "image_url"
+                    && p["type"] != "media"
+                    && p["attachmentId"].is_null())
                 .cloned()
                 .collect::<Vec<_>>()
         ),
@@ -67,7 +69,6 @@ pub fn assemble_with_budget(
         fields.remove("agent");
         fields.remove("skills");
         fields.remove("promptGuidance");
-        fields.remove("unverifiedResults");
         fields.remove("specialists");
     }
     let cost = |snapshot: &Value| {

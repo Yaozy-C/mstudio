@@ -25,6 +25,13 @@ export function AgentActivityFeed({
   error?: string;
 }) {
   const rows = activityRows(events);
+  const hasRunningTool = rows.some((row) => {
+    const pending = ["执行中", "子任务执行中"];
+    if (!pending.includes(row.detail)) return false;
+    return pending.includes(
+      childToolState(children, row.callId)?.detail ?? row.detail,
+    );
+  });
   const childName = (id: string) =>
     agents.find((agent) => agent.id === id)?.name || id;
   const renderChild = (child: ChildActivity) => (
@@ -57,7 +64,7 @@ export function AgentActivityFeed({
           .filter((child) => !rows.some((row) => row.callId === child.callId))
           .map(renderChild)}
       </div>
-      {running && (
+      {running && !hasRunningTool && (
         <div className="agent-activity-status" role="status">
           <StatusIcon kind="loading" size={14} />
           {status || t("正在思考…")}

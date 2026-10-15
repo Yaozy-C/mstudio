@@ -103,7 +103,7 @@ async fn retry_reuses_exact_request_and_does_not_reexecute_committed_write() {
         ))])),
         Err(ProviderError::from_http_response(
             503.try_into().unwrap(),
-            "",
+            json!({"error":{"message":"temporary failure private-key"}}).to_string(),
         )),
         Ok(reply(vec![AssistantContent::text("完成")])),
     ]);
@@ -114,7 +114,7 @@ async fn retry_reuses_exact_request_and_does_not_reexecute_committed_write() {
             &host,
             Session::new(vec![Message::user("do it")]),
             false,
-            ""
+            "private-key"
         )
         .await
         .unwrap(),
@@ -136,6 +136,23 @@ async fn retry_reuses_exact_request_and_does_not_reexecute_committed_write() {
             .iter()
             .any(|(k, _)| k == "request/retry")
     );
+    let events = host.events.lock().unwrap();
+    let failed = events
+        .iter()
+        .position(|(k, _)| k == "request/error")
+        .unwrap();
+    let retry = events
+        .iter()
+        .position(|(k, _)| k == "request/retry")
+        .unwrap();
+    assert!(failed < retry);
+    let detail = &events[failed].1;
+    assert_eq!(detail["attempt"], 1);
+    assert!(detail["elapsedMs"].is_u64());
+    let error: serde_json::Value = serde_json::from_str(detail["error"].as_str().unwrap()).unwrap();
+    assert_eq!(error["httpStatus"], 503);
+    assert!(error["details"].as_str().unwrap().contains("[密钥已隐藏]"));
+    assert!(!detail.to_string().contains("private-key"));
 }
 #[tokio::test]
 async fn cancellation_preserves_visible_prefix_and_does_not_retry_stream() {

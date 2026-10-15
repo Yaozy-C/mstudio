@@ -4,19 +4,6 @@ use crate::database::Store;
 use anyhow::{Result, ensure};
 use rusqlite::Connection;
 use serde_json::Value;
-use std::path::Path;
-
-pub fn install(db: &Connection, root: &Path) -> Result<()> {
-    let exists: bool = db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM skill_resources WHERE skill_id='video-analysis' AND path='SKILL.md')",
-        [], |r| r.get(0),
-    )?;
-    if !exists {
-        let body = std::fs::read_to_string(root.join("video-analysis/SKILL.md"))?;
-        db.execute("INSERT OR IGNORE INTO skill_resources(skill_id,path,text) VALUES('video-analysis','SKILL.md',?1)", [body])?;
-    }
-    Ok(())
-}
 
 pub fn guidance(db: &Connection, profile: &AgentProfile) -> Result<String> {
     let page = super::skills::storage::read(
@@ -80,11 +67,11 @@ mod tests {
     #[test]
     fn install_and_reads_preserve_custom_rules_and_other_roles() {
         let db = db();
-        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills");
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills");
         db.execute("INSERT INTO skill_resources(skill_id,path,text) VALUES('creative-concepts','SKILL.md','CUSTOM CONCEPT')", []).unwrap();
-        install(&db, &root).unwrap();
+        super::super::skills::storage::seed(&db, &root).unwrap();
         db.execute("UPDATE skill_resources SET text='CUSTOM VIDEO METHOD', revision=7 WHERE skill_id='video-analysis'", []).unwrap();
-        install(&db, &root).unwrap();
+        super::super::skills::storage::seed(&db, &root).unwrap();
         assert!(
             guidance(&db, &role())
                 .unwrap()
@@ -146,10 +133,10 @@ mod tests {
     }
     #[test]
     fn analysis_context_excludes_project_and_production_instructions() {
-        let mut snapshot = json!({"id":"p","agent":super::super::model_profile::role(&role()),"skills":[],"promptGuidance":"CUSTOM VIDEO METHOD","workspace":{"script":"UNRELATED SCRIPT"},"creation":"OTHER GOAL","unverifiedResults":["OTHER RESULT"]});
+        let mut snapshot = json!({"id":"p","agent":super::super::model_profile::role(&role()),"skills":[],"promptGuidance":"CUSTOM VIDEO METHOD","workspace":{"script":"UNRELATED SCRIPT"},"creation":"OTHER GOAL"});
         isolate(&mut snapshot);
         let context = snapshot.to_string();
-        for unwanted in ["UNRELATED SCRIPT", "OTHER GOAL", "OTHER RESULT"] {
+        for unwanted in ["UNRELATED SCRIPT", "OTHER GOAL"] {
             assert!(!context.contains(unwanted));
         }
         let system = super::super::prompts::system(&snapshot);

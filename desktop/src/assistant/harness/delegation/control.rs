@@ -80,8 +80,8 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let id = args["agentId"].as_str().ok_or("Missing child agent ID")?;
     let message = args["message"]
         .as_str()
-        .filter(|s| !s.trim().is_empty() && s.len() <= 8000)
-        .ok_or("Message must be 1-8000 bytes")?;
+        .filter(|s| !s.trim().is_empty() && s.chars().count() <= 8000)
+        .ok_or("Message must be 1-8000 characters")?;
     let (status, profile_json, model_id, last_turn) = authorized_child(host, id)?;
     let parent = host.tool.as_ref().ok_or("Subagent control unavailable")?;
     let store = parent.app.state::<Store>();
@@ -123,6 +123,14 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
                 let mut source =
                     super::super::mailbox::agent_source(&parent.profile.id, &parent.turn);
                 source["callId"] = json!(call.id.wire().as_ref());
+                let mut refs = super::super::handoff_artifacts::user_refs(
+                    &original
+                        .as_ref()
+                        .map(|(_, r)| r.clone())
+                        .unwrap_or(Value::Null),
+                );
+                refs.extend(sources.attachments);
+                source["refs"] = json!(refs);
                 source["artifacts"] = sources.manifest;
                 source["expectedGenerations"] = args["expectedGenerations"].clone();
                 if let Some((turn, request)) = original {

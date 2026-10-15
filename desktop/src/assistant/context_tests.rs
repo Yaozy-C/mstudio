@@ -260,11 +260,11 @@ fn attribution_survives_reopen_and_activity_is_scoped_to_project_and_turn() {
 }
 
 #[test]
-fn role_catalog_has_one_source_and_snapshots_do_not_duplicate_role_rules() {
+fn legacy_role_catalog_is_excluded_from_snapshots_and_child_context() {
     let snapshot = json!({"agent":{"name":"总 Agent","tools":["agent-delegate"]},"specialists":[{"id":"specialist-unique"}],"skills":[]});
     let messages = context::assemble(&[], json!("修改时长"), snapshot.clone()).unwrap();
     let all = messages.to_string();
-    assert_eq!(all.matches("specialist-unique").count(), 1);
+    assert!(!all.contains("specialist-unique")); // Discovery now lives in agentId's schema.
     let child = super::task_context::reference_snapshot(snapshot);
     assert!(child.get("specialists").is_none());
     assert!(child.get("agent").is_none());

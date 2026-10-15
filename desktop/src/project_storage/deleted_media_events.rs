@@ -24,7 +24,10 @@ pub fn retire(db: &Connection, project: &str, digests: &HashSet<String>) -> Resu
             while let Some((parent, _)) = ancestor.rsplit_once('/') {
                 ancestor = parent;
                 if let Some(value) = event.pointer(ancestor) {
-                    if matches!(value["type"].as_str(), Some("image" | "audio" | "document")) {
+                    if matches!(
+                        value["type"].as_str(),
+                        Some("image" | "audio" | "video" | "document")
+                    ) {
                         prefix = ancestor.into();
                         replacement = json!({"type":"text","text":"[素材已删除]"});
                         break;

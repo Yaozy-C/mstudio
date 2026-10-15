@@ -55,7 +55,6 @@ impl Store {
             [serde_json::to_string(&location)?],
         )?;
         crate::assistant::history::init(&db)?;
-        crate::assistant::result_check::init(&db)?;
         crate::assistant::history::interrupt_pending(&db)?;
         crate::assistant::journal::init(&db)?;
         crate::models::init(&db)?;

@@ -28,6 +28,9 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     if value.get("__offloadedImage").is_some() {
         return json!({"ok":true,"imageId":value["imageId"]});
     }
+    if value.get("__offloadedMedia").is_some() {
+        return json!({"ok":true,"mediaId":value["mediaId"]});
+    }
     if matches!(
         call.function.name.as_str(),
         "mstudio_read_result" | "mstudio_read_skill" | "mstudio_read_agent_result"
@@ -146,6 +149,7 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
             // Image bytes are read through media tools, never as base64 text.
             if let Some(object) = value.as_object_mut() {
                 object.remove("__offloadedImage");
+                object.remove("__offloadedMedia");
             }
             let text = value.to_string();
             let total = text.chars().count();

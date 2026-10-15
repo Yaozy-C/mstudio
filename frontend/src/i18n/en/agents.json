@@ -35,7 +35,6 @@
   "选段、节奏、调色、转场与声音": "Source selection, pace, colour, transitions and sound",
   "将明确任务交给已启用的专业角色；支持独立或继承历史的子 Agent，以及后台继续、消息和中断": "Assign specific tasks to enabled specialists, with independent or inherited history, background work, messaging and interruption",
   "协作工具": "Collaboration tool",
-  "读取画布、素材和项目历史": "Read canvas, media and project history",
   "项目工具": "Project tool",
   "编辑项目（完整权限）": "Edit project (full access)",
   "编辑项目全部内容；依赖读取项目，生成准备还需媒体生成权限": "Edit all project contents; requires project reading. Generation preparation also requires media generation permission.",
@@ -67,5 +66,8 @@
   "视频拆解": "Video analysis",
   "只分析用户提供的原视频，拆解声画、节奏、结构与表达机制": "Analyze the supplied original video: audiovisual content, pace, structure and expression",
   "只分析传入的原视频，不使用工具。": "Analyze only the supplied original video, without tools.",
-  "原视频的声画记录、节奏、结构与表达机制": "Original-video audiovisual record, pace, structure and expression"
+  "原视频的声画记录、节奏、结构与表达机制": "Original-video audiovisual record, pace, structure and expression",
+  "读取画布文本、素材目录、尺寸时长、任务状态和项目历史": "Read canvas text, asset listings, dimensions, duration, task status and project history",
+  "读取媒体内容": "Read media content",
+  "按需读取素材原图、视频帧和历史图片；直接发送的附件不受此开关影响": "Read asset images, video frames and historical images on demand; directly sent attachments are always included"
 }

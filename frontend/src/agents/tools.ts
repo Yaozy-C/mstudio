@@ -15,7 +15,14 @@ export const tools = [
   {
     id: "project-read",
     name: "读取项目",
-    description: "读取画布、素材和项目历史",
+    description: "读取画布文本、素材目录、尺寸时长、任务状态和项目历史",
+    kind: "项目工具",
+  },
+  {
+    id: "media-read",
+    name: "读取媒体内容",
+    description:
+      "按需读取素材原图、视频帧和历史图片；直接发送的附件不受此开关影响",
     kind: "项目工具",
   },
   {

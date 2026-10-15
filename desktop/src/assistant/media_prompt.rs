@@ -79,7 +79,6 @@ fn parse_reply(raw: &str, inputs: &[Input]) -> Result<Prepared, String> {
 
 #[tauri::command]
 pub async fn prepare_media_prompt(
-    app: tauri::AppHandle,
     store: State<'_, Store>,
     request: Request,
 ) -> Result<Prepared, String> {
@@ -89,7 +88,6 @@ pub async fn prepare_media_prompt(
     {
         return Err("生成描述或素材数量无效".into());
     }
-    super::skills::initialize(&app).map_err(|e| e.to_string())?;
     let (model, key, document, guidance) = {
         let db = store.db.lock().unwrap();
         let (model, key) = crate::models::resolve(&db, Some(&request.project_id), None)

@@ -11,7 +11,7 @@ pub fn read(
         let db = store.db.lock().unwrap();
         let reset: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM agent_events WHERE project_id=?1 AND kind='session/reset' AND seq > COALESCE((SELECT MIN(seq) FROM agent_events WHERE project_id=?1 AND turn_id=?2),9223372036854775807))", rusqlite::params![project,turn], |r|r.get(0))?;
         anyhow::ensure!(!reset, "原会话已重置，请重新发送消息");
-        let mut stmt = db.prepare("SELECT seq,kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('session/start','session/message','session/compaction','image/offload','tool/result') ORDER BY seq")?;
+        let mut stmt = db.prepare("SELECT seq,kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('session/start','session/message','session/compaction','image/offload','media/offload','tool/result') ORDER BY seq")?;
         let mut rows = stmt.query(rusqlite::params![project, turn, through])?;
         let mut events = Vec::new();
         let mut watermark = 0;

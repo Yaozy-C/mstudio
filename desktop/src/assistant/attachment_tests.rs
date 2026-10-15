@@ -238,3 +238,25 @@ fn shot_reference_is_text_and_directory_without_implicitly_reading_frames() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn coordinator_still_receives_explicit_media_attachments_without_active_media_tools() {
+    let coordinator = super::profiles::defaults("");
+    assert!(!super::profiles::allows(&coordinator, "read_media"));
+    let (root, store, doc) = fixture();
+    let refs = [
+        reference("asset", "image"),
+        reference("asset", "video"),
+        reference("asset", "audio"),
+    ];
+    let payload =
+        attachments::payload(&store, &doc, "查看我发送的附件", &refs, &multimodal()).unwrap();
+    let parts = payload.as_array().unwrap();
+    assert!(parts.iter().any(|p| p["type"] == "image_url"));
+    assert!(parts.iter().any(|p| p["content"]["type"] == "video"));
+    assert!(parts.iter().any(|p| p["content"]["type"] == "audio"));
+    // Original IDs remain available for the delegated specialist's own attachment resolution.
+    assert_eq!(payload[0]["attachments"][1]["id"], "video");
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

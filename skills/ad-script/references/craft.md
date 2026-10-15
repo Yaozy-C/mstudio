@@ -1,65 +1,49 @@
-# Craft and revision
+# Developing the passage
 
-The following are optional tools; not every piece needs a surprising ending.
+Use the technique that develops the selected material. The references illustrate reasoning and expression, not reusable scripts. These approaches concern first-draft composition; they do not add a scoring or review stage.
 
-## Write for viewing pleasure
+## Short-video composition: write the substance behind the format
 
-| Direction | Writing focus | Common mistakes |
-|---|---|---|
-| Satisfaction, process, ASMR | Initial state, action rhythm and change, tactile sound, completed state; the payoff can keep happening | Listing objects only; using gentle BGM instead of sound design |
-| Demonstration, test, tutorial | A question worth answering, clear operation, readable result; the conclusion matches the scale of the demonstration | Substituting slogans for proof; fabricating capabilities |
-| Life record, UGC | How a specific person chooses and uses it; real details, natural speech, a personal view | Labelling a generic actor with a profession; reading out selling points |
-| Comedy, character story | What the character wants, the situation, reactions, relationships and development | Manufacturing fake trouble; delaying an answer the audience has already guessed |
-| Emotional piece | Relationships revealed by behaviour, the cost of a choice, the weight of a small action | Declaring the emotion in narration first, then matching it with staged shots |
-| Visual discovery, stylised ad | Perceptible rules, anomalies, change and revelation; image and sound carry the meaning | Adding only camera moves and transitions; pasting the product on at the end |
+For a TikTok brief, distinguish the format from the passage. A packing format still needs a particular selection to watch and understand; a tutorial needs something useful to learn; a skit needs a recognisable observation developed in behaviour. Decide what the viewer is receiving before writing an attention-getting line.
 
-Choose details that carry meaning; do not pile up adjectives. An action can convey both character and product; a simple process can gain style from composition, the choice of actions and sound. A metaphor may be unrealistic, but it must not masquerade as a demonstration of product performance.
+The human annotations in [TikTok Shop Academy's examples](https://seller-us.tiktok.com/university/course?content_id=4445809487709998&default_language=en&learning_id=5015540801488686) describe a style-led bag presentation, a hairstyle followed by instruction, and a whole varied snack order being packed. Their content develops through relevant details, useful steps or accumulation. These text descriptions do not establish an exact cadence or soundtrack.
 
-## Three micro-editing demonstrations
+Write a rough audiovisual passage in two complementary strands: the physical activity that makes the subject visible, and the thought that gives the activity significance. For a speaker-led piece, draft the thought as something one person can tell another in a single breath or connected turn. Keep the speaker's specific reason for caring. Then associate its clauses with the actions they explain or reinterpret. For a nonverbal piece, let visible changes and actual sounds supply that development instead.
 
-The following are fictional exercises, not proven hits, and they are not applied to a client's product by default.
+Use the limited duration to deliver one sufficiently developed experience. The middle can be the useful or enjoyable part itself, rather than a bridge between a hook and a sales line. Select details according to that experience: each new detail can answer, vary, sharpen or complete it. If the chosen material needs more time than the brief permits, choose a smaller passage rather than replacing meaningful content with rushed feature nouns.
 
-**Process: tidying cables**
+Creator-style language can express preference without inventing purchase history or dramatic personal stakes. A comment-reply format needs a real supplied comment when presented as an actual reply. Write demonstration outcomes only to the extent supported by the product material; a staged time card or a fictional reaction supplies no measurement.
 
-Weak draft: "Show the desk, put down the charger, put down the cable, pull the zip, show the organiser pouch."
+## Translate an abstract benefit into a perceptible experience
 
-Specific choices: "Three cables lie tangled on the desk; a hand lifts one and the other two come up with it. After they are separated, each is looped once and placed in an individual slot whose existence has already been established; the three plugs face the same direction and drop in one after another. The pouch closes, and only the one cable that is charging is left on the desk."
+Start with how the capability is actually experienced. Decide what the viewer needs to see, hear or understand for that experience to mean something. In Daniel Harmon's [account of Purple](https://thecopywriterclub.com/viral-ads-daniel-harmon/), the initial egg experience helped persuade the team, while making it visible required a different arrangement. Product experience and audiovisual expression are separate creative tasks.
 
-The change lies in the relationship from chaos to order and in the payoff of the action; there is no need to add a late-arriving character. If the individual slots are not evidenced, they must not be written this way.
+Write the exact action and useful explanation. A demonstration need not become an extreme test, and a fictional scene cannot substantiate a performance claim. Do not replace the subject with an unrelated entertaining stunt.
 
-**Emotion: leaving dinner for a roommate**
+## Give an explanation someone else's initial understanding
 
-Weak draft: "Prepare dinner, write a caring note, warm ending."
+In [Sandwich's Slack account](https://sandwich.co/clients/slack/), the initial belief was that their existing tools were enough. Using the product supplied the interactions that changed that understanding.
 
-Specific choices: "Serve out two portions of noodles; just as the coriander is about to be sprinkled, the spoon stops over the second portion, then the coriander goes into a small box placed beside it."
+For the current brief, develop the relevant question, distinction or discovery through particular actions and connected thoughts. Explain what becomes useful or newly understood, rather than stretching elementary setup. A fictional speaker can express a viewpoint, but must not be presented as a real customer or invented testimonial.
 
-The action lets the audience infer a memory of another person's taste. If the product is only background, this is an emotional fragment and not yet an ad; you need to find an evidenced product relationship or drop this direction.
+## Let attitude organise language and action
 
-**Demonstration: drawer storage**
+[Raindrop's Dr. Squatch work](https://raindrop.agency/case-study/dr-squatch/) frames the category with a pointed comparison. Its specificity belongs to that product and positioning.
 
-Weak draft: "Can never find anything again? This storage box solves it in one move!"
+Develop the current speaker's actual observation, priority or comparison. Continue the thought through its implications; do not write one lively opening and then switch to clipped feature names. Exact nouns, verbs, sentence connections and asides supply voice. Fragments and repetition can work when they create an intentional rhythm rather than merely shortening copy.
 
-Specific choices: "First show the audience the small accessory to be found, then show the drawer holding many accessories, making the search process and the result of taking it out visible."
+Dialogue is action between people. Give each speaker a reason to invite, bargain, explain, tease or refuse that belongs to the product-related situation. A second character need not exist solely to ask the next sales question.
 
-The question becomes testable. Whether a comparison, a timer or an explanation is needed depends on the brief and a real demonstration; you must not fabricate a speed difference or promise that the product improves a person's memory.
+## Give a familiar action another meaning
 
-## To fix a flat piece, locate the problem first
+[IKEA's second-best campaign](https://www.ogilvy.com/work/proudly-second-best) connects a child's closeness to parents with the corresponding furniture's intended use. The interpretation and the familiar behaviour belong together.
 
-Quote one symptom in the script, then choose the smallest effective fix:
+Write the particular behaviour and the words or juxtaposition that change how it reads. Explanation need not name every inference. Avoid importing the campaign's family scene, understatement or product absence into unrelated work.
 
-- No focus: several values are promised at once. Choose the main expression; reorganise or cut the side lines.
-- No material: everything is convenient, refined, healing. Add real behaviour, object choices, actual words or sensory detail.
-- No payoff: there is only a complete operation. Make clear which part lets the audience discover, learn, feel or enjoy something.
-- Stagnation: after the second segment nothing but the known is repeated. Compress, change the order of revelation, or give the repetition a new variation.
-- Forced: characters act stupid on purpose for the ad. Switch to a credible situation, or change it into a direct demonstration.
-- Disconnect: the selling only starts after the interesting part ends. Reconnect the experience and the product; if they cannot be connected, change direction.
-- Dragging: the idea works, but preparation and dialogue drown it. Keep the recognition time that is necessary and cut explanations and transitions.
+## Sustain the experience through sound and development
 
-Distinguish personal taste, a violated user constraint, a product-fact error and an audio-visual that cannot express the intent; do not treat an aesthetic preference as an objective defect.
+Write physical changes and contact sounds for a sensory process, useful distinctions for an explanation, consequences for a choice, or variation for a pattern. These are substantive developments, not feature coverage slots.
 
-## Outcome claims
+Compose speech and picture together. A sentence can carry across several actions; a word or pause can change the meaning of a gesture; a sound can establish a rhythm or make a result perceptible. Put those relationships in the draft, leaving detailed acting and mixing to production. Do not claim heard delivery or continuous timing from a text account or still.
 
-Creative choices do not establish views or conversions; do not claim success from a model self-score.
-
-
-After launch, look separately at retention/viewing development, product understanding and recognition, and clicks/purchases, choosing the metric by the goal. Record differences in placement, audience, account, duration, offer and production; correct the current assumption rather than deriving a general law from a single piece. A character or form that works can be developed over time; avoid demanding a completely new formula every round.
+Let the ending complete or deepen this experience. An early answer, silence or sustained observation may suit it. No compulsory mystery, reversal, character arc or CTA is needed.

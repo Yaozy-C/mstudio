@@ -39,13 +39,13 @@ async fn group(
     let (mut next, mut committed) = (0, 0);
     let mut failure = None;
     while committed < calls.len() {
-        while failure.is_none() && next < calls.len() && in_flight.len() < 4 {
+        while failure.is_none() && next < calls.len() && in_flight.len() < super::MAX_CONCURRENCY {
             let index = next;
             let call = &calls[index];
             if let Err(error) = host.record("tool/call", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"arguments":call.function.arguments})) {
                 failure = Some(error); break;
             }
-            let invalid = validate(definitions, call, &host.deferred_tools());
+            let invalid = validate(definitions, call);
             in_flight.push(async move {
                 let value = if host.token().is_cancelled() {
                     json!({"error":"Task stopped before dispatch; call not executed", "code":"ABORTED_BEFORE_DISPATCH"})
@@ -69,7 +69,9 @@ async fn group(
             let value = super::tool_output::project(call, &canonical, host.result_turn());
             let mut message = result_message(
                 call,
-                if canonical.get("__offloadedImage").is_some() {
+                if canonical.get("__offloadedImage").is_some()
+                    || canonical.get("__offloadedMedia").is_some()
+                {
                     &canonical
                 } else {
                     &value
@@ -94,22 +96,8 @@ async fn group(
     }
     failure.map_or(Ok(()), Err)
 }
-pub(super) fn validate(
-    definitions: &[ToolDefinition],
-    call: &ToolCall,
-    deferred: &[String],
-) -> Option<Value> {
+pub(super) fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
     let Some(definition) = definitions.iter().find(|d| d.name == call.function.name) else {
-        // A permitted tool that this run has not loaded is recoverable by loading it; say so
-        // instead of implying the role lacks the permission.
-        let name = call.function.name.as_str();
-        if deferred.iter().any(|candidate| candidate == name) {
-            return Some(json!({
-                "error": format!("{name} is permitted for this Agent but not loaded in this run. Call mstudio_load_tools with names:[\"{name}\"] first, then call {name} again; a new run starts unloaded and loading grants no new permission."),
-                "code": "UNKNOWN_TOOL",
-                "outcome": "not_executed"
-            }));
-        }
         return Some(json!({"error":"Tool not available to this Agent", "code":"UNKNOWN_TOOL"}));
     };
     if serde_json::to_string(&call.function.arguments)
