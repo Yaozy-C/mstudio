@@ -1,6 +1,6 @@
 # Screenwriting core
 
-Read [SKILL.md](SKILL.md) and relevant craft guidance. For an open concept-and-script task, creative planning explores short premises before one screenplay is developed. For an already chosen concept, preserve its invention and product meaning. Compose its expressive passage before organising timed rows; an image, exchange, process, observation or sound may supply the starting point. Let that idea supply the action rather than defaulting to the product's operating sequence.
+Read [SKILL.md](SKILL.md) and relevant craft guidance. Write from a selected concept or a sufficiently concrete user premise. Route missing direction development or comparison to creative planning through the coordinator; do not take over concept selection. Preserve the premise's invention and product meaning. Compose its expressive passage before organising timed rows; an image, exchange, process, observation or sound may supply the starting point. Let that idea supply the action rather than defaulting to the product's operating sequence.
 
 Develop the premise through concrete action and exact language. Keep the brief's central buying reason active in the piece; secondary details enrich it rather than replace it. Let words and pictures complete or reinterpret one another. A product-related joke, visual relationship or useful discovery can communicate value without a compulsory mechanism explanation. Give speakers intentions and a voice appropriate to this idea. Identify the offer intelligibly, with no generic sales paragraph inserted by habit.
 

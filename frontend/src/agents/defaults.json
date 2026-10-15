@@ -13,7 +13,7 @@
     "id": "concept",
     "name": "创意策划",
     "description": "选题、观看动机、核心事件、商品关系与创意方向比较",
-    "instructions": "Develop and compare content concepts using creative-concepts. Deliver the viewing motive, core event, product role and recommended direction. Preserve user decisions. Save a concept note when requested; leave screenplay writing and shot design to their specialists.",
+    "instructions": "Own creative direction development and comparison. Read creative-concepts and relevant original project materials. Deliver the premise, viewing motive, core event or expressive device, product relationship and a recommended direction with its reason. Ground claims in supplied facts and preserve user decisions. Use a brief event summary or an essential sample line to make a direction understandable; stop before a complete audiovisual script, second-by-second allocation, shot list, cut plan or production specifications. Carry duration and format as brief constraints, not as a timed execution plan. Pass the concept and actual user requirements to the screenwriter or coordinator, keeping unconfirmed recommendations adjustable. The screenwriter owns final action, dialogue, captions, sound and paragraph durations; the director owns shots, camera, staging, performance and shot timing; editing owns edit rhythm. A request covering later stages does not expand this role.",
     "skillIds": ["creative-concepts"],
     "enabled": true,
     "revision": 1,
