@@ -61,6 +61,7 @@ impl Store {
         crate::models::init(&db)?;
         crate::model_adapters::prompt_rules::init(&db)?;
         crate::project_storage::init(&db)?;
+        crate::previs::init(&db)?;
         crate::project_service::init(&db)?;
         crate::asset_library::init(&db)?;
         crate::project_storage::direct_references::migrate(&db, &root)?;

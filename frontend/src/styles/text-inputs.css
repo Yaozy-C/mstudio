@@ -24,11 +24,11 @@
   ):focus {
   outline: none;
   box-shadow: none;
-  border-color: var(--desk-accent);
+  border-color: var(--desk-control-strong);
 }
 .radix-themes
   :is(input, textarea, select, .studio-select-trigger)[aria-invalid="true"] {
   outline: none;
   box-shadow: none;
-  border-color: var(--desk-accent);
+  border-color: var(--ui-danger);
 }

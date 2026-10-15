@@ -5,6 +5,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { X, Export as ExportIcon } from "@phosphor-icons/react";
+import { Dialog } from "@radix-ui/themes";
 import type { Project } from "../model";
 import { formatTime } from "../model";
 import { endTime } from "../timeline/document";
@@ -20,6 +21,11 @@ export function ExportDialog({
   onClose: () => void;
 }) {
   useLanguage();
+  const opener = useRef(
+    typeof document === "undefined"
+      ? null
+      : (document.activeElement as HTMLElement | null),
+  );
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const rendering = useRef(false);
@@ -97,18 +103,29 @@ export function ExportDialog({
     }
   }
   return (
-    <div className="modal-backdrop">
-      <section
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy && !saving && !revealing) onClose();
+      }}
+    >
+      <Dialog.Content
         className="modal export-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="export-title"
+        aria-describedby={undefined}
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => {
+          if (busy || saving || revealing) event.preventDefault();
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (opener.current?.isConnected) opener.current.focus();
+        }}
       >
         <header>
           <div>
-            <h2 id="export-title">
+            <Dialog.Title>
               {saved ? t("成片已保存") : path ? t("成片已就绪") : t("导出成片")}
-            </h2>
+            </Dialog.Title>
           </div>
           <button
             className="icon-button"
@@ -185,7 +202,7 @@ export function ExportDialog({
             </AsyncButton>
           </footer>
         )}
-      </section>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

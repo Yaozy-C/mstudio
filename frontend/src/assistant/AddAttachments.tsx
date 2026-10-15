@@ -51,7 +51,7 @@ export function AddAttachments({
             <Plus size={20} />
           </button>
         </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="start">
+        <DropdownMenu.Content className="studio-menu" align="start">
           <DropdownMenu.Item onSelect={() => void draft.importFiles(receive)}>
             <UploadSimple size={16} />
             {t("从电脑添加附件")}

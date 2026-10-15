@@ -1,3 +1,4 @@
+import { ChatText as MenuChatText } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { ObjectActions } from "../ui/ObjectActions";
 import { useEffect, useRef, useState } from "react";
@@ -79,6 +80,7 @@ export function NodeEditor({
         <ObjectActions
           actions={[
             {
+              icon: MenuChatText,
               label: t("引用到对话"),
               run: () => {
                 save();

@@ -1,3 +1,4 @@
+import { Trash as DialogTrash, X as DialogX } from "@phosphor-icons/react";
 import { AlertDialog } from "@radix-ui/themes";
 import type { ReactNode } from "react";
 import { t } from "../i18n";
@@ -32,12 +33,16 @@ export function RemoveDialog({
     >
       <AlertDialog.Trigger>{trigger}</AlertDialog.Trigger>
       <AlertDialog.Content className="modal small" aria-busy={busy}>
-        <AlertDialog.Title>{title}</AlertDialog.Title>
+        <AlertDialog.Title>
+          <DialogTrash aria-hidden="true" />
+          {title}
+        </AlertDialog.Title>
         <AlertDialog.Description>{children}</AlertDialog.Description>
         {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
         <footer>
           <AlertDialog.Cancel>
             <button type="button" disabled={busy}>
+              <DialogX aria-hidden="true" />
               {blocked ? t("关闭") : t("取消")}
             </button>
           </AlertDialog.Cancel>
@@ -48,6 +53,7 @@ export function RemoveDialog({
               disabled={busy}
               onClick={confirm}
             >
+              <DialogTrash aria-hidden="true" />
               {busy ? t("正在移除…") : t("确认移除")}
             </button>
           )}

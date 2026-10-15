@@ -1,3 +1,7 @@
+import {
+  FloppyDisk as DialogFloppyDisk,
+  X as DialogX,
+} from "@phosphor-icons/react";
 import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -260,6 +264,7 @@ export function ServiceForm({
             )}
             <footer>
               <button type="button" onClick={cancel}>
+                <DialogX aria-hidden="true" />
                 {t("取消")}
               </button>
               <AsyncButton
@@ -270,6 +275,7 @@ export function ServiceForm({
                 disabled={busy}
                 onClick={() => void save()}
               >
+                <DialogFloppyDisk aria-hidden="true" />
                 {t("保存连接")}
               </AsyncButton>
             </footer>

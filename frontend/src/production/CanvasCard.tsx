@@ -1,3 +1,4 @@
+import { canvasCardActions } from "./canvasCardActions";
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
 import { CanvasAssetStatus } from "./CanvasAssetStatus";
@@ -5,7 +6,6 @@ import { memo, useEffect, useLayoutEffect, useRef } from "react";
 import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { mediaUrl } from "../bridge";
-import { isLibraryAsset } from "../workspace/assetLibrary";
 import { MissingAsset } from "../workspace/MissingAsset";
 import type { Asset, Project } from "../model";
 import type { ProductionItem } from "./types";
@@ -70,33 +70,14 @@ export const CanvasCard = memo(function CanvasCard({
   useEffect(() => () => stopDrag.current?.(), []);
   const selected = canvas.selected.includes(item.key);
   const referenced = canvas.referenced.has(item.key);
-  const actions = [
-    { label: t("预览 / 编辑"), run: () => preview(item) },
-    { label: t("引用到对话"), run: () => canvas.reference([item.key]) },
-    ...(asset &&
-    (asset.kind === "image" || asset.kind === "video" || asset.kind === "audio")
-      ? [
-          {
-            label: t("加入时间线"),
-            run: () => onAdd(asset),
-            disabled: !!asset.missing,
-          },
-        ]
-      : []),
-    ...(asset
-      ? [
-          {
-            label: isLibraryAsset(asset)
-              ? t("已在项目素材中")
-              : t("保存为项目素材"),
-            run: () => collect(asset),
-            disabled: isLibraryAsset(asset),
-          },
-        ]
-      : []),
-    { label: t("制作视频"), run: () => canvas.act("video", [item.key]) },
-    { label: t("从画布移除"), run: () => canvas.remove(item) },
-  ];
+  const actions = canvasCardActions({
+    item,
+    asset,
+    canvas,
+    preview,
+    collect,
+    onAdd,
+  });
   return (
     <ObjectMenu actions={actions}>
       <article

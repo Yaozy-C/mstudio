@@ -1,0 +1,165 @@
+.dock-media .media-list.media-list-models {
+  display: block;
+  padding: 0;
+}
+.previs-library {
+  width: 100%;
+  min-width: 0;
+}
+.previs-library header,
+.previs-library h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.previs-library header {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.previs-library h3 {
+  min-width: 0;
+  font-size: var(--ui-label);
+  line-height: 20px;
+  color: var(--desk-text);
+  margin: 0;
+}
+.previs-library h3 svg {
+  flex-shrink: 0;
+  color: var(--desk-muted);
+}
+.previs-library h3 small {
+  color: var(--desk-muted);
+  font: 12px/20px var(--ui-mono);
+  font-weight: 400;
+}
+.previs-library header button {
+  flex-shrink: 0;
+}
+.previs-library-note {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  color: var(--desk-muted);
+  margin: 0 0 16px;
+}
+.previs-library article {
+  position: relative;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+  margin-bottom: 8px;
+}
+.radix-themes .previs-library .previs-model-open {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  padding: 12px 36px 12px 12px;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  white-space: normal;
+}
+.previs-model-open > svg:first-child {
+  width: 20px;
+  height: 20px;
+  color: var(--desk-muted);
+}
+.previs-model-open > span {
+  flex: 1;
+  min-width: 0;
+}
+.previs-model-open strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: var(--ui-label);
+  line-height: 20px;
+  font-weight: 500;
+}
+.previs-model-open small {
+  display: block;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  margin-top: 4px;
+  max-height: 40px;
+  overflow: hidden;
+}
+.radix-themes .previs-library .previs-model-remove {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 28px;
+  min-height: 28px;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.previs-model-delete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--ui-caption);
+  padding: 8px 12px;
+  border-top: 1px solid var(--ui-rule);
+}
+.previs-library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.previs-library-empty p {
+  max-width: 240px;
+  margin: 0;
+}
+.radix-themes .previs-shot-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 5px 10px;
+  min-height: 32px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  line-height: 20px;
+  white-space: nowrap;
+}
+.radix-themes .previs-shot-button:hover {
+  background: var(--ui-hover);
+  border-color: var(--desk-control);
+}
+.previs-workspace-error {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: 440px;
+  z-index: 1100;
+  background: var(--desk-surface);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  padding: 12px;
+  box-shadow: var(--ui-shadow);
+  display: flex;
+  gap: 12px;
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  color: var(--desk-accent);
+}
+.previs-workspace-error button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}

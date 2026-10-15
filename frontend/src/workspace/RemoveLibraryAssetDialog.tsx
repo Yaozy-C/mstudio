@@ -1,3 +1,4 @@
+import { Trash as DialogTrash, X as DialogX } from "@phosphor-icons/react";
 import { AlertDialog } from "@radix-ui/themes";
 import { t } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -26,6 +27,7 @@ export function RemoveLibraryAssetDialog({
     >
       <AlertDialog.Content className="modal small" aria-busy={disabled}>
         <AlertDialog.Title>
+          <DialogTrash aria-hidden="true" />
           {scope === "project" ? t("删除") : t("移除")}
           {scope === "project" ? t("项目") : t("公共")}
           {t("素材")}
@@ -50,9 +52,13 @@ export function RemoveLibraryAssetDialog({
         {error && <ErrorNotice error={error} fallback="OPERATION_FAILED" />}
         <footer>
           <AlertDialog.Cancel>
-            <button disabled={disabled}>{t("取消")}</button>
+            <button disabled={disabled}>
+              <DialogX aria-hidden="true" />
+              {t("取消")}
+            </button>
           </AlertDialog.Cancel>
           <button className="primary" disabled={disabled} onClick={onConfirm}>
+            <DialogTrash aria-hidden="true" />
             {disabled
               ? t("正在移除…")
               : scope === "project"

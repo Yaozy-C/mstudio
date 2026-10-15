@@ -64,11 +64,55 @@
   border-color: var(--desk-rule);
   font-weight: 600;
 }
-.task-panel-list button > span {
+.task-panel-list .task-list-copy {
   display: grid;
   gap: 5px;
   min-width: 0;
   flex: 1;
+}
+.task-panel-list .task-thumbnail {
+  width: 44px;
+  height: 54px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ui-rule);
+  border-radius: 5px;
+  background: var(--desk-bg);
+  color: var(--desk-muted);
+}
+.task-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.task-panel-list .task-thumbnail svg {
+  margin: 0;
+}
+.task-list-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+}
+.task-list-meta .run-status {
+  gap: 4px;
+  min-width: 0;
+}
+.task-list-meta time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.task-panel-list .task-list-copy > strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .task-panel-list svg {
   flex-shrink: 0;

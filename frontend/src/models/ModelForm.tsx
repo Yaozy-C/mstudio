@@ -1,3 +1,7 @@
+import {
+  FloppyDisk as DialogFloppyDisk,
+  X as DialogX,
+} from "@phosphor-icons/react";
 import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { normalizeError } from "../errors/catalog";
@@ -163,6 +167,7 @@ export function ModelForm({
         )}
         <footer>
           <button type="button" onClick={cancel}>
+            <DialogX aria-hidden="true" />
             {t("取消")}
           </button>
           <AsyncButton
@@ -178,6 +183,7 @@ export function ModelForm({
               !profile.model.trim()
             }
           >
+            <DialogFloppyDisk aria-hidden="true" />
             {t("保存模型")}
           </AsyncButton>
         </footer>

@@ -1,0 +1,25 @@
+.radix-themes .script-workspace .script-add {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-color: var(--script-rule);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: 13px;
+}
+
+@container screenplay (max-width: 640px) {
+  .script-paper {
+    --script-inset: 24px;
+    --script-gutter: 0px;
+  }
+  .script-workspace .creative-next-step {
+    flex-wrap: wrap;
+  }
+  .script-workspace .script-paragraph > header {
+    flex-wrap: wrap;
+  }
+  .script-workspace .script-paragraph > header input {
+    flex-basis: 60%;
+  }
+}

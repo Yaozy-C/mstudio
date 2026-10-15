@@ -1,3 +1,4 @@
+import { ChatText as MenuChatText } from "@phosphor-icons/react";
 import { ImageReview } from "./imageReview/ImageReview";
 import { t, useLanguage } from "../i18n";
 import { DocumentPreview } from "./DocumentPreview";
@@ -38,6 +39,7 @@ export function MediaPreview({
             <ObjectActions
               actions={[
                 {
+                  icon: MenuChatText,
                   label: t("引用到对话"),
                   run: () => {
                     reference(asset);

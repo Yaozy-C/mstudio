@@ -1,0 +1,123 @@
+/* State combinations must retain meaning while the pointer crosses a control. */
+.radix-themes
+  :is(
+    .action-button,
+    .icon-button,
+    .chrome-action
+  )[aria-pressed="true"]:hover:not(:disabled),
+.radix-themes
+  button[aria-haspopup="menu"][data-state="open"]:hover:not(:disabled),
+.radix-themes .studio-select-trigger[data-state="open"]:hover:not(:disabled) {
+  color: var(--desk-accent);
+  background: var(--ui-selected-hover);
+}
+.radix-themes
+  :is(
+    .action-button,
+    .icon-button,
+    .chrome-action
+  )[aria-pressed="true"]:active:not(:disabled),
+.radix-themes
+  button[aria-haspopup="menu"][data-state="open"]:active:not(:disabled),
+.radix-themes .studio-select-trigger[data-state="open"]:active:not(:disabled) {
+  background: var(--ui-pressed);
+}
+/* Preserve the activated surface during work instead of fading like unavailable UI. */
+.radix-themes button[aria-busy="true"]:disabled {
+  opacity: 0.8;
+  cursor: progress;
+  box-shadow: none;
+}
+.radix-themes button:disabled:not([aria-busy="true"]) {
+  box-shadow: none;
+}
+/* Menus follow their actual collision-resolved side; text is never scaled. */
+:is(.studio-menu, .object-menu, .studio-select-menu) {
+  --menu-x: 0px;
+  --menu-y: -3px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--desk-rule) transparent;
+}
+:is(.studio-menu, .object-menu, .studio-select-menu)[data-side="top"] {
+  --menu-y: 3px;
+}
+:is(.studio-menu, .object-menu, .studio-select-menu)[data-side="left"] {
+  --menu-x: 3px;
+  --menu-y: 0px;
+}
+:is(.studio-menu, .object-menu, .studio-select-menu)[data-side="right"] {
+  --menu-x: -3px;
+  --menu-y: 0px;
+}
+:is(.radix-themes, .radix-themes *) .studio-menu,
+.radix-themes.studio-menu {
+  max-height: min(
+    480px,
+    var(
+      --radix-dropdown-menu-content-available-height,
+      var(--radix-context-menu-content-available-height, 80vh)
+    )
+  );
+  overflow-y: auto;
+}
+:is(.radix-themes, .radix-themes *):is(
+    .studio-menu,
+    .object-menu,
+    .studio-select-menu
+  )[data-state="open"] {
+  animation: menu-reveal var(--motion-fast) var(--motion-ease);
+}
+:is(.radix-themes, .radix-themes *):is(
+    .studio-menu,
+    .object-menu,
+    .studio-select-menu
+  )[data-state="closed"] {
+  animation: menu-dismiss 80ms var(--motion-ease-exit) forwards;
+  pointer-events: none;
+}
+@keyframes menu-reveal {
+  from {
+    opacity: 0;
+    transform: translate(var(--menu-x), var(--menu-y));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+@keyframes menu-dismiss {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+/* Immediate row tracking avoids a trail of fading highlights under fast movement. */
+:is(.studio-menu, .object-menu, .studio-select-menu) [role^="menuitem"],
+.studio-select-menu [role="option"] {
+  transition: none;
+  gap: 8px;
+}
+:is(.studio-menu, .object-menu)
+  :is(.rt-DropdownMenuSeparator, .rt-ContextMenuSeparator) {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--ui-rule);
+}
+.studio-select-trigger .rt-SelectIcon {
+  transition: color var(--motion-fast) var(--motion-ease);
+}
+.studio-select-trigger[data-state="open"] .rt-SelectIcon {
+  color: var(--desk-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.radix-themes, .radix-themes *):is(
+    .studio-menu,
+    .object-menu,
+    .studio-select-menu
+  ) {
+    animation: none;
+  }
+}

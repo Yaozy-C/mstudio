@@ -1,3 +1,8 @@
+import {
+  PencilSimple as MenuPencilSimple,
+  Plus as MenuPlus,
+  Trash as MenuTrash,
+} from "@phosphor-icons/react";
 import { captionTrackId } from "./captionTracks";
 import { t, useLanguage } from "../i18n";
 import { Check, Subtitles } from "@phosphor-icons/react";
@@ -64,7 +69,9 @@ export function CaptionTrack({
     onCaption?.();
   };
   return (
-    <ObjectMenu actions={[{ label: t("在此添加字幕"), run: add }]}>
+    <ObjectMenu
+      actions={[{ icon: MenuPlus, label: t("在此添加字幕"), run: add }]}
+    >
       <div
         className="caption-track"
         aria-label={t("字幕轨道：双击空白添加字幕")}
@@ -155,6 +162,7 @@ function CaptionChip({
     <ObjectMenu
       actions={[
         {
+          icon: MenuPencilSimple,
           label: t("编辑字幕"),
           run: () => {
             select();
@@ -163,6 +171,7 @@ function CaptionChip({
           },
         },
         {
+          icon: MenuTrash,
           label: t("删除字幕"),
           danger: true,
           run: () =>

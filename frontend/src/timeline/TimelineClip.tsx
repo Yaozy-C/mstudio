@@ -1,3 +1,13 @@
+import {
+  ChatText as MenuChatText,
+  Clipboard as MenuClipboard,
+  Copy as MenuCopy,
+  FolderPlus as MenuFolderPlus,
+  Scissors as MenuScissors,
+  SlidersHorizontal as MenuSlidersHorizontal,
+  Trash as MenuTrash,
+  Waveform as MenuWaveform,
+} from "@phosphor-icons/react";
 import { platformShortcut } from "../ui/platformShortcut";
 import { t, useLanguage } from "../i18n";
 import { Check } from "@phosphor-icons/react";
@@ -16,6 +26,7 @@ export function TimelineClip({
   entry,
   projectId,
   asset,
+  label,
   zoom,
   fps,
   selected,
@@ -31,6 +42,7 @@ export function TimelineClip({
   entry: IndexedClip;
   projectId: string;
   asset?: Asset;
+  label?: string;
   zoom: number;
   fps: number;
   selected: boolean;
@@ -84,31 +96,36 @@ export function TimelineClip({
   return (
     <ObjectMenu
       actions={[
-        { label: t("编辑片段"), run: onOpen },
+        { icon: MenuSlidersHorizontal, label: t("编辑片段"), run: onOpen },
         {
+          icon: MenuCopy,
           label: platformShortcut(t("复制片段 ⌘C")),
           run: () => requestClipEdit("copy", clip.id),
         },
         {
+          icon: MenuScissors,
           label: platformShortcut(t("剪切片段 ⌘X")),
           run: () => requestClipEdit("cut", clip.id),
         },
         {
+          icon: MenuClipboard,
           label: platformShortcut(t("粘贴片段 ⌘V")),
           run: () => requestClipEdit("paste", clip.id),
         },
         ...(asset?.kind === "video" && asset.hasAudio && !audio
           ? [
               {
+                icon: MenuWaveform,
                 label: t("分离音频"),
                 run: () => onChange((p) => detachAudio(p, clip.id)),
               },
             ]
           : []),
-        { label: t("引用到对话"), run: onReference },
+        { icon: MenuChatText, label: t("引用到对话"), run: onReference },
         ...(asset
           ? [
               {
+                icon: MenuFolderPlus,
                 label: isLibraryAsset(asset)
                   ? t("已在项目素材中")
                   : t("保存为项目素材"),
@@ -118,6 +135,7 @@ export function TimelineClip({
             ]
           : []),
         {
+          icon: MenuTrash,
           label: t("移除片段 Delete / Backspace"),
           danger: true,
           run: onRemove,
@@ -130,7 +148,7 @@ export function TimelineClip({
         tabIndex={0}
         draggable
         aria-label={t("{v0} {v1}秒{v2}", {
-          v0: asset?.name ?? t("片段"),
+          v0: label || asset?.name || t("片段"),
           v1: start.toFixed(2),
           v2: status ? ` · ${status}` : "",
         })}
@@ -197,7 +215,7 @@ export function TimelineClip({
               aria-hidden="true"
             />
           )}
-          {asset?.name || t("素材丢失")}
+          {label || asset?.name || t("素材丢失")}
         </span>
         <small>
           {status && `${status} · `}

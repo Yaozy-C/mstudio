@@ -1,0 +1,286 @@
+@import "./previs-chat.css";
+@import "./previs-library.css";
+
+.radix-themes .previs-dialog {
+  width: min(1280px, calc(100vw - 64px));
+  max-width: calc(100vw - 64px);
+  height: min(900px, calc(100dvh - 64px));
+  max-height: calc(100dvh - 64px);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--desk-text);
+}
+.previs-heading,
+.previs-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.previs-heading {
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--ui-rule);
+}
+.previs-heading > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.previs-heading :is(h1, h2) {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ui-heading);
+  font-weight: 600;
+  line-height: 24px;
+}
+.previs-version {
+  color: var(--desk-muted);
+  font: 12px/20px var(--ui-mono);
+}
+.previs-heading svg,
+.previs-version,
+.previs-heading-actions {
+  flex-shrink: 0;
+}
+.previs-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.previs-visual {
+  min-width: 0;
+  overflow: auto;
+  padding: 20px 24px 24px;
+}
+.previs-stage {
+  height: clamp(200px, 34vh, 360px);
+  background: color-mix(in srgb, var(--desk-text) 94%, var(--desk-bg));
+  border-radius: var(--ui-card-radius);
+  overflow: hidden;
+}
+.previs-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+.previs-placeholder {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--desk-sidebar);
+  padding: 24px;
+  text-align: center;
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.previs-transport {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 20px;
+}
+.radix-themes .previs-transport input {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  accent-color: var(--desk-accent);
+}
+.previs-transport span {
+  white-space: nowrap;
+  color: var(--desk-muted);
+  font: 12px/20px var(--ui-mono);
+  font-variant-numeric: tabular-nums;
+}
+.previs-properties {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.previs-model-properties {
+  grid-template-columns: minmax(0, 1fr);
+}
+.radix-themes .previs-properties label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.previs-description {
+  grid-column: 1 / -1;
+}
+.radix-themes .previs-properties :is(input, textarea, .studio-select-trigger),
+.radix-themes .previs-code > textarea {
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  box-shadow: none;
+  font-size: var(--ui-label);
+}
+.radix-themes .previs-properties :is(input, .studio-select-trigger) {
+  height: 34px;
+  padding: 0 10px;
+}
+.radix-themes .previs-properties textarea {
+  padding: 10px 12px;
+  line-height: 22px;
+}
+.previs-model-picker,
+.previs-code,
+.previs-exports {
+  margin-top: 20px;
+}
+.previs-model-picker h3,
+.previs-exports h3 {
+  font-size: var(--ui-label);
+  line-height: 20px;
+  margin: 0 0 12px;
+}
+.previs-model-picker h3 small {
+  color: var(--desk-muted);
+  margin-left: 8px;
+  font-weight: 400;
+}
+.radix-themes .previs-model-picker > label,
+.radix-themes .previs-exports label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--ui-label);
+}
+.previs-model-picker > label {
+  padding: 10px 12px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  margin-bottom: 8px !important;
+}
+.previs-model-picker > label > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.previs-model-picker small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+.previs-model-picker :is(small, p),
+.previs-exports small {
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.radix-themes .previs-dialog input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--desk-accent);
+}
+.previs-code summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.radix-themes .previs-code > textarea {
+  display: block;
+  min-height: 160px;
+  padding: 12px;
+  background: var(--desk-bg);
+  font: 12px/20px var(--ui-mono);
+  tab-size: 2;
+}
+.radix-themes .previs-code-import {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 5px 10px;
+  min-height: 32px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  line-height: 20px;
+  cursor: pointer;
+}
+.previs-code-import input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+}
+.previs-code-import:focus-within {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 3px;
+}
+.previs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.previs-exports article {
+  display: flex;
+  gap: 16px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.previs-exports video {
+  width: 140px;
+  max-height: 190px;
+  background: var(--desk-text);
+  object-fit: contain;
+  border-radius: var(--ui-radius);
+}
+.previs-exports article > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--ui-label);
+}
+@media (max-width: 800px) {
+  .radix-themes .previs-dialog {
+    width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
+  }
+  .previs-editor-grid {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+  .previs-visual {
+    overflow: visible;
+  }
+  .previs-chat {
+    min-height: 400px;
+    border-left: 0;
+    border-top: 1px solid var(--ui-rule);
+  }
+  .previs-messages {
+    min-height: 120px;
+    max-height: 280px;
+  }
+}

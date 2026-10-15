@@ -1,3 +1,4 @@
+import { IconButton } from "../ui/IconButton";
 import { ProjectConflict } from "./ProjectConflict";
 import { platformShortcut } from "../ui/platformShortcut";
 import type { ReactNode } from "react";
@@ -67,18 +68,16 @@ export function StudioChrome({
       : CircleDashed;
   return (
     <header className="studio-top" aria-label={t("工作栏")}>
-      <button
-        className="icon-button"
-        title={t("返回项目库")}
+      <IconButton
+        icon={ArrowLeft}
+        label={t("返回项目库")}
         onClick={() =>
           void m
             .flush()
             .then(onBack)
             .catch((e) => setError(String(e)))
         }
-      >
-        <ArrowLeft />
-      </button>
+      />
       <span className="studio-wordmark">m / studio</span>
       <div className="studio-project">
         <strong className="project-title" title={project.name}>
@@ -122,22 +121,18 @@ export function StudioChrome({
         ))}
       </nav>
       <span className="top-divider" />
-      <button
-        className="icon-button"
-        title={platformShortcut(t("撤销 ⌘Z"))}
+      <IconButton
+        icon={ArrowCounterClockwise}
+        label={platformShortcut(t("撤销 ⌘Z"))}
         disabled={!m.canUndo}
         onClick={m.undo}
-      >
-        <ArrowCounterClockwise />
-      </button>
-      <button
-        className="icon-button"
-        title={platformShortcut(t("重做 ⇧⌘Z"))}
+      />
+      <IconButton
+        icon={ArrowClockwise}
+        label={platformShortcut(t("重做 ⇧⌘Z"))}
         disabled={!m.canRedo}
         onClick={m.redo}
-      >
-        <ArrowClockwise />
-      </button>
+      />
       <span className="top-divider" />
       <button
         className="chrome-action"
@@ -169,13 +164,14 @@ export function StudioChrome({
             </DropdownMenu.Item>
           }
           <DropdownMenu.Separator />
-          <DropdownMenu.Item onSelect={onModels}>
-            <Cube />
-            {t("模型中心")}
-          </DropdownMenu.Item>
           <DropdownMenu.Item onSelect={() => onCreation("captions")}>
             <Subtitles />
             {t("字幕 / 配音")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item onSelect={onModels}>
+            <Cube />
+            {t("模型中心")}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>

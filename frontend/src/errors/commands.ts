@@ -1,5 +1,13 @@
 import { errorText, type ErrorCode } from "./catalog";
 const commandCodes: Record<string, ErrorCode> = {
+  previs_chat: "CHAT_FAILED",
+  save_previs_file: "SAVE_FAILED",
+  previs_workspace: "STORAGE_READ_FAILED",
+  open_previs_runtime: "PREVIEW_FAILED",
+  begin_previs_render: "EXPORT_FAILED",
+  append_previs_frame: "EXPORT_FAILED",
+  finish_previs_render: "EXPORT_FAILED",
+  share_previs_video: "ASSET_OPERATION_FAILED",
   native_preview_open: "PREVIEW_FAILED",
   native_preview_control: "PREVIEW_FAILED",
   native_preview_status: "PREVIEW_FAILED",

@@ -14,9 +14,13 @@ import messages12 from "./ui.json";
 import messages13 from "./workspace.json";
 
 import manual from "./manual.json";
+import previs from "./previs.json";
+import polish from "./polish.json";
 
 export default {
   ...manual,
+  ...previs,
+  ...polish,
   ...messages0,
   ...messages1,
   ...messages2,

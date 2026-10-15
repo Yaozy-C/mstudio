@@ -43,7 +43,7 @@ pub fn validate(name: &str, size: u64) -> Result<String> {
 }
 
 // Stage each import separately so invalid media and failed thumbnail generation leave no loose files.
-pub(super) fn import_source_scoped(
+pub(crate) fn import_source_scoped(
     store: &Store,
     project: &str,
     source: &Path,

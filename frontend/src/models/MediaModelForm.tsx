@@ -1,3 +1,7 @@
+import {
+  FloppyDisk as DialogFloppyDisk,
+  X as DialogX,
+} from "@phosphor-icons/react";
 import capabilityExample from "./config/example-capabilities.json";
 import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
@@ -253,6 +257,7 @@ export function MediaModelForm({
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
         <footer>
           <button type="button" onClick={cancel}>
+            <DialogX aria-hidden="true" />
             {t("取消")}
           </button>
           <AsyncButton
@@ -262,6 +267,7 @@ export function MediaModelForm({
             className="primary"
             disabled={busy || !model.connectionId}
           >
+            <DialogFloppyDisk aria-hidden="true" />
             {t("保存模型")}
           </AsyncButton>
         </footer>

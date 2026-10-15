@@ -12,18 +12,18 @@
   display: none;
 }
 .track-label-viewport {
-  width: 176px;
+  width: 128px;
   flex-shrink: 0;
   overflow: hidden;
 }
 .track-labels {
-  width: 176px;
+  width: 128px;
   padding-bottom: 16px;
 }
 .track-labels > div {
   padding: 4px 8px;
 }
-.track-heading {
+.track-labels > .track-heading {
   gap: 4px;
 }
 .radix-themes .track-heading input {

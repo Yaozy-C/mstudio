@@ -30,8 +30,8 @@
           "$APPDATA/proxies/**"
         ]
       },
-      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; media-src 'self' asset: http://asset.localhost blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src 'self' asset: http://asset.localhost; connect-src asset: http://asset.localhost ipc: http://ipc.localhost",
-      "devCsp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; media-src 'self' asset: http://asset.localhost blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-src 'self' asset: http://asset.localhost; connect-src asset: http://asset.localhost ipc: http://ipc.localhost http://127.0.0.1:1430 ws://127.0.0.1:1430",
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; media-src 'self' asset: http://asset.localhost blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src 'self' asset: http://asset.localhost http://127.0.0.1:*; connect-src asset: http://asset.localhost ipc: http://ipc.localhost",
+      "devCsp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; media-src 'self' asset: http://asset.localhost blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-src 'self' asset: http://asset.localhost http://127.0.0.1:*; connect-src asset: http://asset.localhost ipc: http://ipc.localhost http://127.0.0.1:1430 ws://127.0.0.1:1430",
       "capabilities": [
         {
           "identifier": "main-window",

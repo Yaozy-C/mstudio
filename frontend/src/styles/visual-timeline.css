@@ -66,13 +66,57 @@
   border-radius: var(--ui-card-radius);
 }
 .studio-shell .preview-transport {
-  gap: 8px;
-  padding-top: 12px;
+  gap: 12px;
+  padding-top: 8px;
   font-size: var(--ui-caption);
 }
 .radix-themes .studio-shell .preview-transport button {
   border-radius: 5px;
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+}
+.studio-shell .preview-transport svg {
+  width: 17px;
+  height: 17px;
+}
+.studio-shell .preview-transport .preview-time {
+  font-size: var(--ui-label);
+}
+.radix-themes .studio-shell .preview-transport .play-button {
+  width: 36px;
+  height: 36px;
+  background: var(--desk-surface);
+  border: 1px solid var(--ui-rule);
+  border-radius: 50%;
+  color: var(--desk-text);
+}
+.studio-shell .preview-transport .play-button svg {
+  width: 19px;
+  height: 19px;
 }
 .radix-themes .studio-shell .preview-transport button:hover:not(:disabled) {
   background: var(--ui-hover);
+}
+
+/* Compact rail: type, mute, visibility and overflow; names live in a popover. */
+.track-name-popover form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 240px;
+}
+.track-name-popover input {
+  min-width: 0;
+  flex: 1;
+}
+.radix-themes .track-heading .icon-button:hover:not(:disabled) {
+  background: var(--ui-hover);
+}
+.radix-themes .track-heading .icon-button[aria-pressed="true"] {
+  background: var(--ui-selected);
+  color: var(--desk-accent);
+}
+.track-heading > [aria-haspopup="menu"] {
+  margin-left: auto;
 }

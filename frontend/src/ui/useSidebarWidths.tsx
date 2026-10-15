@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { snapWidth } from "./snapWidth";
 
 type Side = "media" | "agent";
 const defaults = { media: 240, agent: 420 };
@@ -24,7 +25,12 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
   const [widths, setWidths] = useState(initial);
   const [viewport, setViewport] = useState(window.innerWidth);
   const [dragging, setDragging] = useState<Side | null>(null);
-  const drag = useRef<{ side: Side; x: number; width: number } | null>(null);
+  const drag = useRef<{
+    side: Side;
+    x: number;
+    width: number;
+    snap: number | null;
+  } | null>(null);
   useEffect(() => {
     const resize = () => setViewport(window.innerWidth);
     window.addEventListener("resize", resize);
@@ -75,24 +81,34 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
           e.preventDefault();
           e.currentTarget.focus();
           e.currentTarget.setPointerCapture(e.pointerId);
-          drag.current = { side, x: e.clientX, width: shown[side] };
+          drag.current = { side, x: e.clientX, width: shown[side], snap: null };
           setDragging(side);
         }}
         onPointerMove={(e) => {
           const d = drag.current;
-          if (d?.side === side)
-            change(
-              side,
-              d.width + (e.clientX - d.x) * (side === "media" ? 1 : -1),
-            );
+          if (d?.side === side) {
+            const value =
+              d.width + (e.clientX - d.x) * (side === "media" ? 1 : -1);
+            const stops = [
+              minimum[side],
+              defaults[side],
+              ...(side === "media" ? [320] : [560]),
+              maximum[side],
+            ].filter((stop) => stop <= limit(side));
+            d.snap = snapWidth(value, stops, d.snap);
+            change(side, d.snap ?? value);
+            e.currentTarget.dataset.snapped = String(d.snap !== null);
+          }
         }}
         onPointerUp={(e) => {
+          delete e.currentTarget.dataset.snapped;
           drag.current = null;
           setDragging(null);
           if (e.currentTarget.hasPointerCapture(e.pointerId))
             e.currentTarget.releasePointerCapture(e.pointerId);
         }}
-        onLostPointerCapture={() => {
+        onLostPointerCapture={(e) => {
+          delete e.currentTarget.dataset.snapped;
           drag.current = null;
           setDragging(null);
         }}

@@ -91,6 +91,83 @@
   border-color: var(--ui-rule);
   font-size: var(--ui-label);
 }
+.project-search {
+  position: relative;
+  width: min(280px, 50%);
+  display: flex;
+  align-items: center;
+}
+.project-search > svg {
+  position: absolute;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  color: var(--desk-muted);
+  pointer-events: none;
+}
+.radix-themes .project-search input {
+  width: 100%;
+  padding-inline: 34px;
+  appearance: none;
+}
+.project-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.radix-themes .project-search button {
+  position: absolute;
+  right: 3px;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.project-search button:hover {
+  color: var(--desk-text);
+}
+.project-search-empty {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--desk-muted);
+}
+.project-search-empty > svg {
+  width: 28px;
+  height: 28px;
+}
+.project-search-empty p {
+  font-size: var(--ui-body);
+  color: var(--desk-text);
+}
+.project-search-empty button {
+  background: transparent;
+}
+.radix-themes .project-meta .project-actions-trigger {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  color: var(--desk-muted);
+}
+@media (hover: hover) {
+  .project-actions-trigger {
+    opacity: 0;
+  }
+  .project-card:is(:hover, :focus-within) .project-actions-trigger,
+  .project-actions-trigger[data-state="open"] {
+    opacity: 1;
+  }
+}
+.radix-themes .project-meta .project-actions-trigger:hover {
+  background: var(--ui-hover);
+  color: var(--desk-text);
+}
+.project-actions-menu .rt-DropdownMenuItem[data-accent-color="red"] {
+  color: var(--ui-danger);
+}
 .library-main .project-grid {
   gap: 24px 20px;
 }

@@ -1,4 +1,7 @@
+import { mediaAssetActions } from "./mediaAssetActions";
 import { SuccessToast } from "../ui/SuccessToast";
+import { PrevisLibrary } from "../previs/PrevisLibrary";
+import { useOptionalPrevis } from "../previs/context";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import {
@@ -12,6 +15,7 @@ import {
   FilmStrip,
   MusicNotes,
   ImageSquare,
+  Cube,
 } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { MediaPreview } from "./MediaPreview";
@@ -53,11 +57,17 @@ export function MediaPanel({
   );
   const [removing, setRemoving] = useState<Asset | null>(null);
   const library = useAssetLibrary(project.id, change);
+  const previs = useOptionalPrevis();
+  const modelCategory = scope === "project" && filter === "models";
   const disabled = busy || library.busy;
   const projectAssets = project.assets.filter(isLibraryAsset);
   const assets = scope === "project" ? projectAssets : library.assets;
   const upload = () =>
-    scope === "project" ? onImport() : void library.upload();
+    modelCategory
+      ? previs?.createModel()
+      : scope === "project"
+        ? onImport()
+        : void library.upload();
   const groups = [
     {
       id: "reference",
@@ -84,13 +94,23 @@ export function MediaPanel({
       assets: assets.filter((a) => a.kind === "text" || a.kind === "document"),
     },
     { id: "all", label: t("全部素材"), icon: Images, assets },
+    ...(scope === "project"
+      ? [{ id: "models", label: t("模型素材"), icon: Cube, assets: [] }]
+      : []),
   ];
-  const active = groups.find((g) => g.id === filter)!;
+  const active =
+    groups.find((g) => g.id === filter) ?? groups.find((g) => g.id === "all")!;
   return (
     <aside className="media-panel">
       <header hidden={scope === "effects"}>
         <h3>
-          {t("素材库")} <span>{assets.length}</span>
+          {t("素材库")}{" "}
+          <span>
+            {modelCategory
+              ? (previs?.workspace.files.filter((f) => f.kind === "model")
+                  .length ?? 0)
+              : assets.length}
+          </span>
         </h3>
         <button
           className="icon-button"
@@ -148,23 +168,28 @@ export function MediaPanel({
         />
       ) : (
         <>
-          <button
-            className="import-box"
-            onClick={upload}
-            disabled={disabled}
-            title={
-              disabled
-                ? t("处理中…")
-                : scope === "project"
-                  ? t("上传项目素材")
-                  : t("上传公共素材")
-            }
-            aria-label={
-              scope === "project" ? t("上传项目素材") : t("上传公共素材")
-            }
-          >
-            <UploadSimple size={20} />
-          </button>
+          {!modelCategory && (
+            <div className="media-toolbar">
+              <button
+                className="import-box"
+                onClick={upload}
+                disabled={disabled}
+                title={
+                  disabled
+                    ? t("处理中…")
+                    : scope === "project"
+                      ? t("上传项目素材")
+                      : t("上传公共素材")
+                }
+                aria-label={
+                  scope === "project" ? t("上传项目素材") : t("上传公共素材")
+                }
+              >
+                <UploadSimple size={20} />
+                {t("导入")}
+              </button>
+            </div>
+          )}
           {library.error && !removing && (
             <ErrorNotice
               error={library.error}
@@ -179,62 +204,30 @@ export function MediaPanel({
             message={library.message}
             onDismiss={library.dismissMessage}
           />
-          <div className="media-section-label">
-            {active.label} <span>{active.assets.length}</span>
-          </div>
-          <div className="media-list">
+          {!modelCategory && (
+            <div className="media-section-label">
+              {active.label} <span>{active.assets.length}</span>
+            </div>
+          )}
+          <div
+            className={`media-list${modelCategory ? " media-list-models" : ""}`}
+          >
+            {modelCategory && <PrevisLibrary />}
             {active.assets.map((a) => (
               <ObjectMenu
                 key={a.id}
-                actions={[
-                  { label: t("预览素材"), run: () => setPreview(a.id) },
-                  ...(scope === "project"
-                    ? [
-                        {
-                          label: t("放到画布"),
-                          run: () => onPlace(a),
-                          disabled: a.missing,
-                        },
-                        {
-                          label: t("加入时间线"),
-                          run: () => onAdd(a),
-                          disabled:
-                            a.missing ||
-                            a.kind === "text" ||
-                            a.kind === "document",
-                        },
-                        {
-                          label: t("引用到对话"),
-                          run: () => onReference(a),
-                          disabled: a.missing,
-                        },
-                        {
-                          label: t("添加到公共素材库"),
-                          run: () => void library.promote(a),
-                          disabled:
-                            disabled ||
-                            library.assets.some((g) => g.id === a.id),
-                        },
-                      ]
-                    : [
-                        {
-                          label: t("加入项目素材"),
-                          run: () => void library.use(a),
-                          disabled:
-                            disabled ||
-                            projectAssets.some((p) => p.id === a.id),
-                        },
-                      ]),
-                  {
-                    label:
-                      scope === "project"
-                        ? t("删除项目素材")
-                        : t("从公共素材移除"),
-                    danger: true,
-                    disabled,
-                    run: () => setRemoving(a),
-                  },
-                ]}
+                actions={mediaAssetActions({
+                  a,
+                  scope,
+                  disabled,
+                  library,
+                  projectAssets,
+                  setPreview,
+                  setRemoving,
+                  onPlace,
+                  onAdd,
+                  onReference,
+                })}
               >
                 <MediaTile
                   asset={a}
@@ -245,11 +238,11 @@ export function MediaPanel({
                 />
               </ObjectMenu>
             ))}
-            {!active.assets.length && (
+            {!modelCategory && !active.assets.length && (
               <p className="media-empty">
                 {scope === "global" && library.loading
                   ? t("正在读取公共素材…")
-                  : t("暂无{v0}，可上传素材或切换分类。", { v0: active.label })}
+                  : t("暂无{v0}", { v0: active.label })}
               </p>
             )}
           </div>
@@ -262,7 +255,12 @@ export function MediaPanel({
               >
                 <g.icon />
                 <span>{g.label}</span>
-                <small>{g.assets.length}</small>
+                <small>
+                  {g.id === "models"
+                    ? (previs?.workspace.files.filter((f) => f.kind === "model")
+                        .length ?? 0)
+                    : g.assets.length}
+                </small>
               </button>
             ))}
           </nav>

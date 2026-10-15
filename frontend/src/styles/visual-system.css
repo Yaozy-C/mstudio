@@ -7,6 +7,8 @@
 @import "./visual-timeline.css";
 @import "./visual-conversation.css";
 @import "./visual-dialogs.css";
+@import "./control-states.css";
+@import "./interaction-feedback.css";
 
 :root,
 [data-surface] {
@@ -24,7 +26,16 @@
   --ui-rule: color-mix(in srgb, var(--desk-rule) 75%, transparent);
   --ui-hover: color-mix(in srgb, var(--desk-sidebar) 55%, transparent);
   --ui-selected: color-mix(in srgb, var(--desk-accent) 6%, var(--desk-surface));
-  --ui-focus: color-mix(in srgb, var(--desk-accent) 14%, transparent);
+  --ui-selected-hover: color-mix(
+    in srgb,
+    var(--desk-accent) 10%,
+    var(--desk-surface)
+  );
+  --ui-pressed: color-mix(in srgb, var(--desk-text) 12%, var(--desk-surface));
+  --ui-focus-ring: var(--desk-control-strong);
+  --ui-disabled-opacity: 0.4;
+  --ui-focus: color-mix(in srgb, var(--desk-text) 12%, transparent);
+  --ui-danger: #b4372b;
   --ui-shadow: 0 8px 28px #22221f12, 0 2px 6px #22221f08;
   --ui-page-width: 1160px;
 }

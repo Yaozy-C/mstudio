@@ -39,6 +39,12 @@ Follow the existing Frame/Cut visual language: warm neutral surfaces, clear typo
 
 Use the existing Phosphor icons according to their function. Do not use sparkle/starburst, magic-wand or robot-avatar imagery, including custom SVGs and emoji. Ordinary inline actions should use the shared `ActionButton`; inspector panels should use the shared `DockPanel` structure.
 
+Use `IconButton` for icon-only actions (a required label supplies the accessible name and tooltip), `ActionButton` for inline actions, and `AsyncButton` for pending form submissions. Pass `busy` to prevent repeat submission; reserve pending-label width. Use `aria-pressed` for toggles, `aria-invalid` for validation, and native `disabled` for unavailable actions.
+
+Use Radix for menus, selects and dialogs. Object overflow menus use `ObjectActions`; context menus use `ObjectMenu`, sharing `ObjectAction` including its `danger` and `disabled` semantics. Apply `studio-menu` to other dropdowns. Do not implement local keyboard-navigation or outside-click handlers. Native dialog menus must portal inside the dialog top layer.
+
+Keep control geometry in its component stylesheet and shared feedback in `styles/control-states.css`, using the existing color and motion tokens. Default, hover, pressed, focus-visible, selected/open, disabled, busy and invalid states must remain distinct. Portal content can itself be the `.radix-themes` root. Do not add broad transforms to buttons that represent draggable canvas or timeline objects. Use `/tests/control-states.html` in Vite to inspect both languages, keyboard dismissal, disabled-item skipping and native-dialog menus.
+
 Verify the affected workspace, empty and populated states, focus behavior and readable English/Chinese labels. Browser checks do not validate native dialogs, media playback or real generation services.
 
 ## Licensing and community

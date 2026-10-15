@@ -175,6 +175,9 @@
 .dock-resizer[data-dragging="true"]::after {
   background: var(--desk-accent);
 }
+.dock-resizer[data-snapped="true"]::after {
+  inset-inline: 2px;
+}
 .studio-shell:has(.dock-resizer[data-dragging="true"]),
 .studio-shell:has(.dock-resizer[data-dragging="true"]) * {
   cursor: col-resize !important;

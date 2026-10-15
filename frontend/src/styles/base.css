@@ -30,9 +30,12 @@ button {
   padding: 8px 12px;
   font-size: 12px;
 }
-button:hover {
-  background: transparent;
+button:hover:not(:disabled) {
+  background: var(--ui-hover);
   border-color: var(--desk-rule);
+}
+button:active:not(:disabled) {
+  background: var(--ui-pressed);
 }
 button:disabled {
   opacity: 0.35;

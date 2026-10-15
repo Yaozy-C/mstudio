@@ -1,88 +1,49 @@
 import { t, useLanguage } from "../i18n";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
+import { DropdownMenu } from "@radix-ui/themes";
 import { DotsThree } from "@phosphor-icons/react";
+import { IconButton } from "./IconButton";
 import type { ObjectAction } from "./ObjectMenu";
-// Render in place so the menu also works inside native <dialog> top layers.
+
+/** Share Radix keyboard navigation, dismissal and focus restoration. */
 export function ObjectActions({ actions }: { actions: ObjectAction[] }) {
   useLanguage();
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    root.current
-      ?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
-      ?.focus();
-    const close = (e: PointerEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
-  }, [open]);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
   return (
-    <div
-      className="object-actions"
-      ref={root}
-      onKeyDown={(e) => {
-        if (open && ["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
-          e.preventDefault();
-          e.stopPropagation();
-          const items = Array.from(
-            root.current?.querySelectorAll<HTMLButtonElement>(
-              '[role="menuitem"]:not(:disabled)',
-            ) ?? [],
-          );
-          const current = items.indexOf(
-            document.activeElement as HTMLButtonElement,
-          );
-          const next =
-            e.key === "Home"
-              ? 0
-              : e.key === "End"
-                ? items.length - 1
-                : (current + (e.key === "ArrowDown" ? 1 : -1) + items.length) %
-                  items.length;
-          items[next]?.focus();
-        }
-        if (e.key === "Escape" && open) {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(false);
-          root.current?.querySelector("button")?.focus();
-        }
+    <DropdownMenu.Root
+      onOpenChange={(open) => {
+        if (open) setContainer(trigger.current?.closest("dialog") ?? null);
       }}
     >
-      <button
-        type="button"
+      <DropdownMenu.Trigger>
+        <IconButton ref={trigger} icon={DotsThree} label={t("对象操作")} />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content
+        className="studio-menu object-menu"
+        container={container}
+        align="end"
+        sideOffset={6}
+        collisionPadding={8}
         aria-label={t("对象操作")}
-        title={t("对象操作")}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen(!open)}
       >
-        <DotsThree />
-      </button>
-      {open && (
-        <div
-          className="object-actions-menu"
-          role="menu"
-          aria-label={t("对象操作")}
-        >
-          {actions.map((a) => (
-            <button
-              key={a.label}
-              type="button"
-              role="menuitem"
-              disabled={a.disabled}
-              onClick={() => {
-                setOpen(false);
-                a.run();
-              }}
+        {actions.map((action, index) => (
+          <Fragment key={action.label}>
+            {index > 0 && !!action.danger !== !!actions[index - 1].danger && (
+              <DropdownMenu.Separator />
+            )}
+            <DropdownMenu.Item
+              key={action.label}
+              disabled={action.disabled}
+              color={action.danger ? "red" : undefined}
+              onSelect={action.run}
             >
-              {a.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+              {action.icon && <action.icon size={16} aria-hidden="true" />}
+              {action.label}
+            </DropdownMenu.Item>
+          </Fragment>
+        ))}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   );
 }

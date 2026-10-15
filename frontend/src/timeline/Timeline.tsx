@@ -1,10 +1,9 @@
-import { CaptionTrackHeadings } from "./CaptionTrackHeading";
 import { useTimelineCaptionSelection } from "../creation/captionSelection";
 import { t as translate, useLanguage } from "../i18n";
 import { TransitionSeams } from "./TransitionSeams";
 import { CaptionTrackRows } from "./CaptionTrackRows";
 import { trackRows } from "./trackRows";
-import { TrackHeading } from "./TrackHeading";
+import { TrackHeadings } from "./TrackHeadings";
 import { TimelineToolbar } from "./TimelineToolbar";
 import { memo, useMemo, useRef, useEffect } from "react";
 import { type Project } from "../model";
@@ -16,6 +15,7 @@ import { CLIP_DRAG_TYPE, REFERENCE_DRAG_TYPE, dropOnTimeline } from "./drop";
 import { Playhead } from "./ClockReadout";
 import { useTimelineViewport } from "./useTimelineViewport";
 import { TimelineClip } from "./TimelineClip";
+import { clipLabel } from "./clipLabel";
 type Props = {
   onCaption?: () => void;
   onOpen: (id: string) => void;
@@ -143,27 +143,9 @@ export const Timeline = memo(function Timeline({
       />
       <div className="timeline-body">
         <div className="track-label-viewport" ref={labels}>
-          <div className="track-labels">
-            <div>{translate("轨道 · 上层覆盖下层")}</div>
-            {rows.map((t) => (
-              <TrackHeading
-                key={t.id}
-                track={t}
-                project={project}
-                onChange={onChange}
-                onRemove={() => {
-                  clock.pause();
-                  if (
-                    project.clips.some(
-                      (c) => c.id === selected && c.trackId === t.id,
-                    )
-                  )
-                    onSelect(null);
-                }}
-              />
-            ))}
-            <CaptionTrackHeadings project={project} change={onChange} />
-          </div>
+          <TrackHeadings
+            {...{ rows, project, onChange, clock, selected, onSelect }}
+          />
         </div>
         <div
           className="track-scroll"
@@ -243,6 +225,11 @@ export const Timeline = memo(function Timeline({
                       entry={e}
                       projectId={project.id}
                       asset={assets.get(e.clip.assetId)}
+                      label={clipLabel(
+                        project,
+                        e.clip,
+                        assets.get(e.clip.assetId),
+                      )}
                       zoom={zoom}
                       fps={project.fps}
                       selected={selected === e.clip.id}

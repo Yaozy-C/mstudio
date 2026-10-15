@@ -1,5 +1,5 @@
 import { t, useLanguage } from "../i18n";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Select } from "@radix-ui/themes";
 import "../styles/studio-select.css";
 export type SelectOption = { value: string; label: string; disabled?: boolean };
@@ -20,22 +20,30 @@ export function StudioSelect({
 }) {
   useLanguage();
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
   const selected = options.some((option) => option.value === value);
   return (
     <Select.Root
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(next) => {
+        if (next) setContainer(trigger.current?.closest("dialog") ?? null);
+        setOpen(next);
+      }}
       value={selected ? `option:${value}` : ""}
       onValueChange={(next) => onValueChange(next.slice(7))}
       disabled={disabled}
     >
       <Select.Trigger
+        ref={trigger}
         className="studio-select-trigger"
         aria-label={label}
         placeholder={placeholder}
       />
       <Select.Content
         className="studio-select-menu"
+        container={container}
+        collisionPadding={8}
         position="popper"
         sideOffset={6}
         align="start"

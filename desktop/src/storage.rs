@@ -16,6 +16,7 @@ use std::{
 use tauri::{Manager, State};
 
 pub const FOLDERS: &[&str] = &[
+    "previs",
     "codex-images",
     "assets",
     "previews",

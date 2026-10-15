@@ -82,6 +82,15 @@
   font-size: var(--ui-body);
   line-height: 24px;
 }
+.production-workspace
+  .canvas-world[data-detail="summary"]
+  .shot-card-sections
+  p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+}
 .production-workspace .card-video,
 .production-workspace .canvas-card > img {
   background: var(--desk-sidebar);

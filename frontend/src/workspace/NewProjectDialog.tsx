@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { ArrowUpRight } from "@phosphor-icons/react";
+import { Plus as DialogPlus, X as DialogX } from "@phosphor-icons/react";
+import { useRef, useState } from "react";
+import { Dialog } from "@radix-ui/themes";
 import { t, useLanguage } from "../i18n";
 import { bridge } from "../bridge";
 import { newProject, type Project } from "../model";
@@ -16,6 +17,11 @@ export function NewProjectDialog({
   onCreated: (project: Project) => void;
 }) {
   useLanguage();
+  const opener = useRef(
+    typeof document === "undefined"
+      ? null
+      : (document.activeElement as HTMLElement | null),
+  );
   const [name, setName] = useState("");
   const [preset, setPreset] = useState("1080x1920");
   const [width, setWidth] = useState("1080");
@@ -45,120 +51,126 @@ export function NewProjectDialog({
     }
   }
   return (
-    <div
-      className="modal-backdrop"
-      onClick={() => {
-        if (!saving) onClose();
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open && !saving) onClose();
       }}
     >
-      <form
+      <Dialog.Content
         className="modal small new-project-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="new-project-title"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key === "Escape" && !saving) {
-            e.stopPropagation();
-            onClose();
-          }
+        aria-describedby={undefined}
+        onEscapeKeyDown={(event) => {
+          if (saving) event.preventDefault();
         }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          void create();
+        onPointerDownOutside={(event) => {
+          if (saving) event.preventDefault();
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (opener.current?.isConnected) opener.current.focus();
         }}
       >
-        <h2 id="new-project-title">{t("新建项目")}</h2>
-        <label>
-          {t("项目名称")}
-          <input
-            autoFocus
-            required
-            disabled={saving}
-            placeholder={t("例如：夏日出行 · 商品短片")}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-        <div className="new-project-format">
-          <span>{t("项目画幅")}</span>
-          <StudioSelect
-            label={t("项目画幅")}
-            value={preset}
-            disabled={saving}
-            onValueChange={(value) => {
-              setPreset(value);
-              if (value !== "custom") {
-                const [w, h] = value.split("x");
-                setWidth(w);
-                setHeight(h);
-              }
-            }}
-            options={[
-              {
-                value: "1080x1920",
-                label: `${t("9:16 · 竖屏")} · 1080 × 1920`,
-              },
-              {
-                value: "1920x1080",
-                label: `${t("16:9 · 横屏")} · 1920 × 1080`,
-              },
-              { value: "1080x1080", label: `${t("1:1 · 方形")} · 1080 × 1080` },
-              { value: "custom", label: t("自定义尺寸") },
-            ]}
-          />
-        </div>
-        {preset === "custom" && (
-          <>
-            <div className="new-project-dimensions">
-              <label>
-                {t("宽度（px）")}
-                <input
-                  type="number"
-                  required
-                  min={64}
-                  max={3840}
-                  step={2}
-                  disabled={saving}
-                  value={width}
-                  onChange={(e) => setWidth(e.target.value)}
-                />
-              </label>
-              <label>
-                {t("高度（px）")}
-                <input
-                  type="number"
-                  required
-                  min={64}
-                  max={3840}
-                  step={2}
-                  disabled={saving}
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                />
-              </label>
-            </div>
-            <p className="subtle">{t("宽高须为 64–3840 之间的偶数。")}</p>
-          </>
-        )}
-        <p className="subtle">
-          {t("用于成片预览与导出，并作为 Agent 创作时的画幅参考。")}
-        </p>
-        {error && <ErrorNotice error={error} />}
-        <footer>
-          <button disabled={saving} type="button" onClick={onClose}>
-            {t("取消")}
-          </button>
-          <AsyncButton
-            type="submit"
-            busy={saving}
-            className="primary"
-            disabled={!name.trim() || !valid}
-          >
-            {t("创建项目")} <ArrowUpRight />
-          </AsyncButton>
-        </footer>
-      </form>
-    </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void create();
+          }}
+        >
+          <Dialog.Title>{t("新建项目")}</Dialog.Title>
+          <label>
+            {t("项目名称")}
+            <input
+              autoFocus
+              required
+              disabled={saving}
+              placeholder={t("例如：夏日出行 · 商品短片")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <div className="new-project-format">
+            <span>{t("项目画幅")}</span>
+            <StudioSelect
+              label={t("项目画幅")}
+              value={preset}
+              disabled={saving}
+              onValueChange={(value) => {
+                setPreset(value);
+                if (value !== "custom") {
+                  const [w, h] = value.split("x");
+                  setWidth(w);
+                  setHeight(h);
+                }
+              }}
+              options={[
+                {
+                  value: "1080x1920",
+                  label: `${t("9:16 · 竖屏")} · 1080 × 1920`,
+                },
+                {
+                  value: "1920x1080",
+                  label: `${t("16:9 · 横屏")} · 1920 × 1080`,
+                },
+                {
+                  value: "1080x1080",
+                  label: `${t("1:1 · 方形")} · 1080 × 1080`,
+                },
+                { value: "custom", label: t("自定义尺寸") },
+              ]}
+            />
+          </div>
+          {preset === "custom" && (
+            <>
+              <div className="new-project-dimensions">
+                <label>
+                  {t("宽度（px）")}
+                  <input
+                    type="number"
+                    required
+                    min={64}
+                    max={3840}
+                    step={2}
+                    disabled={saving}
+                    value={width}
+                    onChange={(e) => setWidth(e.target.value)}
+                  />
+                </label>
+                <label>
+                  {t("高度（px）")}
+                  <input
+                    type="number"
+                    required
+                    min={64}
+                    max={3840}
+                    step={2}
+                    disabled={saving}
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                  />
+                </label>
+              </div>
+              <p className="subtle">{t("宽高须为 64–3840 之间的偶数。")}</p>
+            </>
+          )}
+          {error && <ErrorNotice error={error} />}
+          <footer>
+            <button disabled={saving} type="button" onClick={onClose}>
+              <DialogX aria-hidden="true" />
+              {t("取消")}
+            </button>
+            <AsyncButton
+              type="submit"
+              busy={saving}
+              className="primary"
+              disabled={!name.trim() || !valid}
+            >
+              <DialogPlus aria-hidden="true" />
+              {t("创建项目")}
+            </AsyncButton>
+          </footer>
+        </form>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

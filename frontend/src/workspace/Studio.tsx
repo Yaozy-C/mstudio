@@ -1,4 +1,4 @@
-import { ImageReviewProvider } from "./imageReview/ImageReviewProvider";
+import { StudioProviders } from "./StudioProviders";
 import { requestCreativeTask } from "../creative/aiTasks";
 import { effectAgentTask, effectReference } from "./effectAgentTask";
 import { StudioTaskPanel } from "./StudioTaskPanel";
@@ -138,8 +138,9 @@ export function Studio({ initial, onBack }: StudioProps) {
     agent: panels.agent || inspectorOpen || !!creationTab,
   });
   const editNode = project.nodes.find((n) => n.id === editing);
+  const showModels = () => setDialog("models");
   return (
-    <ImageReviewProvider workspace={m} draft={attachments}>
+    <StudioProviders workspace={m} draft={attachments}>
       <div
         hidden={["settings", "models", "agents"].includes(dialog ?? "")}
         style={sidebarWidths.style}
@@ -154,7 +155,7 @@ export function Studio({ initial, onBack }: StudioProps) {
             <StudioTaskPanel
               project={project}
               canvas={canvas}
-              onModels={() => setDialog("models")}
+              onModels={showModels}
             />
           }
           view={activeView}
@@ -166,7 +167,7 @@ export function Studio({ initial, onBack }: StudioProps) {
           m={m}
           onBack={onBack}
           setError={setError}
-          onModels={() => setDialog("models")}
+          onModels={showModels}
           onExport={() => setDialog("export")}
           togglePanel={togglePanel}
           panels={{ ...panels, inspector: inspectorOpen }}
@@ -292,6 +293,6 @@ export function Studio({ initial, onBack }: StudioProps) {
         project={project}
         close={() => setDialog(null)}
       />
-    </ImageReviewProvider>
+    </StudioProviders>
   );
 }

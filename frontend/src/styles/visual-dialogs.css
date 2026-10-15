@@ -126,21 +126,6 @@
   font-size: 20px;
   line-height: 28px;
 }
-.radix-themes :is(.studio-menu, .object-menu) {
-  padding: 4px;
-  border: 1px solid var(--ui-rule);
-  border-radius: var(--ui-card-radius);
-  background: var(--desk-surface);
-  box-shadow: var(--ui-shadow);
-}
-.radix-themes :is(.studio-menu, .object-menu) .rt-DropdownMenuItem,
-.radix-themes .object-menu .rt-ContextMenuItem {
-  min-height: 32px;
-  padding-block: 6px;
-  border-radius: 4px;
-  font-size: var(--ui-label);
-  line-height: 20px;
-}
 .radix-themes .model-form-grid {
   gap: 16px;
   margin-top: 20px;

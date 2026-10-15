@@ -1,3 +1,4 @@
+import { X as DialogX } from "@phosphor-icons/react";
 import { AsyncButton } from "../ui/AsyncState";
 import { useState } from "react";
 import { MagnifyingGlass, SignIn } from "@phosphor-icons/react";
@@ -62,6 +63,7 @@ export function CodexServiceForm({
       {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
       <footer>
         <button type="button" disabled={busy} onClick={cancel}>
+          <DialogX aria-hidden="true" />
           {t("取消")}
         </button>
         {status === "missing" && (

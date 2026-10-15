@@ -42,7 +42,7 @@ export function InlineText({
     };
   }, []);
   return (
-    <div className="creative-inline-field">
+    <div className="creative-inline-field" data-empty={!text.trim()}>
       <label htmlFor={id}>
         <span>{label}</span>
         <PencilSimple aria-hidden="true" />

@@ -77,26 +77,15 @@
   animation: content-enter var(--motion-page) var(--motion-ease);
 }
 .modal:not(.rt-BaseDialogContent),
-.model-toast,
-.object-actions-menu {
+.model-toast {
   animation: state-enter var(--motion-enter) var(--motion-ease);
 }
 .rt-BaseDialogContent[data-state="open"],
-:is(
-  .object-menu,
-  .studio-menu,
-  .studio-select-menu,
-  .conversation-model-menu
-)[data-state="open"] {
+.conversation-model-menu[data-state="open"] {
   animation: state-enter var(--motion-enter) var(--motion-ease);
 }
 .rt-BaseDialogContent[data-state="closed"],
-:is(
-  .object-menu,
-  .studio-menu,
-  .studio-select-menu,
-  .conversation-model-menu
-)[data-state="closed"] {
+.conversation-model-menu[data-state="closed"] {
   animation: state-exit var(--motion-exit) var(--motion-ease-exit) forwards;
   pointer-events: none;
 }

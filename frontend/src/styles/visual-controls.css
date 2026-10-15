@@ -21,7 +21,7 @@
   opacity: 0.8;
 }
 .radix-themes :is(input, textarea, select)[aria-invalid="true"] {
-  border-color: var(--desk-accent);
+  border-color: var(--ui-danger);
 }
 .radix-themes
   :is(.modal, .settings-page)
@@ -41,7 +41,7 @@
   background: var(--desk-surface);
 }
 .radix-themes :is(.modal, .settings-page) :is(input, textarea, select):focus {
-  border-color: var(--desk-accent);
+  border-color: var(--desk-control-strong);
   box-shadow: 0 0 0 2px var(--ui-focus);
 }
 .radix-themes :is(.modal, .settings-page) textarea {
@@ -53,43 +53,6 @@
 .radix-themes :is(.modal, .settings-page) label {
   font-size: var(--ui-label);
   line-height: 20px;
-}
-.radix-themes .studio-select-trigger {
-  height: 34px;
-  padding: 0 10px;
-  border-radius: var(--ui-radius);
-  border-color: var(--ui-rule);
-  font-size: var(--ui-label);
-  line-height: 20px;
-}
-.radix-themes .studio-select-menu {
-  padding: 4px;
-  border-color: var(--ui-rule);
-  border-radius: var(--ui-card-radius);
-  background: var(--desk-surface);
-  box-shadow: var(--ui-shadow);
-}
-.radix-themes .studio-select-menu .rt-SelectItem {
-  min-height: 32px;
-  padding-block: 6px;
-  font-size: var(--ui-label);
-  border-radius: 4px;
-}
-.radix-themes .action-button {
-  min-height: 32px;
-  padding: 5px 8px;
-  gap: 6px;
-  font-size: var(--ui-label);
-  line-height: 20px;
-  border-radius: var(--ui-radius);
-}
-.radix-themes .action-button > svg {
-  width: 17px;
-  height: 17px;
-}
-.radix-themes .action-button:hover:not(:disabled) {
-  background: var(--ui-hover);
-  color: var(--desk-text);
 }
 .radix-themes :is(.model-badge, .hub-tags span) {
   padding: 2px 6px;
@@ -106,4 +69,22 @@
 .radix-themes :is(.hub-scroll, .agent-messages, .media-list, .task-panel-list) {
   scrollbar-width: thin;
   scrollbar-color: var(--desk-rule) transparent;
+}
+
+.radix-themes button.primary.danger {
+  color: white;
+  background: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
+.radix-themes button.primary.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ui-danger) 88%, black);
+}
+.radix-themes
+  :is(
+    input,
+    textarea,
+    select,
+    .studio-select-trigger
+  )[aria-invalid="true"]:focus {
+  border-color: var(--ui-danger);
 }

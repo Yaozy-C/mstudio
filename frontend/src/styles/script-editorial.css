@@ -67,7 +67,7 @@
 }
 .radix-themes .script-workspace .script-title:focus,
 .radix-themes .script-workspace .script-paragraph > header input:focus {
-  border-color: var(--desk-accent);
+  border-color: var(--desk-control-strong);
 }
 .script-workspace .script-timing {
   margin: 12px 0 24px;
@@ -106,7 +106,7 @@
   border-color: var(--desk-control);
 }
 .radix-themes .script-workspace .script-duration input:focus {
-  border-color: var(--desk-accent);
+  border-color: var(--desk-control-strong);
 }
 .script-workspace .script-timing > div > span {
   font-family: var(--script-mono);
@@ -229,8 +229,30 @@
   background: var(--desk-bg);
 }
 .radix-themes .script-workspace .creative-inline-input > textarea:focus {
-  border-color: var(--desk-accent);
+  border-color: var(--desk-control-strong);
   background: var(--desk-surface);
+}
+.script-workspace .creative-inline-field[data-empty="true"]:not(:focus-within) {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+  margin-bottom: 12px;
+}
+.script-workspace
+  .creative-inline-field[data-empty="true"]:not(:focus-within)
+  label {
+  margin: 0;
+}
+.script-workspace
+  .creative-inline-field[data-empty="true"]:not(:focus-within)
+  .creative-inline-input {
+  margin-block: 0;
+}
+.script-workspace
+  .creative-inline-field[data-empty="true"]:not(:focus-within)
+  .creative-inline-hint {
+  display: none;
 }
 .script-workspace .creative-inline-hint {
   position: absolute;
@@ -268,28 +290,4 @@
   margin: 14px 0 0 var(--script-gutter);
   font-size: var(--script-caption);
   line-height: 20px;
-}
-.radix-themes .script-workspace .script-add {
-  min-height: 36px;
-  padding: 8px 12px;
-  border-color: var(--script-rule);
-  border-radius: 5px;
-  background: transparent;
-  color: var(--desk-muted);
-  font-size: 13px;
-}
-@container screenplay (max-width: 640px) {
-  .script-paper {
-    --script-inset: 24px;
-    --script-gutter: 0px;
-  }
-  .script-workspace .creative-next-step {
-    flex-wrap: wrap;
-  }
-  .script-workspace .script-paragraph > header {
-    flex-wrap: wrap;
-  }
-  .script-workspace .script-paragraph > header input {
-    flex-basis: 60%;
-  }
 }

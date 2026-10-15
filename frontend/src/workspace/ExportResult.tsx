@@ -1,3 +1,7 @@
+import {
+  Check as DialogCheck,
+  FloppyDisk as DialogFloppyDisk,
+} from "@phosphor-icons/react";
 import { CheckCircle, FolderOpen } from "@phosphor-icons/react";
 import { AsyncButton } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
@@ -62,6 +66,7 @@ export function ExportResult({
           busyLabel={t("保存中…")}
           onClick={onSave}
         >
+          <DialogFloppyDisk aria-hidden="true" />
           {saved ? t("另存一份…") : t("保存 MP4…")}
         </AsyncButton>
         {saved && (
@@ -70,6 +75,7 @@ export function ExportResult({
             disabled={saving || revealing}
             onClick={onClose}
           >
+            <DialogCheck aria-hidden="true" />
             {t("完成")}
           </button>
         )}

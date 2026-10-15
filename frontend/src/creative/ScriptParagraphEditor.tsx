@@ -69,14 +69,10 @@ export function ScriptParagraphEditor({
       </div>
       {(
         [
-          ["action", t("画面与动作"), t("观众看见什么事件与变化？")],
-          [
-            "onScreenText",
-            t("画面文字"),
-            t("画面上出现的准确文字；没有则留空"),
-          ],
-          ["dialogue", t("台词 / 旁白"), t("人物说什么，或旁白如何讲述？")],
-          ["sound", t("声音与节奏"), t("环境声、音乐或停顿…")],
+          ["action", t("画面与动作"), t("描述画面与动作")],
+          ["onScreenText", t("画面文字"), t("添加画面文字")],
+          ["dialogue", t("台词 / 旁白"), t("添加台词或旁白")],
+          ["sound", t("声音与节奏"), t("添加声音与节奏")],
         ] as const
       ).map(([key, label, placeholder]) => (
         <InlineText

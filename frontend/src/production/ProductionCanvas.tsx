@@ -126,6 +126,7 @@ export function ProductionCanvas({
         <div
           className="canvas-world"
           data-scale={view.scale}
+          data-detail={view.scale < 0.75 ? "summary" : "full"}
           style={{
             transform: `translate(${view.x}px,${view.y}px) scale(${view.scale})`,
           }}

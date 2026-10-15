@@ -24,6 +24,7 @@ mod preview_process;
 mod preview_protocol;
 mod preview_session;
 mod preview_worker;
+mod previs;
 mod production_queue;
 mod project_service;
 mod project_storage;
@@ -66,6 +67,9 @@ fn main() {
             let store = database::Store::open(app.path().app_data_dir()?)?;
             storage::allow(app.handle(), &store.media_root())?;
             app.manage(store);
+            app.manage(previs::RuntimeState::default());
+            app.manage(previs::Chats::default());
+            app.manage(previs::Renders::default());
             assistant::skills::initialize(app.handle())?;
             production_queue::start(app.handle().clone());
             job_worker::start(app.handle().clone());
@@ -80,6 +84,18 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             finish_exit,
+            previs::files::previs_workspace,
+            previs::files::save_previs_file,
+            previs::files::delete_previs_model,
+            previs::chat::previs_chat,
+            previs::chat::cancel_previs_chat,
+            previs::runtime::open_previs_runtime,
+            previs::runtime::close_previs_runtime,
+            previs::render::begin_previs_render,
+            previs::render::append_previs_frame,
+            previs::render::finish_previs_render,
+            previs::render::cancel_previs_render,
+            previs::sharing::share_previs_video,
             updates::check_app_update,
             updates::open_release_page,
             waveform::audio_waveform,

@@ -1,0 +1,154 @@
+.radix-themes .previs-dialog button,
+.radix-themes .previs-library button {
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-radius);
+  background: var(--desk-surface);
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  line-height: 20px;
+  gap: 6px;
+  white-space: nowrap;
+}
+.radix-themes :is(.previs-dialog, .previs-library) button:hover:not(:disabled),
+.previs-code-import:hover:not([aria-disabled="true"]) {
+  background: var(--ui-hover);
+  border-color: var(--desk-control);
+}
+.radix-themes :is(.previs-dialog, .previs-library) button:disabled,
+.previs-code-import[aria-disabled="true"] {
+  opacity: 0.35;
+  cursor: default;
+}
+.radix-themes .previs-dialog button.primary {
+  background: var(--desk-text);
+  color: var(--desk-surface);
+  border-color: var(--desk-text);
+  font-weight: 500;
+}
+.radix-themes .previs-dialog button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--desk-text) 88%, var(--desk-surface));
+}
+.radix-themes .previs-dialog .previs-close,
+.radix-themes .previs-transport button {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  flex-shrink: 0;
+}
+.radix-themes .previs-dialog .previs-close {
+  border-color: transparent;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.previs-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  gap: 16px;
+  border-left: 1px solid var(--ui-rule);
+  padding: 20px 24px 24px;
+}
+.previs-chat-heading h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+.previs-chat-heading p,
+.previs-chat-empty {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  color: var(--desk-muted);
+  margin: 8px 0 0;
+}
+.previs-messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+.previs-message {
+  padding: 0;
+  margin-bottom: 24px;
+  font-size: var(--ui-body);
+}
+.previs-message.user {
+  padding: 10px 12px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 8px 8px 3px 8px;
+  background: color-mix(in srgb, var(--desk-surface) 55%, var(--desk-sidebar));
+}
+.previs-message small {
+  font-size: var(--ui-caption);
+  color: var(--desk-muted);
+}
+.previs-message p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 24px;
+  margin: 8px 0 0;
+}
+.previs-composer {
+  flex-shrink: 0;
+  padding: 10px;
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--desk-surface);
+}
+.previs-composer:focus-within {
+  border-color: var(--desk-accent);
+}
+.radix-themes .previs-composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 88px;
+  margin: 0;
+  padding: 2px 4px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--desk-text);
+  box-shadow: none;
+  font-size: var(--ui-label);
+  line-height: 22px;
+}
+.previs-composer > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.radix-themes .previs-composer .studio-select-trigger {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+}
+.previs-send {
+  flex-shrink: 0;
+}
+.previs-progress,
+.previs-error {
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  margin: 12px 0 0;
+  color: var(--desk-muted);
+}
+.previs-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--desk-accent);
+  max-height: 120px;
+  overflow: auto;
+}
+.previs-stale {
+  color: var(--desk-accent);
+  font-size: var(--ui-caption);
+}

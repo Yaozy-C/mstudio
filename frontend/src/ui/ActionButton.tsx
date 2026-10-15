@@ -31,7 +31,18 @@ export function ActionButton({
       ) : (
         <Icon size={20} weight="regular" aria-hidden="true" />
       )}
-      <span>{busy && busyLabel ? busyLabel : children}</span>
+      {busyLabel ? (
+        <span className="action-button-labels">
+          <span aria-hidden={busy} data-hidden={busy}>
+            {children}
+          </span>
+          <span aria-hidden={!busy} data-hidden={!busy}>
+            {busyLabel}
+          </span>
+        </span>
+      ) : (
+        <span>{children}</span>
+      )}
     </button>
   );
 }

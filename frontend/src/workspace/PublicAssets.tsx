@@ -1,3 +1,4 @@
+import { Eye as MenuEye, Trash as MenuTrash } from "@phosphor-icons/react";
 import { SuccessToast } from "../ui/SuccessToast";
 import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { useState } from "react";
@@ -105,8 +106,13 @@ export function PublicAssets() {
           <ObjectMenu
             key={asset.id}
             actions={[
-              { label: t("预览素材"), run: () => setPreview(asset.id) },
               {
+                icon: MenuEye,
+                label: t("预览素材"),
+                run: () => setPreview(asset.id),
+              },
+              {
+                icon: MenuTrash,
                 label: t("从公共素材移除"),
                 run: () => setRemoving(asset),
                 disabled: library.busy,

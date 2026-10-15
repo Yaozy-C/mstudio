@@ -279,3 +279,11 @@ Official help, training and implementation links below were recorded as checked 
 ## Image and storyboard case review (2026-10-09)
 
 See [inspected cases and rule implications](image-storyboard-cases.md) for the Higgsfield, Krea and Disney examples behind `image_case_rules_v1`. Research stays outside runtime Skills; case prompts are not universal templates.
+
+### Three.js shot previs
+
+Shot cards provide a “3D previs” entry. Project media has a separate “3D models” category for named JavaScript model factories. The shot/model editor uses its own `previs_chat` command and model selector; it does not change the main Agent selection or history. Models may be created in plain Chat or imported as `.js`/`.mjs` files. Runtime and export do not require a language model once code exists. Runtime errors are displayed for manual correction; they do not trigger a model loop.
+
+The model API is `export function createModel({THREE})` returning an Object3D. Publish movable parts through `root.userData.parts` and describe units, dimensions, and parts in the model's usage description. The shot API is `export async function createShot({THREE,models,seed})`, returning `{scene,camera,update(t),dispose?}`. `update` accepts absolute seconds and must support backward seeking. Runtime owns the renderer, aspect ratio, transport, and clean frame capture. Use declared shared models for reusable geometry; use a fixed seed for random scene details. No CDN or npm imports are needed inside these modules.
+
+Three.js 0.180.0 is pinned in the frontend lockfile. Run `bun install --frozen-lockfile` in `frontend` before compiling the desktop: Rust embeds the package’s minified module/core builds (including their MIT license notices), with no CDN dependency.

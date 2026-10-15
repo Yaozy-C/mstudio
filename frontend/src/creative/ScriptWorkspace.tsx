@@ -12,6 +12,7 @@ import { createScript, newParagraph } from "./script";
 import { shotsOf } from "./document";
 import "../styles/script.css";
 import "../styles/script-editorial.css";
+import "../styles/script-layout.css";
 
 export function ScriptWorkspace({
   project,
