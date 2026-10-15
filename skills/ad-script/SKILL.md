@@ -1,46 +1,34 @@
 ---
 name: ad-script
-description: Write a complete audiovisual advertising script from a concept, preserving its creative premise, product meaning and voice through exact words, action, sound and timing. Use for first drafts and local revisions; leave campaign selection and shot design to their owners.
+description: Develop a selected concept or concrete user premise into a complete audiovisual advertising script, with exact words, action, sound and segment timing. Leave direction selection, shot design and media execution to their specialists.
 ---
 
 # Audiovisual screenwriting
 
-Write the particular piece the concept promises. Preserve its invention as well as its commercial meaning. A screenplay can demonstrate, entertain, explain or make a familiar thing feel different; it need not pass through the same feature explanation in every form.
+Write the complete piece promised by the chosen concept. Own what happens and what is said, shown as text and heard, including the time those passages need.
 
-## Take up the creative material
+## Take up the premise
 
-Carry the audience, market, finished-film language, duration and explicit requirements. Read the actual premise, including its decisive words, actions and product relationship. Distinguish user choices from earlier suggestions. Write directly from a selected concept or a sufficiently concrete user premise; a separate concept handoff is not mandatory in that case. When the task starts with product facts and still needs direction development or comparison, route that work to creative planning through the coordinator, then take up the resulting premise. A combined request does not expand the screenwriter's role. Develop a chosen direction rather than restarting concept selection. Changes to an explicitly chosen campaign premise belong with creative planning.
+Carry the audience, market, finished-film language, duration and explicit requirements. Work from the selected concept or a sufficiently concrete user premise. Preserve its central buying reason and expressive connection. Concept examples illustrate the direction; develop their execution unless the user explicitly locked their wording or events.
 
-Use original product material and supplied research; Mstudio has no network search capability. Keep product facts, fiction and real testimony distinct. A character, metaphor or stylised situation can be invented; a performance guarantee, measurement or authentic customer history cannot. Preserve supported qualitative claims without automatically adding numbers or exceptional conditions. Keep research qualifications outside the film unless the audience needs them to understand the offer accurately.
+If the task still needs campaign direction development or comparison, return that need to the coordinator for creative planning. Do not silently replace a selected direction. Within it, invent the actions, dialogue and structure needed to make the script work; the writer does not need permission for ordinary writing decisions.
 
-For TikTok work, read [craft](references/craft.md). It develops different ways words, performance and actions can carry the concept; none is a compulsory sequence.
+Use original product material and accessible research. Keep supported facts, fictional events and genuine testimony distinct. An unmeasured qualitative capability can be expressed qualitatively. Creative framing does not supply evidence for exact outcomes, product specifications or a real customer's history.
 
-## Compose the essential passage
+## Compose the audiovisual passage
 
-Write the actual event, exchange, demonstration, observation or sensory process that makes this idea worth experiencing. It may start with an image, line, behaviour or sound rather than a chronological setup. Preserve the chosen concept's unexpected connection while making it intelligible. Compose from the most expressive material and arrange it for the viewer afterward. The product's operating sequence is not automatically the scene's sequence; let the idea supply the action.
+Start with the material that carries the idea: an event, exchange, image, observation, process or sound. Develop it into the audience's experience before arranging timed rows. Let the chosen premise supply the action rather than automatically showing the product's operating sequence.
 
-Develop the premise's own logic. Give a comic premise its meaningful behaviour or wording, an explanation its useful discovery, a process its consequential changes, and a pattern its variation. Decide what the viewer recognises, learns, anticipates or enjoys as it unfolds. “Relatable,” “strong hook” and “satisfying” describe desired reactions, not the content that produces them.
+Write concrete changes, exact words and meaningful responses. Give a speaker an intention and a relationship to the listener; let vocabulary and timing express them. For nonverbal work, write the perceptible sequence itself. Words and pictures can complete or reinterpret each other rather than repeating the same feature. A sound or pause belongs in the script when it changes meaning or rhythm.
 
-Carry the central buying reason through the expression, including a category promise named in the brief. Do not replace it with a supporting feature simply because that feature supplies easier action. A joke may depend on a property; an action may reveal how something works; a line can reinterpret what the viewer sees. When the picture or premise already communicates a fact, use the words to add something rather than reciting the mechanism again. When explanation is needed, make that explanation part of the person's thought or the piece's form. Do not insert a standard sales paragraph between an inventive opening and ending.
+Keep the advertised value active in the chosen expression. An end card can identify or clarify the offer; the passage itself should carry the relevant thought. Preserve the contribution of supporting props without attributing their properties to the product.
 
-Identify the offer intelligibly within the available duration. A claim on an end card can clarify an idea already expressed, but cannot rescue an unrelated story. Product relevance does not mean all scenes must be demonstrations. Keep a prop's appeal, an accessory's contribution and the product's benefit distinct where that affects the claim.
+For techniques that help develop an existing idea, use [craft](references/craft.md). Choose only what serves this premise. No particular hook, conflict, reversal, mechanism explanation or CTA is mandatory.
 
-## Compose the voice and picture together
+## Shape and deliver the script
 
-Write from a speaker's intention and relationship to the listener: what are they trying to say or do in this moment? A voice can be conversational or deliberately theatrical. Let its vocabulary, phrasing, timing and priorities embody the premise. Natural speech is not a list of shortened features, and personal style need not be confined to explaining a function.
+Arrange the content to sustain its thought and give the audience time to understand it. Estimate paragraph durations from actual speech, visible action and useful overlaps. Distinguish the user's locked runtime from provisional allocations. Model generation lengths do not determine screenplay beats.
 
-Let words and visible actions interact: a line can prepare an expectation, change the reading of a gesture, or mean two things in context. An image may complete a sentence's thought without the speaker spelling it out. Choose language for this particular idea rather than attaching topical slang to generic copy.
+Deliver the requested script with paragraph timing, visible action, exact dialogue or narration, on-screen text and meaningful sound. A content-level reveal or essential ordering can belong in the script; the director decides the shots, camera and staging that realize it. Physical performance detail and exact cut points remain director or editor decisions unless the user already specified them.
 
-For dialogue, write people pursuing intentions within the scene; interruptions, disagreement or shared understanding should develop its substance. A second speaker is optional. For nonverbal work, compose a clear sequence of physical and sensory events instead of prescribing atmosphere alone.
-
-Write essential sounds and pauses where they create meaning or rhythm. Specify the event that produces a meaningful sound; leave microphones and mixing to production. Audio research can inform wording and sound relationships, but a transcript alone does not establish delivery or tone.
-
-## Shape the duration and deliver
-
-Order the material to sustain the intended experience and land its thought. Enter where the viewer has something to notice; leave room for recognition, an action to complete or a line to land. A short ad can be a single developed idea rather than a miniature life story. No fixed opening/problem/demo/solution/CTA slots are required.
-
-Allocate time from actual speech, actions and useful overlaps. Respect a hard duration by selecting material and writing economically, not silently extending it or assigning crowded actions an arbitrary tiny slot. Generation-model clip lengths do not determine beats.
-
-Deliver the complete requested script with timing, visible action, exact dialogue or narration, screen text and meaningful sound. Use a table or paragraphs after composing the substance. Explain only consequential assumptions outside the script. Do not append scores, self-critique or unsolicited revised versions to a requested first draft.
-
-For local revisions, preserve working wording, IDs, shot associations and unrelated content. When persistence is requested, use [saving and handoff](references/mstudio.md) and report only authoritative results. Hand decisive wording, behaviour and sound to direction. This Skill does not create shots, generate media or edit timelines.
+Carry consequential assumptions outside the film text. A requested first draft is a complete draft, without an appended score or unsolicited revision round. For a local revision, preserve unaffected passages and existing associations. For Mstudio saving and handoff, use [integration](references/mstudio.md); the available tools and schema govern the write. This Skill authors screenplay content, not shots, model prompts, generated media or timeline edits.

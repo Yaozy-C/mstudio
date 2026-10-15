@@ -4,21 +4,21 @@ Use for source selection, timing and pacing feedback. Follow the selected story 
 
 ## Time domains and generation groups
 
-Keep three clocks separate in the existing shot plan:
+Interpret the handed-off timing and edit actual sources using three distinct clocks:
 
 - Action/scene time: when subjects move, make contact and change state; in 3D this can remain continuous across cameras.
 - Generation/source time: the clip requested from the model and, after generation, actual source timestamps. The selected model's minimum generation duration applies here. Mstudio shot records may package internal editorial shots; shot.duration is that group's generation span.
 - Film time: where retained material appears and how long the audience sees it. A short editorial shot can use only part of a longer generated clip. Generation totals need not equal the final runtime.
 
-Read the planned viewing sequence and generation groups; select usable actual source ranges. Keep intended internal cuts explicit; do not smooth them into a continuous camera move to fill a group. If internal cuts or multiple events are unreliable, generate separate supported clips and select shorter ranges. Never ask an unsupported sub-minimum generation duration or stretch a brief action merely to occupy the model's minimum. Model grouping is a production decision, not a story formula.
+Read the planned viewing sequence and any generation groups, then select usable actual source ranges. Preserve the intended event order and significant cut relationships. If the available footage cannot supply a required event or view, return a concrete source request to production through coordination. Model grouping and supported generation duration are production decisions; they do not oblige the editor to fill the final film with every source frame.
 
 For example, a minimum-length source can contribute 0.8 seconds of a completed placement; the remaining footage is not owed screen time. Conversely a multi-shot source is usable as one group only if its internal views and actions actually succeed. Examples illustrate the distinction, not required durations or cut counts.
 
 ## Design information before allocating time
 
-For high-density short-form requests, identify the different things the viewer needs to understand and the visible evidence for each. Retain purposeful emotion, setup and payoff; do not force a new selling point into every shot. In the existing plan, specify the information/event, decisive visible moment, omittable process, and intended film interval. Then choose framing and allocate reading time. Do not divide runtime into equal slots first.
+For high-density short-form requests, identify the different things the viewer needs to understand and the visible evidence for each. Retain purposeful emotion, setup and payoff; do not force a new selling point into every shot. In the available footage, locate the event, decisive visible moment and omittable process, then select a source range and allocate reading time. Use existing views; a missing camera view requires a direction/production handoff. Do not divide runtime into equal slots first.
 
-Repeatedly putting different objects into the same container may communicate only one idea. Add a new view or event when it reveals a distinct relationship such as arrangement, access, loaded form or use context supported by the actual product. More cuts, objects, labels or unrelated features are not automatically more content. When the user requests more content in a locked duration, restructure and compress selection rather than silently shortening the deliverable or extending the film.
+Repeated coverage of the same event may communicate only one idea. Select an additional existing view when it supplies a meaningful part of the chosen story. More cuts, labels or unrelated features are not automatically more content. When the user requests more content in a locked duration, restructure and compress selection rather than silently shortening the deliverable or extending the film.
 
 ## Select action phases and shape rhythm
 
@@ -26,7 +26,7 @@ Physical causality must hold in the underlying action; not every phase must appe
 
 For each retained event choose the useful entry, decisive change and exit. A placement can retain alignment, contact and the settled result while omitting most transport. If passage through an opening is the evidence, keep that passage visible. Frame count is not information count; additional viewpoints must justify their reading cost. Brief shots and longer recognition holds should follow content, not a universal duration or fixed cut count.
 
-Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Generate useful action and editing handles, then select source ranges. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
+Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Use available action and editing handles; request missing material from production. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
 
 ## Sound in the rough cut
 
@@ -34,7 +34,7 @@ Use necessary temporary sound and music in the first authorized rough cut. Let m
 
 ## Pacing rules
 
-For uncertain pacing, compare two materially different rough cuts of the core section using existing footage and the same content/duration constraints. A clear small fix can be made directly. Comparison does not authorize new generation or concept changes.
+When comparing pacing alternatives would resolve a concrete choice, rough cuts from the same available footage can help. This is optional, not a required second edit or approval stage. Make a clear local fix directly. Comparison does not authorize new generation or concept changes.
 
 Repair the concrete pacing cause: missing contact needs source repair, sync problems need alignment, redundant holds need trimming and overload needs information restructuring. Do not create an observation log or audience-test claim.
 
@@ -44,6 +44,8 @@ Record whether time is a maximum, a user-locked total or an assistant estimate. 
 
 Locate dragging before changing time: late start, slow action, repeated information, empty tail or insufficient recognition time require different fixes. Do not shrink every shot proportionally by default.
 
-For an explicit whole-film multiplier r, apply it and set duration to original/r, synchronize audio and preserve pitch when required. Keep subtitle and effect timing synchronized. An absolute speed differs from multiplying the current speed again. Do not turn a one-time multiplier into a permanent default; a simultaneous unchanged-total requirement needs conflict resolution.
+For an explicit whole-film multiplier r, apply it and set duration to original/r, synchronize audio and preserve pitch when required. Distinguish setting an absolute speed from multiplying the existing speed again. A one-time speed request does not establish a permanent preference; a simultaneous unchanged-total requirement needs conflict resolution.
+
+For Mstudio timeline edits, apply the requested speed semantics to all affected tracks. Adjust timeline starts and playback speeds together, scale caption start/end and film-time fade positions, and retain source trimIn/trimOut when the source selection is unchanged. Use the actual supported field names and ranges; do not silently clamp an unsupported speed. Local edits preserve unrelated tracks and locked content. Avoid changing only video speed while leaving its audio or later clips at their old positions.
 
 Retained events, film intervals, source ranges and a user-locked total must agree. Stills do not establish playback speed or sound. Do not add mandatory playback or evidence registration to a timing edit.

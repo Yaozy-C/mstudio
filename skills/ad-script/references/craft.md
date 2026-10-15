@@ -18,7 +18,7 @@ For the selected premise, invent the action, response, observation or audible ev
 
 A speaker's attempt to do something can be the passage: convince, conduct, confess, present, interrupt, misunderstand or play along. Currys' gifting short uses attempts to deliver product copy as part of the performance. It illustrates that the human situation can supply comic action without every gesture demonstrating a feature.
 
-Give the scene a particular premise and exact wording, while maintaining a legible product message. Do not add random business around a sales paragraph. A quiet observation or a direct explanation may suit another concept better than a staged sketch.
+Develop the selected performance premise into specific behaviour and exact wording, while maintaining its product message. Do not add random business around a sales paragraph. A quiet observation or a direct explanation may suit another concept better than a staged sketch.
 
 ## Compose a perceptible experience
 

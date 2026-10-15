@@ -6,7 +6,7 @@ Read this only for screenwriting tasks in Mstudio. Tools and permissions are gov
 
 Read the relevant original product images, facts, user requirements, existing scripts and references. For a full rewrite, understand the complete intent; for a local change, read only the relevant passages and the necessary context. The handoff must carry the finished-film language, market, character/text/voice-over constraints and hard duration at all times.
 
-Mstudio has no network search capability. Analyse only material accessible within the project; for video, images or audio, report only the evidence the actual tools can read. When material is insufficient, write a provisional draft from known facts, mark the creative assumptions, do not wait for an external Agent to go online, and do not invent market validation.
+Mstudio has no network search capability. Analyse only material accessible within the project; for video, images or audio, report only the evidence the actual tools can read. If the premise is established and only nonessential details are missing, write from known facts and mark consequential assumptions. If direction selection is still needed, return that specific need for creative planning. Do not invent research, wait for unavailable network tools, or treat missing evidence as a new creative mandate.
 
 ## Saving
 
@@ -14,7 +14,7 @@ Chat drafts stay in the chat. When the user asks for a save, use the currently a
 
 - id: keep the corresponding segment ID and the existing shot associations.
 - title: a short event/segment name.
-- action: the events actually visible, plus the viewpoint/revelation/transition that decides what makes it worth watching; do not put research analysis or model parameters here.
+- action: the visible story events and any essential revelation or event order; leave camera viewpoint, shot transitions and staging to direction. Do not put research analysis or model parameters here.
 - onScreenText: the exact on-screen text, empty if there is none.
 - dialogue: the exact dialogue/voice-over, empty if there is no spoken part; do not use "subtitle: ..." in place of the on-screen text field.
 - sound: action sounds, ambience, music/pauses and the landing point that do work.

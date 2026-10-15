@@ -1,49 +1,29 @@
-# Action, cutting and sound rhythm
+# Shot timing and planned rhythm
 
-Use for shot timing, production handoff or feedback such as soft, dragging or flat. Choose the experience the film needs; do not turn every film into fast cutting. [Shot grammar](cinematography.md) owns camera and spatial relationships; [animation principles](animation-principles.md) owns poses, effort and inertia.
+Use this reference to design the timing and relationships of shots from the selected screenplay. Deliver the intended viewing sequence and performance timing. Editing selects actual source ranges and executes the final cuts, sound alignment and speed changes.
 
-## Time domains and generation groups
+## Allocate time from the event
 
-Keep three clocks separate in the existing shot plan:
+Determine what the audience must notice, understand or feel in each passage. Retain the selected story's important events, emotional movement and recognition time. Then assign provisional film intervals to the shots that express them. A pause, an echo or a sustained view can be purposeful; neither fast cutting nor a new selling point in every shot is a general requirement.
 
-- Action/scene time: when subjects move, make contact and change state; in 3D this can remain continuous across cameras.
-- Generation/source time: the clip requested from the model and, after generation, actual source timestamps. The selected model's minimum generation duration applies here. Mstudio shot records may package internal editorial shots; shot.duration is that group's generation span.
-- Film time: where retained material appears and how long the audience sees it. A short editorial shot can use only part of a longer generated clip. Generation totals need not equal the final runtime.
+For a dense passage, distinguish new information from repeated coverage of the same event. Omit redundant preparation while preserving essential contact, state changes and results. When changing a script event, dialogue or the meaning of a reveal would be necessary, return that content conflict to the writer rather than silently making a new story.
 
-Plan the viewing sequence first, then group compatible events according to the selected model's actual durations and multi-shot capabilities. Keep intended internal cuts explicit; do not smooth them into a continuous camera move to fill a group. If internal cuts or multiple events are unreliable, generate separate supported clips and select shorter ranges. Never ask an unsupported sub-minimum generation duration or stretch a brief action merely to occupy the model's minimum. Model grouping is a production decision, not a story formula.
+## Choose the visible phases
 
-For example, a minimum-length source can contribute 0.8 seconds of a completed placement; the remaining footage is not owed screen time. Conversely a multi-shot source is usable as one group only if its internal views and actions actually succeed. Examples illustrate the distinction, not required durations or cut counts.
+For each retained event, decide the useful entry, decisive change and exit. Underlying action remains coherent even when a planned cut omits elapsed handling. Preserve a complete visible process when the user or the selected concept requires it as evidence. Otherwise, enough information to understand the action can be more effective than showing every movement.
 
-## Design information before allocating time
+Match incoming and outgoing states, screen direction and attention across planned cuts. Describe why a cut or hold serves the passage and which performance or sound event it relates to. Give the performer or production role necessary preparation and follow-through as design intent; do not invent source timestamps for footage that does not yet exist.
 
-For high-density short-form requests, identify the different things the viewer needs to understand and the visible evidence for each. Retain purposeful emotion, setup and payoff; do not force a new selling point into every shot. In the existing plan, specify the information/event, decisive visible moment, omittable process, and intended film interval. Then choose framing and allocate reading time. Do not divide runtime into equal slots first.
+Separate an action's world speed from its appearance through the camera. A tracking camera may cancel screen displacement; framing and environmental references affect perceived speed. Specify the relevant relationship in the design instead of prescribing a universal acceleration or easing curve.
 
-Repeatedly putting different objects into the same container may communicate only one idea. Add a new view or event when it reveals a distinct relationship such as arrangement, access, loaded form or use context supported by the actual product. More cuts, objects, labels or unrelated features are not automatically more content. When the user requests more content in a locked duration, restructure and compress selection rather than silently shortening the deliverable or extending the film.
+## Plan sound relationships
 
-## Select action phases and shape rhythm
+Preserve the script's dialogue, significant sounds and silence. Specify where an action, glance, reveal or intended cut relates to a sound: together, before it or after it. This is a design cue for production and editing, not an instruction for the director to assemble a rough cut or change audio tracks.
 
-Physical causality must hold in the underlying action; not every phase must appear in the edit. Distinguish a continuous proof/tutorial from an edited montage. Preserve the complete process only where the request or evidence requires it. Otherwise omit redundant reaches, empty-hand returns, repeated transport and idle endings. Retain enough contact, state change and result for the viewer to understand what happened. Cuts may enter mid-action and leave before the subject stops; outgoing/incoming state and attention must still match.
+## Keep the time meanings explicit
 
-For each retained event choose the useful entry, decisive change and exit. A placement can retain alignment, contact and the settled result while omitting most transport. If passage through an opening is the evidence, keep that passage visible. Frame count is not information count; additional viewpoints must justify their reading cost. Brief shots and longer recognition holds should follow content, not a universal duration or fixed cut count.
+Distinguish action time, intended film time and the source duration supplied by production. Generation length does not dictate the duration of an editorial shot or the final film. Production owns grouping the design into supported model requests; editing owns selecting from the resulting footage.
 
-Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Generate useful action and editing handles, then select source ranges. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
+In Mstudio, an existing shot record may represent a production generation group rather than one editorial shot. Keep its established meaning and internal cut map when revising the design. The [shot-record guidance](shot-design.md#save-and-hand-off) explains how to preserve these associations without treating generation duration as film duration.
 
-## Sound in the rough cut
-
-Use necessary temporary sound and music in the first authorized rough cut. Let music, action sound and ambience take turns leading. Loudness and density alone do not create impact. An in-shot action may land on a beat without a cut. Choose synchrony, anticipation, delay or cross-beat timing according to the scene; preserve essential contact/results.
-
-## Pacing rules
-
-For uncertain pacing, compare two materially different rough cuts of the core section using existing footage and the same content/duration constraints. A clear small fix can be made directly. Comparison does not authorize new generation or concept changes.
-
-Repair the concrete pacing cause: missing contact needs source repair, sync problems need alignment, redundant holds need trimming and overload needs information restructuring. Do not create an observation log or audience-test claim.
-
-## Duration and speed feedback
-
-Record whether time is a maximum, a user-locked total or an assistant estimate. Do not fill maxima or freeze estimates. Adding content should add progression, evidence or expectation, not repeated motion. If core content cannot fit a locked length, explain the concrete conflict.
-
-Locate dragging before changing time: late start, slow action, repeated information, empty tail or insufficient recognition time require different fixes. Do not shrink every shot proportionally by default.
-
-For an explicit whole-film multiplier r, apply it and set duration to original/r, synchronize audio and preserve pitch when required. Keep subtitle and effect timing synchronized. An absolute speed differs from multiplying the current speed again. Do not turn a one-time multiplier into a permanent default; a simultaneous unchanged-total requirement needs conflict resolution.
-
-Retained events, film intervals, source ranges and a user-locked total must agree. Stills do not establish playback speed or sound. Do not add mandatory playback or evidence registration to a timing edit.
+Carry whether the user's duration is a maximum or an exact total, and mark provisional allocations accordingly. If essential content cannot fit, identify the conflict for the writer or coordinator. For an existing edit that drags, describe any actual design or performance problem; source trimming, track synchronization and a requested whole-film speed multiplier belong to editing.

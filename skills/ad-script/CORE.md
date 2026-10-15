@@ -1,7 +1,5 @@
-# Screenwriting core
+# Screenwriting entry
 
-Read [SKILL.md](SKILL.md) and relevant craft guidance. Write from a selected concept or a sufficiently concrete user premise. Route missing direction development or comparison to creative planning through the coordinator; do not take over concept selection. Preserve the premise's invention and product meaning. Compose its expressive passage before organising timed rows; an image, exchange, process, observation or sound may supply the starting point. Let that idea supply the action rather than defaulting to the product's operating sequence.
+[SKILL.md](SKILL.md) defines the role and writing method. Use a selected concept or concrete user premise to write exact audiovisual content and provisional paragraph timing; preserve the user's direction and facts. Direction selection, shot design and media execution remain separate deliverables.
 
-Develop the premise through concrete action and exact language. Keep the brief's central buying reason active in the piece; secondary details enrich it rather than replace it. Let words and pictures complete or reinterpret one another. A product-related joke, visual relationship or useful discovery can communicate value without a compulsory mechanism explanation. Give speakers intentions and a voice appropriate to this idea. Identify the offer intelligibly, with no generic sales paragraph inserted by habit.
-
-Keep user constraints and supported claims. Fiction and stylisation do not establish performance measurements or genuine testimony. Use project material and imported research. Deliver the requested first draft without scores or a self-critique stage. Save only when requested, preserve IDs and hand creative substance to direction. Shots, prompts, media and timelines belong to their owners.
+Consult [craft](references/craft.md) for a technique relevant to the passage and [integration](references/mstudio.md) for project writes and handoff. These references do not expand the role.

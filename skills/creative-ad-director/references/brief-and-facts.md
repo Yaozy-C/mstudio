@@ -10,9 +10,9 @@ Separate explicit requests, assumptions and actual acceptance. Record why a dire
 
 ## From fact to demonstration
 
-Use a compact record: fact ID, feature/claim, status and source, possible visual evidence, and conclusions it does not support. Include important prop shapes, counts and fit evidence. Do not extrapolate one region's structure to another or treat appearance as performance proof. Distinguish actual feedback from imagined personas; do not invent firsthand testimonials.
+Use the existing brief and original references to identify the facts relevant to the selected shots, their sources and any uncertainty affecting the design. Carry necessary prop shapes, counts and fit information in the shot handoff; no separate fact-ID register or evidence table is required. Do not extrapolate one region's structure to another or treat appearance as performance proof. Distinguish actual feedback from imagined personas; do not invent firsthand testimonials.
 
-A gap affecting essential structure, fit or performance blocks an evidential demonstration based on it. Research or ask only as needed; select a supported demonstration where possible. Explicitly label unverified planning images. Minor visual choices can be resolved through composition without blocking work.
+A gap affecting essential structure, fit or performance prevents claiming that an evidential demonstration proves it. Resolve the specific gap from accessible material or return the claim conflict to the writer/coordinator. Preserve the selected creative direction when solving a staging uncertainty; this does not require converting other forms of advertising into a demonstration. Explicitly label unverified planning images. Minor visual choices can be resolved through composition without blocking work.
 
 Look for original attachments and task assets before requesting missing references. Generated images cannot replace original product evidence. Avoiding an unknown minor interior can be acceptable; hiding whether the core function exists is not.
 

@@ -1,17 +1,17 @@
 ---
 name: creative-ad-director
-description: Direction methods for Mstudio: the viewing proposition, shot design, staging, on-camera performance, photographic appearance, rhythm and transferring a real reference shot to a product.
+description: Realize a selected screenplay through shot design, camera, staging, performance, photographic appearance and planned timing. Use for storyboards and shot revisions, not concept selection or final editing.
 ---
 
 # Creative direction and shot design
 
-Direct the actual viewing experience: what the audience notices, understands, expects and remembers, and how the product takes part in it. This is a professional reference library, not a second production workflow. Loading it grants no extra tools or permissions. Separate user requirements, product facts and creative hypotheses; an invented event is never product evidence.
+Realize the selected screenplay as shots: determine how camera, staging and performance make its events and product meaning perceptible. This is a professional reference library, not a second production workflow. Loading it grants no extra tools or permissions. Separate user requirements, product facts and creative hypotheses; an invented event is never product evidence.
 
 For an action shot, distinguish the event from the selected storyboard instant. State which phase the image depicts and the relevant physical relationships at that instant: contact, support, possession, opening and attachment state. Keep that state compatible with the preceding and following action. Original evidence determines mechanisms; an unverified opening direction or support cannot become a design fact. Production supplies the continuous motion and model prompt; direction supplies physically possible states and essential transitions.
 
 ## Read for the task at hand
 
-Choose a reference by what the current task has to decide, not by job title. Reuse text already in context and read a linked document only to resolve a concrete question.
+Within shot design, choose a reference for the concrete decision at hand. Reuse text already in context and read a linked document only to resolve a concrete question.
 
 | The task has to decide | Read |
 |---|---|
@@ -22,7 +22,7 @@ Choose a reference by what the current task has to decide, not by job title. Reu
 | Which physical instant a frame depicts, and how shot states connect | [State continuity](references/continuity.md) |
 | **How a person actually behaves on camera: what triggers a reaction, when it starts, and how gaze, breath, head and body layer** | **[Naturalistic performance](references/naturalistic-performance.md)** |
 | Weight, force, contact and material response | [Animation principles](references/animation-principles.md) |
-| **How long each beat earns, what to omit, and how cuts and sound shape pace** | **[Rhythm](references/rhythm.md)** |
+| **Planned shot durations, visible action phases and intended cut/sound relationships** | **[Rhythm](references/rhythm.md)** |
 | **Skin, faces, fabric and light that read as a photograph rather than a polished render** | **[Photographic appearance](references/photographic-appearance.md)** |
 | Reusing the relationship of a real reference shot for a different product | [Transferring a reference](references/shot-references.md) |
 | Handing an approved design to a generation task | [Production handoff](assets/production-brief-template.md) |

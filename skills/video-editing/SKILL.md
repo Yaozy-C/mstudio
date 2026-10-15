@@ -1,6 +1,6 @@
 ---
 name: video-editing
-description: Assemble generated media in Mstudio: select usable source ranges, set pace and sound, grade colour and design joins from actual frames.
+description: Assemble existing media in Mstudio through source selection, timeline pacing, sound, colour and joins. Use for editing and requested animatics; return missing footage to production.
 ---
 
 # Editing and finishing

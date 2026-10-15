@@ -6,4 +6,4 @@ Distinguish new work, continuation of a named version and a local edit. Reusing 
 
 Keep duration meanings distinct: maximum, locked total, provisional estimate and explicit speed multiplier. Do not fill a maximum, upgrade an estimate to a user constraint or turn a one-time speed change into a lasting preference.
 
-Use actual screenplay merge/replace semantics and retain reusable assets. Do not create PROJECT.md, shadow registries, evidence ledgers or audit reports. Hand off target IDs, selected decisions, relevant real references, permitted scope and concrete missing inputs. Do not repeat successful writes or resubmit a pending task.
+Use the actual shot-record merge/replace semantics, preserve screenplay associations and retain reusable assets. Script content changes belong to the writer. Do not create PROJECT.md, shadow registries, evidence ledgers or audit reports. Hand off target IDs, selected decisions, relevant real references, permitted scope and concrete missing inputs. Do not repeat successful writes or resubmit a pending task.
