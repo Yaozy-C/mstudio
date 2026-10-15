@@ -43,7 +43,11 @@ impl super::model_io::CompletionModel for ProviderModel {
         }
     }
 }
-pub fn model(profile: &Profile, key: &str) -> Result<ProviderModel, String> {
+pub fn model(
+    profile: &Profile,
+    key: &str,
+    store: Option<&crate::database::Store>,
+) -> Result<ProviderModel, String> {
     if profile.adapter == "codex" {
         return Ok(ProviderModel::Codex(
             super::codex_provider::CodexModel::new(profile.model.clone()),
@@ -51,9 +55,17 @@ pub fn model(profile: &Profile, key: &str) -> Result<ProviderModel, String> {
     }
     let headers = crate::models::transport::headers(&profile.endpoint, key)
         .map_err(|_| "服务认证配置无效")?;
-    let http = rig_core::http_client::DynHttpClient::new(rig_reqwest::ReqwestClient::from(
-        configured_client(Duration::from_secs(240), headers)?,
-    ));
+    let transport =
+        rig_reqwest::ReqwestClient::from(configured_client(Duration::from_secs(240), headers)?);
+    let http = if let Some(backend) = super::uploader::backends::select(profile) {
+        let uploader = super::uploader::Uploader::new(backend.clone(), backend.root(), key, store)
+            .map_err(|_| "无法初始化文件上传缓存")?;
+        rig_core::http_client::DynHttpClient::new(super::uploader::FileTransport::new(
+            transport, uploader,
+        ))
+    } else {
+        rig_core::http_client::DynHttpClient::new(transport)
+    };
     let key = if key.is_empty() { "local" } else { key };
     let endpoint = profile.endpoint.trim_end_matches('/');
     let model = match profile.adapter.as_str() {

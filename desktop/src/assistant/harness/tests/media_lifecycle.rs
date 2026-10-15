@@ -31,7 +31,7 @@ fn media() -> Vec<UserContent> {
 }
 
 #[test]
-fn text_file_provenance_expires_the_attachment_body_and_preserves_user_text() {
+fn pressure_can_offload_text_file_body_and_preserve_user_text() {
     let payload = json!([
         {"type":"text","text":"user instructions"},
         {"type":"text","text":"Reference: notes.txt (asset ID: text-file)"},
@@ -48,7 +48,8 @@ fn text_file_provenance_expires_the_attachment_body_and_preserves_user_text() {
     assert!(history.contains("user instructions") && history.contains("notes.txt"));
     let mut state = Session::new(vec![message, Message::assistant("processed")]);
     assert_eq!(
-        session::offload_consumed_media(&mut state, &TestHost::default()).unwrap(),
+        super::super::media_retention::offload_oldest_media(&mut state, &TestHost::default(), 1)
+            .unwrap(),
         1
     );
     let text = serde_json::to_string(&state.messages).unwrap();
@@ -57,7 +58,7 @@ fn text_file_provenance_expires_the_attachment_body_and_preserves_user_text() {
 }
 
 #[tokio::test]
-async fn consumed_attachments_leave_the_next_request_without_context_pressure() {
+async fn attachments_remain_across_model_requests_without_budget_pressure() {
     let host = TestHost::default();
     let model = TestModel::default();
     for index in 0..2 {
@@ -95,8 +96,8 @@ async fn consumed_attachments_leave_the_next_request_without_context_pressure() 
     );
     for request in &requests[1..] {
         let text = serde_json::to_string(&request.chat_history).unwrap();
-        assert!(!text.contains("bWVkaWEtbGlmZWN5Y2xl"));
-        assert!(text.contains("mstudio_reopen_media") && text.contains("mstudio_reopen_image"));
+        assert!(text.contains("bWVkaWEtbGlmZWN5Y2xl"));
+        assert!(!text.contains("omitted to fit"));
     }
     let events = host.events.lock().unwrap();
     assert_eq!(
@@ -104,25 +105,25 @@ async fn consumed_attachments_leave_the_next_request_without_context_pressure() 
             .iter()
             .filter(|(kind, _)| kind == "media/offload")
             .count(),
-        1
+        0
     );
     assert!(!events.iter().any(|(kind, _)| kind == "compaction/start"));
 }
 
 #[test]
-fn final_answer_releases_media_but_unseen_followup_keeps_it() {
+fn budget_omissions_never_remove_unseen_followup_media() {
     let host = TestHost::default();
     let mut state = Session::new(vec![
         Message::User { content: media() },
         Message::assistant("reviewed"),
     ]);
     assert_eq!(
-        session::offload_consumed_media(&mut state, &host).unwrap(),
+        super::super::media_retention::offload_oldest_media(&mut state, &host, 5).unwrap(),
         5
     );
     state.messages.push(Message::User { content: media() });
     assert_eq!(
-        session::offload_consumed_media(&mut state, &host).unwrap(),
+        super::super::media_retention::offload_oldest_media(&mut state, &host, 5).unwrap(),
         0
     );
     assert_eq!(
@@ -173,7 +174,7 @@ fn offloaded_media_replays_as_references_and_reopens_with_project_and_model_chec
     let mut state = Session::new(messages);
     let host = JournalHost(&store, Default::default());
     assert_eq!(
-        session::offload_consumed_media(&mut state, &host).unwrap(),
+        super::super::media_retention::offload_oldest_media(&mut state, &host, 5).unwrap(),
         5
     );
     {
@@ -224,13 +225,23 @@ fn offloaded_media_replays_as_references_and_reopens_with_project_and_model_chec
         );
         let mut reopened = Session::new(vec![receipt, Message::assistant("read again")]);
         assert_eq!(
-            session::offload_consumed_media(&mut reopened, &TestHost::default()).unwrap(),
+            super::super::media_retention::offload_oldest_media(
+                &mut reopened,
+                &TestHost::default(),
+                1
+            )
+            .unwrap(),
             1
         );
         assert!(
             !serde_json::to_string(&reopened.messages)
                 .unwrap()
                 .contains("bWVkaWEtbGlmZWN5Y2xl")
+        );
+        assert!(
+            serde_json::to_string(&reopened.messages)
+                .unwrap()
+                .contains(id)
         );
     }
     drop(db);

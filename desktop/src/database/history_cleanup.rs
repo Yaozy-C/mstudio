@@ -9,7 +9,7 @@ pub const ACTIVE: &str = "NOT EXISTS(SELECT 1 FROM agent_messages m WHERE m.proj
 pub fn run(db: &Connection, now: i64) -> Result<()> {
     let tx = db.unchecked_transaction()?;
     let turns = {
-        let mut stmt=tx.prepare(&format!("SELECT e.project_id,e.turn_id,CASE WHEN MAX(CASE WHEN e.kind IN ('turn/end','subagent/settled') THEN e.seq END)>=MAX(CASE WHEN e.kind='session/start' THEN e.seq END) THEN MAX(CASE WHEN e.kind IN ('turn/end','subagent/settled') THEN e.seq END) ELSE MAX(e.seq) END FROM agent_events e WHERE {ACTIVE} AND e.kind IN ('session/start','session/message','session/compaction','image/offload','media/offload','tool/result','turn/end','subagent/settled') GROUP BY e.project_id,e.turn_id"))?;
+        let mut stmt=tx.prepare(&format!("SELECT e.project_id,e.turn_id,CASE WHEN MAX(CASE WHEN e.kind IN ('turn/end','subagent/settled') THEN e.seq END)>=MAX(CASE WHEN e.kind='session/start' THEN e.seq END) THEN MAX(CASE WHEN e.kind IN ('turn/end','subagent/settled') THEN e.seq END) ELSE MAX(e.seq) END FROM agent_events e WHERE {ACTIVE} AND e.kind IN ('session/start','session/message','session/compaction','media/offload','tool/result','turn/end','subagent/settled') GROUP BY e.project_id,e.turn_id"))?;
         stmt.query_map([], |r| {
             Ok((
                 r.get::<_, String>(0)?,

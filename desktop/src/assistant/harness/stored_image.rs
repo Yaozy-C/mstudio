@@ -2,9 +2,12 @@ use rusqlite::Connection;
 use serde_json::{Value, json};
 
 pub fn read(db: &Connection, project: &str, id: &str) -> Value {
+    if !super::media_retention::valid_reference(id, "image-") {
+        return json!({"error":"Use a content-hash imageId from an offload notice","code":"INVALID_ARGS"});
+    }
     let result = (|| -> anyhow::Result<Value> {
         let (seq, raw, index): (i64, String, usize) = db.query_row(
-            "SELECT e.seq,e.payload,j.key FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id=?1 AND e.kind IN ('image/offload','media/offload') AND json_extract(j.value,'$.id')=?2 ORDER BY e.seq DESC LIMIT 1",
+            "SELECT e.seq,e.payload,j.key FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id=?1 AND e.kind='media/offload' AND json_extract(j.value,'$.id')=?2 ORDER BY e.seq DESC LIMIT 1",
             rusqlite::params![project,id], |r|Ok((r.get(0)?,r.get(1)?,r.get(2)?)),
         )?;
         let mut value = crate::database::blobs::event(db, seq, &raw)?;

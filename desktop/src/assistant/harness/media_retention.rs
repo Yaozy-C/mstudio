@@ -1,17 +1,30 @@
-//! Media survives until a subsequent assistant response, then becomes a durable reference.
+//! Budget-driven omissions preserve saved media and stable recovery references.
 use super::{
     Host,
     session::{Session, consumed_prefix},
 };
-use rig_core::message::{AssistantContent, Message, ToolResultContent, UserContent};
+use rig_core::message::{Message, ToolResultContent, UserContent};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
+
+pub fn valid_reference(id: &str, prefix: &str) -> bool {
+    id.strip_prefix(prefix).is_some_and(|digest| {
+        digest.len() == 64
+            && digest
+                .bytes()
+                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+    })
+}
 
 fn offload(content: &UserContent, offloads: &mut Vec<Value>) -> String {
     let image = matches!(content, UserContent::Image(_));
     let id = format!(
         "{}-{}",
         if image { "image" } else { "media" },
-        mstudio::media::id()
+        format_args!(
+            "{:x}",
+            Sha256::digest(serde_json::to_vec(content).expect("media serializes"))
+        )
     );
     if let UserContent::Image(value) = content {
         offloads.push(json!({"id":id,"image":value}));
@@ -24,56 +37,87 @@ fn offload(content: &UserContent, offloads: &mut Vec<Value>) -> String {
         "mstudio_reopen_media(mediaId"
     };
     format!(
-        "[Earlier media offloaded after model processing; reference {id}. Reopen only when needed with {tool}=\"{id}\").]"
+        "[Earlier media omitted to fit the request budget; saved reference {id}. Reopen for a specific missing detail with {tool}=\"{id}\").]"
     )
 }
 
-pub fn offload_consumed_media(session: &mut Session, host: &impl Host) -> Result<usize, String> {
+pub fn offload_oldest_media(
+    session: &mut Session,
+    host: &impl Host,
+    count: usize,
+) -> Result<usize, String> {
+    offload_oldest(session, host, count, false)
+}
+
+pub fn offload_oldest_images(
+    session: &mut Session,
+    host: &impl Host,
+    count: usize,
+) -> Result<usize, String> {
+    offload_oldest(session, host, count, true)
+}
+
+fn offload_oldest(
+    session: &mut Session,
+    host: &impl Host,
+    mut remaining: usize,
+    images_only: bool,
+) -> Result<usize, String> {
+    if host.token().is_cancelled() {
+        return Err(crate::app_error::cancelled());
+    }
     let mut total = 0;
     for index in 0..consumed_prefix(&session.messages) {
+        if remaining == 0 {
+            break;
+        }
         let mut message = session.messages[index].clone();
         let mut offloads = Vec::new();
-        match &mut message {
-            Message::User { content } => {
-                for part in content {
-                    match part {
-                        UserContent::Image(_)
-                        | UserContent::Audio(_)
-                        | UserContent::Video(_)
-                        | UserContent::Document(_) => {
-                            *part = UserContent::text(offload(part, &mut offloads));
-                        }
-                        UserContent::Text(text) if super::context_source::is_attachment(text) => {
-                            *part = UserContent::text(offload(part, &mut offloads));
-                        }
-                        UserContent::ToolResult(result) => {
-                            for part in &mut result.content {
-                                if let ToolResultContent::Image(image) = part {
-                                    *part = ToolResultContent::text(offload(
-                                        &UserContent::Image(image.clone()),
-                                        &mut offloads,
-                                    ));
-                                }
+        if let Message::User { content } = &mut message {
+            for part in content {
+                if remaining == 0 {
+                    break;
+                }
+                match part {
+                    UserContent::Image(_) => {
+                        *part = UserContent::text(offload(part, &mut offloads));
+                        remaining -= 1;
+                    }
+                    UserContent::Audio(_) | UserContent::Video(_) | UserContent::Document(_)
+                        if !images_only =>
+                    {
+                        *part = UserContent::text(offload(part, &mut offloads));
+                        remaining -= 1;
+                    }
+                    UserContent::Text(text)
+                        if !images_only && super::context_source::is_attachment(text) =>
+                    {
+                        *part = UserContent::text(offload(part, &mut offloads));
+                        remaining -= 1;
+                    }
+                    UserContent::ToolResult(result) => {
+                        for part in &mut result.content {
+                            if remaining == 0 {
+                                break;
+                            }
+                            if let ToolResultContent::Image(image) = part {
+                                *part = ToolResultContent::text(offload(
+                                    &UserContent::Image(image.clone()),
+                                    &mut offloads,
+                                ));
+                                remaining -= 1;
                             }
                         }
-                        _ => {}
                     }
+                    _ => {}
                 }
             }
-            Message::Assistant(value) => {
-                for part in &mut value.content {
-                    if let AssistantContent::Image(image) = part {
-                        *part = AssistantContent::text(offload(
-                            &UserContent::Image(image.clone()),
-                            &mut offloads,
-                        ));
-                    }
-                }
-            }
-            _ => {}
         }
         if offloads.is_empty() {
             continue;
+        }
+        if host.token().is_cancelled() {
+            return Err(crate::app_error::cancelled());
         }
         total += offloads.len();
         host.record(
@@ -91,6 +135,9 @@ pub fn read(
     id: &str,
     model: &crate::assistant::config::Profile,
 ) -> Value {
+    if !valid_reference(id, "media-") {
+        return json!({"error":"Use a content-hash mediaId from an offload notice","code":"INVALID_ARGS"});
+    }
     let read = (|| -> anyhow::Result<UserContent> {
         let (seq, raw, index): (i64, String, usize) = db.query_row(
             "SELECT e.seq,e.payload,j.key FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id=?1 AND e.kind='media/offload' AND json_extract(j.value,'$.id')=?2 ORDER BY e.seq DESC LIMIT 1",

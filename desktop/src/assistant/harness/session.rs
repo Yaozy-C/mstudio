@@ -94,8 +94,13 @@ pub fn result_message(call: &ToolCall, value: &Value) -> Message {
         return Message::User {
             content: vec![UserContent::ToolResult(call.result(vec![
                 ToolResultContent::text(format!(
-                    "Image {} reloaded.",
-                    value["imageId"].as_str().unwrap_or("")
+                    "Image {} {} for visual analysis.",
+                    value["imageId"].as_str().unwrap_or(""),
+                    if call.function.name == "mstudio_read_image" {
+                        "loaded"
+                    } else {
+                        "reopened"
+                    }
                 )),
                 ToolResultContent::Image(image),
             ]))],
@@ -120,7 +125,6 @@ pub(super) fn consumed_prefix(messages: &[Message]) -> usize {
         .rposition(|m| matches!(m, Message::Assistant(_)))
         .unwrap_or(0)
 }
-pub use super::media_retention::offload_consumed_media;
 pub fn restore(
     store: &Store,
     project: &str,
@@ -150,7 +154,7 @@ pub(super) fn restore_through(
                 serde_json::from_value::<Vec<Message>>(value["messages"].clone())
                     .map_err(|e| e.to_string())?,
             );
-        } else if matches!(kind.as_str(), "image/offload" | "media/offload") {
+        } else if kind == "media/offload" {
             if let Some(messages) = &mut messages {
                 let index = value["messageIndex"].as_u64().ok_or("图片卸载位置无效")? as usize;
                 let slot = messages.get_mut(index).ok_or("图片卸载记录已损坏")?;

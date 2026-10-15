@@ -26,7 +26,12 @@ pub(super) async fn drive_child(
     deadline: tokio::time::Instant,
 ) -> Result<String, String> {
     let _permit = acquire(child.token(), deadline).await?;
-    let model = provider::model(profile, key)?;
+    let store = child
+        .inner
+        .tool
+        .as_ref()
+        .map(|tool| tool.app.state::<Store>());
+    let model = provider::model(profile, key, store.as_deref())?;
 
     super::super::driver::run_until(
         &model,

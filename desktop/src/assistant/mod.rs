@@ -27,6 +27,7 @@ mod provider;
 mod task_context;
 mod task_target;
 mod turn_context;
+mod uploader;
 mod video_analysis;
 mod work_context;
 #[cfg(test)]

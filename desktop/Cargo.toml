@@ -32,6 +32,7 @@ rig-core = { version = "=0.44.0", default-features = false, features = ["reqwest
 rig-reqwest = { version = "=0.44.0", default-features = false, features = ["rustls"] }
 tokio-util = "0.7"
 base64 = "0.22"
+bytes = "1"
 sha2 = "0.10"
 uuid = { version = "1", features = ["v4"] }
 flate2 = "1"

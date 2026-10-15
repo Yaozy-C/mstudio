@@ -14,6 +14,7 @@
 /desktop/native/windows-resources.json
 
 # Local design explorations, review artifacts and generated media
+/artifacts/
 /output/
 /design-qa.md
 /frontend/_ui-review/

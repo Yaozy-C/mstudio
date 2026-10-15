@@ -38,8 +38,8 @@ fn packed_session_job_and_tool_result_survive_reopen() {
         &store,
         "p",
         "images",
-        "image/offload",
-        json!({"offloads":[{"id":"image-1","image":{"data":large}}]}),
+        "media/offload",
+        json!({"offloads":[{"id":"image-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","image":{"data":large}}]}),
     )
     .unwrap();
     drop(store);
@@ -52,10 +52,18 @@ fn packed_session_job_and_tool_result_survive_reopen() {
         serde_json::to_value(&restored[0]).unwrap(),
         serde_json::to_value(&message).unwrap()
     );
-    let image = super::stored_image::read(&store.db.lock().unwrap(), "p", "image-1");
+    let image = super::stored_image::read(
+        &store.db.lock().unwrap(),
+        "p",
+        "image-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    );
     assert_eq!(image["__offloadedImage"]["data"], large);
     assert_eq!(
-        super::stored_image::read(&store.db.lock().unwrap(), "other", "image-1")["code"],
+        super::stored_image::read(
+            &store.db.lock().unwrap(),
+            "other",
+            "image-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        )["code"],
         "IMAGE_NOT_FOUND"
     );
     let result = super::tool_output::read_page(&store, "p", "t", "c", 0);

@@ -5,6 +5,7 @@ mod recovery;
 mod scheduling;
 mod support;
 
+mod image_budget;
 mod media_forwarding;
 mod media_lifecycle;
 mod media_retention;

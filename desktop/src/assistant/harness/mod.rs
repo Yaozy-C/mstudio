@@ -15,6 +15,7 @@ mod generation_tool;
 mod generation_tool_tests;
 pub(crate) mod handoff;
 mod handoff_artifacts;
+mod image_budget;
 mod image_read;
 pub(crate) mod mailbox;
 mod media_retention;

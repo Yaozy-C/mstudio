@@ -1,42 +1,46 @@
 ---
 name: ad-script
-description: Turn an advertising concept into a complete audiovisual first draft with exact language, action, sound and timing. Develop the concept's viewing experience and product meaning together; leave campaign selection and shot design to their owners.
+description: Write a complete audiovisual advertising script from a concept, preserving its creative premise, product meaning and voice through exact words, action, sound and timing. Use for first drafts and local revisions; leave campaign selection and shot design to their owners.
 ---
 
 # Audiovisual screenwriting
 
-Write what the viewer will actually experience. Preserve the concept's specific observation, question, process or pleasure alongside its commercial meaning. A list of functions distributed across timed rows is still a list of functions.
+Write the particular piece the concept promises. Preserve its invention as well as its commercial meaning. A screenplay can demonstrate, entertain, explain or make a familiar thing feel different; it need not pass through the same feature explanation in every form.
 
-## Take up the actual concept
+## Take up the creative material
 
-Carry the audience, market, language, duration and presentation requirements. Read the concept's decisive wording, objects, behaviour and sound relationships, not only its summary. Separate explicit constraints from earlier suggestions. If given only a theme or benefit, develop its concrete expression before allocating time; an explicit change of campaign direction belongs with creative planning.
+Carry the audience, market, finished-film language, duration and explicit requirements. Read the actual premise, including its decisive words, actions and product relationship. Distinguish user choices from earlier suggestions. When asked to invent both concept and script from product facts, complete creative planning's rough exploration before committing to one screenplay. When a direction has already been chosen, develop that particular idea; do not restart the exploration. Changes to an explicitly chosen campaign premise belong with creative planning.
 
-Use original product material, supplied works and imported research; Mstudio has no network search capability. Keep confirmed properties, creative invention and real testimony distinct. Preserve the distinction between what the product contributes and what the person, another object or the setting causes. Invention can supply a character's preference; it cannot supply measured product performance, customer history or an authentic testimonial.
+Use original product material and supplied research; Mstudio has no network search capability. Keep product facts, fiction and real testimony distinct. A character, metaphor or stylised situation can be invented; a performance guarantee, measurement or authentic customer history cannot. Preserve supported qualitative claims without automatically adding numbers or exceptional conditions. Keep research qualifications outside the film unless the audience needs them to understand the offer accurately.
 
-For TikTok or creator-led work, read the short-video passages in [craft](references/craft.md). Use the other techniques when they help develop the selected idea. They are alternatives, not required story beats.
+For TikTok work, read [craft](references/craft.md). It develops different ways words, performance and actions can carry the concept; none is a compulsory sequence.
 
-## Compose the passage before timing it
+## Compose the essential passage
 
-Start with the actual words and visible actions that deliver the concept. Write the useful answer, distinctive process, revealing behaviour or enjoyable exchange itself. Then build the opening and ending around that substance. “Relatable hook,” “show convenience” and “satisfying reveal” leave the writing undone.
+Write the actual event, exchange, demonstration, observation or sensory process that makes this idea worth experiencing. It may start with an image, line, behaviour or sound rather than a chronological setup. Preserve the chosen concept's unexpected connection while making it intelligible. Compose from the most expressive material and arrange it for the viewer afterward. The product's operating sequence is not automatically the scene's sequence; let the idea supply the action.
 
-Let the opening begin the same experience the rest of the film delivers. An immediate answer can lead into an interesting explanation or process. Continue through consequential steps, useful distinctions, variations or implications rather than restarting as a feature catalogue. Choose only enough material to make the particular idea land within the requested duration.
+Develop the premise's own logic. Give a comic premise its meaningful behaviour or wording, an explanation its useful discovery, a process its consequential changes, and a pattern its variation. Decide what the viewer recognises, learns, anticipates or enjoys as it unfolds. “Relatable,” “strong hook” and “satisfying” describe desired reactions, not the content that produces them.
 
-## Write a person thinking, and pictures doing
+Carry the central buying reason through the expression, including a category promise named in the brief. Do not replace it with a supporting feature simply because that feature supplies easier action. A joke may depend on a property; an action may reveal how something works; a line can reinterpret what the viewer sees. When the picture or premise already communicates a fact, use the words to add something rather than reciting the mechanism again. When explanation is needed, make that explanation part of the person's thought or the piece's form. Do not insert a standard sales paragraph between an inventive opening and ending.
 
-For spoken work, decide what this speaker wants the listener to understand and why they care. Write a connected thought in their vocabulary. Their priorities, concrete nouns, comparisons and asides create voice. Slang, chopped sentences and a demographic label do not substitute for a point of view.
+Identify the offer intelligibly within the available duration. A claim on an end card can clarify an idea already expressed, but cannot rescue an unrelated story. Product relevance does not mean all scenes must be demonstrations. Keep a prop's appeal, an accessory's contribution and the product's benefit distinct where that affects the claim.
 
-Write voice and picture as complementary tracks. Speech can explain a private preference, interpret an action or make a useful distinction while the picture supplies physical evidence. Straight explanation is appropriate when something needs explaining; describing every visible movement rarely adds much. Avoid claiming that a setting or prop proves a product capability it does not establish.
+## Compose the voice and picture together
 
-A short video need not be a miniature drama. Direct address, a useful walkthrough, a sensory process or an observation can sustain it. If using dialogue, give each person a reason to speak within the situation; do not invent a second person simply to ask sales questions. Fictional delivery should not masquerade as a real review or comment reply.
+Write from a speaker's intention and relationship to the listener: what are they trying to say or do in this moment? A voice can be conversational or deliberately theatrical. Let its vocabulary, phrasing, timing and priorities embody the premise. Natural speech is not a list of shortened features, and personal style need not be confined to explaining a function.
 
-Compose meaningful sounds as events, not the instruction “add ASMR.” Name what makes the sound and its relationship to an action, a word or a pause. Let the material determine whether speech, music, silence or contact sounds lead. Detailed acting, microphones, camera instructions and mixing belong to production.
+Let words and visible actions interact: a line can prepare an expectation, change the reading of a gesture, or mean two things in context. An image may complete a sentence's thought without the speaker spelling it out. Choose language for this particular idea rather than attaching topical slang to generic copy.
 
-## Land, time and deliver
+For dialogue, write people pursuing intentions within the scene; interruptions, disagreement or shared understanding should develop its substance. A second speaker is optional. For nonverbal work, compose a clear sequence of physical and sensory events instead of prescribing atmosphere alone.
 
-Finish the thought or experience that brought the viewer in. A final action, useful result, implication or line can complete it; add an appropriate next step when the brief calls for one. A closing slogan cannot supply a product connection missing from the passage.
+Write essential sounds and pauses where they create meaning or rhythm. Specify the event that produces a meaningful sound; leave microphones and mixing to production. Audio research can inform wording and sound relationships, but a transcript alone does not establish delivery or tone.
 
-Allocate time from composed speech, actions, overlap and recognition needs. Preserve a hard duration by selecting and compressing material. Do not silently extend it or assign an implausibly small time to a busy passage. Generation-model clip lengths do not determine written beats.
+## Shape the duration and deliver
 
-Deliver a complete script with planned timing, visible action, exact dialogue or narration, exact screen text and meaningful sound. Use paragraphs or a table after composing the substance. Include only essential production assumptions outside the script. Do not append self-scores, a review loop or unsolicited alternatives to a requested first draft.
+Order the material to sustain the intended experience and land its thought. Enter where the viewer has something to notice; leave room for recognition, an action to complete or a line to land. A short ad can be a single developed idea rather than a miniature life story. No fixed opening/problem/demo/solution/CTA slots are required.
 
-For local revisions, preserve working wording, IDs, shot associations and unrelated content. When persistence is requested, use [saving and handoff](references/mstudio.md) and report only authoritative saved results. Carry decisive wording, behaviour and sound into direction. This Skill does not create shots, generate media or edit timelines.
+Allocate time from actual speech, actions and useful overlaps. Respect a hard duration by selecting material and writing economically, not silently extending it or assigning crowded actions an arbitrary tiny slot. Generation-model clip lengths do not determine beats.
+
+Deliver the complete requested script with timing, visible action, exact dialogue or narration, screen text and meaningful sound. Use a table or paragraphs after composing the substance. Explain only consequential assumptions outside the script. Do not append scores, self-critique or unsolicited revised versions to a requested first draft.
+
+For local revisions, preserve working wording, IDs, shot associations and unrelated content. When persistence is requested, use [saving and handoff](references/mstudio.md) and report only authoritative results. Hand decisive wording, behaviour and sound to direction. This Skill does not create shots, generate media or edit timelines.

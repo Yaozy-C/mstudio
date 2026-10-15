@@ -7,7 +7,17 @@ pub async fn recover(
     overflow: bool,
 ) -> Result<bool, String> {
     let before = raw_pressure(session, host);
-    super::super::session::offload_consumed_media(session, host)?;
+    // Consumption only makes old inputs eligible; it does not trigger eviction.
+    // Release oldest occurrences until the calibrated context fits, keeping the
+    // latest unseen batch and assistant output intact (DSH image/offload order).
+    while over_budget(session, profile, host) {
+        if host.token().is_cancelled() {
+            return Err(crate::app_error::cancelled());
+        }
+        if super::super::media_retention::offload_oldest_media(session, host, 1)? == 0 {
+            break;
+        }
+    }
     prune_tool_results(session, host)?;
     let result = if overflow {
         compact_manual(model, profile, host, session).await

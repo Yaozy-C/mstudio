@@ -210,6 +210,48 @@ Export samples frames at `frameIndex / fps`, sends one bounded PNG at a time thr
 
 主动读取媒体由 `media-read` 单独授权，并依赖 `project-read`；素材目录、文本和状态仍使用 `project-read`。统筹默认没有原图、视频帧及历史图片的主动读取工具，专业角色保留原有权限。用户在聊天中明确发送的附件照常提供给所选模型，并可转交专业角色，不受主动读取开关影响。新建配置使用当前默认权限，保存和读取不进行自动迁移。
 
-附件生命周期与上下文压缩分开：图片、工具返回画面、音视频、PDF 及带宿主来源标记的文本文件，在获得后续模型响应后立即从运行消息中卸载，保留可按需重读的引用；尚未处理的新附件继续保留。每次模型请求前也清理已处理的恢复上下文，续接、唤醒与 fork 因此不会复活旧附件内容。清理事件与会话快照共同持久化，原文件及附件存档不删除。文本附件标记只供宿主识别，发往模型前移除。同一子任务仅首次转交某条用户消息的附件，重复指令只转交要求；新的用户消息明确附带附件时可以重新提供。
+附件生命周期与上下文压缩分开：预算内的图片、工具返回画面、音视频、PDF 及带宿主来源标记的文本文件继续随有效历史发送，模型响应仅推进可回收的消费边界。图片字节预算或模型上下文预算触发卸载，最旧的必要输入出现位置变为可重读引用；尚未处理的新附件和助手输出保留。已省略位置通过事件和快照持久化，续接、唤醒与 fork 不会自动复活；重新打开只增加新的输入出现位置。原文件及附件存档不删除。文本附件标记只供宿主识别，发往模型前移除。同一子任务仅首次转交某条用户消息的附件，重复指令只转交要求；新的用户消息明确附带附件时可以重新提供。
 
 普通聊天、首次委派、子任务续接和父任务唤醒共用 `assistant/turn_context.rs` 装配角色、项目状态与模型规则。首次委派和后续消息共用附件解析：用户明确发送的附件提供实际媒体并去重，Agent 选择的 artifacts 只传保存对象引用与读取入口，由专业角色按需读取。无工具的视频拆解角色仍直接收到交接原视频。原始用户要求统一读取持久化的 `production.instruction`。通知按项目、角色及任务身份筛选，同任务跨轮次可以收取，新任务不会消费旧任务通知。已移除无消费方的“待检查结果”台账；任务状态、写入回执及版本冲突检查仍由原领域服务负责。
+
+## 媒体预算与历史卸载
+
+### 问题与修复
+
+截图对应的 concept 子任务读取 8 张产品图后，又调用了 14 次 reopen_image；22 次调用均成功。模型已经描述过图片，却在后续看到卸载占位后反复怀疑是否看过。旧实现每次模型响应后即卸载此前全部媒体，重新打开后又生成新的随机引用。
+
+现在模型回复仅推进消费边界，预算内的图片及其他已读附件继续保留。请求图片超出字节预算时只省略最旧、足够满足预算的输入图片出现位置；模型上下文超预算时逐个回收最旧媒体，达到预算即停止。助手输出不参与媒体卸载。最新尚未被模型消费的整个批次受保护，超大新批次会明确报错，不静默删除证据。
+
+卸载使用现有媒体 journal 与 blob 存储。恢复引用采用序列化内容的 SHA-256，同一内容重新打开、再次卸载不会产生新的标识。引用仅接受当前内容哈希格式，卸载统一使用 media/offload；旧随机引用及 image/offload 事件不再恢复。省略的旧出现位置在后续请求、恢复和检查点折叠后保持省略；重新打开只加入一个新的媒体输入，不自动复活旧位置。
+
+### DSH 源码对照
+
+固定参考提交：`571902028a75c64c1d767f4ae5fd099485f0ddf0`。
+
+- [`content.ts` 的 requiredImageOffload/offloadedImagePrefixCount](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/packages/llm/llm/src/content.ts)：按请求版本实际表示字节计算出现位置，取足够释放超额的最旧前缀。Mstudio 的 `harness/image_budget.rs` 移植此最小前缀计算，Base64 按编码后长度计算，Raw 按 Base64 展开长度计算。
+- [`image-offload.ts`](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/packages/compaction/compaction-image-offload/src/image-offload.ts)：按请求顺序选择用户输入与工具结果，跳过助手输出；持久记录所选出现位置。
+- [`index.ts`](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/packages/compaction/compaction-image-offload/src/index.ts)：只处理明确的图片预算拒绝，不以“已回复”作为触发条件。
+
+### Mstudio 适配边界
+
+Mstudio 仍由 Rig SDK 与 Codex transport 构造请求。DeepSeek 官方服务的 Chat、Responses、Anthropic 协议在 HTTP 边界将内联图片投影为 Files API 引用；会话 journal 保留原图片，不保存临时远端 ID。DeepSeek 使用 200 MiB 原始图片总量和 600 个出现位置预算；OpenAI Responses 使用 512 MiB 和 1,500 个出现位置；其他服务内联图片额度为 16 MiB，保留现有 18 MiB 附件入口额度中的文字与结构余量。远程 URL、File ID 与 Codex localImage 不计作内联字节，仍受模型上下文预算约束。
+
+Mstudio 额外保护最新尚未消费的批次。DSH 在适配器拒绝后重试；Mstudio 在请求前按现有输入格式检查预算，避免浪费一次供应商请求，不占网络重试额度。摘要来源是已选择的旧历史，仍保留原有工具配对和近期消息规则。
+
+本次修复不把 PDF、音视频、文本文件统一改成 DSH 文件系统句柄。它们继续使用现有受权限约束的素材读取和模型能力校验，但不再因一次响应被无条件卸载。
+
+### 验证
+
+回归场景包含：8 张产品图分 3/3/2 批读取后在最终请求中全部存在；预算刚好满足时不卸载；重复图片按出现次数计费；超预算只卸载最旧前缀；嵌套工具图片、Raw 与 data URL；最新批次与取消保护；上下文校准后只回收足够的旧媒体；项目隔离、检查点恢复，以及重新打开后引用稳定。
+
+### 通用 uploader
+
+`assistant/uploader` 共用内容寻址、持久索引、并发去重、提前刷新及一次失效 ID 重试；`backends/openai.rs`、`backends/deepseek.rs` 实现平台能力、上传参数、ID 校验和请求引用格式。共同上传流程使用 `POST /files` 和 7 天有效期。DeepSeek 使用 `purpose=user_data`；OpenAI 图片使用 `purpose=vision`，普通文件使用 `user_data`。通用 `Source` 接受文件字节与媒体类型，目前会话请求自动投影的调用方是图片。请求版本按媒体类型与实际文件字节计算 SHA-256；SQLite `provider_uploads` 保存平台、端点与凭据命名空间摘要、版本摘要、file ID、字节数及有效期，凭据原文不进入索引。提前 1 小时刷新，同进程并发 agent 在共享版本锁内二次检查持久索引，避免重复上传。
+
+仅在官方 HTTPS DeepSeek 和 OpenAI 服务启用；URL 引用不下载、不上传。OpenAI 的图片上传接入 Responses API，不套用 DeepSeek Chat 的 file 内容格式，见 [OpenAI 图片文件引用](https://developers.openai.com/api/docs/guides/images-vision)。实际对话请求继续使用当前协议：[Responses 的 input_image.file_id](https://api-docs.deepseek.com/guides/responses_api/)、Chat 的 file/file_id 或 Anthropic 的 image/source/file。Anthropic 请求附带 Files beta header。请求投影不修改原消息，工具调用配对、原始像素恢复和上下文视觉 token 计量继续有效。
+
+上传不自动降级为 Base64。认证、限流、配额、图片格式或回执错误按实际失败返回；服务拒绝已过期、已删除或不存在的 file ID 时，精确失效当前代索引并重新上传，只重试一次，第二次失败仍移除坏映射并返回。HTTP 客户端禁止重定向，网络取消随调用 future 丢弃传播。文件到期由服务释放，不主动删除账号中的其他文件。
+
+Codex 0.162.0-alpha.17.2 的 app-server schema 中，turn/start 的 image 支持已有 `fileId`，dynamic tool 的 inputImage 只支持 `imageUrl`；未发现返回图片 file ID 的通用上传 RPC。thread/attachment/add 保存附件类型、标识与 payload，不是 Files 上传。当前继续使用 Codex 本地图片输入，不借用 OpenAI API key 或抽取 Codex 登录凭据。
+
+测试覆盖 OpenAI Responses 上传与复用、平台隔离、持久复用、端点和凭据隔离、并发单次上传、到期前刷新、三种请求格式及工具图片、普通与流式传输的失效恢复、错误不降级，以及新格式引用校验。

@@ -40,10 +40,10 @@ pub async fn run_until(
             session.replace_visible(host, answer)?;
             return Ok(answer.into());
         }
-        super::session::offload_consumed_media(&mut session, host)?;
         let injected = host.injected()?;
         session.delegation_outcomes.observe_messages(&injected);
         session.messages.extend(injected);
+        super::image_budget::fit(&mut session, host, profile)?;
         if budget::over_budget(&session, profile, host) {
             budget::recover(model, profile, host, &mut session, false).await?;
         }
@@ -218,7 +218,6 @@ async fn step(
         session.append(host, message)?;
     }
     budget::anchor_response(session, profile, request_header, &response.raw, usage);
-    super::session::offload_consumed_media(session, host)?;
     if let Some(reason) = stop_reason {
         host.record("model/stop", json!({"stopReason":reason}))?;
         scheduler::skip(

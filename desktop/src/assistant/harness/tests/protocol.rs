@@ -111,7 +111,7 @@ async fn gemini_stream_keeps_signatures_and_native_call_results_across_steps() {
             );
         }
     });
-    let model = provider::model(&profile, "local").unwrap();
+    let model = provider::model(&profile, "local", None).unwrap();
     let host = TestHost::default();
     let result = run(
         &model,
@@ -183,7 +183,7 @@ async fn openai_stream_pairs_tool_call_ids_and_commits_visible_prefix() {
             );
         }
     });
-    let model = provider::model(&profile, "local").unwrap();
+    let model = provider::model(&profile, "local", None).unwrap();
     let host = TestHost::default();
     let result = run(
         &model,

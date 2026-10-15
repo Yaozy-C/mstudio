@@ -1,49 +1,35 @@
-# Developing the passage
+# Compose the idea, not a standard ad sequence
 
-Use the technique that develops the selected material. The references illustrate reasoning and expression, not reusable scripts. These approaches concern first-draft composition; they do not add a scoring or review stage.
+For TikTok work, use these techniques where they develop the actual premise. They are alternatives, not required beats. The Currys examples come from [the production company](https://isite.solutions/our-work/currys/socials), with sampled frames and machine-transcribed audio; the Doritos example comes from [the agency account](https://www.ps21.works/case/doritos-mas-crujientes-mas-molestos). Use their creative reasoning, not their dialogue or plot as templates. Transcription does not establish vocal nuance.
 
-## Short-video composition: write the substance behind the format
+## Find the second meaning
 
-For a TikTok brief, distinguish the format from the passage. A packing format still needs a particular selection to watch and understand; a tutorial needs something useful to learn; a skit needs a recognisable observation developed in behaviour. Decide what the viewer is receiving before writing an attention-getting line.
+Look for what a word, image or action means in this situation beyond its literal description. In the Currys Gen-Z film, language about eating sits beside a microwave; receipts belong both to retail and an online way of asserting evidence. The objects help write the language.
 
-The human annotations in [TikTok Shop Academy's examples](https://seller-us.tiktok.com/university/course?content_id=4445809487709998&default_language=en&learning_id=5015540801488686) describe a style-led bag presentation, a hairstyle followed by instruction, and a whole varied snack order being packed. Their content develops through relevant details, useful steps or accumulation. These text descriptions do not establish an exact cadence or soundtrack.
+Compose a particular line and the action that completes its thought. A different register, speaker or juxtaposition may reveal the idea. Use a semantic connection that belongs to this product, rather than replacing ordinary words with slang or importing the example's character. Literal explanation remains useful when the subject needs it.
 
-Write a rough audiovisual passage in two complementary strands: the physical activity that makes the subject visible, and the thought that gives the activity significance. For a speaker-led piece, draft the thought as something one person can tell another in a single breath or connected turn. Keep the speaker's specific reason for caring. Then associate its clauses with the actions they explain or reinterpret. For a nonverbal piece, let visible changes and actual sounds supply that development instead.
+## Follow an implication into a scene
 
-Use the limited duration to deliver one sufficiently developed experience. The middle can be the useful or enjoyable part itself, rather than a bridge between a hook and a sales line. Select details according to that experience: each new detail can answer, vary, sharpen or complete it. If the chosen material needs more time than the brief permits, choose a smaller passage rather than replacing meaningful content with rushed feature nouns.
+A real quality may have surprising consequences in a specific context. PS21's Doritos campaign makes a desirable crunch troublesome for someone else. The writing opportunity is the interaction and its interpretation, not another sentence saying the product is crunchy.
 
-Creator-style language can express preference without inventing purchase history or dramatic personal stakes. A comment-reply format needs a real supplied comment when presented as an actual reply. Write demonstration outcomes only to the extent supported by the product material; a staged time card or a fictional reaction supplies no measurement.
+For the selected premise, invent the action, response, observation or audible event in which the implication becomes clear. Let the scene carry what it can, and use speech for the person's attitude or the next thought. No mandatory conflict, adverse consequence or reveal follows from this technique.
 
-## Translate an abstract benefit into a perceptible experience
+## Write the performance as content
 
-Start with how the capability is actually experienced. Decide what the viewer needs to see, hear or understand for that experience to mean something. In Daniel Harmon's [account of Purple](https://thecopywriterclub.com/viral-ads-daniel-harmon/), the initial egg experience helped persuade the team, while making it visible required a different arrangement. Product experience and audiovisual expression are separate creative tasks.
+A speaker's attempt to do something can be the passage: convince, conduct, confess, present, interrupt, misunderstand or play along. Currys' gifting short uses attempts to deliver product copy as part of the performance. It illustrates that the human situation can supply comic action without every gesture demonstrating a feature.
 
-Write the exact action and useful explanation. A demonstration need not become an extreme test, and a fictional scene cannot substantiate a performance claim. Do not replace the subject with an unrelated entertaining stunt.
+Give the scene a particular premise and exact wording, while maintaining a legible product message. Do not add random business around a sales paragraph. A quiet observation or a direct explanation may suit another concept better than a staged sketch.
 
-## Give an explanation someone else's initial understanding
+## Compose a perceptible experience
 
-In [Sandwich's Slack account](https://sandwich.co/clients/slack/), the initial belief was that their existing tools were enough. Using the product supplied the interactions that changed that understanding.
+A product may offer interest in its movement, feel, transformation, appearance or sound. Specify the physical events that the viewer experiences and what gives them meaning. Variation and a deliberate rhythm can develop that material without dialogue. Sensory language should come from observable properties, not generic instructions to make something premium or satisfying.
 
-For the current brief, develop the relevant question, distinction or discovery through particular actions and connected thoughts. Explain what becomes useful or newly understood, rather than stretching elementary setup. A fictional speaker can express a viewpoint, but must not be presented as a real customer or invented testimonial.
+## Put fact boundaries in the right place
 
-## Let attitude organise language and action
+Supported facts constrain claims. They do not require a disclaimer-like sentence explaining the mechanism in every film. Decide whether action, language, a concise caption or their combination best communicates what matters. State necessary conditions when the portrayal would otherwise mislead; do not make caveats the speaker's entire personality.
 
-[Raindrop's Dr. Squatch work](https://raindrop.agency/case-study/dr-squatch/) frames the category with a pointed comparison. Its specificity belongs to that product and positioning.
+Clearly fictional roles and stylisation can express a real proposition. They cannot fabricate effectiveness, measured comparisons or authentic testimony. Preserve the distinction between the product, supporting props and production effects. Compose the brief's central product promise into the idea itself at its supported scope. A supporting detail can furnish a gesture or joke, but should not displace the reason for choosing this kind of product. Show that meaning within the chosen form, rather than leaving it solely to a label at the end.
 
-Develop the current speaker's actual observation, priority or comparison. Continue the thought through its implications; do not write one lively opening and then switch to clipped feature names. Exact nouns, verbs, sentence connections and asides supply voice. Fragments and repetition can work when they create an intentional rhythm rather than merely shortening copy.
+## Sustain and finish the passage
 
-Dialogue is action between people. Give each speaker a reason to invite, bargain, explain, tease or refuse that belongs to the product-related situation. A second character need not exist solely to ask the next sales question.
-
-## Give a familiar action another meaning
-
-[IKEA's second-best campaign](https://www.ogilvy.com/work/proudly-second-best) connects a child's closeness to parents with the corresponding furniture's intended use. The interpretation and the familiar behaviour belong together.
-
-Write the particular behaviour and the words or juxtaposition that change how it reads. Explanation need not name every inference. Avoid importing the campaign's family scene, understatement or product absence into unrelated work.
-
-## Sustain the experience through sound and development
-
-Write physical changes and contact sounds for a sensory process, useful distinctions for an explanation, consequences for a choice, or variation for a pattern. These are substantive developments, not feature coverage slots.
-
-Compose speech and picture together. A sentence can carry across several actions; a word or pause can change the meaning of a gesture; a sound can establish a rhythm or make a result perceptible. Put those relationships in the draft, leaving detailed acting and mixing to production. Do not claim heard delivery or continuous timing from a text account or still.
-
-Let the ending complete or deepen this experience. An early answer, silence or sustained observation may suit it. No compulsory mystery, reversal, character arc or CTA is needed.
+Keep developing the selected connection through actions, exact language and useful pauses. Write the events implied by the creative thought instead of automatically showing the usual preparation, operation and satisfied reaction. If the thought depends on a change of meaning, preserve that change in the words or pictures; a more familiar usage scene can lose the idea even while displaying the product clearly. Let image and sound overlap where they express the same moment differently. Avoid treating an opening line, mechanism explanation and closing slogan as mandatory separate modules. End when the idea lands; add an appropriate next step if the brief needs it. Scale the material to the actual duration, leaving room for recognition and performance.

@@ -82,7 +82,7 @@ fn migration_keeps_recovery_usage_errors_unknown_events_and_active_turns() {
             "session/message",
             "session/compaction",
             "session/reset",
-            "image/offload",
+            "media/offload",
             "tool/call",
             "tool/result",
             "turn/end",

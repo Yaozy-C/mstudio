@@ -99,7 +99,11 @@ pub(crate) async fn complete_with_resume(
             tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
         }),
     });
-    let model = super::provider::model(profile, key)?;
+    let store = host
+        .tool
+        .as_ref()
+        .map(|tool| tool.app.state::<crate::database::Store>());
+    let model = super::provider::model(profile, key, store.as_deref())?;
     let mut session = Session::new(messages);
     if host
         .tool

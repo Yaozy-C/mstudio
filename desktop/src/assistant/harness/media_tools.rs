@@ -25,7 +25,7 @@ pub fn definitions(profile: &AgentProfile) -> Vec<ToolDefinition> {
         parameters: json!({"type":"object","properties":{"imageId":{"type":"string"}},"required":["imageId"],"additionalProperties":false}),
     }, ToolDefinition {
         name: "mstudio_reopen_media".try_into().expect("nonempty tool name"),
-        description: "Reopen an offloaded audio, video, document or text attachment by mediaId from its notice only when needed again. Returns attachment content for the next model request; processed content then becomes a reference again. Requires compatible model input support.".into(),
+        description: "Reopen an offloaded audio, video, document or text attachment by mediaId from its notice only when needed again. Returns attachment content to retained history; older occurrences are omitted only when the request budget requires it. Requires compatible model input support.".into(),
         parameters: json!({"type":"object","properties":{"mediaId":{"type":"string"}},"required":["mediaId"],"additionalProperties":false}),
     }]
 }

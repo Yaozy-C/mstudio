@@ -234,7 +234,7 @@ pub async fn execute_local(
         }
         let Some(id) = args["mediaId"]
             .as_str()
-            .filter(|id| id.starts_with("media-") && id.len() < 100)
+            .filter(|id| super::media_retention::valid_reference(id, "media-"))
         else {
             return json!({"error":"Use a mediaId from an offload notice","code":"INVALID_ARGS"});
         };
@@ -248,7 +248,7 @@ pub async fn execute_local(
         }
         let Some(id) = args["imageId"]
             .as_str()
-            .filter(|id| id.starts_with("image-") && id.len() < 100)
+            .filter(|id| super::media_retention::valid_reference(id, "image-"))
         else {
             return json!({"error":"This tool accepts only imageId from an offload notice. For generated images use mstudio_read_image(assetId), with a real asset ID from a receipt or inspected project state, not a filename or task ID.","code":"INVALID_ARGS"});
         };

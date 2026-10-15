@@ -184,7 +184,7 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
         json!({"source":"subagent-settled","agentId":agent_id}),
     )?;
     let result = async {
-        let model = provider::model(&host.media_profile, &root.key)?;
+        let model = provider::model(&host.media_profile, &root.key, Some(&store))?;
         harness::run(
             &model,
             &host.media_profile,

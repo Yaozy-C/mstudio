@@ -70,7 +70,12 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
     }
     let mut session = session::Session::new(messages);
     assert_eq!(
-        session::offload_consumed_media(&mut session, &RecordingHost(&store)).unwrap(),
+        super::super::media_retention::offload_oldest_media(
+            &mut session,
+            &RecordingHost(&store),
+            2
+        )
+        .unwrap(),
         2
     );
     let restored = session::restore(&store, "p", "t", &binding)
@@ -84,7 +89,7 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
     assert!(serialized.contains("旧请求"));
     assert!(serialized.contains("inspect"));
     assert!(serialized.contains("ok"));
-    assert!(serialized.contains("offloaded"));
+    assert!(serialized.contains("omitted to fit the request budget"));
     assert!(!serialized.contains("aGVsbG8="));
     let id:String=store.db.lock().unwrap().query_row(
         "SELECT json_extract(j.value,'$.id') FROM agent_events e,json_each(e.payload,'$.offloads') j WHERE e.project_id='p' AND e.kind='media/offload' LIMIT 1",[],|r|r.get(0),

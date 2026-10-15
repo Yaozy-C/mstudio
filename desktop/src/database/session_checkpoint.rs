@@ -23,7 +23,7 @@ pub fn fold(db: &Connection, project: &str, turn: &str, through: i64) -> Result<
         .as_array_mut()
         .context("Invalid session snapshot")?;
     let rows = {
-        let mut stmt = db.prepare("SELECT seq,kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq>?3 AND seq<=?4 AND kind IN ('session/message','session/compaction','image/offload','media/offload','tool/result') ORDER BY seq")?;
+        let mut stmt = db.prepare("SELECT seq,kind,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq>?3 AND seq<=?4 AND kind IN ('session/message','session/compaction','media/offload','tool/result') ORDER BY seq")?;
         stmt.query_map(params![project, turn, after, through], |r| {
             Ok((
                 r.get::<_, i64>(0)?,
@@ -47,7 +47,7 @@ pub fn fold(db: &Connection, project: &str, turn: &str, through: i64) -> Result<
                 );
                 messages.splice(start..end, [value["message"].clone()]);
             }
-            "image/offload" | "media/offload" => {
+            "media/offload" => {
                 let index = value["messageIndex"]
                     .as_u64()
                     .context("Invalid image position")? as usize;
@@ -69,8 +69,8 @@ pub fn fold(db: &Connection, project: &str, turn: &str, through: i64) -> Result<
     )?;
     db.execute("DELETE FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND (kind IN ('session/message','session/compaction') OR (kind='session/start' AND seq!=?4))", params![project,turn,through,seq])?;
     // Result views remain available for seven days; provider messages are now in the snapshot.
-    db.execute("DELETE FROM event_content WHERE owner IN (SELECT seq FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('tool/result','image/offload','media/offload')) AND (pointer='/message' OR pointer LIKE '/message/%')",params![project,turn,through])?;
-    db.execute("UPDATE agent_events SET payload=json_remove(payload,'$.message') WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('tool/result','image/offload','media/offload')",params![project,turn,through])?;
+    db.execute("DELETE FROM event_content WHERE owner IN (SELECT seq FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('tool/result','media/offload')) AND (pointer='/message' OR pointer LIKE '/message/%')",params![project,turn,through])?;
+    db.execute("UPDATE agent_events SET payload=json_remove(payload,'$.message') WHERE project_id=?1 AND turn_id=?2 AND seq<=?3 AND kind IN ('tool/result','media/offload')",params![project,turn,through])?;
     Ok(())
 }
 
