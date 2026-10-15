@@ -31,7 +31,15 @@ impl Command {
 #[derive(Serialize, Deserialize)]
 pub enum Request {
     Open(Plan),
-    Control { id: u64, command: Command },
+    #[cfg(target_os = "macos")]
+    OpenMetal {
+        plan: Plan,
+        frames: crate::preview_shared::Descriptor,
+    },
+    Control {
+        id: u64,
+        command: Command,
+    },
 }
 #[derive(Serialize, Deserialize)]
 pub enum Event {

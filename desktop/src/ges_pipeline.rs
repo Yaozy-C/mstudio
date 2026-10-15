@@ -1,19 +1,26 @@
-use super::time;
+use super::{time, total_frames};
+use crate::ges_output::FrameOutput;
 use ges::prelude::*;
 use gstreamer as gst;
 use gstreamer_editing_services as ges;
 use mstudio::preview_ges::Plan;
 use std::sync::{Arc, Mutex};
-pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<ges::Pipeline> {
+pub(super) fn build(
+    plan: &Plan,
+    frames: Arc<Mutex<Vec<u8>>>,
+    output: FrameOutput,
+) -> anyhow::Result<ges::Pipeline> {
     gst::init()?;
     ges::init()?;
-    // VideoToolbox can return an opaque black frame when GES seeks across
-    // overlapping H.264 layers. Use the bundled software decoder for this
-    // bounded-resolution preview, including normal playback through a seam.
+    // Prefer the official hardware-only VideoToolbox decoder on macOS.
+    // Preview excludes its last two presentation frames at the player boundary.
     #[cfg(target_os = "macos")]
-    for name in ["vtdec", "vtdec_hw"] {
+    for (name, rank) in [
+        ("vtdec_hw", gst::Rank::PRIMARY + 1000),
+        ("vtdec", gst::Rank::NONE),
+    ] {
         if let Some(factory) = gst::ElementFactory::find(name) {
-            factory.set_rank(gst::Rank::NONE);
+            factory.set_rank(rank);
         }
     }
     for name in [
@@ -46,12 +53,14 @@ pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<
     }
     // GES priority 0 is topmost; saved project order is bottom to top.
     for layer in plan.layers.iter().rev() {
+        let start = mstudio::preview_clock::timeline_ns(layer.start, plan.fps);
+        let end = mstudio::preview_clock::timeline_ns(layer.start + layer.duration, plan.fps);
         let clip = ges::UriClip::new(ges::gio::File::for_path(&layer.path).uri().as_str())?;
         clip.set_supported_formats(ges::TrackType::VIDEO);
         anyhow::ensure!(
-            clip.set_start(time(layer.start))
+            clip.set_start(gst::ClockTime::from_nseconds(start))
                 && clip.set_inpoint(time(layer.trim))
-                && clip.set_duration(time(layer.duration)),
+                && clip.set_duration(gst::ClockTime::from_nseconds(end - start)),
             "GES 片段时间无效"
         );
         timeline.append_layer().add_clip(&clip)?;
@@ -65,16 +74,18 @@ pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<
         }
         clip.set_child_property("alpha", layer.opacity)?;
     }
+    let end =
+        gst::ClockTime::from_nseconds(mstudio::preview_clock::timeline_ns(plan.duration, plan.fps));
     if let Some(path) = &plan.audio {
         let clip = ges::UriClip::new(ges::gio::File::for_path(path).uri().as_str())?;
         clip.set_supported_formats(ges::TrackType::AUDIO);
-        clip.set_duration(time(plan.duration));
+        clip.set_duration(end);
         timeline.append_layer().add_clip(&clip)?;
     }
     let black =
         ges::TestClip::for_nick("black").ok_or_else(|| anyhow::anyhow!("GES 黑场不可用"))?;
     black.set_supported_formats(ges::TrackType::VIDEO);
-    black.set_duration(time(plan.duration));
+    black.set_duration(end);
     timeline.append_layer().add_clip(&black)?;
     anyhow::ensure!(timeline.commit(), "GES 时间线提交失败");
     let pipeline = ges::Pipeline::new();
@@ -82,7 +93,7 @@ pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<
     let sink = gstreamer_app::AppSink::builder()
         .caps(
             &gst::Caps::builder("video/x-raw")
-                .field("format", "RGBA")
+                .field("format", output.format())
                 .build(),
         )
         .sync(true)
@@ -91,17 +102,19 @@ pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<
         .build();
     let count = Arc::new(std::sync::atomic::AtomicU32::new(0));
     let fps = plan.fps;
+    let visible_total = total_frames(plan) as u32;
     let a = frames.clone();
     let count2 = count.clone();
+    let output2 = output.clone();
     sink.set_callbacks(
         gstreamer_app::AppSinkCallbacks::builder()
             .new_sample(move |s| {
                 let sample = s.pull_sample().map_err(|_| gst::FlowError::Eos)?;
-                copy_frame(&sample, &a, &count, fps)
+                copy_frame(&sample, &a, &count, fps, &output, visible_total)
             })
             .new_preroll(move |s| {
                 let sample = s.pull_preroll().map_err(|_| gst::FlowError::Eos)?;
-                copy_frame(&sample, &frames, &count2, fps)
+                copy_frame(&sample, &frames, &count2, fps, &output2, visible_total)
             })
             .build(),
     );
@@ -113,28 +126,6 @@ pub(super) fn build(plan: &Plan, frames: Arc<Mutex<Vec<u8>>>) -> anyhow::Result<
     })
     .build()?;
     pipeline.preview_set_audio_sink(Some(&audio));
-    if let Err(e) = pipeline.set_state(gst::State::Paused) {
-        let _ = pipeline.set_state(gst::State::Null);
-        return Err(e.into());
-    }
-    let (result, state, _) = pipeline.state(gst::ClockTime::from_seconds(15));
-    if result.is_err() || state != gst::State::Paused {
-        let message = pipeline
-            .bus()
-            .and_then(|b| b.pop_filtered(&[gst::MessageType::Error]))
-            .and_then(|m| {
-                if let gst::MessageView::Error(e) = m.view() {
-                    Some(e.error().to_string())
-                } else {
-                    None
-                }
-            });
-        let _ = pipeline.set_state(gst::State::Null);
-        anyhow::bail!(
-            "GES 首帧准备失败：{}",
-            message.unwrap_or_else(|| "等待超时".into())
-        );
-    }
     Ok(pipeline)
 }
 fn copy_frame(
@@ -142,6 +133,8 @@ fn copy_frame(
     frames: &Mutex<Vec<u8>>,
     count: &std::sync::atomic::AtomicU32,
     fps: u32,
+    output: &FrameOutput,
+    visible_total: u32,
 ) -> Result<gst::FlowSuccess, gst::FlowError> {
     let info = gstreamer_video::VideoInfo::from_caps(sample.caps().ok_or(gst::FlowError::Error)?)
         .map_err(|_| gst::FlowError::Error)?;
@@ -151,18 +144,36 @@ fn copy_frame(
     let data = frame.plane_data(0).map_err(|_| gst::FlowError::Error)?;
     let position =
         (buffer.pts().unwrap_or(gst::ClockTime::ZERO).seconds_f64() * fps as f64).round() as u32;
+    if position >= visible_total {
+        return Ok(gst::FlowSuccess::Ok);
+    }
     let seq = count
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         .wrapping_add(1);
+    #[cfg(target_os = "macos")]
+    if let FrameOutput::Shared(shared) = output {
+        if info.width() != shared.descriptor().width || info.height() != shared.descriptor().height
+        {
+            return Err(gst::FlowError::Error);
+        }
+        if !shared
+            .publish(seq, position, data, info.stride()[0] as usize)
+            .map_err(|_| gst::FlowError::Error)?
+        {
+            return Ok(gst::FlowSuccess::Ok);
+        }
+    }
     let mut packet = frames.lock().unwrap();
     packet.clear();
     for x in [seq, info.width(), info.height(), position] {
         packet.extend_from_slice(&x.to_le_bytes());
     }
     let width = info.width() as usize * 4;
-    for row in 0..info.height() as usize {
-        let start = row * info.stride()[0] as usize;
-        packet.extend_from_slice(&data[start..start + width]);
+    if matches!(output, FrameOutput::Rgba) {
+        for row in 0..info.height() as usize {
+            let start = row * info.stride()[0] as usize;
+            packet.extend_from_slice(&data[start..start + width]);
+        }
     }
     Ok(gst::FlowSuccess::Ok)
 }

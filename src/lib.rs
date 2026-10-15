@@ -17,6 +17,7 @@ pub mod transition_design;
 mod transition_render;
 pub mod transitions;
 
+pub mod preview_clock;
 pub mod preview_ges;
 
 pub mod caption_animation;

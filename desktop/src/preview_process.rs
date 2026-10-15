@@ -16,6 +16,9 @@ use std::{
     time::{Duration, Instant},
 };
 type Reply = mpsc::Sender<Result<Status, String>>;
+#[cfg(target_os = "macos")]
+#[path = "preview_metal_output.rs"]
+mod metal;
 #[derive(Default)]
 struct Shared {
     status: Status,
@@ -24,6 +27,8 @@ struct Shared {
     pending: HashMap<u64, Reply>,
 }
 pub struct PreviewProcess {
+    #[cfg(target_os = "macos")]
+    metal: Option<metal::MetalOutput>,
     child: Mutex<Child>,
     input: Mutex<ChildStdin>,
     shared: Arc<Mutex<Shared>>,
@@ -31,14 +36,47 @@ pub struct PreviewProcess {
     started: Mutex<Option<mpsc::Receiver<Result<Status, String>>>>,
 }
 impl PreviewProcess {
-    pub fn launch(plan: Plan) -> Result<Self, String> {
+    pub fn launch(
+        plan: Plan,
+        #[cfg(target_os = "macos")] surface: Arc<crate::metal_preview::Surface>,
+    ) -> Result<Self, String> {
         let mut command =
             std::process::Command::new(std::env::current_exe().map_err(|e| e.to_string())?);
         mstudio::media::quiet(&mut command);
         command.arg("--preview-worker");
+        #[cfg(target_os = "macos")]
+        {
+            let frames = Arc::new(crate::preview_shared::SharedFrames::create(
+                plan.width,
+                plan.height,
+            )?);
+            let request = Request::OpenMetal {
+                plan,
+                frames: frames.descriptor(),
+            };
+            Self::spawn_request(
+                command,
+                request,
+                Some(metal::MetalOutput::new(frames, surface)),
+            )
+        }
+        #[cfg(not(target_os = "macos"))]
         Self::spawn(command, plan)
     }
-    fn spawn(mut command: std::process::Command, plan: Plan) -> Result<Self, String> {
+    #[cfg(any(test, not(target_os = "macos")))]
+    fn spawn(command: std::process::Command, plan: Plan) -> Result<Self, String> {
+        Self::spawn_request(
+            command,
+            Request::Open(plan),
+            #[cfg(target_os = "macos")]
+            None,
+        )
+    }
+    fn spawn_request(
+        mut command: std::process::Command,
+        request: Request,
+        #[cfg(target_os = "macos")] metal: Option<metal::MetalOutput>,
+    ) -> Result<Self, String> {
         let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -87,18 +125,16 @@ impl PreviewProcess {
             }
         });
         let process = Self {
+            #[cfg(target_os = "macos")]
+            metal,
             child: Mutex::new(child),
             input: Mutex::new(input),
             shared,
             next: AtomicU64::new(1),
             started: Mutex::new(Some(started)),
         };
-        ipc::write(
-            &mut *process.input.lock().unwrap(),
-            &Request::Open(plan),
-            &[],
-        )
-        .map_err(|e| e.to_string())?;
+        ipc::write(&mut *process.input.lock().unwrap(), &request, &[])
+            .map_err(|e| e.to_string())?;
         Ok(process)
     }
     pub fn ready(&self) -> Result<(), String> {
@@ -109,12 +145,19 @@ impl PreviewProcess {
             .take()
             .ok_or("预览启动已确认")?;
         match started.recv_timeout(Duration::from_secs(60)) {
-            Ok(result) => result.map(|_| ()),
+            Ok(result) => result.map(|_| {
+                #[cfg(target_os = "macos")]
+                if let Some(output) = &self.metal {
+                    output.unlink();
+                }
+            }),
             Err(error) => self.abort(format!("预览进程启动失败：{error}")).map(|_| ()),
         }
     }
     pub fn control(&self, command: Command) -> Result<Status, String> {
         command.engine_args()?;
+        #[cfg(target_os = "macos")]
+        let _operation = self.metal.as_ref().map(|output| output.begin_control());
         let id = self.next.fetch_add(1, Ordering::Relaxed);
         let (reply, response) = mpsc::channel();
         {
@@ -150,6 +193,10 @@ impl PreviewProcess {
         }
     }
     pub fn frame(&self, last: u32) -> Vec<u8> {
+        #[cfg(target_os = "macos")]
+        if self.metal.is_some() {
+            return vec![];
+        }
         let state = self.shared.lock().unwrap();
         if state.failure.is_some()
             || !matches!(state.status.phase.as_str(), "paused" | "playing" | "ended")
@@ -164,6 +211,8 @@ impl PreviewProcess {
         }
     }
     pub fn shutdown(&self) {
+        #[cfg(target_os = "macos")]
+        self.detach_surface();
         // Closing supersedes in-flight controls; a stuck plugin gets a bounded grace period.
         fail(&self.shared, "预览已关闭".into());
         let _ = ipc::write(

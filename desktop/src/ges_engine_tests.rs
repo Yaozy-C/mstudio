@@ -2,6 +2,8 @@ use super::*;
 use mstudio::preview_ges::{Layer, Plan};
 use std::{process::Command, time::Instant};
 static PLAYER_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+#[path = "ges_timing_tests.rs"]
+mod timing;
 #[cfg(windows)]
 fn isolated(name: &str) -> bool {
     if std::env::var_os("MSTUDIO_GES_TEST_ROOT").is_some() {
@@ -119,7 +121,12 @@ fn ges_composites_seeks_replays_and_closes() {
     };
     let p = Player::open(plan.clone()).unwrap();
     let first = wait_frame(&p, 0);
+    let last = p.snapshot().total - 1;
     assert!(first[16] > 180 && first[17] < 40);
+    // Reapplying the current rate/position must keep the existing decoded frame.
+    p.control("rate", 4).unwrap();
+    p.control("seek", 0).unwrap();
+    assert_eq!(&p.frame(0)[..4], &first[..4]);
     p.control("seek", 30).unwrap();
     let frame = wait_frame(&p, 30);
     let center = 16 + (45 * 160 + 80) * 4;
@@ -166,7 +173,7 @@ fn ges_composites_seeks_replays_and_closes() {
         let start = Instant::now();
         loop {
             let s = p.control("status", 0).unwrap();
-            if !s.playing && s.frame == 59 {
+            if !s.playing && s.frame == last {
                 break;
             }
             assert!(start.elapsed() < Duration::from_secs(5));
@@ -182,7 +189,7 @@ fn ges_composites_seeks_replays_and_closes() {
             let frame = p.frame(0);
             assert_eq!(
                 u32::from_le_bytes(frame[12..16].try_into().unwrap()),
-                target as u32
+                target.min(last) as u32
             );
             assert!(frame[16] > 180 && frame[17] < 40, "black frame at {target}");
             p.control("play", 0).unwrap();
@@ -193,6 +200,7 @@ fn ges_composites_seeks_replays_and_closes() {
     next.control("seek", 30).unwrap();
     wait_frame(&next, 30);
     drop(next);
+    timing::cached_fractional_cuts(&root, &red);
     #[cfg(not(windows))]
     std::fs::remove_dir_all(root).unwrap();
 }

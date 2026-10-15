@@ -93,6 +93,26 @@ fn ges_preparation_preserves_timing_effects_and_cache_identity() -> anyhow::Resu
     spec.clips[0].speed = 1.;
     let changed = preview_ges::prepare(&spec, &assets, &cache, 640)?;
     assert_ne!(changed.layers[0].path, *file);
+    // Preserve fractional-frame edit lengths; the cache must cover their final
+    // output frame, including a clip shorter than one frame.
+    for (seconds, frames) in [(1.1472, 35), (0.001, 1)] {
+        spec.clips[0].trim_out = seconds;
+        let fractional = preview_ges::prepare(&spec, &assets, &cache, 640)?;
+        assert_eq!(fractional.layers[0].duration, seconds);
+        assert_eq!(fractional.layers[0].start, 0.5);
+        assert_eq!(fractional.duration, 0.5 + seconds);
+        let probe = media::probe(std::path::Path::new(&fractional.layers[0].path))?;
+        let video = probe["streams"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["codec_type"] == "video")
+            .unwrap();
+        assert_eq!(video["nb_frames"].as_str().unwrap(), frames.to_string());
+        assert_eq!(video["avg_frame_rate"], "30/1");
+        let covered: f64 = video["duration"].as_str().unwrap().parse()?;
+        assert!(covered + 0.000001 >= seconds);
+    }
     spec.tracks[0].hidden = true;
     assert!(
         preview_ges::prepare(&spec, &assets, &cache, 640)?

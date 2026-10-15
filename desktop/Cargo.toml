@@ -11,6 +11,7 @@ custom-protocol = ["tauri/custom-protocol"]
 
 [build-dependencies]
 tauri-build = { version = "2.6", features = [] }
+cc = "1"
 
 [dependencies]
 gstreamer = { version = "0.25" }
@@ -43,6 +44,7 @@ tracing-appender = "0.2"
 rig-http = { package = "reqwest", version = "0.13", default-features = false, features = ["rustls"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSPasteboard", "NSPasteboardItem"] }
 
 [[example]]

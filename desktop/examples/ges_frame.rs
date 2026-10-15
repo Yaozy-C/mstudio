@@ -1,8 +1,15 @@
 //! Read one paused frame through the production GES player for pixel regression tests.
 #[path = "../src/ges_engine.rs"]
 mod ges_engine;
+#[allow(dead_code)]
+#[path = "../src/ges_output.rs"]
+mod ges_output;
 #[path = "../src/ges_runtime.rs"]
 mod ges_runtime;
+#[cfg(target_os = "macos")]
+#[allow(dead_code)]
+#[path = "../src/preview_shared.rs"]
+mod preview_shared;
 use std::{
     io::Write,
     time::{Duration, Instant},

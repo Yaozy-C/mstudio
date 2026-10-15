@@ -13,11 +13,25 @@ use std::{
 };
 pub fn run() -> Result<(), String> {
     let mut input = BufReader::new(stdin());
-    let (Request::Open(plan), _) = ipc::read(&mut input).map_err(|e| e.to_string())? else {
-        return Err("Preview worker requires an open request".into());
+    let (request, _) = ipc::read(&mut input).map_err(|e| e.to_string())?;
+    let (plan, frames) = match request {
+        Request::Open(plan) => (plan, crate::ges_output::FrameOutput::Rgba),
+        #[cfg(target_os = "macos")]
+        Request::OpenMetal { plan, frames } => (
+            plan,
+            crate::ges_output::FrameOutput::Shared(Arc::new(
+                crate::preview_shared::SharedFrames::open(frames)?,
+            )),
+        ),
+        _ => return Err("Preview worker requires an open request".into()),
     };
     let output = Arc::new(Mutex::new(stdout()));
-    let player = match Player::open(plan) {
+    let opened = match frames {
+        crate::ges_output::FrameOutput::Rgba => Player::open(plan),
+        #[cfg(target_os = "macos")]
+        output => Player::open_with_output(plan, output),
+    };
+    let player = match opened {
         Ok(player) => Arc::new(player),
         Err(error) => {
             let _ = ipc::write(

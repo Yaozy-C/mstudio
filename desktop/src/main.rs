@@ -8,6 +8,7 @@ mod creation_commands;
 mod database;
 mod diagnostics;
 mod ges_engine;
+mod ges_output;
 mod ges_runtime;
 mod imports;
 mod job_download;
@@ -16,6 +17,8 @@ mod job_recovery;
 mod job_worker;
 mod jobs;
 mod media_commands;
+#[cfg(target_os = "macos")]
+mod metal_preview;
 mod model_adapters;
 mod models;
 mod native_preview;
@@ -23,6 +26,9 @@ mod preview_prepare;
 mod preview_process;
 mod preview_protocol;
 mod preview_session;
+#[cfg(target_os = "macos")]
+mod preview_shared;
+mod preview_surface;
 mod preview_worker;
 mod previs;
 mod production_queue;
@@ -102,6 +108,9 @@ fn main() {
             native_preview::native_preview_open,
             native_preview::native_preview_control,
             native_preview::native_preview_frame,
+            native_preview::native_preview_frame_info,
+            native_preview::native_preview_present,
+            native_preview::native_preview_bounds,
             native_preview::native_preview_status,
             storage::storage_settings,
             storage::choose_storage_directory,

@@ -1,12 +1,11 @@
+use super::asynchronous::{Events, Failure};
 use ges::prelude::*;
 use gstreamer as gst;
 use gstreamer_editing_services as ges;
-use std::{
-    sync::Mutex,
-    time::{Duration, Instant},
-};
-// GES position queries can jump to a composition boundary at non-unit rates.
-// Use the PTS of the delivered video frame as the preview clock instead.
+use std::{sync::Mutex, time::Instant};
+
+// The delivered frame, rather than a possibly advanced composition query,
+// is the authoritative preview position at every playback rate.
 pub(super) fn displayed_frame(frames: &Mutex<Vec<u8>>) -> i32 {
     let packet = frames.lock().unwrap();
     packet
@@ -17,68 +16,53 @@ pub(super) fn displayed_frame(frames: &Mutex<Vec<u8>>) -> i32 {
 pub(super) fn time(s: f64) -> gst::ClockTime {
     gst::ClockTime::from_nseconds((s * 1e9).round() as u64)
 }
-// A seek returning Ok only means that its event was accepted. Wait for
-// preroll/state completion before acknowledging it to the command queue.
-pub(super) fn settle(pipeline: &ges::Pipeline) -> Result<(), String> {
-    let (result, _, _) = pipeline.state(gst::ClockTime::from_seconds(5));
-    match result {
-        Ok(gst::StateChangeSuccess::Async) => Err("预览定位等待超时，请重试".into()),
-        Ok(_) => Ok(()),
-        Err(error) => Err(format!("预览状态切换失败：{error}")),
-    }
-}
 pub(super) fn seek(
     pipeline: &ges::Pipeline,
+    events: &mut Events,
     frames: &Mutex<Vec<u8>>,
     frame: i32,
-    fps: u32,
-    resume: bool,
+    playing: bool,
     rate: f64,
-    duration: f64,
-) -> Result<(), String> {
+    deadline: Instant,
+) -> Result<(), Failure> {
+    events.poll(pipeline)?;
+    let before = events.done;
     let previous_sequence = frames
         .lock()
         .unwrap()
         .get(..4)
         .map(|v| u32::from_le_bytes(v.try_into().unwrap()));
-    // Seek while paused so its preroll cannot run past the requested frame.
-    pipeline
-        .set_state(gst::State::Paused)
-        .map_err(|e| e.to_string())?;
+    let target = pipeline
+        .timeline()
+        .and_then(|timeline| timeline.frame_time(i64::from(frame)))
+        .ok_or_else(|| Failure::Pipeline("GES 无法计算预览帧时间".into()))?;
+    events.eos = false;
+    // Match ges-launch: preserve playback state, seek accurately, and clear
+    // an explicit stop instead of retaining the previous bounded segment.
     pipeline
         .seek(
             rate,
             gst::SeekFlags::FLUSH | gst::SeekFlags::ACCURATE,
             gst::SeekType::Set,
-            time(frame as f64 / fps as f64),
+            target,
             gst::SeekType::Set,
-            time(duration),
+            gst::ClockTime::NONE,
         )
-        .map_err(|e| e.to_string())?;
-    settle(pipeline)?;
-    // At EOS get_state can finish before the new preroll callback. The frame
-    // packet is the authoritative completion signal used by the WebView.
-    let deadline = Instant::now() + Duration::from_secs(5);
-    loop {
-        let ready = {
-            let packet = frames.lock().unwrap();
-            packet.len() > 16
-                && Some(u32::from_le_bytes(packet[..4].try_into().unwrap())) != previous_sequence
-                && u32::from_le_bytes(packet[12..16].try_into().unwrap()) == frame as u32
-        };
-        if ready {
-            break;
+        .map_err(|e| Failure::Pipeline(e.to_string()))?;
+    events.wait(pipeline, Some(before), deadline, || {
+        let packet = frames.lock().unwrap();
+        if packet.len() < 16
+            || Some(u32::from_le_bytes(packet[..4].try_into().unwrap())) == previous_sequence
+        {
+            return false;
         }
-        if Instant::now() >= deadline {
-            return Err("预览定位等待画面超时，请重新加载预览".into());
+        let position = u32::from_le_bytes(packet[12..16].try_into().unwrap()) as i32;
+        // Playing can advance after the target renders; paused seeks must
+        // acknowledge the exact requested output frame.
+        if playing {
+            position >= frame
+        } else {
+            position == frame
         }
-        std::thread::sleep(Duration::from_millis(2));
-    }
-    if resume {
-        pipeline
-            .set_state(gst::State::Playing)
-            .map_err(|e| e.to_string())?;
-        settle(pipeline)?;
-    }
-    Ok(())
+    })
 }

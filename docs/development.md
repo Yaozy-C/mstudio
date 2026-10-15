@@ -55,7 +55,7 @@ cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D war
 cargo test --manifest-path desktop/Cargo.toml --locked
 ```
 
-`ges_composites` 测试使用真实 GES 管线验证透明字幕、定位、暂停、末尾重播与销毁重开。圆形展开/收拢使用像素坐标圆形遮罩与 2 像素羽化，进度覆盖到最后一个编码帧；短转场按帧数输出，素材尾部先解码预留帧再补帧，避免空输入。`test-circle-transitions.py` 检查横竖画幅、24/30/60 fps、0.05–1 秒转场的每帧单调性和首尾画面。`ges_playback_frames` 示例可记录实际播放的连续帧，补充暂停寻帧测试。`ges_seek_stress plan.json` 连续执行 800 次暂停、定位、播放；原生播放器在回执前等待 GES 状态切换和寻帧完成，避免快速定位相互冲突。macOS 预览禁用 `vtdec` / `vtdec_hw`，改用随包软件解码器：VideoToolbox 在转场叠层寻帧时可返回不透明黑帧。此回归需要在与桌面应用相同的系统权限下检查；隔离环境可能直接回退软件解码而掩盖问题。预览错误后可点击「重新加载预览」恢复。前端在目标帧实际绘制后才显示新预览，寻帧期间及暂停时丢弃不属于目标位置的旧帧；`ges_seek_pixels plan.json first-frame last-frame` 可在已知非黑画面区间反复定位并检查像素，避免只检验命令是否成功。
+`ges_composites` 测试使用真实 GES 管线验证透明字幕、定位、暂停、末尾重播与销毁重开。圆形展开/收拢使用像素坐标圆形遮罩与 2 像素羽化，进度覆盖到最后一个编码帧；短转场按帧数输出，素材尾部先解码预留帧再补帧，避免空输入。`test-circle-transitions.py` 检查横竖画幅、24/30/60 fps、0.05–1 秒转场的每帧单调性和首尾画面。定位回执等待管线 ASYNC_DONE 和新画面，等待期间继续处理 GLib 与总线；播放中 seek 保持播放状态，普通暂停仅请求 PAUSED、不等待新 preroll。相同位置或倍速不重复 seek，超时在 12 秒操作期限内最多重建管线一次。macOS 预览优先使用随包官方 `vtdec_hw` 硬解，并从预览可访问范围中丢弃末尾 2 帧（至少保留 1 帧），定位钳制到最后保留帧，播放到该帧结束，暂停只切换 PAUSED 状态、不重复 flush 定位；项目、源文件和导出时长不变。这是末尾规避策略，尚不能保证所有内部片段和倍速切换的短区间定位可靠。解码区间和源文件末尾不扩展；上层缓存少帧与边界取整仍由缓存覆盖和帧时间修复处理。正向 seek 按官方 ges-launch 使用无固定 stop，内部 NLE 片段边界仍由 GES 管理。此回归需要在与桌面应用相同的系统权限下检查；隔离环境可能直接回退软件解码而掩盖问题。预览错误后可点击「重新加载预览」恢复。前端在目标帧实际绘制后才显示新预览，寻帧期间及暂停时丢弃不属于目标位置的旧帧。
 
 `test-detached-audio.py` 对比 GES 使用的混音缓存中分离前后的实际 PCM，验证音量、起点和静音行为。物理显示流畅度、声画同步、文件选择器和真实模型服务仍需桌面人工验证。
 
@@ -139,9 +139,13 @@ Run `cd frontend && bun run build && bun test`. Localization tests cover persist
 
 Manually check General → Language in both directions, reload to confirm persistence, and inspect long English labels in the project library, settings, creation canvas and timeline. Browser preview cannot verify native file dialogs, native playback or actual generation services.
 
-## Canvas 预览与 GES 后端
+## Metal 预览与 GES 后端
 
-桌面预览统一使用 GES，当前界面按工程原分辨率请求预览（`edge: 0`），没有清晰度选择器。后端仍接受长边 640 或 1280 的预览请求，不影响工程分辨率或 FFmpeg 导出。播放器通过有界的最新 RGBA 帧交给 WKWebView Canvas；没有逐帧图像编码。弹窗、菜单和画面处于同一 WebView，不再需要原生视图坐标和遮挡检测。二进制包头为 4 个 little-endian u32：序号、宽、高、时间线帧号，之后为连续 RGBA。前端只允许一个在途请求，过期会话不能取帧或控制新播放器。
+桌面预览统一使用 GES，当前界面按工程原分辨率请求预览（`edge: 0`），没有清晰度选择器。后端仍接受长边 640 或 1280 的预览请求，不影响工程分辨率或 FFmpeg 导出。macOS 默认用嵌入 WKWebView 的 CAMetalLayer 显示：BGRA 像素通过三个共享内存槽交给主进程，再上传到受 GPU 完成回调保护的纹理；着色器按实际 Retina 区域缩放并使用 sRGB。控制、状态和帧元数据仍走 IPC，完整像素不进入 WebView。Windows 保留 RGBA Canvas 路径。两条路径均没有逐帧图像编码；二进制帧头为 4 个 little-endian u32：序号、宽、高、时间线帧号。前端只有一个在途请求，旧会话及旧控制代数不能提交画面。
+
+Metal 原生视图在主线程创建、布局和移除，位置由 DOM 预览区域提供，按 WebView 坐标和 backing scale 转换；弹窗、菜单重叠、页面隐藏和组件卸载时隐藏或移除，鼠标事件透传给 WebView。`preview_shared_tests` 用独立写入进程验证读取锁、行填充与清理；`metalPreviewFrames.test.ts` 覆盖目标帧过滤、GPU 背压、遮挡、隐藏恢复与 DPI 改变后的重绘。开发构建需要 Apple SDK；Objective-C 模块缓存在 Cargo OUT_DIR，不写全局缓存。
+
+打包后可运行 `python3 scripts/test-metal-preview-worker.py Mstudio.app/Contents/MacOS/mstudio-desktop video1.mp4 [video2.mp4 ...]`，使用已有视频验证原分辨率 4K、最多四层合成、准确定位、倍速、播放/暂停及关闭，并确认进程管道每帧仅传递 16 字节元数据。该测试使用临时映射，不读取或写入项目数据库；窗口布局、遮挡和显示效果仍由实窗验收覆盖。
 
 GES 使用官方 Rust 绑定和独立工作线程，所有 GES 对象与 GLib 默认上下文归该线程；appsink 在暂停时也接收 preroll。GES 排布逐片段视频层、透明字幕、黑场，并播放同一管线内的音频。为了与现有 FFmpeg/GES 效果保持一致，调色及变速视频按片段预计算缓存；转场复用原缓存，声音使用导出混音定义预混（保调变速、淡入淡出、静音、音量和限幅）。因此首次准备或修改效果可能有准备时间，本版不是 GES 原生实时特效实现。缓存按参数、尺寸、源文件路径/大小/修改时间区分，项目原始素材不变。
 
@@ -153,7 +157,9 @@ cargo test preview_validation
 GST_PLUGIN_SYSTEM_PATH_1_0="$PWD/desktop/native/ges-dev-plugins" GST_PLUGIN_PATH_1_0= GST_REGISTRY_FORK=no cargo test --manifest-path desktop/Cargo.toml --bin mstudio-desktop ges_composites
 ```
 
-GES 集成测试使用合成素材，验证透明字幕、准确定位、暂停、两轮播放和销毁重开；准备测试检查变速时长、灰度像素、缓存复用与源文件不变。`examples/ges_plan.rs` 和 `desktop/examples/ges_play.rs` 可验证只读工程快照，快照不应提交。播放器计数不等于屏幕 vsync 或精确音画同步测量。
+GES 集成测试使用合成素材，验证透明字幕、准确定位、暂停、两轮播放和销毁重开；`ges_timing_tests` 复用同一素材检查非整帧片段与整帧片段的逐帧定位、连续切段和末帧像素。准备测试检查变速时长、灰度像素、缓存复用、非整帧/不足一帧缓存覆盖与源文件不变。`examples/ges_plan.rs` 和 `desktop/examples/ges_play.rs` 可验证只读工程快照，快照不应提交。播放器计数不等于屏幕 vsync 或精确音画同步测量。
+
+帧定位使用官方 [`ges_timeline_get_frame_time`](https://gstreamer.freedesktop.org/documentation/gst-editing-services/gestimeline.html#ges_timeline_get_frame_time)，不再将帧号转换为浮点秒再四舍五入。`preview_clock` 对帧边界使用与 GES `get_frame_time` 一致的向上整数缩放，帧数按同一网格的半开区间统计，只消除一纳秒内的表示误差，不将任意非整帧剪辑吸附到帧网格。效果视频缓存 v2 使用 FFmpeg [`fps` 与 `tpad`](https://ffmpeg.org/ffmpeg-filters.html#tpad)，输出帧数覆盖原片段时长，工程的片段长度与音频时间不变。
 
 ## 播放器隔离回归
 

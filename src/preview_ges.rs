@@ -85,7 +85,7 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
             let mut trim = if a.kind == "image" { 0. } else { c.trim_in };
             if needs_cache {
                 let mut hash = std::collections::hash_map::DefaultHasher::new();
-                ("ges-picture-v1", width, height, w, h, spec.fps).hash(&mut hash);
+                ("ges-picture-v2", width, height, w, h, spec.fps).hash(&mut hash);
                 source_hash(&mut hash, a)?;
                 serde_json::to_string(&(&c.visual, c.trim_in, c.trim_out, c.speed))?
                     .hash(&mut hash);
@@ -109,11 +109,20 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
                         "scale={width}:{height}:force_original_aspect_ratio=decrease:force_divisible_by=2"
                     );
                     if !image {
-                        vf = format!("setpts=(PTS-STARTPTS)/{},fps={},{}", c.speed, spec.fps, vf);
+                        vf = format!(
+                            "setpts=(PTS-STARTPTS)/{},fps={}:start_time=0:eof_action=pass,{}",
+                            c.speed, spec.fps, vf
+                        );
                     }
                     if !filters.is_empty() {
                         vf.push(',');
                         vf.push_str(&filters);
+                    }
+                    if !image {
+                        // A fractional-frame edit must not outlast its cache. The
+                        // input fps filter can round EOF down; clone only the tail
+                        // and bound output by the required frame count, not -t.
+                        vf.push_str(",tpad=stop_mode=clone:stop=-1");
                     }
                     cmd.arg(vf);
                     if image {
@@ -130,8 +139,10 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
                             "yuv420p",
                             "-threads",
                             "2",
-                            "-t",
-                            &c.duration().to_string(),
+                            "-frames:v",
+                            &crate::preview_clock::frame_count(c.duration(), spec.fps)
+                                .max(1)
+                                .to_string(),
                         ]);
                     }
                     if let Err(e) = run(cmd.arg(&temporary)) {

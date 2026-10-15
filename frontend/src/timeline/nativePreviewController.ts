@@ -21,6 +21,7 @@ export class NativePreviewController {
   phase: PreviewPhase = "loading";
   private commands: PreviewCommands;
   private polling = false;
+  private totalFrames: number | undefined;
   private timer: ReturnType<typeof setInterval> | undefined;
   private detach: () => void;
   constructor(
@@ -54,7 +55,8 @@ export class NativePreviewController {
       await this.backend.open();
       if (this.phase !== "loading") return;
       this.phase = "ready";
-      this.commands.push({ action: "rate", rate: this.clock.getRate() });
+      const rate = this.clock.getRate();
+      if (rate !== 1) this.commands.push({ action: "rate", rate });
       this.commands.push({
         action: "seek",
         frame: Math.round(this.clock.getSnapshot().time * this.fps),
@@ -71,6 +73,7 @@ export class NativePreviewController {
       this.fail(status.error);
       return;
     }
+    this.totalFrames = status.total;
     this.clock.acceptTransportState(
       status.phase === "ended" ? this.clock.total : status.frame / this.fps,
       status.playing,
@@ -100,7 +103,7 @@ export class NativePreviewController {
     const target = Math.max(
       0,
       Math.min(
-        Math.ceil(this.clock.total * this.fps) - 1,
+        (this.totalFrames ?? Math.ceil(this.clock.total * this.fps)) - 1,
         Math.round(state.time * this.fps),
       ),
     );

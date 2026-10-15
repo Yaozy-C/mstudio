@@ -79,6 +79,16 @@ test("loading keeps latest seek and rate; readiness waits for a presented frame"
     s.cleanup();
   }
 });
+test("default startup seeks once without reapplying the default rate", async () => {
+  const s = setup();
+  try {
+    await s.controller.start();
+    await flush();
+    expect(s.calls).toEqual([{ action: "seek", frame: 0 }]);
+  } finally {
+    s.cleanup();
+  }
+});
 test("late open cannot restart a disposed session", async () => {
   const opening = deferred<void>();
   const s = setup(opening.promise);
@@ -90,6 +100,33 @@ test("late open cannot restart a disposed session", async () => {
     expect(s.calls).toEqual([{ action: "close" }]);
     expect(s.controller.phase).toBe("closed");
     expect(s.phases).toEqual(["loading"]);
+  } finally {
+    s.cleanup();
+  }
+});
+test("trimmed preview tail accepts its retained frame at seek and playback end", async () => {
+  const s = setup();
+  const send = s.backend.control;
+  try {
+    s.backend.control = async (command) => {
+      const reply = await send(command);
+      return { ...reply, total: 298, frame: Math.min(reply.frame, 297) };
+    };
+    await s.controller.start();
+    await flush();
+    s.clock.seek(10);
+    await flush();
+    expect(s.clock.getSnapshot().time).toBe(9.9);
+    expect(s.controller.acceptFrame(297)).toBe(true);
+    expect(s.controller.acceptFrame(299)).toBe(false);
+    s.backend.status = async () => ({
+      ...status(297),
+      total: 298,
+      phase: "ended",
+    });
+    await s.controller.poll();
+    expect(s.clock.getSnapshot().playing).toBe(false);
+    expect(s.controller.acceptFrame(297)).toBe(true);
   } finally {
     s.cleanup();
   }

@@ -1,7 +1,14 @@
 #[path = "../src/ges_engine.rs"]
 mod ges_engine;
+#[allow(dead_code)]
+#[path = "../src/ges_output.rs"]
+mod ges_output;
 #[path = "../src/ges_runtime.rs"]
 mod ges_runtime;
+#[cfg(target_os = "macos")]
+#[allow(dead_code)]
+#[path = "../src/preview_shared.rs"]
+mod preview_shared;
 fn main() -> anyhow::Result<()> {
     ges_runtime::configure();
     let path = std::env::args().nth(1).expect("ges_play plan.json");

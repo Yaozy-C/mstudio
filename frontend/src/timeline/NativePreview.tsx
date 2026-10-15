@@ -10,6 +10,11 @@ import { ClockReadout } from "./ClockReadout";
 import { previewSpec } from "./previewSpec";
 import { startPreviewFrames } from "./previewFrames";
 import {
+  metalBounds,
+  startMetalPreviewFrames,
+  type MetalFrame,
+} from "./metalPreviewFrames";
+import {
   NativePreviewController,
   type PreviewStatus,
 } from "./nativePreviewController";
@@ -24,6 +29,8 @@ export function NativePreview({
 }) {
   useLanguage();
   const canvas = useRef<HTMLCanvasElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const [renderer, setRenderer] = useState("canvas");
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
@@ -62,12 +69,50 @@ export function NativePreview({
             () => controller.phase === "closed",
           );
           if (controller.phase === "closed") return;
-          await bridge("native_preview_open", {
-            token,
-            projectId: project.id,
-            spec: doc,
-            edge: 0,
-          });
+          const renderer = await bridge<"metal" | "canvas">(
+            "native_preview_open",
+            {
+              token,
+              projectId: project.id,
+              spec: doc,
+              edge: 0,
+            },
+          );
+          if (controller.phase !== "loading") return;
+          setRenderer(renderer);
+          if (renderer === "metal" && stage.current) {
+            const host = stage.current;
+            stopFrames = startMetalPreviewFrames(
+              () => metalBounds(host, doc.width, doc.height),
+              {
+                layout: (bounds) =>
+                  bridge("native_preview_bounds", { token, bounds }),
+                read: (last) =>
+                  bridge<MetalFrame | null>("native_preview_frame_info", {
+                    token,
+                    last,
+                  }),
+                present: (frame) =>
+                  bridge<boolean>("native_preview_present", {
+                    token,
+                    sequence: frame.sequence,
+                    generation: frame.generation,
+                  }),
+              },
+              controller.fail,
+              controller.acceptFrame,
+              controller.presented,
+            );
+          } else if (canvas.current) {
+            stopFrames = startPreviewFrames(
+              canvas.current,
+              (last) =>
+                bridge<ArrayBuffer>("native_preview_frame", { token, last }),
+              controller.fail,
+              controller.acceptFrame,
+              controller.presented,
+            );
+          }
         },
         control: (command) =>
           bridge<PreviewStatus>("native_preview_control", { token, command }),
@@ -82,15 +127,6 @@ export function NativePreview({
       },
     );
     if (doc.clips.length || doc.captions.length) {
-      if (canvas.current)
-        stopFrames = startPreviewFrames(
-          canvas.current,
-          (last) =>
-            bridge<ArrayBuffer>("native_preview_frame", { token, last }),
-          controller.fail,
-          controller.acceptFrame,
-          controller.presented,
-        );
       void controller.start();
     }
     return () => {
@@ -100,11 +136,13 @@ export function NativePreview({
   }, [spec, project.id, clock, retry]);
   return (
     <div className="preview">
-      <div className="preview-stage">
+      <div className="preview-stage" ref={stage}>
         <canvas
           ref={canvas}
           className="preview-canvas"
-          style={{ visibility: ready ? "visible" : "hidden" }}
+          style={{
+            visibility: ready && renderer === "canvas" ? "visible" : "hidden",
+          }}
         />
         {!ready && (
           <div className="preview-placeholder">
