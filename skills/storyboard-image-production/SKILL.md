@@ -26,6 +26,18 @@ Only an explicit retry of a particular task or an explicit request to keep its e
 
 For storyboard images or start/key/end control-frame requests, use the storyboard-frame rules when their format is needed; reuse loaded text. It realizes the supplied shot design as one four-panel board per shot; panel count does not create cuts or multiply duration. Covers and unrelated standalone pictures do not become storyboards. Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
+## Visual execution and bounded comparison
+
+Method revision: visual-vfx-2026-10-16.1.
+
+Use [visual quality and control frames](references/visual-quality.md) for a new look, a "not attractive enough" complaint, local appearance repair or an effect control frame. Apply the approved attention order, composition, light/value separation and material treatment to the actual prompt. For each reference, specify what to borrow and what not to borrow; identity does not import its background, pose or lighting. A colour filter or more style adjectives does not repair a weak composition.
+
+An action board explains sequence; a look frame selects appearance; a production control frame supplies a supported endpoint state. Do not conflate them or silently change the requested deliverable. A board remains a board when requested; exact control frames must be independent full-frame images, never the whole grid bound as a first or last frame. Extra frames and alternative looks need existing budget authorization.
+
+When alternatives are authorized, vary a named design decision rather than merely rerolling the same prompt. Compare candidates against the chosen reference direction and hard constraints, not a made-up beauty score. Preserve the selected image through supported local edits when possible; one local defect is not a reason to reinvent the whole scene. Inspect available actual pixels and identify unverified properties. Without image access, return an unverified result, not visual approval.
+
+For an effect frame, depict one phase and its material state, protect specified identity/label regions, and keep start/end composition compatible. Do not put an entire evolving effect into a still. Keep planning notes out of unsupported tool fields; compile relevant decisions into the actual submitted image prompt and concrete reference purposes. Missing assets go back through the existing coordinator handoff, not an invented delegation tool.
+
 ## Physical continuity
 
 Keep cross-frame continuity through stable identity and construction, while pose, support, openings and visible projection change according to the action and camera. Physical plausibility governs every depicted state; "identical in every frame" must not freeze moving parts or override gravity, contact, material response or mechanism operation. For state changes and local edits, apply [physical state rules](references/prompt-writing.md#physical-state-and-continuity) and include the relevant physical relationships in the actual generation prompt, not only in planning notes. Preserve explicitly designed departures from ordinary physics within their stated scope.

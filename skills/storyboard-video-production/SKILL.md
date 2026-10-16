@@ -25,6 +25,18 @@ Final source selection, trimming and timeline assembly belong to editing. Hand o
 
 Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
+## Visual effects are shot plans, not pasted presets
+
+Method revision: visual-vfx-2026-10-16.1.
+
+For an effect name, effect-card description, material transformation, light trail, portal, transition or unusual camera move, use [effect construction and verification](references/effects.md) when tools permit. The essential rule also applies without a method-read loop: determine intent, target, protected region, trigger, visible progression, final state, camera/occlusion relation, required inputs and failure conditions before compiling the prompt. Apply these decisions to the actual submitted prompt and supported reference bindings, not only a saved note. Do not invent effect tools, schema fields, masks, frames or service capabilities.
+
+Choose the route from the selected endpoint's actual capabilities and supplied inputs: a controlled opening may use a first frame; a specified ending may require supported first/last controls; an existing clip with retained action requires a real editing route. Exact labels may require an available retained layer/composite workflow; text cannot promise pixel preservation. A transition needs its outgoing and incoming material. Missing inputs, unsupported routes or contradictory preservation requirements block that paid call; return the specific gap through the existing handoff without silently changing model, format or story.
+
+In a board workflow, preserve the approved board mapping and input mode. Never send the whole board as an exact first/last frame or add separate controls without authorization. A standalone effect/control request retains its explicit input mode. Default to one dominant event and motivated camera motion, with only necessary secondary responses; do not stack unrelated effects or omit causal phases to shorten the prompt. Timed phases express intent, not guaranteed timestamps.
+
+An explicitly selected transformation may change only the declared scope. Whole-object melting cannot also promise an unchanged silhouette; scope that conflict with the user/coordinator rather than hiding it behind "preserve identity". Keep technical input parameters separate from visual prose and follow the selected model's rules.
+
 ## Complete physical action
 
 Turn the selected action into a complete physical causal chain in the actual generation prompt. Include necessary intermediate states whenever contact, support, grip, attachment constraints or possession changes; action names and endpoints alone are insufficient. Production owns this realization within the selected design. Use [physical action rules](references/shot-execution.md#contact-and-motion) for the relevant transitions.
@@ -45,6 +57,6 @@ Use the selected model's current injected rules and capability schema; query mod
 
 ## Output rules
 
-Preserve the requested identity, structure, event order, continuous/cut intent, support and contact. Do not add repeated preparation, unauthorized cuts, grid layouts, morphing, teleportation or an already completed action.
+Preserve the requested identity, structure, event order, continuous/cut intent, support and contact. Do not add repeated preparation, unauthorized cuts, grid layouts, unrequested morphing or teleportation, or an already completed action. A selected effect may transform only its declared target; it does not authorize unrelated identity or structure drift.
 
-Use real generated assets and actual task states. Do not claim playback, listening or visual approval from completion status. Repair only requested or concretely identified defects within existing authorization. This Skill does not require a review pass, evidence ledger or repeated material inspection.
+Use real generated assets and actual task states. Do not claim playback, listening or visual approval from completion status. Repair only requested or concretely identified defects within existing authorization. Do not impose repeated review on a simple execution task. In an explicitly authorized quality-oriented task, compare accessible actual media against the selected visual intent and effect failure conditions, and repair only a diagnosed defect within budget. Report what was checked, what remains unverified and the real task state. Completion or sampled frames alone cannot establish full motion, sound or aesthetic success; no extra paid call is authorized by the word "quality" alone.

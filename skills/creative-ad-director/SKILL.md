@@ -29,6 +29,18 @@ Within shot design, choose a reference for the concrete decision at hand. Reuse 
 
 Use performance for human behavior, rhythm for timed beats and photographic appearance for skin, light and material when those rules are needed; reuse loaded text.
 
+## Visual decisions before prompt wording
+
+Method revision: visual-vfx-2026-10-16.1.
+
+For a new look, an appearance complaint or an effects shot, decide the visible result before writing style adjectives. State the attention order, subject scale/viewpoint and negative space, light-source direction/size and value separation, material-specific highlights, palette relationships, and exclusions. Reuse an approved look; do not reopen it for every shot. Realism alone is not the criterion, and "cinematic", "premium" or a resolution label is not a lighting or composition decision.
+
+Use [visual design and effect intent](references/visual-design.md) for the concrete decision. Separate the action board, a full-frame look reference and actual production controls. Preserve a requested board format; do not silently replace it or add paid look frames. Propose an independent keyframe only when it serves a stated control need and is authorized.
+
+For an effect, state why it belongs in this shot, its target and protected regions, trigger, visible progression, ending state, camera/occlusion relationship and intended editorial exit. A preset name or pasted effect description is an idea to instantiate, not an executable recipe. Propose an effect mechanism proactively only when it serves the selected concept; do not invent catalog tools or claim a demonstrated preset exists. Resolve whole-object transformation versus unchanged-silhouette conflicts before production.
+
+Carry these decisions in existing permitted shot text or ordinary handoff text. They are not new database fields, tool arguments or extra agent permissions. Include which reference properties to borrow and which not to borrow. Production chooses a supported route and compiles the decisions into the actual submitted prompt and input bindings; notes alone do not reach the generator.
+
 ## Boundaries
 
 Concept development and direction selection belong to creative concepts. Script content and dialogue wording belong to ad-script. Executing frames and writing image prompts belong to image-production. Converting a design into a final video prompt, choosing inputs and generating belong to product-video-production. Cutting, grading and transitions belong to video-editing. This Skill decides staging, camera, performance intent, timing and continuity within the selected viewing proposition; it does not reopen concept selection during shot design.

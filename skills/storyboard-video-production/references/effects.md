@@ -1,0 +1,102 @@
+# Effect construction and verification
+
+Method revision: visual-vfx-2026-10-16.1.
+
+This is a method for the existing production role, not an effect API or model capability list. It applies to a named effect, a pasted card description, a user-described transformation or a director's effect idea. Each video Skill owns its own identical copy because runtime Skill roots are isolated.
+
+## Convert the idea into a shot-specific mechanism
+
+Treat incoming preset prose as a creative suggestion, not a final prompt or proof of a vendor pipeline. Preserve the selected concept and visual direction. Resolve these questions in existing handoff text, keeping only useful detail:
+
+| Decision | Required meaning |
+|---|---|
+| Intent | What the effect reveals or changes for this shot |
+| Target | The subject, surface or space that changes |
+| Preservation | Recognizable identity versus details that must remain exact |
+| Trigger | The visible cause or onset location |
+| Progression | The moving boundary, material response and decisive event |
+| End state | What remains and what the next cut/view should see |
+| Camera and occlusion | Motivated viewpoint/movement and front/behind relationships |
+| Inputs and route | Real assets, supported technical roles and unresolved gaps |
+| Failure conditions | Observable errors that would defeat this particular effect |
+
+These are planning concepts, not new tool or database fields. Do not invent `effectPlan`, `lookId`, effect-library tools or direct delegation calls. Use existing permitted text and actual generation fields. Missing assets or design conflicts return through the existing coordinator handoff.
+
+## Resolve contradictions before a paid call
+
+Separate a whole-object transformation from an effect on a coating, accessory or surrounding medium. Whole-object melting cannot also preserve the original silhouette; full disintegration cannot leave the entire object intact. Do not silently reinterpret either instruction. Report the conflicting scopes and obtain a resolution through the current workflow.
+
+A requested artistic departure may break ordinary physics only within its declared scope. Protect other identity, construction and contact relationships. "Preserve everything" is not a useful substitute for a boundary, and a textual boundary is not a pixel mask.
+
+## Select a route from actual capabilities
+
+| Need | Candidate route, only when actually supported | Important limit |
+|---|---|---|
+| Approved opening, small change | Independent first frame and image-to-video | Identity/material can still drift |
+| Specific changed ending | Actual first and last controls | Endpoints do not prove the intermediate event |
+| Multiple reference identities/states | Declared-purpose references | Generic references are not endpoint controls |
+| Preserve a source clip's action | Real video editing with a supplied edit target | Ordinary video-reference generation is not editing |
+| Exact label or localized overlay | Available retained layers, masks and compositing | Do not claim nonexistent tools or reconstructed views |
+| Two-shot smoke/water wipe | Outgoing and incoming material plus a supported transition/edit route | One target clip is not both ends of a transition |
+| Cross-scale camera travel | Supported continuous generation or authorized bridge segments/previs | Never silently turn a required one-take shot into cuts |
+
+Use the current selected endpoint's exposed schema, not a model-family reputation. Preserve its aspect, duration and resolution requirements. Missing input, incompatible reference mode or unverified control support must be resolved before the affected paid call. Do not switch services on the user's behalf.
+
+For a selected board workflow, the whole board remains an ordered-state reference, not a first/last frame. Preserve the panel map and continuous/cut intent. If the endpoint only supports first/last frames, report the incompatibility; do not crop the board, add controls or relabel it without authorization.
+
+## Describe a visible process, not accumulated adjectives
+
+Build the prompt from the actual start through the decisive change to a useful end. Establish one dominant event and a motivated camera decision, then add necessary secondary responses such as debris settling or light falling on nearby surfaces. Do not stack an orbit, crash zoom, transformation and explosion merely to sound spectacular.
+
+For each phase, describe what changes on screen, where its boundary travels, what remains and what causes the next phase. Phase timing is intended rhythm, not a guarantee of exact timestamps. Keep enough of the completed state to be useful at the intended editorial exit, without imposing the same hold on every shot.
+
+Use material-specific language: flakes peel and tumble differently from dust drifting or liquid pooling. Organize trajectories and densities around the focal subject rather than filling the entire frame uniformly. Preserve the chosen light direction and describe only meaningful interaction with new material.
+
+## Different effects need different decisions
+
+| Family | Determine | Watch for |
+|---|---|---|
+| Disintegration/melting | Advancing change boundary, residual body, debris/pooling and ending | An intact duplicate hidden behind decorative particles |
+| Frost/wireframe/coating | Surface attachment, coverage limit and material thickness | A floating sticker, instantaneous state swap or lost label |
+| Glow/trail | Motion source, lag, decay, exposure and nearby light response | Unmotivated neon outline or a trail detached from its source |
+| Orbit/portal | Spatial path, camera/subject distinction, occlusion order | A rotating product pretending to be a camera orbit |
+| Smoke/water transition | Two ends, coverage moment, reveal direction and seam | Fog over only one shot or a flash exposing the join |
+| Ground-to-space travel | Spatial anchors, scale bridges, acceleration and ending composition | Random location changes or hidden unauthorized cuts |
+
+These families do not imply that every selected model can perform them. The recipe is a hypothesis until checked on actual output.
+
+## Compile into the real call
+
+Use visible, concrete prose appropriate to the selected model. Carry the actual reference purposes and start state into it. Remove unresolved placeholders, contradictory alternatives and irrelevant checklist headings. Keep aspect, duration and resolution in supported parameters. Do not invent a negative-prompt field or vendor control syntax.
+
+The final submitted text must contain the essential effect progression and preservation boundary. A correct shot note or draft is not sufficient if the service receives different text. Role selects the technical input; purpose says what that input supplies. Neither converts a generic reference into a mask or endpoint.
+
+## Example: partial frost, not a frozen product replacement
+
+Assume real, inspected controls are available for a locked three-quarter view of a synthetic can, and the selected route supports both endpoints. The label must remain readable, not pixel-identical.
+
+Example compiled prose:
+
+> Begin from the supplied opening composition and lighting. Fine frost first forms at the can's lower rim, then branches along the lower body and side edges. The visible growth front advances over the metal; regions it has not reached retain their condensation and original finish. The branches thicken into a thin translucent frost layer and stop before the front label. Keep the rim, can silhouette and bare label area consistent with the input. Small ice edges catch the existing side-rear strip reflection; keep the background clear rather than filling it with fog. As growth settles, a few water droplets continue down the unfrosted region. End on the completed product view with the label readable and the camera still.
+
+This is authored example text, not a tested model output. Exact label pixels need a verified retained-layer route. Endpoint images alone do not prove continuous growth.
+
+## Example: disintegrating a wrapper to reveal a product
+
+The declared target is the surrounding paper wrapper, not the product. The wrapper's outer edge loses material as fibrous flakes detach; the advancing boundary reveals more of the intact product. Detached pieces drift away from the label and settle with decreasing density. Keep the main light and camera stable so the reveal remains the dominant event. The ending contains the exposed product rather than an intact wrapper hidden in a particle cloud.
+
+Do not use this limited-scope example to override a request for full product disintegration. Resolve that request's preservation requirements separately.
+
+## Example: smoke transition and cross-scale travel
+
+For a smoke transition, identify the outgoing ending and incoming opening first. Design the direction of coverage, the interval in which the join is fully hidden and the reveal direction. If the incoming material is missing, report that gap instead of treating a smoke overlay as a finished transition. Do not claim deterministic seam control without editing capability.
+
+For ground-to-space travel, establish the location anchors and ending composition. Evaluate the available route before promising one continuous shot. Propose bridge segments only as an explicit tradeoff when authorized; a hidden cut is still a cut. A speed adjective does not supply a geographic or scale bridge.
+
+## Verify only what is accessible, within budget
+
+For an authorized quality task, inspect the actual target, change boundary, meaningful intermediate states, preservation region, occlusion and final state. Compare the result to the selected visual direction. If playback is available, check motion and timing; if audio is accessible, check it separately. Sampled frames can expose defects but cannot prove smooth motion, absence of flicker, exact timing or sound quality.
+
+Distinguish generated, frame-inspected, playback-inspected and user-selected states in ordinary reporting. Do not turn a completed task, authored example, mock response or static check into a visual success claim. If media cannot be inspected, explicitly mark visual quality and motion unverified.
+
+Fix a diagnosed failure by revising the relevant input, mechanism or route within existing authorization. Do not regenerate endlessly or apply every possible repair. Stop at the authorized budget and report the best available result and remaining uncertainty. Ordinary single-execution requests do not require a new review ceremony.
