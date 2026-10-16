@@ -12,10 +12,24 @@ pub fn required(before: &Value, args: &Value) -> BTreeSet<String> {
                 .into_iter()
                 .flatten()
                 .find(|node| node["id"] == op["id"]);
-            let screenplay = op["shot"]
-                .get("screenplayId")
-                .or_else(|| existing.and_then(|node| node["shot"].get("screenplayId")))
-                .and_then(Value::as_str);
+            // Local edits (frame links, image prompts, timing, text) do not
+            // consume screenplay content. Creating/rebinding a shot does; video
+            // prompt writes also derive a promptBasis from the current script.
+            let uses_script = existing.is_none()
+                || ["screenplayId", "scriptId"].iter().any(|key| {
+                    op["shot"].get(*key).is_some_and(|value| {
+                        Some(value) != existing.and_then(|node| node["shot"].get(*key))
+                    })
+                })
+                || op["shot"].get("prompt").is_some();
+            let screenplay = uses_script
+                .then(|| {
+                    op["shot"]
+                        .get("screenplayId")
+                        .or_else(|| existing.and_then(|node| node["shot"].get("screenplayId")))
+                        .and_then(Value::as_str)
+                })
+                .flatten();
             if let Some(id) = screenplay.filter(|id| !created.contains(*id)) {
                 dependencies.insert(format!("node:{id}"));
             }

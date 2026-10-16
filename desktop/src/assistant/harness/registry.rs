@@ -49,12 +49,14 @@ impl ProjectHost {
         let _files = store.files.read().await;
         let app = t.app.clone();
         let project = t.project.clone();
+        let turn = t.turn.clone();
         let profile = self.media_profile.clone();
         let args = serde_json::Value::Object(call.function.arguments.clone());
         tokio::task::spawn_blocking(move || {
             super::image_read::read(
                 &app.state::<crate::database::Store>(),
                 &project,
+                &turn,
                 &profile,
                 &args,
             )
