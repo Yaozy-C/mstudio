@@ -5,6 +5,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { Cube } from "@phosphor-icons/react";
+import { StatusMessage } from "../ui/AsyncState";
 import { bridge } from "../bridge";
 import { t } from "../i18n";
 import { fileIdentity, type PrevisFile } from "./types";
@@ -159,9 +161,14 @@ export const RuntimeFrame = forwardRef<
     />
   ) : (
     <div className="previs-placeholder">
-      {file.code.trim()
-        ? t("正在加载三维场景…")
-        : t("描述镜头或添加模型，开始预演。")}
+      {file.code.trim() ? (
+        <StatusMessage>{t("正在加载三维场景…")}</StatusMessage>
+      ) : (
+        <div>
+          <Cube size={32} aria-hidden="true" />
+          <p>{t("描述镜头或添加模型，开始预演。")}</p>
+        </div>
+      )}
     </div>
   );
 });

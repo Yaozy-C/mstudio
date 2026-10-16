@@ -1,6 +1,9 @@
-import { Play, Pause, FloppyDisk, UploadSimple } from "@phosphor-icons/react";
+import { Play, Pause, FloppyDisk } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import { StudioSelect } from "../ui/StudioSelect";
+import { ActionButton } from "../ui/ActionButton";
+import { IconButton } from "../ui/IconButton";
+import { PrevisTaskStatus } from "./PrevisTaskStatus";
 import { RuntimeFrame } from "./RuntimeFrame";
 import { PrevisExports } from "./PrevisExports";
 import type { PrevisEditorState } from "./usePrevisEditor";
@@ -23,40 +26,43 @@ export function PrevisVisual({ state }: { state: PrevisEditorState }) {
     setError,
     models,
     dependency,
-    showCode,
-    setShowCode,
     dirty,
     manualSave,
-    progress,
   } = state;
+  const running = busy === "chat" || busy === "render";
   return (
     <section className="previs-visual">
-      <div className="previs-stage">
-        <RuntimeFrame
-          ref={runtime}
-          projectId={project.id}
-          file={file}
-          files={workspace.files}
-          onReady={onReady}
-          onTime={setTime}
-          onError={(e) => {
-            setError(e);
-            onReady(false);
-          }}
-        />
+      <div className="previs-stage" aria-busy={running}>
+        {busy !== "render" && (file.code.trim() || !running) && (
+          <RuntimeFrame
+            ref={runtime}
+            projectId={project.id}
+            file={file}
+            files={workspace.files}
+            onReady={onReady}
+            onTime={setTime}
+            onError={(e) => {
+              setError(e);
+              onReady(false);
+            }}
+          />
+        )}
+        {running && (
+          <div className="previs-stage-overlay">
+            <PrevisTaskStatus state={state} stage />
+          </div>
+        )}
       </div>
       <div className="previs-transport">
-        <button
-          type="button"
+        <IconButton
+          icon={playing ? Pause : Play}
           disabled={!ready || !!busy}
-          aria-label={playing ? t("暂停预演") : t("播放预演")}
+          label={playing ? t("暂停预演") : t("播放预演")}
           onClick={() => {
             runtime.current?.play(!playing);
             setPlaying(!playing);
           }}
-        >
-          {playing ? <Pause /> : <Play />}
-        </button>
+        />
         <input
           type="range"
           min="0"
@@ -76,6 +82,7 @@ export function PrevisVisual({ state }: { state: PrevisEditorState }) {
           {time.toFixed(2)} / {file.duration.toFixed(2)}s
         </span>
       </div>
+      <PrevisExports state={state} />
       <div
         className={`previs-properties${file.kind === "model" ? " previs-model-properties" : ""}`}
       >
@@ -151,7 +158,6 @@ export function PrevisVisual({ state }: { state: PrevisEditorState }) {
                   {m.name}
                   <small>{m.description || t("用途待补充")}</small>
                 </span>
-                <span>v{m.revision}</span>
               </label>
             ))
           ) : (
@@ -159,48 +165,16 @@ export function PrevisVisual({ state }: { state: PrevisEditorState }) {
           )}
         </section>
       )}
-      <details
-        open={showCode}
-        onToggle={(e) => setShowCode(e.currentTarget.open)}
-        className="previs-code"
-      >
-        <summary>
-          {file.kind === "model" ? "model.js" : "scene.js"} ·{" "}
-          {t("查看或编辑代码")}
-        </summary>
-        <textarea
-          spellCheck={false}
-          aria-label={t("预演代码")}
-          value={draft.code}
-          disabled={!!busy}
-          onChange={(e) => setDraft({ ...draft, code: e.target.value })}
-        />
-        <label className="previs-code-import" aria-disabled={!!busy}>
-          <UploadSimple size={17} />
-          {t("导入 JS 文件")}
-          <input
-            type="file"
-            accept=".js,.mjs"
-            disabled={!!busy}
-            onChange={async (e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              const code = await f.text();
-              setDraft((d) => ({ ...d, code }));
-              e.target.value = "";
-            }}
-          />
-        </label>
-      </details>
       <div className="previs-actions">
-        <button
-          type="button"
+        <ActionButton
+          icon={FloppyDisk}
+          busy={busy === "save"}
+          busyLabel={t("正在保存…")}
           disabled={!!busy || !dirty}
           onClick={() => void manualSave()}
         >
-          <FloppyDisk />
           {t("保存并预览")}
-        </button>
+        </ActionButton>
         {dirty && (
           <button
             type="button"
@@ -210,16 +184,10 @@ export function PrevisVisual({ state }: { state: PrevisEditorState }) {
               setError("");
             }}
           >
-            {t("恢复已保存版本")}
+            {t("放弃未保存修改")}
           </button>
         )}
       </div>
-      {progress && (
-        <p className="previs-progress" role="status">
-          {progress}
-        </p>
-      )}
-      <PrevisExports state={state} />
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import type { Project } from "../model";
 import type { PrevisFile, PrevisWorkspace } from "./types";
+import type { PrevisTaskSummary } from "./PrevisTaskList";
 export const openPrevis = (fileId: string) =>
   window.dispatchEvent(
     new CustomEvent("mstudio-open-previs", { detail: fileId }),
@@ -15,7 +16,8 @@ type PrevisContext = {
   createModel: () => void;
   error: string;
   loading: boolean;
-  attachReference: (fileId: string, assetId: string) => void;
+  tasks: PrevisTaskSummary[];
+  attachReference: (fileId: string, videoId: string) => Promise<void>;
 };
 export const Context = createContext<PrevisContext | null>(null);
 export function usePrevis() {

@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { bridge, native } from "../bridge";
-import type { Project } from "../model";
+import type { Asset, Project } from "../model";
 import {
   emptyWorkspace,
   newModel,
@@ -18,6 +18,8 @@ import { PrevisEditor } from "./PrevisEditor";
 import "./previs.css";
 import { t } from "../i18n";
 import { Context } from "./context";
+import { attachPrevisVideo } from "./attachReference";
+import type { PrevisTaskSummary } from "./PrevisTaskList";
 export function PrevisProvider({
   project,
   flush,
@@ -31,6 +33,15 @@ export function PrevisProvider({
 }) {
   const [workspace, setWorkspace] = useState<PrevisWorkspace>(emptyWorkspace);
   const [editing, setEditing] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<PrevisTaskSummary[]>([]);
+  const publishTask = useCallback((task: PrevisTaskSummary) => {
+    setTasks((current) =>
+      task.phase
+        ? [...current.filter((entry) => entry.fileId !== task.fileId), task]
+        : current.filter((entry) => entry.fileId !== task.fileId),
+    );
+  }, []);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const sequence = useRef(0);
@@ -63,6 +74,8 @@ export function PrevisProvider({
   useEffect(() => {
     setWorkspace(emptyWorkspace);
     setEditing(null);
+    setSessions([]);
+    setTasks([]);
     void refresh();
   }, [refresh]);
   const save = useCallback(
@@ -91,7 +104,10 @@ export function PrevisProvider({
           await save(newShot(node, project));
         }
         await refresh();
-        if (mounted.current) setEditing(id);
+        if (mounted.current) {
+          setSessions((ids) => [...new Set([...ids, id])]);
+          setEditing(id);
+        }
       } catch (e) {
         if (mounted.current) setError(String(e));
       }
@@ -111,31 +127,26 @@ export function PrevisProvider({
       let i = 1;
       while (names.has(`模型 ${i}`)) i++;
       const file = await save(newModel(`模型 ${i}`));
+      setSessions((ids) => [...new Set([...ids, file.id])]);
       setEditing(file.id);
     } catch (e) {
       setError(String(e));
     }
   };
-  const attachReference = (fileId: string, assetId: string) =>
-    change((p) => ({
-      ...p,
-      nodes: p.nodes.map((n) =>
-        n.id === fileId && n.shot
-          ? {
-              ...n,
-              references: [
-                ...(n.references ?? []).filter((r) => r.assetId !== assetId),
-                {
-                  assetId,
-                  purpose: "预演动作、构图与运镜参考；商品外观以实物参考为准",
-                  start: 0,
-                  end: p.assets.find((a) => a.id === assetId)?.duration,
-                },
-              ],
-            }
-          : n,
-      ),
-    }));
+  const attachReference = (fileId: string, videoId: string) =>
+    attachPrevisVideo({
+      fileId,
+      videoId,
+      change,
+      flush,
+      refresh,
+      share: (id) =>
+        bridge<{ asset: Asset }>("share_previs_video", {
+          projectId: project.id,
+          id,
+          shared: true,
+        }),
+    });
   return (
     <Context.Provider
       value={{
@@ -149,6 +160,9 @@ export function PrevisProvider({
         createModel: () => void createModel(),
         error,
         loading,
+        tasks: tasks.filter((task) =>
+          workspace.files.some((file) => file.id === task.fileId),
+        ),
       }}
     >
       {children}
@@ -160,13 +174,17 @@ export function PrevisProvider({
           </button>
         </div>
       )}
-      {editing && workspace.files.some((f) => f.id === editing) && (
-        <PrevisEditor
-          key={editing}
-          fileId={editing}
-          close={() => setEditing(null)}
-        />
-      )}
+      {sessions
+        .filter((id) => workspace.files.some((f) => f.id === id))
+        .map((id) => (
+          <PrevisEditor
+            key={id}
+            fileId={id}
+            active={editing === id}
+            close={() => setEditing(null)}
+            publishTask={publishTask}
+          />
+        ))}
     </Context.Provider>
   );
 }

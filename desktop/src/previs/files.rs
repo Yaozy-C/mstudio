@@ -4,7 +4,7 @@ use anyhow::{Context, Result, ensure};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 use std::path::PathBuf;
-use tauri::{Manager, State};
+use tauri::Manager;
 
 pub fn read(db: &Connection, project: &str, id: &str) -> Result<Option<File>> {
     db.query_row(
@@ -29,7 +29,6 @@ pub fn path(store: &Store, project: &str, file: &File) -> Result<PathBuf> {
         .join("previs")
         .join(project)
         .join(&file.id)
-        .join(format!("v{}", file.revision))
         .join(if file.kind == "model" {
             "model.js"
         } else {
@@ -84,7 +83,8 @@ pub fn model_in_use(db: &Connection, project: &str, id: &str) -> Result<bool> {
             })
     }))
 }
-/// Caller holds the DB transaction. Immutable version files are written before commit.
+/// Caller holds the DB transaction. Each source has one stable, replaceable path.
+/// Runtime snapshots use the committed DB content, independent of this source mirror.
 pub fn save(
     db: &Connection,
     store: &Store,
@@ -96,7 +96,7 @@ pub fn save(
     let old = read(db, project, &file.id)?;
     ensure!(
         old.as_ref().map_or(0, |f| f.revision) == expected,
-        "文件已有新版本，请刷新后重新修改"
+        "文件已被修改，请刷新后重新修改"
     );
     ensure!(
         old.as_ref().is_none_or(|f| f.kind == file.kind),
@@ -120,7 +120,15 @@ pub fn save(
         ],
     )?;
     std::fs::create_dir_all(directory)?;
-    std::fs::write(&target, &file.code)?;
+    let temporary = directory.join(format!(".{}.tmp", uuid::Uuid::new_v4()));
+    let write = (|| -> std::io::Result<()> {
+        std::fs::write(&temporary, &file.code)?;
+        std::fs::rename(&temporary, &target)
+    })();
+    if write.is_err() {
+        let _ = std::fs::remove_file(&temporary);
+    }
+    write?;
     db.execute("INSERT INTO previs_files VALUES(?1,?2,?3,?4) ON CONFLICT(project_id,id) DO UPDATE SET data=excluded.data", params![project,file.id,file.kind,serde_json::to_string(&file)?])?;
     Ok(file)
 }
@@ -143,8 +151,17 @@ pub async fn save_previs_file(
     Ok(saved)
 }
 #[tauri::command]
-pub fn previs_workspace(store: State<Store>, project_id: String) -> Result<Value, String> {
+pub async fn previs_workspace(app: tauri::AppHandle, project_id: String) -> Result<Value, String> {
+    let guard = project_storage::working(&app.state::<Store>(), &project_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+    let _guard = guard;
+    let store = app.state::<Store>();
     (|| -> Result<Value> {
+        if super::export_store::normalize(&store, &project_id)? {
+            project_service::notify(&app, &project_id);
+        }
         let db = store.db.lock().unwrap();
         project_service::load(&db, &project_id)?;
         let files = list(&db, &project_id)?;
@@ -156,6 +173,7 @@ pub fn previs_workspace(store: State<Store>, project_id: String) -> Result<Value
             .iter().map(|s| serde_json::from_str::<Value>(s)).collect::<serde_json::Result<Vec<_>>>()?;
         Ok(json!({"files":files,"messages":messages.into_iter().rev().collect::<Vec<_>>(),"exports":exports}))
     })().map_err(|e| e.to_string())
+    }).await.map_err(|e| e.to_string())?
 }
 #[tauri::command]
 pub async fn delete_previs_model(
@@ -173,7 +191,7 @@ pub async fn delete_previs_model(
         let file = read(&db, &project_id, &id)?.context("模型已删除")?;
         ensure!(
             file.kind == "model" && file.revision == expected_revision,
-            "模型已有新版本，请刷新"
+            "模型已被修改，请刷新"
         );
         ensure!(
             !model_in_use(&db, &project_id, &id)?,

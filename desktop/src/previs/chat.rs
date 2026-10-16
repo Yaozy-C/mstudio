@@ -124,7 +124,7 @@ async fn run(app: &tauri::AppHandle, r: &Request, token: &CancellationToken) -> 
     ensure!(!r.prompt.trim().is_empty(), "请填写修改要求");
     let store = app.state::<Store>();
     // Do not hold a storage lock during a network completion. Recheck at commit.
-    let (file, all, history, model, key) = {
+    let (file, all, model, key) = {
         let db = store.db.lock().unwrap();
         let file = files::read(&db, &r.project_id, &r.file_id)?.context("请先创建预演文件")?;
         ensure!(
@@ -132,17 +132,10 @@ async fn run(app: &tauri::AppHandle, r: &Request, token: &CancellationToken) -> 
             "文件已有新版本，请刷新"
         );
         let all = files::list(&db, &r.project_id)?;
-        let history=db.prepare("SELECT role,text FROM previs_messages WHERE project_id=?1 AND file_id=?2 ORDER BY id DESC LIMIT 6")?
-            .query_map(params![r.project_id,r.file_id],|row|Ok(json!({"role":row.get::<_,String>(0)?,"text":row.get::<_,String>(1)?})))?.collect::<rusqlite::Result<Vec<_>>>()?;
         let (model, key) = crate::models::resolve(&db, None, Some(&r.model_id))?;
-        (file, all, history, model, key)
+        (file, all, model, key)
     };
-    let inventory = all
-        .iter()
-        .filter(|f| f.kind == "model")
-        .map(|m| json!({"id":m.id,"name":m.name,"description":m.description,"revision":m.revision}))
-        .collect::<Vec<_>>();
-    let context=json!({"currentFile":file,"modelInventory":inventory,"recentConversation":history.into_iter().rev().collect::<Vec<_>>(),"request":r.prompt}).to_string();
+    let context = super::chat_context::request(&file, &all, &r.prompt);
     let raw = super::provider::complete(&model, &key, CONTRACT, &context, token).await?;
     let reply = parse(&raw)?;
     let _guard = project_storage::working(&store, &r.project_id).await?;

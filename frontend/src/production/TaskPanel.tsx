@@ -16,6 +16,8 @@ import { pendingRun } from "./useRunActions";
 import { RunStatus } from "./RunStatus";
 import { mediaUrl } from "../bridge";
 import "./task-panel.css";
+import { useOptionalPrevis } from "../previs/context";
+import { PrevisTaskList } from "../previs/PrevisTaskList";
 
 export function TaskPanel({
   project,
@@ -28,14 +30,20 @@ export function TaskPanel({
 }) {
   const language = useLanguage();
   const [archived, setArchived] = useState(false);
+  const previs = useOptionalPrevis();
+  const previsTasks = archived ? [] : (previs?.tasks ?? []);
   const runs = [...canvas.runs].reverse();
   const visible = runs.filter(
     (t) => !!t.hiddenFromList === archived || t.key === canvas.activeTaskKey,
   );
   const selected =
     visible.find((t) => t.key === canvas.activeTaskKey) ?? visible[0];
-  const active = visible.filter(pendingRun).length;
-  const failed = visible.filter((t) => t.status === "FAILED").length;
+  const active =
+    visible.filter(pendingRun).length +
+    previsTasks.filter((task) => task.running).length;
+  const failed =
+    visible.filter((t) => t.status === "FAILED").length +
+    previsTasks.filter((task) => !!task.error).length;
   return (
     <Dialog.Root
       open={canvas.taskPanelOpen}
@@ -44,7 +52,7 @@ export function TaskPanel({
       <Dialog.Trigger>
         <button type="button" className="chrome-action task-dialog-trigger">
           <ListChecks />
-          {t("生成任务")} <span>{visible.length}</span>
+          {t("生成任务")} <span>{visible.length + previsTasks.length}</span>
           {!!active && (
             <small className="task-active">
               {active} {t("个进行中")}
@@ -81,7 +89,14 @@ export function TaskPanel({
         </header>
         <div className="task-panel-body">
           <div className="task-panel-list" aria-label={t("任务列表")}>
-            {!visible.length && (
+            <PrevisTaskList
+              tasks={previsTasks}
+              open={(fileId) => {
+                canvas.setTaskPanelOpen(false);
+                previs?.open(fileId);
+              }}
+            />
+            {!visible.length && !previsTasks.length && (
               <p>
                 {t(
                   runs.length
@@ -193,9 +208,11 @@ export function TaskPanel({
             ) : (
               <p>
                 {t(
-                  runs.length
-                    ? "任务记录与生成素材均已保留。"
-                    : "尚未创建生成任务。Agent 提交失败时不会产生任务记录。",
+                  previsTasks.length
+                    ? "选择预演任务，查看进度或继续修改。"
+                    : runs.length
+                      ? "任务记录与生成素材均已保留。"
+                      : "尚未创建生成任务。Agent 提交失败时不会产生任务记录。",
                 )}
               </p>
             )}

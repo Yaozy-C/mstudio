@@ -66,11 +66,17 @@ pub async fn begin_previs_render(
             .service()?
             .get(&session_id, &project_id)?;
         ensure!(snapshot.target.kind == "shot", "请选择镜头再导出视频");
-        // The runtime session is the frozen specification, including model revisions.
         let count = (snapshot.target.duration * snapshot.target.fps as f64).ceil() as usize;
         ensure!(count > 0, "预演帧数无效");
         let state = app.state::<Renders>();
         let mut jobs = state.0.lock().unwrap();
+        ensure!(
+            !jobs.values().any(|job| {
+                let job = job.lock().unwrap();
+                job.snapshot.project == project_id && job.snapshot.target.id == snapshot.target.id
+            }),
+            "此镜头正在生成预演，请等待完成"
+        );
         ensure!(jobs.len() < 4, "最多同时导出 4 个预演");
         let id = uuid::Uuid::new_v4().to_string();
         let work = store
@@ -200,6 +206,8 @@ pub async fn finish_previs_render(
     let _ = std::fs::remove_dir_all(&work);
     if result.is_err() {
         let _ = std::fs::remove_dir_all(output_dir);
+    } else {
+        crate::project_service::notify(&app, &project_id);
     }
     result
 }
@@ -265,7 +273,7 @@ async fn encode(
     let prepared = out.join("media");
     tauri::async_runtime::spawn_blocking(move || -> Result<Export> {
         let mut asset = media::import(&output, &prepared)?;
-        asset.name = format!("{} · 预演 v{}", target.name, target.revision);
+        asset.name = format!("{} · 预演", target.name);
         let export = Export {
             id,
             file_id: target.id,
@@ -276,13 +284,7 @@ async fn encode(
             shared_asset_id: None,
         };
         let store = app.state::<Store>();
-        let db = store.db.lock().unwrap();
-        crate::project_service::load(&db, &project)?;
-        db.execute(
-            "INSERT INTO previs_exports VALUES(?1,?2,?3)",
-            params![project, export.id, serde_json::to_string(&export)?],
-        )?;
-        Ok(export)
+        super::export_store::replace(&store, &project, export)
     })
     .await?
 }

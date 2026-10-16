@@ -47,6 +47,14 @@ fn plain_provider_makes_one_tool_free_request() {
                     assert_eq!(body["messages"].as_array().unwrap().len(), 2);
                     assert!(body.get("tools").is_none());
                     assert!(!body.to_string().contains("project_snapshot"));
+                    let context: serde_json::Value =
+                        serde_json::from_str(body["messages"][1]["content"].as_str().unwrap())
+                            .unwrap();
+                    assert_eq!(context.as_object().unwrap().len(), 3);
+                    assert_eq!(context["request"], "Open the lid");
+                    assert_eq!(context["currentFile"]["code"], "current scene code");
+                    assert_eq!(context["modelInventory"], json!([]));
+                    assert!(context.get("recentConversation").is_none());
                     break;
                 }
             }
@@ -72,12 +80,17 @@ fn plain_provider_makes_one_tool_free_request() {
         },
     };
     let rt = tokio::runtime::Runtime::new().unwrap();
+    let file: File = serde_json::from_value(
+        json!({"id":"shot","kind":"shot","name":"Shot","code":"current scene code"}),
+    )
+    .unwrap();
+    let context = chat_context::request(&file, &[], "Open the lid");
     assert_eq!(
         rt.block_on(provider::complete(
             &m,
             "",
             "runtime contract",
-            "current file only",
+            &context,
             &Default::default()
         ))
         .unwrap(),

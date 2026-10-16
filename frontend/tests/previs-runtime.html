@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <body
+    style="
+      margin: 0;
+      background: #292926;
+      color: #faf9f5;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+      font-family: system-ui;
+    "
+  >
+    Synthetic scene
+    <script>
+      const channel = new URL(location.href).searchParams.get("session");
+      const send = (data) =>
+        parent.postMessage({ channel, ...data }, location.origin);
+      addEventListener("message", (event) => {
+        if (event.source !== parent || event.data.channel !== channel) return;
+        if (event.data.type === "frame")
+          send({
+            type: "frame",
+            requestId: event.data.requestId,
+            bytes: new ArrayBuffer(32),
+          });
+      });
+      send({ type: "ready" });
+    </script>
+  </body>
+</html>

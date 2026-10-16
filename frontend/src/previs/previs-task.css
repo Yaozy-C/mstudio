@@ -1,0 +1,135 @@
+.previs-stage {
+  position: relative;
+}
+.previs-stage-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--desk-text) 94%, transparent);
+  animation: content-enter var(--motion-page) var(--motion-ease);
+}
+.previs-task-status {
+  min-width: 0;
+  color: var(--desk-text);
+  animation: state-enter var(--motion-enter) var(--motion-ease);
+}
+.previs-task-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: var(--ui-label);
+  line-height: 20px;
+}
+.previs-task-title strong {
+  font-weight: 500;
+}
+.previs-task-title time {
+  color: var(--desk-muted);
+  font: 12px/20px var(--ui-mono);
+  font-variant-numeric: tabular-nums;
+}
+.previs-task-status p {
+  margin: 8px 0 0;
+  font-size: var(--ui-caption);
+  line-height: 20px;
+  color: var(--desk-muted);
+}
+.previs-task-stage {
+  width: min(100%, 460px);
+  text-align: center;
+  color: var(--desk-surface);
+}
+.previs-task-stage .previs-task-title {
+  justify-content: center;
+}
+.previs-task-stage :is(p, time) {
+  color: color-mix(in srgb, var(--desk-surface) 72%, transparent);
+}
+.previs-task-cube {
+  margin-bottom: 16px;
+  color: var(--desk-control);
+  animation: skeleton-pulse var(--motion-pulse) ease-in-out infinite;
+}
+.previs-task-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 16px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--ui-rule);
+}
+.previs-task-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  line-height: 20px;
+}
+.previs-task-steps li > span {
+  font: 12px/20px var(--ui-mono);
+}
+.previs-task-steps [data-state="active"] {
+  color: var(--desk-accent);
+}
+.previs-task-steps [data-state="done"] {
+  color: var(--desk-text);
+}
+.previs-task-stage .previs-task-steps {
+  border-color: color-mix(in srgb, var(--desk-surface) 16%, transparent);
+}
+.previs-task-stage .previs-task-steps li {
+  color: var(--desk-control);
+}
+.previs-task-stage .previs-task-steps [data-state="active"],
+.previs-task-stage .previs-task-steps [data-state="done"] {
+  color: var(--desk-surface);
+}
+.previs-task-progress {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.previs-task-progress progress {
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--desk-rule);
+  accent-color: var(--desk-accent);
+}
+.previs-task-progress progress::-webkit-progress-bar {
+  background: var(--desk-rule);
+}
+.previs-task-progress progress::-webkit-progress-value {
+  background: var(--desk-accent);
+  transition: width var(--motion-progress) var(--motion-ease);
+}
+.previs-task-progress progress::-moz-progress-bar {
+  background: var(--desk-accent);
+}
+.previs-task-progress small {
+  font: 12px/20px var(--ui-mono);
+}
+.previs-render-runtime {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 720px;
+  height: 720px;
+  pointer-events: none;
+}
+/* Previs tasks live in the existing task dialog, never over the workspace. */
+.previs-task-list-heading {
+  margin: 12px 12px 4px;
+  color: var(--desk-muted);
+  font-size: var(--ui-caption);
+  font-weight: 500;
+  line-height: 20px;
+}

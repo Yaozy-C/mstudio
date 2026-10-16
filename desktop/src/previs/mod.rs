@@ -1,5 +1,11 @@
 //! Private previsualization workspace. No Agent tools, context, or history are used.
 pub(crate) mod chat;
+mod chat_context;
+mod export_cleanup;
+mod export_references;
+mod export_store;
+#[cfg(test)]
+mod export_store_tests;
 pub(crate) mod files;
 mod provider;
 #[cfg(test)]
