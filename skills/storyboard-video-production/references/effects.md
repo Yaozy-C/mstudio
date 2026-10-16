@@ -1,8 +1,6 @@
 # Effect construction and verification
 
-Method revision: visual-vfx-2026-10-16.1.
-
-This is a method for the existing production role, not an effect API or model capability list. It applies to a named effect, a pasted card description, a user-described transformation or a director's effect idea. Each video Skill owns its own identical copy because runtime Skill roots are isolated.
+Use this method for a named effect, a pasted card description, a user-described transformation or a director's effect idea.
 
 ## Convert the idea into a shot-specific mechanism
 
@@ -20,7 +18,7 @@ Treat incoming preset prose as a creative suggestion, not a final prompt or proo
 | Inputs and route | Real assets, supported technical roles and unresolved gaps |
 | Failure conditions | Observable errors that would defeat this particular effect |
 
-These are planning concepts, not new tool or database fields. Do not invent `effectPlan`, `lookId`, effect-library tools or direct delegation calls. Use existing permitted text and actual generation fields. Missing assets or design conflicts return through the existing coordinator handoff.
+Use existing permitted text and actual generation fields. Do not invent tool fields or capabilities. Missing assets or design conflicts return through the existing coordinator handoff.
 
 ## Resolve contradictions before a paid call
 
@@ -63,7 +61,7 @@ Use material-specific language: flakes peel and tumble differently from dust dri
 | Smoke/water transition | Two ends, coverage moment, reveal direction and seam | Fog over only one shot or a flash exposing the join |
 | Ground-to-space travel | Spatial anchors, scale bridges, acceleration and ending composition | Random location changes or hidden unauthorized cuts |
 
-These families do not imply that every selected model can perform them. The recipe is a hypothesis until checked on actual output.
+Check the selected endpoint's capabilities before using any of these effect families.
 
 ## Compile into the real call
 
@@ -73,13 +71,13 @@ The final submitted text must contain the essential effect progression and prese
 
 ## Example: partial frost, not a frozen product replacement
 
-Assume real, inspected controls are available for a locked three-quarter view of a synthetic can, and the selected route supports both endpoints. The label must remain readable, not pixel-identical.
+For a locked three-quarter can shot, inspect the actual start/end images and use a route that supports both endpoints. Keep the label readable.
 
 Example compiled prose:
 
 > Begin from the supplied opening composition and lighting. Fine frost first forms at the can's lower rim, then branches along the lower body and side edges. The visible growth front advances over the metal; regions it has not reached retain their condensation and original finish. The branches thicken into a thin translucent frost layer and stop before the front label. Keep the rim, can silhouette and bare label area consistent with the input. Small ice edges catch the existing side-rear strip reflection; keep the background clear rather than filling it with fog. As growth settles, a few water droplets continue down the unfrosted region. End on the completed product view with the label readable and the camera still.
 
-This is authored example text, not a tested model output. Exact label pixels need a verified retained-layer route. Endpoint images alone do not prove continuous growth.
+Exact label pixels need a verified retained-layer route. Check continuous growth in the generated video rather than inferring it from endpoint images.
 
 ## Example: disintegrating a wrapper to reveal a product
 
@@ -97,6 +95,6 @@ For ground-to-space travel, establish the location anchors and ending compositio
 
 For an authorized quality task, inspect the actual target, change boundary, meaningful intermediate states, preservation region, occlusion and final state. Compare the result to the selected visual direction. If playback is available, check motion and timing; if audio is accessible, check it separately. Sampled frames can expose defects but cannot prove smooth motion, absence of flicker, exact timing or sound quality.
 
-Distinguish generated, frame-inspected, playback-inspected and user-selected states in ordinary reporting. Do not turn a completed task, authored example, mock response or static check into a visual success claim. If media cannot be inspected, explicitly mark visual quality and motion unverified.
+Distinguish generated, frame-inspected, playback-inspected and user-selected states in ordinary reporting. A completed task does not establish visual quality. If media cannot be inspected, explicitly mark visual quality and motion unverified.
 
 Fix a diagnosed failure by revising the relevant input, mechanism or route within existing authorization. Do not regenerate endlessly or apply every possible repair. Stop at the authorized budget and report the best available result and remaining uncertainty. Ordinary single-execution requests do not require a new review ceremony.

@@ -31,8 +31,6 @@ Use performance for human behavior, rhythm for timed beats and photographic appe
 
 ## Visual decisions before prompt wording
 
-Method revision: visual-vfx-2026-10-16.1.
-
 For a new look, an appearance complaint or an effects shot, decide the visible result before writing style adjectives. State the attention order, subject scale/viewpoint and negative space, light-source direction/size and value separation, material-specific highlights, palette relationships, and exclusions. Reuse an approved look; do not reopen it for every shot. Realism alone is not the criterion, and "cinematic", "premium" or a resolution label is not a lighting or composition decision.
 
 Use [visual design and effect intent](references/visual-design.md) for the concrete decision. Separate the action board, a full-frame look reference and actual production controls. Preserve a requested board format; do not silently replace it or add paid look frames. Propose an independent keyframe only when it serves a stated control need and is authorized.

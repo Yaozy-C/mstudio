@@ -18,6 +18,7 @@ forbidden_extensions = {'.mp4', '.mov', '.wav', '.mp3', '.dylib', '.dll', '.so',
 published_docs = {
     'docs/architecture.md', 'docs/development.md', 'docs/image-storyboard-cases.md',
     'docs/visual-system.md',
+    'docs/testing/visual-methods.md', 'docs/testing/visual-method-cases.json',
 }
 patterns = [
     re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),

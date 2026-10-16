@@ -28,8 +28,6 @@ For storyboard images or start/key/end control-frame requests, use the storyboar
 
 ## Visual execution and bounded comparison
 
-Method revision: visual-vfx-2026-10-16.1.
-
 Use [visual quality and control frames](references/visual-quality.md) for a new look, a "not attractive enough" complaint, local appearance repair or an effect control frame. Apply the approved attention order, composition, light/value separation and material treatment to the actual prompt. For each reference, specify what to borrow and what not to borrow; identity does not import its background, pose or lighting. A colour filter or more style adjectives does not repair a weak composition.
 
 An action board explains sequence; a look frame selects appearance; a production control frame supplies a supported endpoint state. Do not conflate them or silently change the requested deliverable. A board remains a board when requested; exact control frames must be independent full-frame images, never the whole grid bound as a first or last frame. Extra frames and alternative looks need existing budget authorization.

@@ -2,6 +2,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 python3 scripts/check_skills.py
+python3 scripts/test_visual_methods.py
 python3 scripts/check_source_release.py
 python3 scripts/test_source_release.py
 python3 scripts/test_download_verified.py

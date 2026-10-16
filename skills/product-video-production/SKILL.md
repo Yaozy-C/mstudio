@@ -27,8 +27,6 @@ Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 ## Visual effects are shot plans, not pasted presets
 
-Method revision: visual-vfx-2026-10-16.1.
-
 For an effect name, effect-card description, material transformation, light trail, portal, transition or unusual camera move, use [effect construction and verification](references/effects.md) when tools permit. The essential rule also applies without a method-read loop: determine intent, target, protected region, trigger, visible progression, final state, camera/occlusion relation, required inputs and failure conditions before compiling the prompt. Apply these decisions to the actual submitted prompt and supported reference bindings, not only a saved note. Do not invent effect tools, schema fields, masks, frames or service capabilities.
 
 Choose the route from the selected endpoint's actual capabilities and supplied inputs: a controlled opening may use a first frame; a specified ending may require supported first/last controls; an existing clip with retained action requires a real editing route. Exact labels may require an available retained layer/composite workflow; text cannot promise pixel preservation. A transition needs its outgoing and incoming material. Missing inputs, unsupported routes or contradictory preservation requirements block that paid call; return the specific gap through the existing handoff without silently changing model, format or story.

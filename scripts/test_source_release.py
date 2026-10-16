@@ -91,6 +91,26 @@ class SourceReleaseTests(unittest.TestCase):
         spec.write_text('-----BEGIN ' + 'PRIVATE KEY-----')
         self.assertNotEqual(self.check_release().returncode, 0)
 
+    def test_visual_method_docs_pass_but_unlisted_testing_files_stay_blocked(self):
+        docs = self.root / 'docs/testing'
+        docs.mkdir(parents=True)
+        (docs / 'visual-methods.md').write_text('# Public visual methods\n')
+        (docs / 'visual-method-cases.json').write_text('{"cases": []}\n')
+        result = self.check_release()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        (docs / 'private-results.json').write_text('{}\n')
+        self.assertNotEqual(self.check_release().returncode, 0)
+
+    def test_visual_method_docs_still_receive_content_scan(self):
+        docs = self.root / 'docs/testing'
+        docs.mkdir(parents=True)
+        for name in ('visual-methods.md', 'visual-method-cases.json'):
+            with self.subTest(name=name):
+                path = docs / name
+                path.write_text('-----BEGIN ' + 'PRIVATE KEY-----')
+                self.assertNotEqual(self.check_release().returncode, 0)
+                path.unlink()
+
 
 if __name__ == '__main__':
     unittest.main()

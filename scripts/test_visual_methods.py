@@ -24,7 +24,6 @@ METHODS = {
 }
 DATA = json.loads((ROOT / "docs/testing/visual-method-cases.json").read_text(encoding="utf-8"))
 CASES = DATA["cases"]
-REVISION = "visual-vfx-2026-10-16.1"
 
 
 def read_entry(skill):
@@ -77,11 +76,15 @@ class MethodDocuments(unittest.TestCase):
                 self.assertTrue(path.resolve().is_relative_to(
                     (ROOT / "skills" / skill).resolve()))
 
-    def test_revision_can_be_checked_in_runtime_text(self):
+    def test_runtime_rules_exclude_delivery_and_test_receipts(self):
+        receipts = (r"Method revision:|visual-vfx-\d{4}|authored hypothesis|"
+                    r"authored example text|not a tested model output|"
+                    r"not a generated result|Keep the copies aligned|"
+                    r"Each video Skill owns its own identical copy")
         for skill in SKILLS:
-            with self.subTest(skill=skill):
-                self.assertIn(REVISION, read_entry(skill))
-                self.assertIn(REVISION, read_method(skill))
+            for text in (read_entry(skill), read_method(skill)):
+                with self.subTest(skill=skill):
+                    self.assertNotRegex(text, receipts)
 
     def test_resources_are_english_portable_and_within_size_limits(self):
         for skill in SKILLS:

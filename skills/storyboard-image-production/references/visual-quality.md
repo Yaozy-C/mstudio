@@ -1,8 +1,6 @@
 # Visual quality and production control frames
 
-Method revision: visual-vfx-2026-10-16.1.
-
-Apply these methods within the selected image deliverable and existing authorization. The same method is kept in each image Skill because their runtime roots are isolated. Keep the copies aligned; do not link outside the owning Skill.
+Apply these methods within the selected image deliverable and existing authorization.
 
 ## Resolve appearance before execution
 
@@ -37,7 +35,7 @@ Put technical aspect, resolution and supported controls in the actual parameter 
 
 ## Explore only within the authorized budget
 
-A single-generation task stays a single-generation task. Quality-oriented work can include alternatives or repair only within explicit existing authorization; this is a conversational working choice, not a newly implemented application mode.
+A single-generation task stays a single-generation task. Alternatives and repairs require explicit existing authorization.
 
 When exploration is authorized, use distinct design hypotheses with comparable scope. Compare against the chosen direction and hard constraints, not an unsupported aesthetic score. Tell the user when the difference is a preference rather than a defect. Do not hide extra sampling cost when comparing old and new methods.
 
@@ -53,7 +51,7 @@ Identify the defect and the part of the frame that already works. Prefer a suppo
 
 Change one relevant execution dimension per repair when practical. Do not add a new background, camera move or particle field to fix an incorrect highlight. Stop within budget and carry known issues forward honestly.
 
-## Effect control example: partial frost on a synthetic can
+## Effect control example: partial frost on a can
 
 The chosen shot is a locked three-quarter product view. The opening image has sparse condensation. The ending image has thin frost on the lower body and side edges, stopping before the front label. Keep the can opening, silhouette, viewpoint and light arrangement compatible across both images. Build the ending through a supported edit of the selected opening when available, then inspect it.
 

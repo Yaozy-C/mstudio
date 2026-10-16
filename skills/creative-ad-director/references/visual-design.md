@@ -1,8 +1,6 @@
 # Visual design: make choices before adding adjectives
 
-Method revision: visual-vfx-2026-10-16.1.
-
-This is a method for the existing director, not a new workflow engine or API schema. Use the selected concept, product evidence and user's style constraints. Do not turn every image into the same dark luxury advertisement.
+Use the selected concept, product evidence and user's style constraints. Do not turn every image into the same dark luxury advertisement.
 
 ## Start with a visible proposition
 
@@ -66,8 +64,8 @@ Provide the selected look, borrowed/excluded reference properties, important sta
 
 Production must compile the relevant decisions into actual request text and verified reference bindings. An elegant handoff that never enters the model input does not control generation. Return unresolved design constraints instead of burying them under longer prose.
 
-## Worked design hypothesis: a synthetic audio device
+## Example: separating metal and matte surfaces
 
 For a device whose curved metal edge and matte body should be readable, choose a close three-quarter composition with a silhouette gap between the device and its case. A narrow side-rear source makes a shaped edge reflection; restrained front fill keeps the matte face readable. Keep the brightest background region away from the brightest edge. Leave one clean area for the planned graphic; do not generate a speculative logo there.
 
-A different brief could legitimately choose flat graphic lighting or an everyday setting. This example is an authored hypothesis, not a generated result or a universal premium look.
+A brief calling for flat graphic lighting or an everyday setting needs a different lighting arrangement.
