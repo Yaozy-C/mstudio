@@ -1,0 +1,42 @@
+[
+  {
+    "host": "generativelanguage.googleapis.com",
+    "models": ["gemini-4-argon"],
+    "contextWindow": 1048576,
+    "maxOutputTokens": 32768,
+    "defaultMaxTokens": 32768,
+    "source": "https://ai.google.dev/gemini-api/docs/latest-model"
+  },
+  {
+    "host": "generativelanguage.googleapis.com",
+    "models": ["gemini-3.7-flash", "gemini-3.8-flash"],
+    "contextWindow": 1048576,
+    "maxOutputTokens": 65536,
+    "defaultMaxTokens": 65536,
+    "source": "https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash"
+  },
+  {
+    "host": "api.deepseek.com",
+    "models": ["deepseek-flash", "deepseek-v4-pro"],
+    "contextWindow": 1000000,
+    "maxOutputTokens": 384000,
+    "defaultMaxTokens": 256000,
+    "source": "https://api-docs.deepseek.com/quick_start/pricing/"
+  },
+  {
+    "host": "api.openai.com",
+    "models": ["gpt-6-astra", "gpt-6.1-sol"],
+    "contextWindow": 1050000,
+    "maxOutputTokens": 128000,
+    "defaultMaxTokens": 65536,
+    "source": "https://developers.openai.com/api/docs/models"
+  },
+  {
+    "host": "api.xiaomimimo.com",
+    "models": ["mimo-v2.6-pro", "mimo-v2.6-flash", "mimo-v2.6-pro-ultraspeed"],
+    "contextWindow": 1048576,
+    "maxOutputTokens": 131072,
+    "defaultMaxTokens": 32768,
+    "source": "https://mimo.mi.com/docs/quick-start/model"
+  }
+]

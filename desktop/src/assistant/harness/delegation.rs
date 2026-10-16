@@ -20,24 +20,19 @@ pub struct Context {
     pub key: String,
     pub model_id: Option<String>,
     pub fork_history: Vec<Message>,
-    pub deadline: tokio::time::Instant,
-}
-fn background(args: &Value) -> bool {
-    args["runInBackground"].as_bool().unwrap_or(false)
 }
 pub fn definition() -> ToolDefinition {
     ToolDefinition {
         name: "mstudio_delegate".try_into().expect("nonempty tool name"),
-        description: "Assign a bounded task to a specialist. Returns outputRef, committed changes, delivery and current generationTasks; child completion is not media completion. If status=running after the wait expires, the child continues: await its notice rather than redelegating.".into(),
+        description: "Start an independently managed specialist task and immediately return childId and outputRef with status=running. Completion arrives through a later notice with saved work, delivery and generationTasks. Continue independent work; do not redelegate running work. Child completion is not media completion.".into(),
         parameters: json!({"type":"object","properties":{
             "agentId":{"type":"string","description":"Specialist role ID."},
-            "task":{"type":"string","minLength":1,"maxLength":8000,"description":"Brief goal, assigned targets, boundaries and deliverable. The host forwards the original user request and attachments; use artifacts for saved sources instead of restating them. For spawn, include needed decisions absent from those sources; for fork, state only new requirements."},
+            "task":{"type":"string","minLength":1,"maxLength":8000,"description":"Brief goal, assigned targets, boundaries and deliverable. For separate shot outputs with existing inputs, assign one shot per call; share reference artifacts and continuity constraints across children. Sequence only new-result dependencies or overlapping writes. The host forwards the original user request and attachments; use artifacts for saved sources instead of restating them. For spawn, include needed decisions absent from those sources; for fork, state only new requirements."},
             "artifacts":super::handoff_artifacts::schema(),
             "expectedGenerations":super::delivery::schema(),
             "provider":{"type":"string","enum":["spawn","fork"],"description":"spawn (default): independent context. fork: inherits completed parent turns, excluding the current in-flight turn."},
             "modelId":{"type":"string","description":"Optional chat model connection ID for spawn; omission inherits the parent's chat model. Does not select the image or video model."},
-            "mode":{"type":"string","enum":["oneShot","continuable"],"description":"oneShot (default) ends after this task. continuable supports later send_message calls using the returned childId."},
-            "runInBackground":{"type":"boolean","description":"false (default in both modes): wait for the result. true: return the childId immediately and receive completion through a later notice."}
+            "mode":{"type":"string","enum":["oneShot","continuable"],"description":"oneShot (default) ends after this task. continuable supports later send_message calls using the returned childId. Both return immediately; completion is delivered later."}
         },"required":["agentId","task","expectedGenerations"],"additionalProperties":false}),
     }
 }
@@ -88,7 +83,6 @@ fn remove_active(id: &str, generation: &str) {
 struct ChildHost {
     inner: ProjectHost,
     id: String,
-    scripts: Mutex<Vec<Value>>,
     changes: Mutex<Vec<Value>>,
     terminal_reason: Mutex<Option<String>>,
 }
@@ -136,9 +130,6 @@ impl Host for ChildHost {
             self.changes.lock().unwrap().push(
                 json!({"callId":value["callId"],"name":value["name"],"result":value["value"]}),
             );
-            if let Some(scripts) = value["value"]["scripts"].as_array() {
-                self.scripts.lock().unwrap().extend(scripts.clone());
-            }
         }
         Ok(())
     }
@@ -158,7 +149,6 @@ mod continuation;
 mod control;
 mod execution;
 mod spawn;
-mod waiting;
 pub fn cancel_project(project: &str) {
     for run in active()
         .lock()

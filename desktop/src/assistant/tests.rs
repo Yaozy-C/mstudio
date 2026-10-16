@@ -13,6 +13,7 @@ fn config_and_project_history_are_isolated() {
         model: "local-model".into(),
         adapter: "openai-compatible".into(),
         context_window: None,
+        limits: Default::default(),
         inputs: Default::default(),
     };
     assert!(config::validate(&p).is_ok());
@@ -85,6 +86,7 @@ async fn rig_roundtrip_uses_local_http_and_real_provider_parser() {
         model: "local-test".into(),
         adapter: "openai-compatible".into(),
         context_window: None,
+        limits: Default::default(),
         inputs: crate::assistant::config::Inputs {
             image: true,
             ..Default::default()

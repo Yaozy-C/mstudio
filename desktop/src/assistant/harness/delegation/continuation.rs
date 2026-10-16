@@ -164,7 +164,6 @@ pub(super) fn start_continuation(
             delegation: None,
         },
         id: id.into(),
-        scripts: Mutex::new(vec![]),
         changes: Mutex::new(vec![]),
         terminal_reason: Mutex::new(None),
     };

@@ -2,7 +2,7 @@
 use serde_json::{Value, json};
 
 pub fn schema() -> Value {
-    json!({"type":"array","maxItems":24,"description":"Declare the generation task deliverables. One entry per requested output task, not per shot. For a merged video use its anchor shot targetId once. Pass [] for research or prompt-only work. The host checks actual task receipts, not the specialist's prose.","items":{"type":"object","properties":{"targetId":{"type":"string","minLength":1,"maxLength":200},"kind":{"type":"string","enum":["image","video"]}},"required":["targetId","kind"],"additionalProperties":false}})
+    json!({"type":"array","maxItems":24,"description":"Declare the generation task deliverables; this is a delivery checklist, not a reason to bundle independent work. One entry per requested output task, not per shot. For a merged video use its anchor shot targetId once. Pass [] for research or prompt-only work. The host checks actual task receipts, not the specialist's prose.","items":{"type":"object","properties":{"targetId":{"type":"string","minLength":1,"maxLength":200},"kind":{"type":"string","enum":["image","video"]}},"required":["targetId","kind"],"additionalProperties":false}})
 }
 
 pub fn assess(expected: &Value, tasks: &Value) -> Value {

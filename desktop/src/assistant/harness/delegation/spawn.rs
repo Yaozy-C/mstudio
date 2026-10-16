@@ -31,7 +31,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     if !["oneShot", "continuable"].contains(&mode) {
         return Err("Invalid subagent mode".into());
     }
-    let background = background(args);
     if id == parent.profile.id || id == "coordinator" {
         return Err("Cannot delegate to the coordinator or self".into());
     }
@@ -204,7 +203,6 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             delegation: None,
         },
         id: child_id.clone(),
-        scripts: Mutex::new(vec![]),
         changes: Mutex::new(vec![]),
         terminal_reason: Mutex::new(None),
     };
@@ -221,40 +219,12 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let running = json!({"ok":true,"agentId":id,"childId":child_id,"mode":mode,
         "canContinue":mode == "continuable","status":"running",
         "outputRef":super::super::agent_artifacts::reference(&child_id,&child_turn)});
-    let handle = tokio::spawn(async move {
+    tokio::spawn(async move {
         let answer = drive_child(&child, &child_profile, &child_key, messages, deadline).await;
-        // Always publish a durable notice: the parent may stop waiting at any instant.
+        // Every child is detached; its durable notice is the parent's result path.
         settle(&child, &spawned_id, &answer, false);
         remove_active(&spawned_id, &generation);
         wake_pending(&child, &spawned_id);
-        super::execution::result(&child, &spawned_id, &generation, answer)
     });
-    if background {
-        return Ok(running);
-    }
-    match super::waiting::until(handle, route.deadline).await {
-        Some(Ok(mut result)) => {
-            result["mode"] = json!(mode);
-            result["canContinue"] = json!(mode == "continuable");
-            store
-                .db
-                .lock()
-                .unwrap()
-                .execute(
-                    "UPDATE subagent_notices SET delivered=1 WHERE child_id=?1 AND delivered=0 AND json_extract(output,'$.outputRef.turnId')=?2",
-                    rusqlite::params![child_id,child_turn],
-                )
-                .map_err(|e| e.to_string())?;
-            Ok(result)
-        }
-        Some(Err(error)) => Err(error.to_string()),
-        None => {
-            let mut result = running;
-            result["waitEnded"] = json!("parent_deadline");
-            result["message"] = json!(
-                "Child continues with its own time budget; await its completion notice. Do not redelegate this running work."
-            );
-            Ok(result)
-        }
-    }
+    Ok(running)
 }

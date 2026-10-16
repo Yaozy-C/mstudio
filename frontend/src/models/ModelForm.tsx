@@ -8,6 +8,8 @@ import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { connectionIssue } from "./connectionIssue";
 import { ModelInputs } from "./ModelInputs";
+import { ModelContextFields } from "./ModelContextFields";
+import { contextPolicyIssue } from "./contextLimits";
 import { StudioSelect } from "../ui/StudioSelect";
 import { useState } from "react";
 import { bridge } from "../bridge";
@@ -32,7 +34,7 @@ export function ModelForm({
     [],
   );
   const [discoveryNotice, setDiscoveryNotice] = useState("");
-  const issue = connectionIssue(profile);
+  const issue = connectionIssue(profile) || contextPolicyIssue(profile);
   const update = (value: Partial<ModelConnection>) =>
     setProfile((p) => ({ ...p, ...value }));
   async function discover() {
@@ -146,20 +148,7 @@ export function ModelForm({
               </p>
             )}
           </div>
-          <label>
-            {t("上下文窗口（token）")}
-            <input
-              type="number"
-              min={8192}
-              max={2000000}
-              step={1024}
-              value={profile.contextWindow ?? 32768}
-              onChange={(e) =>
-                update({ contextWindow: Number(e.target.value) })
-              }
-            />
-            <small>{t("按模型提供方公布的窗口填写，用于提前压缩对话。")}</small>
-          </label>
+          <ModelContextFields profile={profile} update={update} />
           <ModelInputs profile={profile} update={update} />
         </div>
         {(error || issue) && (

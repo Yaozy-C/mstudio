@@ -4,6 +4,9 @@ pub mod commands;
 #[cfg(test)]
 mod connection_tests;
 pub mod connections;
+pub mod context;
+pub mod context_commands;
+pub(crate) mod context_migration;
 pub mod media;
 mod storage;
 #[cfg(test)]
@@ -42,6 +45,7 @@ pub fn init(db: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS agent_model_preferences(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,model_id TEXT REFERENCES model_profiles(id) ON DELETE SET NULL);")?;
     connections::init(db)?;
     capabilities::migrate(db)?;
+    context_migration::migrate(db)?;
     Ok(())
 }
 

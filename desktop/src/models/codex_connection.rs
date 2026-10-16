@@ -135,6 +135,7 @@ fn sync(
                     model: selected["id"].as_str().unwrap().into(),
                     inputs: Default::default(),
                     context_window: None,
+                    limits: Default::default(),
                 },
             },
             None,

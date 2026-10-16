@@ -1,11 +1,16 @@
 use super::*;
 #[test]
-fn both_child_modes_wait_unless_background_is_explicit() {
-    for mode in ["oneShot", "continuable"] {
-        assert!(!background(&json!({"mode":mode})));
-        assert!(!background(&json!({"mode":mode,"runInBackground":false})));
-        assert!(background(&json!({"mode":mode,"runInBackground":true})));
-    }
+fn delegation_no_longer_accepts_a_foreground_wait_override() {
+    use rig_core::message::ToolFunction;
+    let call = ToolCall::from_wire(
+        "d",
+        ToolFunction::new(
+            "mstudio_delegate".try_into().unwrap(),
+            json!({"agentId":"image","task":"Create shot 4","expectedGenerations":[],"runInBackground":false}),
+        ),
+    );
+    let rejection = super::super::scheduler::validate(&[definition()], &call).unwrap();
+    assert_eq!(rejection["code"], "INVALID_ARGS");
 }
 
 #[test]

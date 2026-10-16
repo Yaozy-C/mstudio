@@ -8,9 +8,12 @@ pub struct Profile {
     pub adapter: String,
     #[serde(default)]
     pub context_window: Option<usize>,
+    #[serde(flatten)]
+    pub limits: crate::models::context::Settings,
     pub inputs: Inputs,
 }
 pub fn validate(profile: &Profile) -> Result<()> {
+    crate::models::context_migration::validate_policy(profile)?;
     ensure!(
         !profile.endpoint.trim().is_empty(),
         "请先在模型中心连接 Agent 服务"
@@ -77,12 +80,11 @@ pub fn validate(profile: &Profile) -> Result<()> {
 
 impl Profile {
     pub fn context_window(&self) -> Option<usize> {
-        // Codex reports its effective capacity at runtime. Unknown is not a 32K window.
-        self.context_window
-            .or_else(|| (self.adapter != "codex").then_some(32_768))
+        crate::models::context::window(self)
     }
     pub fn input_budget(&self) -> Option<usize> {
-        self.context_window().map(|n| n.saturating_mul(4) / 5)
+        self.context_window()
+            .and_then(|n| crate::models::context::threshold(self, n))
     }
 }
 
@@ -128,6 +130,7 @@ mod tests {
             model: "gemini-test".into(),
             adapter: "openai-compatible".into(),
             context_window: None,
+            limits: Default::default(),
             inputs: Default::default(),
         };
         assert!(

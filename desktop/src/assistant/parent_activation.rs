@@ -164,9 +164,6 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
     tool.token = pending.token.clone();
     tool.deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60);
     host.token = pending.token.clone();
-    if let Some(route) = &mut host.delegation {
-        route.deadline = tool.deadline;
-    }
     let app = tool.app.clone();
     let agent_id = tool.profile.id.clone();
     let store = app.state::<Store>();

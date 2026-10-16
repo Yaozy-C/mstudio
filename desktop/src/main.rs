@@ -152,6 +152,7 @@ fn main() {
             models::connections::save_service_connection,
             models::connections::remove_service_connection,
             models::connections::discover_service_models,
+            models::context_commands::resolve_text_model_limits,
             models::commands::save_model,
             models::commands::remove_model,
             models::commands::default_agent_model,

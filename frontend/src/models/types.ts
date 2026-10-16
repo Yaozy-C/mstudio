@@ -1,3 +1,12 @@
+export type TextModelLimits = {
+  endpoint: string;
+  model: string;
+  contextWindow: number;
+  maxOutputTokens: number | null;
+  defaultMaxTokens: number | null;
+  source: "catalog" | "service" | "fallback";
+  sourceUrl?: string | null;
+};
 export type ModelConnection = {
   id: string;
   name: string;
@@ -5,6 +14,10 @@ export type ModelConnection = {
   endpoint: string;
   model: string;
   contextWindow?: number | null;
+  contextWindowMode?: "auto" | "manual" | null;
+  modelLimits?: TextModelLimits | null;
+  maxOutputTokens?: number | null;
+  compactionHeadroom?: number | null;
   adapter:
     | "openai-compatible"
     | "openai-responses"
@@ -50,7 +63,8 @@ export function newConnection(): ModelConnection {
     name: "",
     endpoint: "",
     model: "",
-    contextWindow: 32768,
+    contextWindow: null,
+    contextWindowMode: "auto",
     adapter: "openai-compatible",
     inputs: { image: false, audio: false, video: false, document: false },
     hasKey: false,

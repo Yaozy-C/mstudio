@@ -89,7 +89,9 @@ pub async fn compact(
     host: &impl Host,
     session: &mut Session,
 ) -> Result<bool, String> {
-    let retain = context_window(session, profile).map_or(0, |n| n.saturating_mul(16) / 100);
+    let retain = context_window(session, profile).map_or(0, |n| {
+        n.saturating_sub(crate::models::context::output_cap(profile).unwrap_or(0)) * 16 / 100
+    });
     compact_with_retain(model, profile, host, session, retain).await
 }
 pub async fn compact_manual(
@@ -133,7 +135,11 @@ async fn compact_with_retain(
         request.documents = vec![];
         request.tools = host.definitions();
         request.temperature = None;
-        request.max_tokens = Some(8192);
+        request.max_tokens = Some(
+            crate::models::context::output_cap(profile)
+                .unwrap_or(65_536)
+                .min(8192) as u64,
+        );
         request.tool_choice = Some(rig_core::message::ToolChoice::None);
         request.additional_params = None;
         request.output_schema = None;

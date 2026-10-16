@@ -114,7 +114,7 @@ async fn step(
         request.documents = vec![];
         request.tools = host.definitions();
         request.temperature = None;
-        request.max_tokens = (profile.adapter == "anthropic-native").then_some(8192);
+        request.max_tokens = crate::models::context::output_cap(profile).map(|n| n as u64);
         request.tool_choice = None;
         request.additional_params = match profile.adapter.as_str() {
             "openai-responses" => Some(json!({"store":false})),

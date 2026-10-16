@@ -68,7 +68,10 @@ pub async fn discover_service_models(
             } else {
                 id
             };
-            Some(serde_json::json!({"id":id,"name":row["displayName"].as_str().unwrap_or(id)}))
+            let model_profile = crate::assistant::config::Profile { model: id.into(), ..profile.clone() };
+            let limits = super::super::context::from_service(&model_profile, row)
+                .or_else(|| super::super::context::known(&model_profile));
+            Some(serde_json::json!({"id":id,"name":row["displayName"].as_str().unwrap_or(id),"limits":limits}))
         })
         .collect())
 }

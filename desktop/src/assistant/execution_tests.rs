@@ -18,9 +18,11 @@ fn begin(store: &Store) {
 }
 
 #[test]
-fn wait_expiry_keeps_parent_active_until_child_and_result_delivery_finish() {
+fn background_parent_waits_until_every_child_notice_is_delivered() {
     let (root, store, _) = fixture();
     begin(&store);
+    store.db.lock().unwrap().execute_batch("INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn)
+        VALUES('other','p','parent','coordinator','image','oneShot','running','{}','model','other-turn');").unwrap();
     let state = finish_saved(
         &store,
         "p",
@@ -61,6 +63,24 @@ fn wait_expiry_keeps_parent_active_until_child_and_result_delivery_finish() {
         .unwrap()
         .execute("UPDATE subagent_notices SET delivered=1", [])
         .unwrap();
+    let state = finish_saved(
+        &store,
+        "p",
+        "parent",
+        &Ok("Writer finished; image task still running".into()),
+        &CancellationToken::new(),
+    )
+    .unwrap();
+    assert_eq!(state.status, "waiting");
+    parent_activation::reopen_response(&store, "p", "parent").unwrap();
+    store.db.lock().unwrap().execute_batch("UPDATE subagent_runs SET status='completed' WHERE id='other';
+        INSERT INTO subagent_notices(child_id,project_id,parent_agent_id,status,output) VALUES('other','p','coordinator','completed','image saved');").unwrap();
+    assert_eq!(
+        crate::assistant::harness::mailbox::notices(&store, "p", "coordinator", "parent")
+            .unwrap()
+            .len(),
+        1
+    );
     let state = finish_saved(
         &store,
         "p",

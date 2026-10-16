@@ -83,6 +83,11 @@
 .model-check input {
   width: auto;
 }
+.model-form .model-context-auto {
+  flex-direction: row;
+  align-items: center;
+  margin: 8px 0;
+}
 .model-vision {
   justify-content: center;
 }

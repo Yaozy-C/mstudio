@@ -199,7 +199,12 @@ async fn eight_product_images_survive_three_batches_in_the_real_driver() {
                 ))
             })
             .collect();
-        model.responses.lock().unwrap().push_back(Ok(reply(calls)));
+        let mut response = reply(calls);
+        response.usage = rig_core::completion::Usage::new()
+            .input_tokens(32_000)
+            .output_tokens(1000)
+            .total_tokens(33_000);
+        model.responses.lock().unwrap().push_back(Ok(response));
     }
     model
         .responses
@@ -209,7 +214,12 @@ async fn eight_product_images_survive_three_batches_in_the_real_driver() {
     assert_eq!(
         run(
             &model,
-            &profile(),
+            &crate::assistant::config::Profile {
+                endpoint: "https://generativelanguage.googleapis.com".into(),
+                adapter: "gemini-native".into(),
+                model: "gemini-4-argon".into(),
+                ..Default::default()
+            },
             &host,
             Session::new(vec![Message::user("develop a concept")]),
             false,
@@ -220,6 +230,11 @@ async fn eight_product_images_survive_three_batches_in_the_real_driver() {
         "concept complete"
     );
     let requests = model.requests.lock().unwrap();
+    assert!(
+        requests
+            .iter()
+            .all(|request| request.max_tokens == Some(32_768))
+    );
     assert_eq!(
         requests
             .iter()

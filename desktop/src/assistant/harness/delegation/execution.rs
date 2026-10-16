@@ -98,15 +98,13 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
             &tool.turn,
             &generation["generationTasks"],
         );
-        let artifact = json!({"childId":id,"agentId":tool.profile.id,"status":status,
+        let artifact = json!({"ok":answer.is_ok(),"applied":!changes.is_empty(),
+            "childId":id,"agentId":tool.profile.id,"status":status,
             "stopReason":stop_reason(answer, child),"output":output,
             "changes":changes,"savedWork":saved_work,"delivery":delivery,
             "generationTasks":generation["generationTasks"],"generationStateError":generation["error"],
             "outputRef":output_ref});
-        let notice = json!({"outputRef":output_ref,"stopReason":artifact["stopReason"],
-            "savedWork":saved_work,"delivery":delivery,"generationTasks":generation["generationTasks"],
-            "answerPreview":output.chars().take(1200).collect::<String>(),
-            "readWith":"mstudio_read_agent_result(id,turnId) returns the complete original output and write receipts; pass outputRef in artifacts to the next specialist."}).to_string();
+        let notice = settlement_notice(&artifact);
         let update = (|| -> Result<bool, String> {
             let mut db = store.db.lock().unwrap();
             let tx = db.transaction().map_err(|e| e.to_string())?;
@@ -142,44 +140,35 @@ pub(super) fn settle(child: &ChildHost, id: &str, answer: &Result<String, String
     }
 }
 
-pub(super) fn result(
-    child: &ChildHost,
-    spawned_id: &str,
-    generation: &str,
-    answer: Result<String, String>,
-) -> Value {
-    let changes = child.changes.lock().unwrap().clone();
-    let mut result = json!({"ok":answer.is_ok(),"agentId":child.inner.tool.as_ref().unwrap().profile.id,
-            "childId":spawned_id,"stopReason":stop_reason(&answer,child),
-            "applied":!changes.is_empty(),"changes":changes,
-            "savedWork":super::super::saved_work::summary(&changes),
-            "scripts":child.scripts.lock().unwrap().clone(),
-            "outputRef":super::super::agent_artifacts::reference(spawned_id,generation)});
-    let tool = child.inner.tool.as_ref().unwrap();
-    match crate::assistant::generation_context::outcome(
-        &tool.app.state::<Store>(),
-        &tool.project,
-        generation,
-    ) {
-        Ok(value) => result["generationTasks"] = value["generationTasks"].clone(),
-        Err(error) => result["generationStateError"] = json!(error.to_string()),
-    }
-    result["delivery"] = super::super::delivery::for_turn(
-        &tool.app.state::<Store>(),
-        &tool.project,
-        generation,
-        &result["generationTasks"],
-    );
-    match answer {
-        Ok(text) => result["answer"] = json!(text),
-        Err(error) => result["error"] = json!(error),
-    }
-    result
+fn settlement_notice(artifact: &Value) -> String {
+    json!({"ok":artifact["ok"],"applied":artifact["applied"],
+        "outputRef":artifact["outputRef"],"stopReason":artifact["stopReason"],
+        "savedWork":artifact["savedWork"],"delivery":artifact["delivery"],
+        "generationTasks":artifact["generationTasks"],"generationStateError":artifact["generationStateError"],
+        "answerPreview":artifact["output"].as_str().unwrap_or_default().chars().take(1200).collect::<String>(),
+        "readWith":"mstudio_read_agent_result(id,turnId) returns the complete original output and write receipts; pass outputRef in artifacts to the next specialist."}).to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn failed_completion_notice_preserves_saved_work_in_parent_replay() {
+        let notice = settlement_notice(&json!({"ok":false,"applied":true,
+            "outputRef":{"id":"child"},"stopReason":"error","output":"Service unavailable"}));
+        let mut outcomes =
+            super::super::super::outcomes::Outcomes::from_messages(&[Message::user(format!(
+                "Subagent child settled this turn with status failed. Final message: {notice}"
+            ))]);
+        assert!(outcomes.notice().contains("执行异常"));
+        assert!(outcomes.notice().contains("已有修改已保存"));
+        let recovered = settlement_notice(&json!({"ok":true,"applied":true,
+            "outputRef":{"id":"child"},"stopReason":"completed","output":"Recovered"}));
+        outcomes.observe_messages(&[Message::user(format!(
+            "Subagent child settled this turn with status idle. Final message: {recovered}"
+        ))]);
+        assert!(outcomes.notice().is_empty());
+    }
     #[tokio::test]
     async fn all_child_modes_share_capacity_and_cancel_queued_work() {
         let token = CancellationToken::new();

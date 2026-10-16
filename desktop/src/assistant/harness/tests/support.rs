@@ -105,6 +105,10 @@ pub fn profile() -> crate::assistant::config::Profile {
         model: "test".into(),
         adapter: "openai-compatible".into(),
         context_window: None,
+        limits: crate::models::context::Settings {
+            compaction_headroom: Some(0),
+            ..Default::default()
+        },
         inputs: Default::default(),
     }
 }

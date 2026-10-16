@@ -26,7 +26,7 @@ fn coordinator_prompt_size() {
     assert!(!prompt.contains("Available Skills:"));
     assert!(!prompt.contains("Storyboard handoff contract:"));
     assert!(!prompt.contains("Generation execution contract:"));
-    assert!(!prompt.contains("runInBackground")); // Defaults belong to the tool parameter.
+    assert!(!prompt.contains("runInBackground")); // Delegation has no foreground override.
 }
 #[test]
 fn only_delegating_roles_receive_dispatch_guidance() {

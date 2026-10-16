@@ -95,9 +95,6 @@ pub(crate) async fn complete_with_resume(
         key: key.into(),
         model_id: model_id.map(str::to_owned),
         fork_history,
-        deadline: host.deadline().unwrap_or_else(|| {
-            tokio::time::Instant::now() + std::time::Duration::from_secs(20 * 60)
-        }),
     });
     let store = host
         .tool

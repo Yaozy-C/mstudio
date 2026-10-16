@@ -21,7 +21,7 @@ fn get(db: &Connection, id: &str) -> Result<Model> {
     Ok(model)
 }
 
-fn credential(db: &Connection, model: &Model) -> Result<String> {
+pub(super) fn credential(db: &Connection, model: &Model) -> Result<String> {
     if let Some(id) = &model.connection_id {
         return super::connections::key(db, id);
     }
@@ -105,6 +105,7 @@ pub fn save(db: &Connection, mut model: Model, key: Option<String>, clear: bool)
     model.name = model.name.trim().into();
     model.profile.endpoint = model.profile.endpoint.trim().trim_end_matches('/').into();
     model.profile.model = model.profile.model.trim().into();
+    super::context::apply_automatic(&mut model.profile);
     ensure!(
         !model.id.is_empty() && model.id.len() <= 80,
         "模型连接 ID 无效"

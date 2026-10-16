@@ -1,5 +1,5 @@
 use super::{
-    super::{Host, ProjectHost, delegation, run, scheduler, session::Session},
+    super::{Host, ProjectHost, delegation, run, session::Session},
     support::*,
 };
 use rig_core::{
@@ -9,18 +9,26 @@ use rig_core::{
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
-    sync::{Mutex, atomic::Ordering},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicUsize, Ordering},
+    },
 };
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{Semaphore, mpsc, oneshot};
 
-struct WaitingChildren {
-    inner: TestHost,
+struct BackgroundChildren {
+    inner: Arc<TestHost>,
     policy: ProjectHost,
     gates: Mutex<HashMap<String, oneshot::Receiver<()>>>,
+    pool: Arc<Semaphore>,
+    outstanding: Arc<AtomicUsize>,
     started: mpsc::UnboundedSender<String>,
-    failing: Option<String>,
+    finished: mpsc::UnboundedSender<String>,
 }
-impl Host for WaitingChildren {
+impl Host for BackgroundChildren {
+    fn pending_children(&self) -> bool {
+        self.outstanding.load(Ordering::SeqCst) > 0
+    }
     fn token(&self) -> &tokio_util::sync::CancellationToken {
         &self.inner.token
     }
@@ -28,175 +36,185 @@ impl Host for WaitingChildren {
         self.inner.record(kind, value)
     }
     fn definitions(&self) -> Vec<ToolDefinition> {
-        vec![delegation::definition()]
+        let mut tools = self.inner.definitions();
+        tools.push(delegation::definition());
+        tools
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         self.policy.parallel_safe(call)
     }
+    fn injected(&self) -> Result<Vec<Message>, String> {
+        self.inner.injected()
+    }
     async fn execute(&self, call: &ToolCall) -> Value {
-        let id = call.id.wire().to_string();
-        let count = self.inner.active.fetch_add(1, Ordering::SeqCst) + 1;
-        self.inner.peak.fetch_max(count, Ordering::SeqCst);
-        let gate = self.gates.lock().unwrap().remove(&id).unwrap();
-        self.started.send(id.clone()).unwrap();
-        gate.await.unwrap();
-        self.inner.active.fetch_sub(1, Ordering::SeqCst);
-        if self.failing.as_ref() == Some(&id) {
-            json!({"ok":false,"childId":id,"stopReason":"error","error":"child failed"})
-        } else {
-            json!({"ok":true,"childId":id,"stopReason":"completed","answer":id})
+        if call.function.name != "mstudio_delegate" {
+            self.inner
+                .trace
+                .lock()
+                .unwrap()
+                .push("independent work".into());
+            assert!(self.pending_children());
+            return json!({"ok":true});
         }
+        let id = call.id.wire().to_string();
+        let gate = self.gates.lock().unwrap().remove(&id).unwrap();
+        let inner = self.inner.clone();
+        let outstanding = self.outstanding.clone();
+        let pool = self.pool.clone();
+        let started = self.started.clone();
+        let finished = self.finished.clone();
+        let child_id = id.clone();
+        self.outstanding.fetch_add(1, Ordering::SeqCst);
+        tokio::spawn(async move {
+            let _permit = pool.acquire().await.unwrap();
+            let active = inner.active.fetch_add(1, Ordering::SeqCst) + 1;
+            inner.peak.fetch_max(active, Ordering::SeqCst);
+            started.send(child_id.clone()).unwrap();
+            gate.await.unwrap();
+            let failed = child_id == "1";
+            let notice = json!({"outputRef":{"id":child_id},"ok":!failed,
+                "stopReason":if failed {"error"} else {"completed"}});
+            inner.inbox.lock().unwrap().push(Message::user(format!(
+                "Subagent {child_id} settled this turn with status {}. Final message: {notice}",
+                if failed { "failed" } else { "completed" }
+            )));
+            inner.active.fetch_sub(1, Ordering::SeqCst);
+            outstanding.fetch_sub(1, Ordering::SeqCst);
+            finished.send(child_id).unwrap();
+        });
+        json!({"ok":true,"childId":id,"status":"running","outputRef":{"id":id}})
     }
 }
 
-fn setup(
-    count: usize,
-) -> (
-    WaitingChildren,
-    mpsc::UnboundedReceiver<String>,
-    HashMap<String, oneshot::Sender<()>>,
-) {
-    let (started, receiver) = mpsc::unbounded_channel();
+#[tokio::test]
+async fn parent_continues_and_parks_before_six_children_finish_then_collects_notices() {
+    tokio::time::timeout(std::time::Duration::from_secs(5), background_roundtrip())
+        .await
+        .expect("parent waited for child completion or lost a completion notice");
+}
+
+async fn background_roundtrip() {
+    let (started, mut starts) = mpsc::unbounded_channel();
+    let (finished, mut finishes) = mpsc::unbounded_channel();
     let mut gates = HashMap::new();
     let mut releases = HashMap::new();
-    for i in 0..count {
+    for i in 0..6 {
         let (send, receive) = oneshot::channel();
         gates.insert(i.to_string(), receive);
         releases.insert(i.to_string(), send);
     }
-    (
-        WaitingChildren {
-            inner: TestHost::default(),
-            policy: ProjectHost {
-                tool: None,
-                media_profile: profile(),
-                token: Default::default(),
-                delegation: None,
-            },
-            gates: Mutex::new(gates),
-            started,
-            failing: None,
+    let host = BackgroundChildren {
+        inner: Arc::new(TestHost::default()),
+        policy: ProjectHost {
+            tool: None,
+            media_profile: profile(),
+            token: Default::default(),
+            delegation: None,
         },
-        receiver,
-        releases,
-    )
-}
-
-fn delegate(i: usize) -> ToolCall {
-    call(
-        &i.to_string(),
-        "mstudio_delegate",
-        json!({
-            "agentId":"image", "task":format!("Update shot {i}"),
-            "mode":"continuable", "runInBackground":false, "expectedGenerations":[],
-        }),
-    )
-}
-
-#[tokio::test]
-async fn six_foreground_children_overlap_and_parent_waits_for_every_result() {
-    let (host, mut started, mut releases) = setup(6);
+        gates: Mutex::new(gates),
+        pool: Arc::new(Semaphore::new(super::super::MAX_CONCURRENCY)),
+        outstanding: Arc::new(AtomicUsize::new(0)),
+        started,
+        finished,
+    };
     let model = TestModel::default();
     model.responses.lock().unwrap().extend([
         Ok(reply(
             (0..6)
-                .map(|i| AssistantContent::ToolCall(delegate(i)))
+                .map(|i| {
+                    AssistantContent::ToolCall(call(
+                        &i.to_string(),
+                        "mstudio_delegate",
+                        json!({"agentId":"image",
+                "task":format!("Create shot {i}"),"expectedGenerations":[],
+                "mode":if i % 2 == 0 {"oneShot"} else {"continuable"}}),
+                    ))
+                })
                 .collect(),
         )),
+        Ok(reply(vec![AssistantContent::ToolCall(call(
+            "read",
+            "read",
+            json!({}),
+        ))])),
         Ok(reply(vec![AssistantContent::text(
-            "All children collected",
+            "独立工作完成，等待子任务通知。",
         )])),
     ]);
-    let route = profile();
-    let work = run(
+    let answer = run(
         &model,
-        &route,
+        &profile(),
         &host,
-        Session::new(vec![Message::user("Update six shots")]),
+        Session::new(vec![Message::user(
+            "Create six shots and do independent work",
+        )]),
         false,
         "",
-    );
-    let control = async {
-        let mut first = Vec::new();
-        for _ in 0..4 {
-            first.push(started.recv().await.unwrap());
-        }
-        first.sort();
-        assert_eq!(first, ["0", "1", "2", "3"]);
-        assert!(started.try_recv().is_err());
-        releases.remove("1").unwrap().send(()).unwrap();
-        assert_eq!(started.recv().await.unwrap(), "4");
-        releases.remove("4").unwrap().send(()).unwrap();
-        assert_eq!(started.recv().await.unwrap(), "5");
-        for id in ["2", "3", "5"] {
-            releases.remove(id).unwrap().send(()).unwrap();
-        }
-        // The slow first child still owns a foreground wait: no next model step.
-        assert_eq!(model.requests.lock().unwrap().len(), 1);
-        releases.remove("0").unwrap().send(()).unwrap();
-    };
-    let (answer, ()) = tokio::time::timeout(std::time::Duration::from_secs(5), async {
-        tokio::join!(work, control)
-    })
-    .await
-    .expect("delegations ran sequentially or the parent failed to collect results");
-    assert_eq!(answer.unwrap(), "All children collected");
-    assert_eq!(host.inner.peak.load(Ordering::SeqCst), 4);
-    assert_eq!(host.inner.active.load(Ordering::SeqCst), 0);
-    let requests = model.requests.lock().unwrap();
-    assert_eq!(requests.len(), 2);
-    let results: Vec<_> = requests[1]
-        .chat_history
-        .iter()
-        .flat_map(session_results)
-        .collect();
-    assert_eq!(results, (0..6).map(|i| i.to_string()).collect::<Vec<_>>());
-}
-
-fn session_results(message: &Message) -> Vec<String> {
-    match message {
-        Message::User { content } => content
-            .iter()
-            .filter_map(|part| match part {
-                rig_core::message::UserContent::ToolResult(result) => {
-                    Some(result.call.wire().to_string())
-                }
-                _ => None,
-            })
-            .collect(),
-        _ => vec![],
-    }
-}
-
-#[tokio::test]
-async fn failed_child_does_not_abandon_other_foreground_results() {
-    let (mut host, mut started, mut releases) = setup(3);
-    host.failing = Some("1".into());
-    let calls: Vec<_> = (0..3).map(delegate).collect();
-    let mut session = Session::new(vec![]);
-    let work = scheduler::execute(&host, &mut session, &calls);
-    let control = async {
-        for _ in 0..3 {
-            started.recv().await.unwrap();
-        }
-        for id in ["1", "2", "0"] {
-            releases.remove(id).unwrap().send(()).unwrap();
-        }
-    };
-    let (result, ()) = tokio::time::timeout(std::time::Duration::from_secs(5), async {
-        tokio::join!(work, control)
-    })
+    )
     .await
     .unwrap();
-    result.unwrap();
-    let events = host.inner.events.lock().unwrap();
-    let results: Vec<_> = events
+    assert!(answer.contains("等待子任务通知"));
+    assert!(host.pending_children());
+    assert_eq!(*host.inner.trace.lock().unwrap(), ["independent work"]);
+    assert_eq!(model.requests.lock().unwrap().len(), 3);
+    let mut first = Vec::new();
+    for _ in 0..4 {
+        first.push(starts.recv().await.unwrap());
+    }
+    assert!(starts.try_recv().is_err());
+    releases.remove(&first[1]).unwrap().send(()).unwrap();
+    assert_eq!(finishes.recv().await.unwrap(), first[1]);
+    let fifth = starts.recv().await.unwrap();
+    releases.remove(&fifth).unwrap().send(()).unwrap();
+    assert_eq!(finishes.recv().await.unwrap(), fifth);
+    starts.recv().await.unwrap();
+    for (_, release) in releases {
+        release.send(()).unwrap();
+    }
+    for _ in 0..4 {
+        finishes.recv().await.unwrap();
+    }
+    assert!(!host.pending_children());
+    assert_eq!(host.inner.peak.load(Ordering::SeqCst), 4);
+    assert_eq!(host.inner.active.load(Ordering::SeqCst), 0);
+    let mut history = model
+        .requests
+        .lock()
+        .unwrap()
+        .last()
+        .unwrap()
+        .chat_history
+        .clone();
+    history.push(Message::assistant(answer));
+    let followup = TestModel::default();
+    followup
+        .responses
+        .lock()
+        .unwrap()
+        .push_back(Ok(reply(vec![AssistantContent::text("已整合结果。")])));
+    let answer = run(
+        &followup,
+        &profile(),
+        &host,
+        Session::new(history),
+        false,
+        "",
+    )
+    .await
+    .unwrap();
+    assert!(answer.contains("已整合结果"));
+    assert!(answer.contains("子任务 1 执行异常"));
+    let requests = followup.requests.lock().unwrap();
+    assert_eq!(requests.len(), 1);
+    let notices = requests[0]
+        .chat_history
         .iter()
-        .filter(|(kind, _)| kind == "tool/result")
-        .collect();
-    assert_eq!(results.len(), 3);
-    assert_eq!(results[0].1["result"]["ok"], true);
-    assert_eq!(results[1].1["result"]["ok"], false);
-    assert_eq!(results[2].1["result"]["ok"], true);
-    assert_eq!(session.messages.len(), 3);
+        .filter(|message| {
+            serde_json::to_string(message)
+                .unwrap()
+                .contains("settled this turn with status")
+        })
+        .count();
+    assert_eq!(notices, 6);
+    assert!(host.inner.inbox.lock().unwrap().is_empty());
 }

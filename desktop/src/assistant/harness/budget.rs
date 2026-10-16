@@ -64,7 +64,7 @@ pub fn header(
     profile: &Profile,
     tools: &[rig_core::completion::ToolDefinition],
 ) -> serde_json::Value {
-    json!({"route":profile,"tools":tools,"maxTokens":if profile.adapter == "anthropic-native" {Some(8192)} else {None},"store":if profile.adapter == "openai-responses" {Some(false)} else {None}})
+    json!({"route":profile,"tools":tools,"maxTokens":crate::models::context::output_cap(profile),"store":if profile.adapter == "openai-responses" {Some(false)} else {None}})
 }
 /// Anchor AFTER assistant commit, so its output is neither omitted nor counted twice.
 /// Provider usage is normalized separately; cache counters have adapter-specific semantics.
@@ -145,7 +145,7 @@ pub fn context_window(session: &Session, profile: &Profile) -> Option<usize> {
     }
 }
 pub fn input_budget(session: &Session, profile: &Profile) -> Option<usize> {
-    context_window(session, profile).map(|n| n.saturating_mul(4) / 5)
+    context_window(session, profile).and_then(|n| crate::models::context::threshold(profile, n))
 }
 pub fn over_budget(session: &Session, profile: &Profile, host: &impl Host) -> bool {
     input_budget(session, profile).is_some_and(|limit| pressure(session, profile, host) > limit)

@@ -17,6 +17,7 @@ fn model(id: &str) -> Model {
             model: id.into(),
             adapter: "openai-compatible".into(),
             context_window: None,
+            limits: Default::default(),
             inputs: Default::default(),
         },
         connection_id: None,
