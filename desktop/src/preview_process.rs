@@ -195,7 +195,7 @@ impl PreviewProcess {
     pub fn frame(&self, last: u32) -> Vec<u8> {
         #[cfg(target_os = "macos")]
         if self.metal.is_some() {
-            return vec![];
+            return self.metal_canvas_frame(last);
         }
         let state = self.shared.lock().unwrap();
         if state.failure.is_some()

@@ -1,3 +1,5 @@
+import { decodePreviewFrame } from "./previewFrames";
+
 export type MetalFrame = {
   sequence: number;
   position: number;
@@ -78,10 +80,15 @@ export function startMetalPreviewFrames(
   fail: (error: unknown) => void,
   accept: (position: number) => boolean,
   ready: () => void,
+  fallback?: {
+    canvas: HTMLCanvasElement;
+    read: (last: number) => Promise<ArrayBuffer>;
+  },
 ) {
   let alive = true,
     scheduled = 0,
     last = 0,
+    fallbackLast = 0,
     presented = false,
     previous = "",
     layoutRevision = 0;
@@ -89,6 +96,33 @@ export function startMetalPreviewFrames(
     if (!alive) return;
     try {
       const rect = bounds();
+      // Metal sits above the WebView. Paint the same frame in the DOM before
+      // hiding it so menus can overlap the video without leaving a blank stage.
+      // Pixel IPC is only used while occluded; ordinary playback stays on Metal.
+      if (!rect.visible && !document.hidden && fallback) {
+        const data = await fallback.read(fallbackLast);
+        if (!alive) return;
+        const frame = decodePreviewFrame(data);
+        if (frame && accept(frame.position)) {
+          const { canvas } = fallback;
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("无法创建预览画布");
+          if (canvas.width !== frame.width || canvas.height !== frame.height) {
+            canvas.width = frame.width;
+            canvas.height = frame.height;
+          }
+          context.putImageData(
+            new ImageData(frame.pixels, frame.width, frame.height),
+            0,
+            0,
+          );
+          fallbackLast = frame.sequence;
+          if (!presented) {
+            presented = true;
+            ready();
+          }
+        }
+      }
       const key = JSON.stringify([rect, devicePixelRatio]);
       if (key !== previous) {
         const revision = layoutRevision;

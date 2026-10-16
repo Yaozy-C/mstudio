@@ -37,6 +37,20 @@ impl MetalOutput {
     }
 }
 impl PreviewProcess {
+    // Only requested while a DOM overlay occludes Metal. Keep normal playback
+    // on shared BGRA textures and convert to Canvas RGBA on demand.
+    pub(super) fn metal_canvas_frame(&self, last: u32) -> Vec<u8> {
+        let Ok(Some(info)) = self.frame_info(last) else {
+            return vec![];
+        };
+        let m = self.metal.as_ref().unwrap();
+        let frame = m.frames.with_frame(Some(info.sequence), canvas_rgba);
+        let gate = m.gate.lock().unwrap();
+        if gate.closed || gate.pending > 0 || gate.generation != info.generation {
+            return vec![];
+        }
+        frame.unwrap_or_default()
+    }
     pub fn surface(&self) -> Option<Arc<Surface>> {
         self.metal.as_ref().map(|m| m.surface.clone())
     }
@@ -94,5 +108,28 @@ impl PreviewProcess {
                 m.surface.present(&frame[16..], generation)
             })
             .unwrap_or(Ok(false))
+    }
+}
+
+fn canvas_rgba(frame: &[u8]) -> Vec<u8> {
+    let mut rgba = frame.to_vec();
+    for pixel in rgba[16..].chunks_exact_mut(4) {
+        pixel.swap(0, 2);
+    }
+    rgba
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn canvas_fallback_preserves_header_and_converts_bgra_to_rgba() {
+        let mut frame = Vec::new();
+        for value in [7u32, 2, 1, 42] {
+            frame.extend_from_slice(&value.to_le_bytes());
+        }
+        frame.extend_from_slice(&[10, 20, 30, 255, 40, 50, 60, 128]);
+        let rgba = super::canvas_rgba(&frame);
+        assert_eq!(&rgba[..16], &frame[..16]);
+        assert_eq!(&rgba[16..], &[30, 20, 10, 255, 60, 50, 40, 128]);
     }
 }

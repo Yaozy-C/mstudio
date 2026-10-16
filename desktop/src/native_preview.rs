@@ -111,7 +111,14 @@ pub async fn native_preview_status(token: String) -> Result<Status, String> {
 #[tauri::command]
 pub async fn native_preview_frame(token: String, last: u32) -> tauri::ipc::Response {
     let player = SESSION.lock().unwrap().get(&token);
-    tauri::ipc::Response::new(player.map(|p| p.frame(last)).unwrap_or_default())
+    let frame = if let Some(player) = player {
+        tauri::async_runtime::spawn_blocking(move || player.frame(last))
+            .await
+            .unwrap_or_default()
+    } else {
+        vec![]
+    };
+    tauri::ipc::Response::new(frame)
 }
 #[tauri::command]
 pub async fn native_preview_frame_info(

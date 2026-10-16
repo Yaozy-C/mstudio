@@ -30,7 +30,6 @@ export function NativePreview({
   useLanguage();
   const canvas = useRef<HTMLCanvasElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const [renderer, setRenderer] = useState("canvas");
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
@@ -79,7 +78,6 @@ export function NativePreview({
             },
           );
           if (controller.phase !== "loading") return;
-          setRenderer(renderer);
           if (renderer === "metal" && stage.current) {
             const host = stage.current;
             stopFrames = startMetalPreviewFrames(
@@ -102,6 +100,16 @@ export function NativePreview({
               controller.fail,
               controller.acceptFrame,
               controller.presented,
+              canvas.current
+                ? {
+                    canvas: canvas.current,
+                    read: (last) =>
+                      bridge<ArrayBuffer>("native_preview_frame", {
+                        token,
+                        last,
+                      }),
+                  }
+                : undefined,
             );
           } else if (canvas.current) {
             stopFrames = startPreviewFrames(
@@ -141,7 +149,7 @@ export function NativePreview({
           ref={canvas}
           className="preview-canvas"
           style={{
-            visibility: ready && renderer === "canvas" ? "visible" : "hidden",
+            visibility: ready ? "visible" : "hidden",
           }}
         />
         {!ready && (
