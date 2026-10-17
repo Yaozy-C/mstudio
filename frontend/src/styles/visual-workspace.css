@@ -19,11 +19,6 @@
 .studio-shell .studio-modes button[aria-pressed="true"] > svg {
   color: var(--desk-accent);
 }
-.studio-shell .studio-modes button[aria-pressed="true"]::after {
-  height: 2px;
-  border-radius: 1px;
-  bottom: 10px;
-}
 .radix-themes .studio-shell .studio-top :is(.chrome-action, .chrome-export) {
   height: 32px;
   font-size: var(--ui-caption);

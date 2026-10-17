@@ -11,7 +11,7 @@ import type { Asset, Project } from "../model";
 import type { ProductionItem } from "./types";
 import type { ProductionController } from "./useProduction";
 import "./cards.css";
-export const labels = {
+const labels = {
   script: "镜头说明",
   reference: "图片",
   image: "图片",

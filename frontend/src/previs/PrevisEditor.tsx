@@ -57,7 +57,7 @@ export function PrevisEditor({
     </>
   );
 }
-export function PrevisEditorDialog({ state }: { state: PrevisEditorState }) {
+function PrevisEditorDialog({ state }: { state: PrevisEditorState }) {
   const { busy, dismiss, file, draft, model, render } = state;
   const running = busy === "chat" || busy === "render";
   return (

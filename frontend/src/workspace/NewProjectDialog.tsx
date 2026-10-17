@@ -17,6 +17,8 @@ export function NewProjectDialog({
   onCreated: (project: Project) => void;
 }) {
   useLanguage();
+  const [open, setOpen] = useState(true);
+  const close = () => setOpen(false);
   const opener = useRef(
     typeof document === "undefined"
       ? null
@@ -52,9 +54,9 @@ export function NewProjectDialog({
   }
   return (
     <Dialog.Root
-      open
+      open={open}
       onOpenChange={(open) => {
-        if (!open && !saving) onClose();
+        if (!open && !saving) close();
       }}
     >
       <Dialog.Content
@@ -69,6 +71,7 @@ export function NewProjectDialog({
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           if (opener.current?.isConnected) opener.current.focus();
+          if (!open) onClose();
         }}
       >
         <form
@@ -155,7 +158,7 @@ export function NewProjectDialog({
           )}
           {error && <ErrorNotice error={error} />}
           <footer>
-            <button disabled={saving} type="button" onClick={onClose}>
+            <button disabled={saving} type="button" onClick={close}>
               <DialogX aria-hidden="true" />
               {t("取消")}
             </button>

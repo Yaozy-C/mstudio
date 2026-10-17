@@ -4,7 +4,7 @@ export type Frame = {
   title: string;
   prompt?: string;
 };
-export type InputRole =
+type InputRole =
   | "edit"
   | "reference"
   | "first-frame"

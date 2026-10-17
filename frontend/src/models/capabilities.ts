@@ -29,7 +29,7 @@ export const referenceRoles: ReferenceRole[] = [
  * field nested under `input` is expressed as `/input/img_url` and a top-level field as
  * `/image_url`. The pointer is the same vocabulary the custom HTTP result mapping uses.
  */
-export type ReferenceDeclaration = {
+type ReferenceDeclaration = {
   key: string;
   kind: MediaKind;
   role: ReferenceRole;
@@ -49,7 +49,7 @@ export type ControlDeclaration = {
   max?: number;
 };
 
-export type ControlDeclarations = {
+type ControlDeclarations = {
   /** Output width:height ratio, e.g. `16:9`. */
   aspectRatio?: ControlDeclaration;
   /** Output resolution tier, e.g. `1080P`. Values are case-sensitive. */
@@ -79,7 +79,7 @@ export type ReferenceField = {
   max: number | null;
 };
 
-export type ResolvedControl = {
+type ResolvedControl = {
   path: string;
   values: string[];
   min: number | null;
@@ -95,7 +95,7 @@ export type ResolvedControls = {
 
 const defaults = protocolDefaults as Record<string, CapabilityDeclaration>;
 
-export function declarationOf(model: {
+function declarationOf(model: {
   plugin: string;
   capabilities?: CapabilityDeclaration;
 }): CapabilityDeclaration {
@@ -103,7 +103,7 @@ export function declarationOf(model: {
 }
 
 /** Declared references, falling back to the protocol vocabulary when nothing is declared. */
-export function referenceDeclarations(model: {
+function referenceDeclarations(model: {
   plugin: string;
   capabilities?: CapabilityDeclaration;
 }): ReferenceDeclaration[] {
@@ -112,7 +112,7 @@ export function referenceDeclarations(model: {
   return defaults[model.plugin]?.references ?? [];
 }
 
-export function controlDeclarations(model: {
+function controlDeclarations(model: {
   plugin: string;
   capabilities?: CapabilityDeclaration;
 }): ControlDeclarations {

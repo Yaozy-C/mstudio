@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import type { PlaybackClock } from "../timeline/clock";
 /** Transient selection shared by the timeline and inspector, scoped to one workspace. */
-export class CaptionSelection {
+class CaptionSelection {
   private id: string | null = null;
   private listeners = new Set<() => void>();
   get = () => this.id;

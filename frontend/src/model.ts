@@ -85,7 +85,7 @@ export type Reference = {
   start?: number;
   end?: number;
 };
-export type Creation = {
+type Creation = {
   intent: string;
   essential: string;
   preserve: string;

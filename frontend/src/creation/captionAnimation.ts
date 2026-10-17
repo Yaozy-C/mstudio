@@ -8,8 +8,8 @@ export const captionAnimations = {
   shake: "轻微抖动",
   glow: "呼吸发光",
 };
-export const animationPeriod = 1;
-export type WordTiming = { text: string; start: number; end: number };
+const animationPeriod = 1;
+type WordTiming = { text: string; start: number; end: number };
 export function captionWords(c: Caption): WordTiming[] {
   if (c.words?.length && c.words.map((w) => w.text).join("") === c.text)
     return c.words;

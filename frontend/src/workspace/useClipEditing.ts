@@ -55,7 +55,7 @@ export function useClipEditing(
         e.defaultPrevented ||
         e.isComposing ||
         document.querySelector(
-          '.modal-backdrop, .settings-page, [role="dialog"], [role="alertdialog"], [role="menu"]',
+          '.settings-page, [role="dialog"], [role="alertdialog"], [role="menu"]',
         )
       )
         return;

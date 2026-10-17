@@ -15,14 +15,10 @@ test("missing, corrupted and unsupported preferences retain safe defaults", () =
   }
 });
 test("saved appearance survives decoding without accepting unrelated settings", () => {
-  expect(
-    parseAppearance('{"surface":"white","contrast":"high","theme":"dark"}'),
-  ).toEqual({ surface: "white", contrast: "high" });
-});
-
-test("cool slate preferences survive reload decoding", () => {
-  expect(parseAppearance('{"surface":"slate","contrast":"high"}')).toEqual({
-    surface: "slate",
-    contrast: "high",
-  });
+  for (const surface of ["white", "slate"] as const)
+    expect(
+      parseAppearance(
+        JSON.stringify({ surface, contrast: "high", theme: "dark" }),
+      ),
+    ).toEqual({ surface, contrast: "high" });
 });

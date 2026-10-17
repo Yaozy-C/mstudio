@@ -102,7 +102,7 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
     );
     assert!(serde_json::to_string(&typed).unwrap().contains("aGVsbG8="));
     assert!(
-        !serde_json::to_string(&journal::page(&store, "p", None).unwrap())
+        !serde_json::to_string(&journal::turn_page(&store, "p", "t", None).unwrap())
             .unwrap()
             .contains("aGVsbG8=")
     );

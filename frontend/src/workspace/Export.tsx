@@ -21,6 +21,8 @@ export function ExportDialog({
   onClose: () => void;
 }) {
   useLanguage();
+  const [open, setOpen] = useState(true);
+  const close = () => setOpen(false);
   const opener = useRef(
     typeof document === "undefined"
       ? null
@@ -104,9 +106,9 @@ export function ExportDialog({
   }
   return (
     <Dialog.Root
-      open
+      open={open}
       onOpenChange={(open) => {
-        if (!open && !busy && !saving && !revealing) onClose();
+        if (!open && !busy && !saving && !revealing) close();
       }}
     >
       <Dialog.Content
@@ -119,6 +121,7 @@ export function ExportDialog({
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           if (opener.current?.isConnected) opener.current.focus();
+          if (!open) onClose();
         }}
       >
         <header>
@@ -131,7 +134,7 @@ export function ExportDialog({
             className="icon-button"
             aria-label={t("关闭")}
             disabled={busy || saving || revealing}
-            onClick={onClose}
+            onClick={close}
           >
             <X />
           </button>
@@ -186,7 +189,7 @@ export function ExportDialog({
             revealing={revealing}
             onSave={() => void save()}
             onReveal={() => void reveal()}
-            onClose={onClose}
+            onClose={close}
           />
         ) : (
           <footer>

@@ -126,10 +126,6 @@ fn specialists_cannot_cross_edit_boundaries() {
         &agent("director"),
         json!({"op":"request_generation","id":"s"})
     ));
-    assert!(!check(
-        &agent("director"),
-        json!({"op":"request_generation","id":"s"})
-    ));
     // production now owns both prompt kinds through project-frames and project-production,
     // so writing frame prompts and shot frames is no longer another role's boundary.
     assert!(check(

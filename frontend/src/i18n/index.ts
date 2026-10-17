@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import english from "./en";
 
-export type Language = "zh-CN" | "en";
+type Language = "zh-CN" | "en";
 export const LANGUAGE_KEY = "mstudio-language";
 const messages: Record<string, string> = english;
 const listeners = new Set<() => void>();

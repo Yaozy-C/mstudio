@@ -9,19 +9,6 @@ fn han(text: &str) -> bool {
 fn coordinator_prompt_size() {
     let profile = profiles::builtins().remove(0);
     let prompt = system(&json!({"agent":super::super::model_profile::role(&profile),"skills":[]}));
-    let tools = serde_json::to_string(
-        &[
-            vec![super::super::harness::delegation::definition()],
-            super::super::harness::delegation::control_definitions(),
-        ]
-        .concat(),
-    )
-    .unwrap();
-    println!(
-        "coordinator system chars: {}; delegation tool chars: {}",
-        prompt.chars().count(),
-        tools.chars().count()
-    );
     assert!(prompt.chars().count() < 2400);
     assert!(!prompt.contains("Available Skills:"));
     assert!(!prompt.contains("Storyboard handoff contract:"));

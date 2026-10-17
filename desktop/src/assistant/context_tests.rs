@@ -70,8 +70,15 @@ fn journal_preserves_failed_attempts_and_submission_reservations_are_idempotent(
         .unwrap();
     journal::append(&store, "p", "turn", "turn/start", json!({})).unwrap();
     journal::append(&store, "p", "turn", "turn/end", json!({"status":"failed"})).unwrap();
-    assert_eq!(journal::page(&store, "p", None).unwrap().len(), 1);
-    assert!(journal::page(&store, "other", None).unwrap().is_empty());
+    assert_eq!(
+        journal::turn_page(&store, "p", "turn", None).unwrap().len(),
+        1
+    );
+    assert!(
+        journal::turn_page(&store, "other", "turn", None)
+            .unwrap()
+            .is_empty()
+    );
     let job = json!({"id":"run","projectId":"p","input":{"prompt":"test"},"endpoint":"fal-ai/test","status":"SUBMITTING","providerId":"fal"});
     assert!(jobs::reserve(&store, &job).unwrap());
     assert!(!jobs::reserve(&store, &job).unwrap());

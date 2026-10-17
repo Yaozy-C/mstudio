@@ -1,7 +1,8 @@
 import { IconButton } from "../ui/IconButton";
 import { ProjectConflict } from "./ProjectConflict";
 import { platformShortcut } from "../ui/platformShortcut";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useModeIndicator } from "../ui/useModeIndicator";
 import { t, useLanguage } from "../i18n";
 import { DropdownMenu } from "@radix-ui/themes";
 import {
@@ -59,6 +60,8 @@ export function StudioChrome({
   onCreation: (tab: string) => void;
 }) {
   useLanguage();
+  const modes = useRef<HTMLElement>(null);
+  useModeIndicator(modes, view);
   const { project } = m;
   const saveFailed = m.saved.startsWith("保存失败");
   const SaveIcon = saveFailed
@@ -102,7 +105,7 @@ export function StudioChrome({
           </button>
         )}
       </div>
-      <nav className="studio-modes" aria-label={t("工作区模式")}>
+      <nav ref={modes} className="studio-modes" aria-label={t("工作区模式")}>
         {(
           [
             ["script", t("脚本"), NotePencil],

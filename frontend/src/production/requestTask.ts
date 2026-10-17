@@ -17,7 +17,7 @@ export type GenerationCommandContext = {
   turnId: string;
   turn: ProductionTurn;
 };
-export const isRun = (t: ProductionTask) => !!t.turnId && !!t.createdAt;
+const isRun = (t: ProductionTask) => !!t.turnId && !!t.createdAt;
 export const runsOf = (p: Project, turnId?: string) =>
   Object.values(p.production?.drafts ?? {})
     .map(normalizeTaskPrompt)

@@ -3,7 +3,7 @@ import { ErrorNotice } from "../errors/ErrorNotice";
 import { AlertDialog } from "@radix-ui/themes";
 import { useSafeExit } from "./useSafeExit";
 
-export function ExitSaveDialog({
+function ExitSaveDialog({
   error,
   busy,
   retry,

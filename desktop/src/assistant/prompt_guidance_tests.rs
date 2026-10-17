@@ -79,8 +79,20 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     assert!(guidance.contains("storyboard-video-production/SKILL.md"));
     assert!(guidance.contains("storyboard-video-production/CORE.md"));
     // The bound Skill owns its motion, performance and timing methods.
-    assert!(guidance.contains("## Human performance"));
-    assert!(guidance.contains("## Timing and selection"));
+    for expected in [
+        "## Human performance",
+        "## Timing and selection",
+        "## Appearance and continuity",
+        "## Contact and motion",
+        "including necessary intermediate contact, support, grip and release states",
+        "a continuous shot cannot skip a necessary transition",
+        "concrete purpose",
+    ] {
+        assert!(
+            guidance.contains(expected),
+            "missing method rule: {expected}"
+        );
+    }
     // The prompt-writing guide is always present for the bound kind.
     assert!(guidance.contains("storyboard-video-production/references/prompt-writing.md"));
     assert!(guidance.contains("### storyboard-video-production/references/shot-execution.md"));
@@ -139,46 +151,6 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     assert!(!image_guidance.contains("### storyboard-video-production/"));
     assert!(!image_guidance.contains("### creative-ad-director/"));
     assert!(!image_guidance.contains("storyboard-video-production/references/control.md"));
-    drop(db);
-    drop(store);
-    std::fs::remove_dir_all(root).unwrap();
-}
-
-/// The real audited task (`job 1791390322635289000-7`, project 10-7-2): a 15-second
-/// live-action brief whose submitted prompt packed timed multi-event action around
-/// real people, while its output was never inspected. Whitespace is normalized for
-/// the fixture; the task signals the router reads are unchanged.
-#[test]
-fn the_audited_real_brief_selects_the_methods_that_were_missing() {
-    let (root, store) = fixture();
-    let db = store.db.lock().unwrap();
-    let profile = quick_profile(&db, "video").unwrap();
-    let context = json!({"models":{"video":"h3"}});
-    let real_brief = r#"Generate a 15-second 9:16 vertical photorealistic live-action TikTok advertisement for the US market. Natural contemporary office lunch area, soft daylight, believable adult coworkers, realistic skin and woven fabric. Keep people, wardrobe, desk, light and the exact same blue lunch bag consistent across clean hard cuts. The supplied product photo is authoritative for bag geometry, proportions, fabric and hardware; do not copy its white background or FRONT label. Shot 1, 0–3s: Medium desk-level shot. Lead lowers the closed blue lunch bag onto the desk; its base makes full contact before the hand releases it. Coworker leans in, looks at the bag and asks in natural American English: 'Where are we eating today?' Lead rests one hand near the top zipper and gives a small amused glance. Shot 2, 3–6s: Clear close three-quarter view. One hand steadies the bag while the other pulls a slider along the existing top zipper track. Only after unzipping, lift the lid on its rear fabric connection, revealing an appropriately sized closed lunch container fully inside. Lead: 'My place.' Grasp the container, lift vertically through the open top with clearance, and lower onto the clear desk beside the bag. Maintain hand support until its base lands. A motivated hard cut between opening and extraction may keep each action readable. Shot 3, 6–10s: Food close-up with the bag still visible. Open the container to reveal an appetizing colorful lunch. Unzip the bag's real front pocket and take out a slim wrapped cutlery set that fits entirely inside it. Draw it through the opened pocket mouth and set it beside the food. Keep fingers, pocket and utensils visibly separate. English on-screen text: 'Your favorites. Packed.' Shot 4, 10–12s: Two-person medium shot. Coworker glances at their plain lunch and then the lead's food, moves their chair slightly closer and asks: 'Got room for one more?' Lead smiles and places a hand protectively beside the container, without touching the food. Shot 5, 12–15s: Hard cut to the same bag closed, lid aligned and both top zipper pulls present. Lead grips the padded handle, takes up tension, then lifts a short distance; the intact bag hangs naturally below the hand. Cut to a steady front-facing product close-up of the bag resting on the desk. Show recognizable blue fabric, black handles, silver zipper pulls, front zip pocket and visible side fittings. Hold the ending for readable English text: 'Lunch, handled.' and 'Shop now.' Physical realism is essential: retain the rectangular bag shape and stable volume; preserve blue woven fabric, black perimeter zipper and two silver pulls, both black handle straps and blue padded grip, rounded rectangular front zip pocket, side mesh pockets, shoulder strap and side attachment clips. Allow small realistic fabric creases while preserving construction. Hands grip surfaces with anatomically plausible fingers; fingers never intersect fabric or hardware. Every container and utensil transfer passes through an actually opened aperture with adequate clearance. Show support, path, contact and release in that order. No object crosses closed walls, zippers or tabletop. No melting, stretching, shape morphing, duplicated or missing hardware, fused fingers, floating objects or teleporting transfers. Keep occluded components consistent when they reappear. Use clear stable angles, ordinary movement and clean cuts, without extreme camera orbits or speed ramps. Audio: low office room tone and light upbeat music beneath clear natural American-English dialogue. Synchronize bag landing, zipper sliding, lunch-box opening and utensil contact with visible actions. Lower music briefly under the coworker's final question and restore it for the product ending. Preserve the full 15-second story, dialogue and captions."#;
-    let guidance = for_quick(&db, &profile, "video", real_brief, &context, &json!({})).unwrap();
-    // The bound entry, its core and its own prompt guide come from the database.
-    assert!(guidance.contains("storyboard-video-production/SKILL.md"));
-    assert!(guidance.contains("storyboard-video-production/CORE.md"));
-    assert!(guidance.contains("storyboard-video-production/references/prompt-writing.md"));
-    // Every method the audit found missing for this exact task is now selected:
-    // real people and dialogue, timed multi-event action, photographic appearance
-    // and physical contact.
-    for expected in [
-        "## Human performance",
-        "## Timing and selection",
-        "## Appearance and continuity",
-        "## Contact and motion",
-    ] {
-        assert!(guidance.contains(expected), "missing route: {expected}");
-    }
-    // Current rules preserve necessary physical transitions in the submitted prompt.
-    assert!(
-        guidance
-            .contains("including necessary intermediate contact, support, grip and release states")
-    );
-    assert!(guidance.contains("a continuous shot cannot skip a necessary transition"));
-    // Every input must be bound to a subject and visual use.
-    assert!(guidance.contains("concrete purpose"));
     drop(db);
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

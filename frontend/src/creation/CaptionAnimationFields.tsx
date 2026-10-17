@@ -4,7 +4,7 @@ import type { Caption } from "../model";
 import { t, useLanguage } from "../i18n";
 import { captionAnimations } from "./captionAnimation";
 import { captionImage } from "./captions";
-export function CaptionAnimationSelect({
+function CaptionAnimationSelect({
   caption,
   patch,
   mixed = false,

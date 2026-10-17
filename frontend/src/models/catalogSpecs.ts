@@ -75,7 +75,7 @@ export function libraryDeclaration(
 }
 
 /** The library publishes one entry per family; editing endpoints are derived at add time. */
-export function editingEndpoint(endpoint: string): string {
+function editingEndpoint(endpoint: string): string {
   return endpoint.replace(/\/text-to-image$/, "") + "/edit";
 }
 export const modelLibrary = [

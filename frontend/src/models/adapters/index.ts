@@ -30,7 +30,7 @@ export type ModelRequest = {
   inputs?: ModelInput[];
   options?: Record<string, unknown>;
 };
-export interface ModelAdapter {
+interface ModelAdapter {
   id: string;
   fields: ReferenceField[];
   encode(request: ModelRequest): Record<string, unknown>;

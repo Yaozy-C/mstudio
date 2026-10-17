@@ -18,7 +18,7 @@ import {
 } from "../models/capabilities";
 
 /** The vocabulary the Agent-facing parameter schema and the settings panel read. */
-export type ParameterVocabulary = {
+type ParameterVocabulary = {
   ratios: string[];
   resolutions: string[];
   customSize: boolean;
@@ -28,7 +28,7 @@ export type ParameterVocabulary = {
 };
 
 // Shared by model capability discovery and the model-facing operation schema.
-export function parameterSchema(fields: ParameterVocabulary) {
+function parameterSchema(fields: ParameterVocabulary) {
   const range = fields.durationRange ?? {};
   const properties: Record<string, Schema> = {};
   if (fields.ratios.length)
@@ -70,7 +70,7 @@ export type GenerationParameters = {
   height?: number;
 };
 
-export type ParameterFields = Omit<ParameterVocabulary, "durationRange"> & {
+type ParameterFields = Omit<ParameterVocabulary, "durationRange"> & {
   durationRange: { min?: number; max?: number };
   frameRatio: boolean;
   supported: boolean;

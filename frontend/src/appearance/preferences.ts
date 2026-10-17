@@ -3,7 +3,7 @@ export type Appearance = {
   surface: "paper" | "white" | "slate";
   contrast: "standard" | "high";
 };
-export const APPEARANCE_KEY = "mstudio-appearance";
+const APPEARANCE_KEY = "mstudio-appearance";
 export const defaultAppearance: Appearance = {
   surface: "paper",
   contrast: "standard",

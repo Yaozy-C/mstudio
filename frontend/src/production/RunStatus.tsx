@@ -3,7 +3,7 @@ import { StatusIcon, type StatusKind } from "../ui/AsyncState";
 import type { ProductionTask } from "./types";
 import { pendingRun, runStatuses } from "./useRunActions";
 
-export function runStatusKind(task: ProductionTask): StatusKind {
+function runStatusKind(task: ProductionTask): StatusKind {
   if (task.status === "COMPLETED") return "success";
   if (task.status === "FAILED") return "error";
   if (

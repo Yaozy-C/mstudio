@@ -65,34 +65,6 @@ pub fn append(store: &Store, project: &str, turn: &str, kind: &str, payload: Val
     tx.commit()?;
     Ok(())
 }
-pub fn page(store: &Store, project: &str, before: Option<i64>) -> Result<Vec<Value>> {
-    let db = store.db.lock().unwrap();
-    let mut stmt=db.prepare("SELECT seq,turn_id,kind,CASE WHEN kind='tool/result' THEN json_remove(payload,'$.message','$.value') ELSE payload END,created FROM agent_events WHERE project_id=?1 AND kind NOT IN ('session/start','session/message','session/compaction','media/offload','media/forwarded','subagent/context','subagent/configuration') AND kind != 'assistant/partial' AND seq<?2 ORDER BY seq DESC LIMIT 40")?;
-    let values = stmt
-        .query_map(
-            rusqlite::params![project, before.unwrap_or(i64::MAX)],
-            |r| {
-                Ok((
-                    r.get::<_, i64>(0)?,
-                    r.get::<_, String>(1)?,
-                    r.get::<_, String>(2)?,
-                    r.get::<_, String>(3)?,
-                    r.get::<_, i64>(4)?,
-                ))
-            },
-        )?
-        .collect::<rusqlite::Result<Vec<_>>>()?;
-    values.into_iter().map(|(seq,turn,kind,payload,created)|Ok(serde_json::json!({"seq":seq,"turnId":turn,"kind":kind,"payload":crate::database::blobs::event(&db,seq,&payload)?,"created":created}))).collect()
-}
-#[tauri::command]
-pub fn agent_events(
-    store: tauri::State<Store>,
-    project_id: String,
-    before: Option<i64>,
-) -> Result<Vec<Value>, String> {
-    page(&store, &project_id, before).map_err(|e| e.to_string())
-}
-
 pub fn turn_page(
     store: &Store,
     project: &str,

@@ -1,48 +1,7 @@
 //! User-facing setup states; credentials stay with Codex.
-use super::{codex_discovery, codex_rpc::Rpc};
-use serde_json::{Value, json};
+use super::codex_rpc::Rpc;
+use serde_json::json;
 use std::time::Duration;
-
-fn state(status: &str) -> Value {
-    json!({"status": status, "loggedIn": status == "ready" || status == "unsupported", "imageGeneration": status == "ready"})
-}
-
-#[tauri::command]
-pub async fn codex_image_status() -> Value {
-    if codex_discovery::binaries().await.is_empty() {
-        return state("missing");
-    }
-    let result = tokio::time::timeout(Duration::from_secs(30), async {
-        let mut rpc = Rpc::start().await?;
-        let result: anyhow::Result<Value> = async {
-            let account = rpc
-                .call("account/read", json!({"refreshToken":false}))
-                .await?;
-            if account["account"]["type"] != "chatgpt" {
-                return Ok(state("login_required"));
-            }
-            let capabilities = rpc
-                .call("modelProvider/capabilities/read", json!({}))
-                .await?;
-            Ok(state(
-                if capabilities["imageGeneration"] == true && super::codex_auth::available() {
-                    "ready"
-                } else {
-                    "unsupported"
-                },
-            ))
-        }
-        .await;
-        rpc.stop().await;
-        result
-    })
-    .await;
-    match result {
-        Ok(Ok(value)) => value,
-        Ok(Err(_)) => state("unavailable"),
-        Err(_) => state("timeout"),
-    }
-}
 
 fn open_browser(url: &str) -> Result<(), String> {
     #[cfg(target_os = "macos")]

@@ -8,7 +8,7 @@ import {
   removeCaptionTrack,
   type CaptionLane,
 } from "./captionTracks";
-export function CaptionTrackHeading({
+function CaptionTrackHeading({
   track,
   change,
 }: {

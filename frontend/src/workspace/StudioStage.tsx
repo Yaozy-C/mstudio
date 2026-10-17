@@ -24,7 +24,8 @@ export function StudioStage({
 }) {
   useLanguage();
   const stage = useRef<HTMLElement>(null);
-  useContentMotion(stage, view);
+  // Native video and canvas coordinates must not pass through a filtered layer.
+  useContentMotion(stage, view, view === "script");
   return (
     <main
       ref={stage}

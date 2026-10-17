@@ -2,7 +2,7 @@ import { t, useLanguage } from "../i18n";
 import { useRef, useState } from "react";
 import { Select } from "@radix-ui/themes";
 import "../styles/studio-select.css";
-export type SelectOption = { value: string; label: string; disabled?: boolean };
+type SelectOption = { value: string; label: string; disabled?: boolean };
 export function StudioSelect({
   value,
   onValueChange,

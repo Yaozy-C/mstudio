@@ -2,7 +2,7 @@ import { mergeValue } from "../domain/merge";
 import { normalizeError } from "../errors/catalog";
 import type { Project } from "../model";
 
-export const AUTOSAVE_DELAY = 1500;
+const AUTOSAVE_DELAY = 1500;
 const SAVING_INDICATOR_DELAY = 300;
 export const SAVED_LABEL = "已保存到本机";
 export const SAVE_DESCRIPTION =

@@ -110,36 +110,3 @@ pub async fn delete_project(app: tauri::AppHandle, id: String) -> Result<(), Str
     .await
     .map_err(|e| e.to_string())?
 }
-#[tauri::command]
-pub fn get_settings(store: State<Store>) -> Result<Value, String> {
-    let connections =
-        crate::models::connections::list(&store.db.lock().unwrap()).map_err(|e| e.to_string())?;
-    Ok(serde_json::json!({"falConfigured":connections.iter().any(|s|s.kind=="fal" && s.has_key)}))
-}
-#[tauri::command]
-pub fn save_setting(store: State<Store>, key: String, value: String) -> Result<(), String> {
-    if !["fal-key"].contains(&key.as_str()) {
-        return Err("未知设置".into());
-    }
-    let db = store.db.lock().unwrap();
-    let mut connections = crate::models::connections::list(&db)
-        .map_err(|e| e.to_string())?
-        .into_iter()
-        .filter(|s| s.kind == "fal")
-        .collect::<Vec<_>>();
-    if connections.len() > 1 {
-        return Err("请在服务连接中选择需要修改的 fal 账号".into());
-    }
-    let connection = connections
-        .pop()
-        .unwrap_or(crate::models::connections::ServiceConnection {
-            id: format!("service-{}", mstudio::media::id()),
-            name: "fal".into(),
-            kind: "fal".into(),
-            endpoint: "https://queue.fal.run".into(),
-            has_key: false,
-            model_count: 0,
-        });
-    crate::models::connections::save(&db, connection, Some(value.clone()), value.is_empty())
-        .map_err(|e| e.to_string())
-}

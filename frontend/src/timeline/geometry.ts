@@ -10,7 +10,7 @@ export const frameTime = (time: number, fps: number) => {
       "0",
     )}:${(Math.floor(frames / fps) % 60).toString().padStart(2, "0")}:${(frames % fps).toString().padStart(2, "0")}`;
 };
-export function rulerStep(zoom: number, fps: number) {
+function rulerStep(zoom: number, fps: number) {
   return (
     [
       1,

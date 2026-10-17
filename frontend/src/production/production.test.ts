@@ -4,8 +4,7 @@ import { framesOf } from "./frames";
 import { productionItems } from "./items";
 import { createTask, withMode } from "./tasks";
 import { canvasSnapshot, inputFor } from "./request";
-import { receiveGeneratedResult } from "../creative/receiveGeneratedResult";
-import { saveTask, jobStatus } from "./document";
+import { receiveProductionResult, saveTask, jobStatus } from "./document";
 import { restoreProject } from "../workspace/restoreProject";
 import type { ProductionSource } from "./types";
 test("selected frames can generate video directly, including after script and prompt edits", () => {
@@ -119,9 +118,9 @@ test("result uses the frozen task; importing twice is idempotent and preserves o
     jobId: "other",
   });
   const result = asset("new");
-  p = receiveGeneratedResult(p, result, source);
+  p = receiveProductionResult(p, result, source);
   expect(framesOf(p.nodes[1]).map((f) => f.assetId)).toEqual(["a", "b", "new"]);
-  expect(receiveGeneratedResult(p, result, source)).toBe(p);
+  expect(receiveProductionResult(p, result, source)).toBe(p);
   expect(p.nodes[1].shot!.frames![0].assetId).toBe("a");
   expect(p.nodes[1].shot!.takes).toEqual(originals.nodes[1].shot!.takes);
   expect(p.clips).toEqual(originals.clips);
@@ -136,7 +135,7 @@ test("result uses the frozen task; importing twice is idempotent and preserves o
     ...originals,
     nodes: originals.nodes.filter((n) => n.id !== "shot"),
   };
-  const orphan = receiveGeneratedResult(gone, result, source);
+  const orphan = receiveProductionResult(gone, result, source);
   expect(orphan.nodes.some((n) => n.assetId === "new")).toBe(true);
 });
 test("video results retain exact media roles and undo never rewinds paid job status", () => {
@@ -166,7 +165,7 @@ test("video results retain exact media roles and undo never rewinds paid job sta
     prompt: "Edited while generating",
     inputs: task.inputs.slice(0, 1),
   });
-  const result = receiveGeneratedResult(
+  const result = receiveProductionResult(
     changed,
     asset("result", "video"),
     source,
@@ -197,4 +196,44 @@ test("one storyboard image stays a reference rather than becoming an exact first
   ]);
   expect(input.image_url).toBeUndefined();
   expect(() => inputFor(p, task, model("minimax/h3/image-to-video"))).toThrow();
+});
+
+test("results target an empty shot and a generated image can immediately become video input", () => {
+  const p = fixture();
+  const shot = p.nodes[1];
+  shot.shot!.frames = [];
+  shot.shot!.takes = [];
+  const image = asset("new-image");
+  const source = {
+    ...shot,
+    canvasGeneration: canvasSnapshot(
+      p,
+      { ...createTask(p, []), ownerId: shot.id },
+      { x: 0, y: 0 },
+    ),
+  };
+  const result = receiveProductionResult(p, image, source);
+  expect(result.nodes[1].shot?.frames?.[0]?.assetId).toBe(image.id);
+  const selected = productionItems(result).filter(
+    (n) => n.assetId === image.id,
+  );
+  const videoSource = {
+    ...result.nodes[1],
+    canvasGeneration: canvasSnapshot(
+      result,
+      { ...createTask(result, selected, "video"), ownerId: shot.id },
+      { x: 0, y: 0 },
+    ),
+  };
+  expect(
+    videoSource.canvasGeneration.task.inputs.map((r) => r.assetId),
+  ).toEqual([image.id]);
+  const video = asset("new-video", "video");
+  const withVideo = receiveProductionResult(result, video, videoSource);
+  expect(withVideo.nodes[1].shot?.takes?.at(-1)?.assetId).toBe(video.id);
+  expect(withVideo.nodes[1].resultAssetId).toBeUndefined();
+  expect(withVideo.clips).toEqual(p.clips);
+  expect(receiveProductionResult(withVideo, video, videoSource)).toBe(
+    withVideo,
+  );
 });

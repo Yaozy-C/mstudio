@@ -55,15 +55,17 @@ export function receiveProductionResult(
   asset: Asset,
   source: ProductionSource,
 ): Project {
+  if (!source?.canvasGeneration)
+    throw new Error("生成任务缺少制作上下文，未写入项目");
   if (p.removedAssetIds?.includes(asset.id)) return p;
   asset = {
     ...asset,
     generated: true,
-    ...(source.canvasGeneration?.task.generationPurpose === "asset"
+    ...(source.canvasGeneration.task.generationPurpose === "asset"
       ? { inLibrary: true }
       : {}),
   };
-  const original = source.canvasGeneration!;
+  const original = source.canvasGeneration;
   const ownerId =
     original.task.generationPurpose === "asset"
       ? undefined

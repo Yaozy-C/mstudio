@@ -20,7 +20,7 @@ export const newParagraph = (): ScriptParagraph => ({
   dialogue: "",
   sound: "",
 });
-export function scriptSource(p: Project, n: BoardNode) {
+function scriptSource(p: Project, n: BoardNode) {
   return p.nodes
     .find((v) => v.id === n.shot?.screenplayId)
     ?.screenplay?.script?.find((s) => s.id === n.shot?.scriptId);

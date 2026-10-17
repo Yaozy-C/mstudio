@@ -12,7 +12,7 @@ const number = (v: unknown): number => {
     throw new Error("数值字段无效");
   return v;
 };
-export function checkedReferences(
+function checkedReferences(
   p: Project,
   raw: unknown,
   existing: Reference[] = [],

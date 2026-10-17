@@ -31,7 +31,7 @@ export type MessageTarget = {
   agentName: string;
   targetNodeId: string | null;
 };
-export type SentTurn = {
+type SentTurn = {
   newTask?: boolean;
   work?: WorkContext;
   refs: Attachment[];

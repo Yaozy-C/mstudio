@@ -15,7 +15,7 @@ type Backend = {
   ) => Promise<PreviewStatus>;
   status: () => Promise<PreviewStatus>;
 };
-export type PreviewPhase = "loading" | "ready" | "error" | "closed";
+type PreviewPhase = "loading" | "ready" | "error" | "closed";
 /** Owns one preview session. Late completions never affect a replacement session. */
 export class NativePreviewController {
   phase: PreviewPhase = "loading";

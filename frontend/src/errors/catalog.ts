@@ -70,7 +70,7 @@ export const errorCatalog = {
   OPERATION_FAILED: ["操作未完成", "请查看错误详情，处理后再重试。"],
 } as const;
 export type ErrorCode = keyof typeof errorCatalog;
-export type AppIssue = {
+type AppIssue = {
   code: ErrorCode;
   message: string;
   recovery: string;

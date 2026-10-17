@@ -3,7 +3,7 @@ import { fixture, asset } from "./fixtures.test-helper";
 import { framesOf } from "./frames";
 import { takesOf } from "../creative/document";
 import { applyOperations } from "../assistant/projectCommands";
-import { receiveGeneratedResult } from "../creative/receiveGeneratedResult";
+import { receiveProductionResult } from "./document";
 import type { ProductionSource } from "./types";
 
 test("retired generation commands and payloads are rejected without changing the document", () => {
@@ -13,7 +13,7 @@ test("retired generation commands and payloads are rejected without changing the
     applyOperations(p, [{ op: "prepare_generation", id: "shot" }]),
   ).toThrow("不支持");
   expect(() =>
-    receiveGeneratedResult(p, asset("new"), p.nodes[1] as ProductionSource),
+    receiveProductionResult(p, asset("new"), p.nodes[1] as ProductionSource),
   ).toThrow("上下文");
   expect(() =>
     applyOperations(p, [

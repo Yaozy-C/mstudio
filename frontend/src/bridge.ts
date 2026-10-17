@@ -70,10 +70,6 @@ export async function bridge<T>(
   }
   if (command === "media_model_catalog") return [] as T;
   if (command === "list_global_assets") return [] as T;
-  if (command === "get_settings")
-    return {
-      falConfigured: false,
-    } as T;
   throw new Error(
     "此功能需要在 Mstudio 桌面应用中使用。浏览器仅提供界面预览。",
   );

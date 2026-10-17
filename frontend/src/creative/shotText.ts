@@ -1,7 +1,7 @@
 import type { BoardNode, Project } from "../model";
 import { creativeExtras } from "./operations";
 
-export type ShotTextField = "action" | "dialogue";
+type ShotTextField = "action" | "dialogue";
 
 export const actionText = (node: BoardNode) => node.text;
 

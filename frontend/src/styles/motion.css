@@ -1,9 +1,9 @@
-/* One timing system. Navigation fades; direct manipulation stays immediate. */
+/* Motion changes presentation only; editing geometry stays immediate. */
 :root {
   --motion-fast: 120ms;
-  --motion-page: 160ms;
-  --motion-enter: 180ms;
-  --motion-exit: 120ms;
+  --motion-page: 200ms;
+  --motion-enter: 220ms;
+  --motion-exit: 150ms;
   --motion-progress: 240ms;
   --motion-spin: 900ms;
   --motion-pulse: 1600ms;
@@ -22,18 +22,69 @@
 }
 @keyframes content-enter {
   from {
-    opacity: 0.35;
+    opacity: 0.72;
+    filter: blur(2px);
   }
   to {
     opacity: 1;
+    filter: blur(0);
   }
 }
 @keyframes overlay-enter {
   from {
     opacity: 0;
+    backdrop-filter: blur(0);
   }
   to {
     opacity: 1;
+    backdrop-filter: blur(var(--dialog-depth, 3px));
+  }
+}
+@keyframes overlay-exit {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(var(--dialog-depth, 3px));
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+/* Keep Radix's overlay mounted while its backdrop and content finish exiting. */
+@keyframes overlay-presence {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes dialog-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(3px) scale(0.99);
+  }
+}
+@keyframes dock-enter {
+  from {
+    opacity: 0.65;
+    transform: translateX(var(--dock-entry, 6px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 @keyframes state-enter {
@@ -73,31 +124,56 @@
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease);
 }
-.library-main {
+.library-main,
+.agent-detail-form {
   animation: content-enter var(--motion-page) var(--motion-ease);
 }
-.modal:not(.rt-BaseDialogContent),
-.model-toast {
-  animation: state-enter var(--motion-enter) var(--motion-ease);
-}
-.rt-BaseDialogContent[data-state="open"],
+.model-toast,
 .conversation-model-menu[data-state="open"] {
   animation: state-enter var(--motion-enter) var(--motion-ease);
 }
-.rt-BaseDialogContent[data-state="closed"],
 .conversation-model-menu[data-state="closed"] {
   animation: state-exit var(--motion-exit) var(--motion-ease-exit) forwards;
   pointer-events: none;
 }
+.rt-BaseDialogContent[data-state="open"] {
+  animation: dialog-enter var(--motion-enter) var(--motion-ease);
+}
+.rt-BaseDialogContent[data-state="closed"] {
+  animation: dialog-exit var(--motion-exit) var(--motion-ease-exit) forwards;
+  pointer-events: none;
+}
+.rt-BaseDialogOverlay::before {
+  backdrop-filter: blur(var(--dialog-depth, 3px));
+}
 .rt-BaseDialogOverlay[data-state="open"]::before {
   animation: overlay-enter var(--motion-enter) var(--motion-ease);
 }
-.rt-BaseDialogOverlay[data-state="closed"],
 .rt-BaseDialogOverlay[data-state="closed"]::before {
-  animation-duration: var(--motion-exit);
+  animation: overlay-exit var(--motion-exit) var(--motion-ease-exit) forwards;
+}
+.rt-BaseDialogOverlay[data-state="closed"] {
+  animation: overlay-presence var(--motion-exit) linear;
+  pointer-events: none;
+}
+.dock-media {
+  --dock-entry: -6px;
+}
+.dock-panel:not([hidden]) {
+  animation: dock-enter var(--motion-page) var(--motion-ease);
+}
+.studio-modes[data-indicator="ready"]::after {
+  transition:
+    transform var(--motion-page) var(--motion-ease),
+    width var(--motion-page) var(--motion-ease);
 }
 .progress > span {
   transition: width var(--motion-progress) var(--motion-ease);
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --dialog-depth: 0px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   :root {

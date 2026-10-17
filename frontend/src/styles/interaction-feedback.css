@@ -39,6 +39,15 @@
   scrollbar-width: thin;
   scrollbar-color: var(--desk-rule) transparent;
 }
+/* The tint stays nearly opaque so text remains legible over busy media. */
+:is(.radix-themes, .radix-themes *):is(
+  .studio-menu,
+  .object-menu,
+  .studio-select-menu
+) {
+  background: color-mix(in srgb, var(--desk-surface) 92%, transparent);
+  backdrop-filter: blur(16px) saturate(1.08);
+}
 :is(.studio-menu, .object-menu, .studio-select-menu)[data-side="top"] {
   --menu-y: 3px;
 }
@@ -50,8 +59,7 @@
   --menu-x: -3px;
   --menu-y: 0px;
 }
-:is(.radix-themes, .radix-themes *) .studio-menu,
-.radix-themes.studio-menu {
+:is(.radix-themes, .radix-themes *).studio-menu {
   max-height: min(
     480px,
     var(
@@ -80,10 +88,22 @@
   from {
     opacity: 0;
     transform: translate(var(--menu-x), var(--menu-y));
+    filter: blur(1px);
   }
   to {
     opacity: 1;
     transform: translate(0, 0);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :is(.radix-themes, .radix-themes *):is(
+    .studio-menu,
+    .object-menu,
+    .studio-select-menu
+  ) {
+    background: var(--desk-surface);
+    backdrop-filter: none;
   }
 }
 @keyframes menu-dismiss {
@@ -111,13 +131,4 @@
 }
 .studio-select-trigger[data-state="open"] .rt-SelectIcon {
   color: var(--desk-accent);
-}
-@media (prefers-reduced-motion: reduce) {
-  :is(.radix-themes, .radix-themes *):is(
-    .studio-menu,
-    .object-menu,
-    .studio-select-menu
-  ) {
-    animation: none;
-  }
 }

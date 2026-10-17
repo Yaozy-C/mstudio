@@ -22,7 +22,7 @@ export function useShortcuts(
         e.ctrlKey ||
         e.altKey ||
         document.querySelector(
-          '.modal-backdrop, .settings-page, [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+          '.settings-page, [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
         )
       )
         return;
@@ -47,7 +47,7 @@ export function useShortcuts(
       if (
         e.isComposing ||
         e.defaultPrevented ||
-        document.querySelector(".modal-backdrop, .settings-page") ||
+        document.querySelector(".settings-page") ||
         document.querySelector(
           '.studio-menu[data-state="open"], [role="dialog"], [role="alertdialog"]',
         ) ||

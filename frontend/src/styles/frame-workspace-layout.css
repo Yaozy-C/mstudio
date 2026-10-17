@@ -47,6 +47,7 @@
   font-weight: 500;
 }
 .studio-modes {
+  position: relative;
   display: flex;
   align-self: stretch;
   align-items: stretch;
@@ -55,7 +56,6 @@
   padding: 0 20px;
 }
 .radix-themes .studio-modes button {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -73,14 +73,16 @@
 .studio-modes button[aria-pressed="true"] {
   font-weight: 600;
 }
-.studio-modes button[aria-pressed="true"]::after {
+.studio-modes[data-indicator]::after {
   content: "";
   position: absolute;
   bottom: 9px;
-  left: 5px;
-  right: 5px;
+  left: 0;
   height: 3px;
+  width: var(--mode-width);
+  transform: translateX(var(--mode-left));
   background: var(--desk-accent);
+  pointer-events: none;
 }
 .radix-themes .studio-top .icon-button {
   background: transparent;

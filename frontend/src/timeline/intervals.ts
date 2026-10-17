@@ -1,6 +1,6 @@
 import { duration, type Clip } from "../model";
 import type { IndexedClip } from "./geometry";
-export type Interval = IndexedClip & { maxEnd: number };
+type Interval = IndexedClip & { maxEnd: number };
 /** Balanced interval tree stored in a sorted array; maxEnd belongs to each subtree. */
 export function intervals(clips: Clip[]): Interval[] {
   const index = clips

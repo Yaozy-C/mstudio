@@ -69,8 +69,7 @@ export const skills = [
   },
 ];
 export const defaultAgents: AgentProfile[] = builtins;
-export const agentsChanged = () =>
-  window.dispatchEvent(new Event("agents-changed"));
+const agentsChanged = () => window.dispatchEvent(new Event("agents-changed"));
 export function useAgents() {
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
