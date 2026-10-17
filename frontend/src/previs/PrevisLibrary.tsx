@@ -72,8 +72,7 @@ export function PrevisLibrary() {
                 <strong>{m.name}</strong>
                 <small>{m.description || t("用途待补充")}</small>
                 <small>
-                  {t("{count} 个镜头使用", { count: usage.length })} · v
-                  {m.revision}
+                  {t("{count} 个镜头使用", { count: usage.length })}
                 </small>
               </span>
               <PencilSimple size={14} />

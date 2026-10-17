@@ -2,13 +2,13 @@ use super::*;
 use crate::{database::Store, projects};
 use serde_json::json;
 
-fn setup() -> Store {
+pub(super) fn setup() -> Store {
     let root = std::env::temp_dir().join(format!("mstudio-previs-test-{}", mstudio::media::id()));
     let store = Store::open(root).unwrap();
     projects::write_document(&store,json!({"id":"p","name":"Private previs","assets":[],"nodes":[{"id":"s1","kind":"shot","title":"One","text":"","x":0,"y":0,"shot":{"screenplayId":"script","order":1,"duration":3,"dialogue":""}},{"id":"s2","kind":"shot","title":"Two","text":"","x":0,"y":0,"shot":{"screenplayId":"script","order":2,"duration":3,"dialogue":""}}],"clips":[],"tracks":[],"captions":[],"brief":"","width":720,"height":1280,"fps":24}),true).unwrap();
     store
 }
-fn model(id: &str, name: &str) -> File {
+pub(super) fn model(id: &str, name: &str) -> File {
     File {
         id: id.into(),
         kind: "model".into(),
@@ -24,7 +24,7 @@ fn model(id: &str, name: &str) -> File {
         fps: 24,
     }
 }
-fn shot(id: &str, asset: &str) -> File {
+pub(super) fn shot(id: &str, asset: &str) -> File {
     let mut f = model(id, id);
     f.kind = "shot".into();
     f.code="export function createShot({THREE,models}) { return {scene:new THREE.Scene(),camera:new THREE.PerspectiveCamera(),update(t){}}; }".into();
@@ -34,7 +34,7 @@ fn shot(id: &str, asset: &str) -> File {
 }
 
 #[test]
-fn shared_model_files_are_private_and_versioned_without_modifying_agent_snapshot() {
+fn shared_model_edits_replace_the_original_without_modifying_agent_snapshot() {
     let store = setup();
     let before = crate::project_service::load(&store.db.lock().unwrap(), "p").unwrap();
     let db = store.db.lock().unwrap();
@@ -42,6 +42,12 @@ fn shared_model_files_are_private_and_versioned_without_modifying_agent_snapshot
     let s1 = files::save(&db, &store, "p", shot("s1", "bag"), 0).unwrap();
     let s2 = files::save(&db, &store, "p", shot("s2", "bag"), 0).unwrap();
     assert!(files::path(&store, "p", &a).unwrap().is_file());
+    let original = files::path(&store, "p", &a).unwrap();
+    assert_eq!(original, store.media_root().join("previs/p/bag/model.js"));
+    assert_eq!(
+        files::path(&store, "p", &s1).unwrap(),
+        store.media_root().join("previs/p/s1/scene.js")
+    );
     let after = crate::project_service::load(&db, "p").unwrap();
     assert_eq!(before, after);
     let snapshot = crate::assistant::context::project_snapshot(&after, None).to_string();
@@ -65,7 +71,17 @@ fn shared_model_files_are_private_and_versioned_without_modifying_agent_snapshot
     let mut changed = a.clone();
     changed.code.push_str("\n// revised lid");
     let changed = files::save(&db, &store, "p", changed, 1).unwrap();
+    assert_eq!(files::path(&store, "p", &changed).unwrap(), original);
+    assert_eq!(std::fs::read_to_string(&original).unwrap(), changed.code);
+    assert_eq!(
+        std::fs::read_dir(original.parent().unwrap())
+            .unwrap()
+            .count(),
+        1
+    );
+    assert!(!old.models[0].code.contains("revised lid"));
     assert!(files::save(&db, &store, "p", a, 1).is_err());
+    assert_eq!(std::fs::read_to_string(&original).unwrap(), changed.code);
     assert_ne!(
         old.signature,
         runtime::Snapshot::create("p".into(), s1, vec![changed.clone()])
@@ -172,7 +188,8 @@ fn only_a_manually_shared_video_copy_enters_project_and_agent_media() {
             .arg(&source),
     )
     .unwrap();
-    let asset = mstudio::media::import(&source, &out.join("media")).unwrap();
+    let mut asset = mstudio::media::import(&source, &out.join("media")).unwrap();
+    asset.name = "Shot 04 | 7.3–10.0s 急刹验证 · 预演".into();
     let private = asset.path.clone();
     let export = render::Export {
         id: "export-one".into(),
@@ -195,6 +212,12 @@ fn only_a_manually_shared_video_copy_enters_project_and_agent_media() {
     assert!(store.assets().unwrap().is_empty());
     let reply = sharing::set_shared(&store, "p", "export-one", true).unwrap();
     let public = reply["assetId"].as_str().unwrap().to_owned();
+    assert_eq!(reply["asset"]["id"], public);
+    assert_eq!(reply["asset"]["inLibrary"], true);
+    assert_eq!(reply["asset"]["name"], format!("{}.mp4", export.asset.name));
+    assert!(reply["asset"]["duration"].as_f64().unwrap() > 0.);
+    let reused = sharing::set_shared(&store, "p", "export-one", true).unwrap();
+    assert_eq!(reused["asset"], reply["asset"]);
     assert_ne!(public, export.asset.id);
     let doc = crate::project_service::load(&store.db.lock().unwrap(), "p").unwrap();
     assert_eq!(doc["assets"].as_array().unwrap().len(), 1);

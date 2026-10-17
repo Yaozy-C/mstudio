@@ -2,6 +2,9 @@ import { PaperPlaneTilt, Stop } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import { readyModel } from "../models/types";
 import { StudioSelect } from "../ui/StudioSelect";
+import { ActionButton } from "../ui/ActionButton";
+import { AsyncButton, StatusMessage } from "../ui/AsyncState";
+import { PrevisTaskStatus, previsTaskLabel } from "./PrevisTaskStatus";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { PrevisEditorState } from "./usePrevisEditor";
 
@@ -10,7 +13,9 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
     file,
     messages,
     busy,
-    requestId,
+    pendingPrompt,
+    stopping,
+    phase,
     chatEnd,
     error,
     send,
@@ -21,6 +26,7 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
     catalog,
     stop,
   } = state;
+  const running = busy === "chat" || busy === "render";
   return (
     <section className="previs-chat">
       <div className="previs-chat-heading">
@@ -28,7 +34,7 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
         <p>{t("只修改当前文件，共用资产保留在项目中。")}</p>
       </div>
       <div className="previs-messages">
-        {!messages.length && (
+        {!messages.length && !running && (
           <p className="previs-chat-empty">
             {file.kind === "model"
               ? t("描述模型的形状、尺寸和可动部件。")
@@ -41,8 +47,17 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
             <p>{m.text}</p>
           </div>
         ))}
-        {(busy === "chat" || (busy === "render" && requestId.current)) && (
-          <p role="status">{t("正在修改代码…")}</p>
+        {pendingPrompt && (
+          <div className="previs-message user">
+            <small>{t("你")}</small>
+            <p>{pendingPrompt}</p>
+          </div>
+        )}
+        {running && <PrevisTaskStatus state={state} />}
+        {!running && !error && phase && (
+          <StatusMessage kind={phase === "cancelled" ? "paused" : "success"}>
+            {previsTaskLabel(state)}
+          </StatusMessage>
         )}
         <div ref={chatEnd} />
       </div>
@@ -53,6 +68,7 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
       )}
       <form
         className="previs-composer"
+        aria-busy={running}
         onSubmit={(e) => {
           e.preventDefault();
           void send();
@@ -63,9 +79,11 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
           value={prompt}
           disabled={!!busy}
           placeholder={
-            file.kind === "model"
-              ? t("例如：做一个可以开盖的午餐包，标出盖子和提手。")
-              : t("例如：复用午餐包，先取出餐盒放在桌上，再打开餐盒盖。")
+            running
+              ? t("任务正在后台执行，完成后可继续修改。")
+              : file.kind === "model"
+                ? t("例如：做一个可以开盖的午餐包，标出盖子和提手。")
+                : t("例如：复用午餐包，先取出餐盒放在桌上，再打开餐盒盖。")
           }
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
@@ -81,31 +99,40 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
             disabled={!!busy}
             value={model?.id || ""}
             onValueChange={setModelId}
-            placeholder={t("选择对话模型")}
+            placeholder={
+              running
+                ? t("任务正在后台执行，完成后可继续修改。")
+                : t("选择对话模型")
+            }
             options={catalog.profiles.map((m) => ({
               value: m.id,
               label: m.name,
               disabled: !readyModel(m),
             }))}
           />
-          {busy === "chat" || busy === "render" ? (
-            <button
+          {running ? (
+            <ActionButton
               className="previs-send"
-              type="button"
+              icon={Stop}
+              busy={stopping}
+              busyLabel={t("正在停止…")}
               onClick={() => void stop()}
             >
-              <Stop />
               {t("停止")}
-            </button>
+            </ActionButton>
           ) : (
-            <button
+            <AsyncButton
               className="previs-send primary"
               type="submit"
-              disabled={!!busy || !prompt.trim() || !model}
+              busy={busy === "save"}
+              busyLabel={t("正在保存…")}
+              disabled={
+                !!busy || !prompt.trim() || !model || !readyModel(model)
+              }
             >
               <PaperPlaneTilt />
               {t("发送")}
-            </button>
+            </AsyncButton>
           )}
         </div>
       </form>

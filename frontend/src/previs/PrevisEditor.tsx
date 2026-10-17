@@ -1,21 +1,65 @@
 import { Dialog } from "@radix-ui/themes";
-import { Cube, X, DownloadSimple } from "@phosphor-icons/react";
+import { useEffect } from "react";
+import { Cube, X, DownloadSimple, ArrowLeft } from "@phosphor-icons/react";
 import { t, useLanguage } from "../i18n";
 import { readyModel } from "../models/types";
-import { usePrevisEditor } from "./usePrevisEditor";
+import { AsyncButton } from "../ui/AsyncState";
+import { ActionButton } from "../ui/ActionButton";
+import { IconButton } from "../ui/IconButton";
+import { usePrevisEditor, type PrevisEditorState } from "./usePrevisEditor";
 import { PrevisVisual } from "./PrevisVisual";
 import { PrevisChat } from "./PrevisChat";
+import { RuntimeFrame } from "./RuntimeFrame";
+import type { PrevisTaskSummary } from "./PrevisTaskList";
 
+/** The session stays mounted when its dialog closes or another shot opens. */
 export function PrevisEditor({
   fileId,
+  active,
   close,
+  publishTask,
 }: {
   fileId: string;
+  active: boolean;
   close: () => void;
+  publishTask: (task: PrevisTaskSummary) => void;
 }) {
   useLanguage();
   const state = usePrevisEditor(fileId, close);
-  const { busy, dismiss, file, draft, model, ready, render } = state;
+  const { file, busy, phase, stopping, error, lastKind } = state;
+  useEffect(() => {
+    publishTask({
+      fileId,
+      name: file.name,
+      running: busy === "chat" || busy === "render",
+      phase,
+      stopping,
+      error,
+      lastKind,
+    });
+  }, [publishTask, fileId, file.name, busy, phase, stopping, error, lastKind]);
+  return (
+    <>
+      {state.renderSource && (
+        <div className="previs-render-runtime" aria-hidden="true" inert>
+          <RuntimeFrame
+            ref={state.renderRuntime}
+            projectId={state.project.id}
+            file={state.renderSource}
+            files={state.renderFiles}
+            onReady={state.onRenderReady}
+            onError={state.onRenderError}
+            onTime={() => {}}
+          />
+        </div>
+      )}
+      {active && <PrevisEditorDialog state={state} />}
+    </>
+  );
+}
+export function PrevisEditorDialog({ state }: { state: PrevisEditorState }) {
+  const { busy, dismiss, file, draft, model, render } = state;
+  const running = busy === "chat" || busy === "render";
   return (
     <Dialog.Root
       open
@@ -23,13 +67,7 @@ export function PrevisEditor({
         if (!v) dismiss();
       }}
     >
-      <Dialog.Content
-        className="previs-dialog"
-        aria-describedby={undefined}
-        onEscapeKeyDown={(e) => {
-          if (busy) e.preventDefault();
-        }}
-      >
+      <Dialog.Content className="previs-dialog" aria-describedby={undefined}>
         <header className="previs-heading">
           <div>
             <Cube size={20} />
@@ -37,33 +75,34 @@ export function PrevisEditor({
               {file.kind === "model" ? t("共用模型") : t("镜头预演")} ·{" "}
               {file.name}
             </Dialog.Title>
-            <span className="previs-version">v{file.revision}</span>
           </div>
           <div className="previs-heading-actions">
-            {file.kind === "shot" && (
-              <button
-                className="primary"
-                type="button"
-                disabled={
-                  !!busy ||
-                  (!draft.code.trim() && (!model || !readyModel(model))) ||
-                  (!!file.code && draft.code === file.code && !ready)
-                }
-                onClick={() => void render()}
-              >
-                <DownloadSimple />
-                {draft.code.trim() ? t("生成预演视频") : t("一键生成预演")}
-              </button>
+            {running ? (
+              <ActionButton icon={ArrowLeft} onClick={dismiss}>
+                {t("后台继续")}
+              </ActionButton>
+            ) : (
+              file.kind === "shot" && (
+                <AsyncButton
+                  className="primary"
+                  busyLabel={t("正在生成预演…")}
+                  disabled={
+                    !!busy ||
+                    (!draft.code.trim() && (!model || !readyModel(model)))
+                  }
+                  onClick={() => void render()}
+                >
+                  <DownloadSimple />
+                  {draft.code.trim() ? t("生成预演视频") : t("一键生成预演")}
+                </AsyncButton>
+              )
             )}
-            <button
+            <IconButton
               className="previs-close"
-              type="button"
-              aria-label={t("关闭预演")}
+              icon={X}
+              label={t("关闭预演")}
               onClick={dismiss}
-              disabled={!!busy}
-            >
-              <X />
-            </button>
+            />
           </div>
         </header>
         <div className="previs-editor-grid">

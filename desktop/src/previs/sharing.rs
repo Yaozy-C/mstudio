@@ -24,6 +24,7 @@ pub async fn share_previs_video(
     .map_err(|e| e.to_string())?
 }
 pub fn set_shared(store: &Store, project: &str, id: &str, shared: bool) -> Result<Value> {
+    let _guard = super::export_store::WRITE.lock().unwrap();
     let mut export = {
         let db = store.db.lock().unwrap();
         read_export(&db, project, id)?
@@ -33,30 +34,39 @@ pub fn set_shared(store: &Store, project: &str, id: &str, shared: bool) -> Resul
         let existing = {
             let db = store.db.lock().unwrap();
             let doc = project_service::load(&db, project)?;
-            export.shared_asset_id.as_ref().is_some_and(|id| {
-                doc["assets"]
-                    .as_array()
-                    .is_some_and(|a| a.iter().any(|v| v["id"] == *id))
+            export.shared_asset_id.as_ref().and_then(|id| {
+                doc["assets"].as_array().and_then(|a| {
+                    a.iter()
+                        .find(|v| v["id"] == *id && v["missing"] != true && v["discarded"] != true)
+                        .cloned()
+                })
             })
         };
-        if existing {
-            return Ok(json!({"shared":true,"assetId":export.shared_asset_id}));
+        if let Some(asset) = existing {
+            return Ok(json!({"shared":true,"assetId":export.shared_asset_id,"asset":asset}));
         }
         let work = store
             .media_root()
             .join("imports")
             .join(format!("previs-share-{}", mstudio::media::id()));
         project_storage::track_file(store, project, &work)?;
+        // Render titles are labels, often containing timing decimals and no extension.
+        // The importer validates a filename; all private renders are MP4 files.
+        let name = if export.asset.name.to_ascii_lowercase().ends_with(".mp4") {
+            export.asset.name.clone()
+        } else {
+            format!("{}.mp4", export.asset.name)
+        };
         let asset = crate::imports::import_source_scoped(
             store,
             project,
             std::path::Path::new(&export.asset.path),
-            &export.asset.name,
+            &name,
             &work,
             false,
-        )?;
+        );
         let _ = crate::imports::discard(store, project, &work);
-        Some(asset)
+        Some(asset?)
     } else {
         None
     };
@@ -98,5 +108,11 @@ pub fn set_shared(store: &Store, project: &str, id: &str, shared: bool) -> Resul
     tx.commit()?;
     drop(db);
     store.project_changed(project);
-    Ok(json!({"shared":shared,"assetId":export.shared_asset_id}))
+    let asset = export.shared_asset_id.as_ref().and_then(|id| {
+        after["assets"]
+            .as_array()?
+            .iter()
+            .find(|asset| asset["id"] == *id)
+    });
+    Ok(json!({"shared":shared,"assetId":export.shared_asset_id,"asset":asset}))
 }

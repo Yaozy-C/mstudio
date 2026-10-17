@@ -1,5 +1,6 @@
 @import "./previs-chat.css";
 @import "./previs-library.css";
+@import "./previs-task.css";
 
 .radix-themes .previs-dialog {
   width: min(1280px, calc(100vw - 64px));
@@ -38,12 +39,7 @@
   font-weight: 600;
   line-height: 24px;
 }
-.previs-version {
-  color: var(--desk-muted);
-  font: 12px/20px var(--ui-mono);
-}
 .previs-heading svg,
-.previs-version,
 .previs-heading-actions {
   flex-shrink: 0;
 }
@@ -71,6 +67,7 @@
   display: block;
 }
 .previs-placeholder {
+  --desk-muted: var(--desk-control);
   height: 100%;
   display: grid;
   place-items: center;
@@ -121,8 +118,7 @@
 .previs-description {
   grid-column: 1 / -1;
 }
-.radix-themes .previs-properties :is(input, textarea, .studio-select-trigger),
-.radix-themes .previs-code > textarea {
+.radix-themes .previs-properties :is(input, textarea, .studio-select-trigger) {
   width: 100%;
   margin: 0;
   border: 1px solid var(--ui-rule);
@@ -141,7 +137,6 @@
   line-height: 22px;
 }
 .previs-model-picker,
-.previs-code,
 .previs-exports {
   margin-top: 20px;
 }
@@ -190,48 +185,6 @@
 .radix-themes .previs-dialog input[type="checkbox"] {
   margin: 0;
   accent-color: var(--desk-accent);
-}
-.previs-code summary {
-  cursor: pointer;
-  padding: 8px 0;
-  color: var(--desk-muted);
-  font-size: var(--ui-caption);
-  line-height: 20px;
-}
-.radix-themes .previs-code > textarea {
-  display: block;
-  min-height: 160px;
-  padding: 12px;
-  background: var(--desk-bg);
-  font: 12px/20px var(--ui-mono);
-  tab-size: 2;
-}
-.radix-themes .previs-code-import {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 12px 0 0;
-  padding: 5px 10px;
-  min-height: 32px;
-  border: 1px solid var(--ui-rule);
-  border-radius: var(--ui-radius);
-  color: var(--desk-text);
-  font-size: var(--ui-label);
-  line-height: 20px;
-  cursor: pointer;
-}
-.previs-code-import input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: 0;
-  opacity: 0;
-}
-.previs-code-import:focus-within {
-  outline: 2px solid var(--desk-accent);
-  outline-offset: 3px;
 }
 .previs-actions {
   display: flex;

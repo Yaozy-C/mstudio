@@ -31,3 +31,34 @@ test("previs failures render a readable notice and retain a retryable prompt", (
   expect(html).not.toContain("原消息和附件");
   expect(html).not.toContain("&quot;code&quot;");
 });
+
+test("submitted requests replace the empty invitation with a visible task and active stop action", () => {
+  const state = {
+    file: newModel("Bag"),
+    messages: [],
+    busy: "chat",
+    phase: "generating",
+    lastKind: "chat",
+    pendingPrompt: "打开包盖",
+    prompt: "",
+    frames: { done: 0, total: 0 },
+    seconds: 7,
+    stopping: false,
+    chatEnd: { current: null },
+    error: "",
+    catalog: { profiles: [] },
+  } as unknown as PrevisEditorState;
+  const html = renderToStaticMarkup(
+    <Theme>
+      <PrevisChat state={state} />
+    </Theme>,
+  );
+  expect(html).toContain("打开包盖");
+  expect(html).toContain("正在生成预演场景…");
+  expect(html).toContain("已用时 7 秒");
+  expect(html).toContain("status-spinner");
+  expect(html).toContain("可关闭此窗口，任务将在后台继续。");
+  expect(html).not.toContain("描述模型的形状、尺寸和可动部件。");
+  expect(html).not.toContain("正在修改代码");
+  expect(html).toMatch(/<button[^>]*aria-busy="false"[^>]*>[\s\S]*停止/);
+});
