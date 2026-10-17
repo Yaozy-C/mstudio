@@ -1,4 +1,5 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
+import { useConversationState } from "../assistant/conversationState";
 import { t, useLanguage } from "../i18n";
 import { MessageContext } from "../assistant/AgentMessage";
 import { batchSummary } from "./batch";
@@ -7,7 +8,10 @@ const PAGE_SIZE = 12;
 export function GenerationMessages({ turnId }: { turnId: string }) {
   useLanguage();
   const context = useContext(MessageContext)!;
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useConversationState<number>(
+    `generation:${turnId}`,
+    0,
+  );
   const tasks = context.canvas?.runs.filter((t) => t.turnId === turnId) ?? [];
   if (!tasks.length) return null;
   const current = Math.min(page, Math.ceil(tasks.length / PAGE_SIZE) - 1);
@@ -23,20 +27,6 @@ export function GenerationMessages({ turnId }: { turnId: string }) {
               attention: summary.attention,
             })}
           </p>
-          {tasks.some(
-            (task) =>
-              task.status === "AWAITING_CONFIRMATION" &&
-              task.modelId &&
-              !task.jobId &&
-              !task.submissionId,
-          ) && (
-            <button
-              type="button"
-              onClick={() => context.canvas?.batch(turnId, "resume")}
-            >
-              {t("继续")}
-            </button>
-          )}
           {!!summary.counts.READY && (
             <button
               type="button"

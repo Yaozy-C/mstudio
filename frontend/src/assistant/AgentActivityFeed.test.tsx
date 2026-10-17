@@ -50,8 +50,9 @@ test("thinking and tools are independently collapsed while the whole timeline st
       html.indexOf("再修改镜头"),
     );
     expect(html).toContain("&lt;script&gt;");
-    expect(html).toContain("image-1");
-    expect(html).toContain("返回结果");
+    expect(html).not.toContain("image-1");
+    expect(html).not.toContain("返回结果");
+    expect(html).not.toContain("<pre>");
     expect(html.includes('role="status"')).toBe(running);
   }
 });
@@ -106,7 +107,8 @@ test("child task is a sibling of the delegate operation, with its own thinking a
   expect(prefix.match(/<details/g)?.length).toBe(
     prefix.match(/<\/details>/g)?.length,
   );
-  expect(html).toContain("子任务的思考");
+  expect(html).not.toContain("子任务的思考");
+  expect(html).toContain("子任务最近 1 项操作");
   expect(html.match(/class="agent-child-activity"/g)).toHaveLength(1);
   expect(html).toContain("图像制作");
 });

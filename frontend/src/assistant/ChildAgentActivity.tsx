@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { t } from "../i18n";
 import { activityRows } from "./activityRows";
 import { ActivityEntries } from "./ActivityEntries";
+import { LazyDetails } from "./LazyDetails";
 import { childStatus, elapsed, type ChildActivity } from "./childActivity";
 import "./child-activity.css";
 export function ChildAgentActivity({
@@ -40,10 +41,12 @@ export function ChildAgentActivity({
         <p className="agent-child-note">{child.note}</p>
       )}
       {showTools && (
-        <details>
-          <summary>{t("子任务最近 {v0} 项操作", { v0: rows.length })}</summary>
-          <ActivityEntries events={child.events} />
-        </details>
+        <LazyDetails
+          id={`child:${child.turnId}`}
+          summary={t("子任务最近 {v0} 项操作", { v0: rows.length })}
+        >
+          {() => <ActivityEntries events={child.events} />}
+        </LazyDetails>
       )}
     </div>
   );

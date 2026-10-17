@@ -174,7 +174,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
               />
             </div>
           )}
-          <ThreadPrimitive.Viewport className="agent-messages">
+          <ConversationTimeline canvas={props.canvas}>
             {!props.canvas?.runs.length && (
               <ThreadPrimitive.Empty>
                 <AgentWelcome
@@ -190,12 +190,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
                 />
               </ThreadPrimitive.Empty>
             )}
-            <ConversationTimeline
-              canvas={props.canvas}
-              project={props.project}
-              settings={props.onSettings}
-            />
-          </ThreadPrimitive.Viewport>
+          </ConversationTimeline>
           {(error || models.error || agents.error) && (
             <ErrorNotice
               error={error || models.error || agents.error}

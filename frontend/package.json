@@ -15,6 +15,7 @@
     "@assistant-ui/react-markdown": "0.14.14",
     "@phosphor-icons/react": "2.1.10",
     "@radix-ui/themes": "3.3.0",
+    "@tanstack/react-virtual": "3.14.21",
     "@tauri-apps/api": "2.11.1",
     "cordis": "4.0.0-rc.10",
     "react": "19.2.8",
