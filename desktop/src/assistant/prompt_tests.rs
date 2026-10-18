@@ -5,15 +5,45 @@ use serde_json::json;
 fn han(text: &str) -> bool {
     text.chars().any(|c| ('\u{3400}'..='\u{9fff}').contains(&c))
 }
+
+fn assert_prompt_budget(profile: &profiles::AgentProfile, role_budget: usize) -> String {
+    let prompt = system(&json!({"agent":super::super::model_profile::role(profile),"skills":[]}));
+    assert_eq!(
+        prompt.matches(&profile.instructions).count(),
+        1,
+        "{}",
+        profile.id
+    );
+    // Role instructions evolve independently of the shared host execution policy.
+    let role_chars = profile.instructions.chars().count();
+    let host_chars = prompt.chars().count() - role_chars;
+    assert!(
+        role_chars < role_budget,
+        "{}: role {role_chars} >= {role_budget}",
+        profile.id
+    );
+    assert!(
+        host_chars < 2400,
+        "{}: host overhead {host_chars} >= 2400",
+        profile.id
+    );
+    prompt
+}
+
 #[test]
 fn coordinator_prompt_size() {
     let profile = profiles::builtins().remove(0);
-    let prompt = system(&json!({"agent":super::super::model_profile::role(&profile),"skills":[]}));
-    assert!(prompt.chars().count() < 2400);
+    let prompt = assert_prompt_budget(&profile, 1200);
     assert!(!prompt.contains("Available Skills:"));
     assert!(!prompt.contains("Storyboard handoff contract:"));
     assert!(!prompt.contains("Generation execution contract:"));
     assert!(!prompt.contains("runInBackground")); // Delegation has no foreground override.
+}
+#[test]
+fn builtin_role_and_host_prompt_budgets_are_bounded() {
+    for profile in profiles::builtins() {
+        assert_prompt_budget(&profile, 3000);
+    }
 }
 #[test]
 fn only_delegating_roles_receive_dispatch_guidance() {
@@ -66,6 +96,5 @@ fn professional_methods_are_not_repeated_in_host_policy() {
         ] {
             assert!(!text.contains(duplicated));
         }
-        assert!(text.chars().count() < 3000, "{}", profile.id);
     }
 }
