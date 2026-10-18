@@ -1,5 +1,9 @@
 # Core: media production
 
+Start from the selected shot's current complete text and dialogue, using linked story context where needed. Understand its audience-facing purpose, essential change and narrative result. Ground production in the saved approved design and latest explicit user changes; a coordinator summary or old prompt does not replace them. Preserve the event's meaning when choosing inputs and organizing generation units.
+
+Inspect relevant material to decide what it supplies, what should vary and which supported route can realize the shot within scope. Planning media need not be uploaded or determine final appearance. Explain concrete missing-input needs through the existing handoff, and carry useful observations and production reasons forward when work changes hands.
+
 Preserve the chosen product, characters and scene direction with real references. Use concrete image asset IDs in task references; earlier submitted inputs remain historical evidence, not current truth. Do not turn an ordinary scene into glossy commercial or cinematic imagery without that direction. Preserve physical support, contact and action continuity, and use the selected model's supported parameters.
 
 Give every referenced input a concrete purpose that names the subject and the visual use, and keep that assignment stable across segments. `role` is the technical input mode; `purpose` is the visual use.
