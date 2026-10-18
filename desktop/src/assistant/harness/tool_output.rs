@@ -6,6 +6,10 @@ use tauri::Manager;
 const LIMIT: usize = 6000;
 
 pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
+    // Request-local hosts have no journal from which to retrieve offloaded results.
+    if turn.is_none() {
+        return value.clone();
+    }
     // Bounded editing pages/receipts must not immediately require another read-result call.
     let limit = if super::read_tools::is_read(&call.function.name)
         || (call.function.name == "mstudio_inspect"
@@ -166,7 +170,7 @@ mod tests {
     use super::*;
     use rig_core::message::ToolFunction;
     #[test]
-    fn skill_body_is_delivered_without_a_second_result_pagination() {
+    fn request_local_and_skill_reads_do_not_require_result_pagination() {
         let call = ToolCall::from_wire(
             "skill",
             rig_core::message::ToolFunction::new(
@@ -176,6 +180,14 @@ mod tests {
         );
         let value = json!({"text":"camera method ".repeat(2000),"nextOffset":null});
         assert_eq!(project(&call, &value, Some("turn")), value);
+        let editor = ToolCall::from_wire(
+            "editor",
+            ToolFunction::new(
+                "str_replace_based_edit_tool".try_into().unwrap(),
+                json!({"command":"view","path":"/scene.js"}),
+            ),
+        );
+        assert_eq!(project(&editor, &value, None), value);
     }
     #[test]
     fn bounded_clip_page_is_delivered_without_a_second_model_read() {

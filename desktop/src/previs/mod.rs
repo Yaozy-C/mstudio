@@ -1,17 +1,20 @@
-//! Private previsualization workspace. No Agent tools, context, or history are used.
+//! Dedicated previsualization Agent with its own scoped files and session.
+mod agent;
 pub(crate) mod chat;
 mod chat_context;
+mod editor;
+mod editor_commands;
+#[cfg(test)]
+mod editor_loop_tests;
+mod editor_schema;
+#[cfg(test)]
+mod editor_tests;
 mod export_cleanup;
 mod export_references;
 mod export_store;
 #[cfg(test)]
 mod export_store_tests;
 pub(crate) mod files;
-mod provider;
-#[cfg(test)]
-mod provider_stream_tests;
-#[cfg(test)]
-mod provider_tests;
 pub(crate) mod render;
 pub(crate) mod runtime;
 pub(crate) mod sharing;

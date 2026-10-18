@@ -59,7 +59,7 @@ export const errorCatalog = {
   CHAT_FAILED: ["回答未完成", "原消息和附件已保留，可以重试。"],
   PREVIS_CHAT_FAILED: [
     "预演生成未完成",
-    "当前文件未修改。请重试，或选择其他已连接的模型。",
+    "已完成的文件修改已保留。请查看当前预演后继续。",
   ],
   STORAGE_READ_FAILED: [
     "无法读取存储位置",

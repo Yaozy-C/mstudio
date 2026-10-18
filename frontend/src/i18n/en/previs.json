@@ -92,5 +92,10 @@
   "镜头已删除": "The shot has been deleted",
   "设为参考": "Use as reference",
   "已设为参考": "Set as reference",
-  "正在设置参考…": "Setting reference…"
+  "正在设置参考…": "Setting reference…",
+  "预演 Agent": "Previs Agent",
+  "专门生成和修改预演，不带主对话上下文。": "Creates and edits previs, without the main conversation context.",
+  "读取预演文件": "Read previs file",
+  "创建预演文件": "Create previs file",
+  "修改预演文件": "Edit previs file"
 }

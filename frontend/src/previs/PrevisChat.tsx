@@ -1,8 +1,13 @@
-import { PaperPlaneTilt, Stop } from "@phosphor-icons/react";
+import { useState } from "react";
+import { compositionGuard } from "../assistant/compositionGuard";
+import { usePrevisScroll } from "./usePrevisScroll";
+import { ArrowUp, Stop } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import { readyModel } from "../models/types";
 import { StudioSelect } from "../ui/StudioSelect";
-import { ActionButton } from "../ui/ActionButton";
+import { IconButton } from "../ui/IconButton";
+import { PrevisAgentMessages } from "./PrevisAgentMessages";
+import "../styles/agent-composer.css";
 import { AsyncButton, StatusMessage } from "../ui/AsyncState";
 import { PrevisTaskStatus, previsTaskLabel } from "./PrevisTaskStatus";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -13,10 +18,8 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
     file,
     messages,
     busy,
-    pendingPrompt,
     stopping,
     phase,
-    chatEnd,
     error,
     send,
     prompt,
@@ -26,14 +29,17 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
     catalog,
     stop,
   } = state;
+  const [ime] = useState(compositionGuard);
+  const scroll = usePrevisScroll(state);
+  const canSend = !busy && !!prompt.trim() && !!model && readyModel(model);
   const running = busy === "chat" || busy === "render";
   return (
     <section className="previs-chat">
       <div className="previs-chat-heading">
-        <h3>{file.kind === "model" ? t("模型 Chat") : t("镜头 Chat")}</h3>
-        <p>{t("只修改当前文件，共用资产保留在项目中。")}</p>
+        <h3>{t("预演 Agent")}</h3>
+        <p>{t("专门生成和修改预演，不带主对话上下文。")}</p>
       </div>
-      <div className="previs-messages">
+      <div className="previs-messages" {...scroll}>
         {!messages.length && !running && (
           <p className="previs-chat-empty">
             {file.kind === "model"
@@ -41,25 +47,13 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
               : t("描述机位、动作和节奏，或直接生成第一版。")}
           </p>
         )}
-        {messages.map((m, i) => (
-          <div key={i} className={`previs-message ${m.role}`}>
-            <small>{m.role === "user" ? t("你") : t("模型")}</small>
-            <p>{m.text}</p>
-          </div>
-        ))}
-        {pendingPrompt && (
-          <div className="previs-message user">
-            <small>{t("你")}</small>
-            <p>{pendingPrompt}</p>
-          </div>
-        )}
+        <PrevisAgentMessages state={state} />
         {running && <PrevisTaskStatus state={state} />}
         {!running && !error && phase && (
           <StatusMessage kind={phase === "cancelled" ? "paused" : "success"}>
             {previsTaskLabel(state)}
           </StatusMessage>
         )}
-        <div ref={chatEnd} />
       </div>
       {error && (
         <div className="previs-error">
@@ -67,14 +61,16 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
         </div>
       )}
       <form
-        className="previs-composer"
+        className="agent-composer previs-composer"
         aria-busy={running}
         onSubmit={(e) => {
           e.preventDefault();
-          void send();
+          if (canSend) void send();
         }}
       >
         <textarea
+          {...ime}
+          rows={3}
           aria-label={t("预演修改要求")}
           value={prompt}
           disabled={!!busy}
@@ -87,53 +83,54 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
           }
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)
+              return;
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              void send();
+              if (canSend) void send();
             }
           }}
         />
-        <div>
-          <StudioSelect
-            label={t("预演对话模型")}
-            disabled={!!busy}
-            value={model?.id || ""}
-            onValueChange={setModelId}
-            placeholder={
-              running
-                ? t("任务正在后台执行，完成后可继续修改。")
-                : t("选择对话模型")
-            }
-            options={catalog.profiles.map((m) => ({
-              value: m.id,
-              label: m.name,
-              disabled: !readyModel(m),
-            }))}
-          />
-          {running ? (
-            <ActionButton
-              className="previs-send"
-              icon={Stop}
-              busy={stopping}
-              busyLabel={t("正在停止…")}
-              onClick={() => void stop()}
-            >
-              {t("停止")}
-            </ActionButton>
-          ) : (
-            <AsyncButton
-              className="previs-send primary"
-              type="submit"
-              busy={busy === "save"}
-              busyLabel={t("正在保存…")}
-              disabled={
-                !!busy || !prompt.trim() || !model || !readyModel(model)
+        <div className="agent-compose-actions">
+          <div className="composer-tools">
+            <StudioSelect
+              label={t("预演对话模型")}
+              disabled={!!busy}
+              value={model?.id || ""}
+              onValueChange={setModelId}
+              placeholder={
+                running
+                  ? t("任务正在后台执行，完成后可继续修改。")
+                  : t("选择对话模型")
               }
-            >
-              <PaperPlaneTilt />
-              {t("发送")}
-            </AsyncButton>
-          )}
+              options={catalog.profiles.map((m) => ({
+                value: m.id,
+                label: m.name,
+                disabled: !readyModel(m),
+              }))}
+            />
+          </div>
+          <div className="composer-submit">
+            {running ? (
+              <IconButton
+                icon={Stop}
+                label={stopping ? t("正在停止…") : t("停止")}
+                busy={stopping}
+                onClick={() => void stop()}
+              />
+            ) : (
+              <AsyncButton
+                type="submit"
+                aria-label={t("发送")}
+                title={t("发送")}
+                busy={busy === "save"}
+                busyLabel={t("正在保存…")}
+                disabled={!canSend}
+              >
+                <ArrowUp aria-hidden="true" />
+              </AsyncButton>
+            )}
+          </div>
         </div>
       </form>
     </section>

@@ -66,6 +66,29 @@ pub fn model(
     } else {
         rig_core::http_client::DynHttpClient::new(transport)
     };
+    from_http(profile, key, http)
+}
+
+/// Text-only callers share provider adapters without upload state or Agent context.
+pub(crate) fn text_model(profile: &Profile, key: &str) -> Result<ProviderModel, String> {
+    if profile.adapter == "codex" {
+        return Ok(ProviderModel::Codex(
+            super::codex_provider::CodexModel::new(profile.model.clone()),
+        ));
+    }
+    let headers = crate::models::transport::headers(&profile.endpoint, key)
+        .map_err(|_| "服务认证配置无效")?;
+    let http = rig_core::http_client::DynHttpClient::new(rig_reqwest::ReqwestClient::from(
+        configured_client(Duration::from_secs(900), headers)?,
+    ));
+    from_http(profile, key, http)
+}
+
+fn from_http(
+    profile: &Profile,
+    key: &str,
+    http: rig_core::http_client::DynHttpClient,
+) -> Result<ProviderModel, String> {
     let key = if key.is_empty() { "local" } else { key };
     let endpoint = profile.endpoint.trim_end_matches('/');
     let model = match profile.adapter.as_str() {

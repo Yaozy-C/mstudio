@@ -106,10 +106,28 @@ pub fn result_message(call: &ToolCall, value: &Value) -> Message {
             ]))],
         };
     }
+    let error = value.get("error").filter(|v| !v.is_null());
+    let text = if error.is_some() && value.as_object().is_some_and(|v| v.len() > 1) {
+        // Keep structured validation fields used by project tools while marking failure natively.
+        format!("Error: {value}")
+    } else if let Some(error) = error {
+        format!(
+            "Error: {}",
+            error
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| error.to_string())
+        )
+    } else {
+        value
+            .as_str()
+            .map(str::to_owned)
+            .unwrap_or_else(|| value.to_string())
+    };
+    let mut result = call.result(vec![ToolResultContent::text(text)]);
+    result.is_error = error.is_some();
     Message::User {
-        content: vec![UserContent::ToolResult(
-            call.result(vec![ToolResultContent::text(value.to_string())]),
-        )],
+        content: vec![UserContent::ToolResult(result)],
     }
 }
 
@@ -232,4 +250,34 @@ pub fn validate_resume(
         return Err("恢复请求与原任务不一致，请重新发送消息".into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+#[test]
+fn native_error_flag_keeps_structured_recovery_fields_and_plain_text_success() {
+    use rig_core::message::ToolFunction;
+    let call = ToolCall::from_wire(
+        "result",
+        ToolFunction::new("write".try_into().unwrap(), json!({})),
+    );
+    let value = json!({"error":"Invalid arguments","issues":[{"path":"$.new_str","message":"Required"}],"recovery":{"action":"correct_arguments"}});
+    let Message::User { content } = result_message(&call, &value) else {
+        panic!()
+    };
+    let UserContent::ToolResult(result) = &content[0] else {
+        panic!()
+    };
+    assert!(result.is_error);
+    let ToolResultContent::Text(text) = &result.content[0] else {
+        panic!()
+    };
+    assert!(text.text.contains("$.new_str") && text.text.contains("correct_arguments"));
+    let Message::User { content } = result_message(&call, &json!("File saved")) else {
+        panic!()
+    };
+    let UserContent::ToolResult(result) = &content[0] else {
+        panic!()
+    };
+    assert!(!result.is_error);
+    assert!(matches!(&result.content[0],ToolResultContent::Text(text) if text.text=="File saved"));
 }

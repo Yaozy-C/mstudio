@@ -1,6 +1,5 @@
 {
   "预演生成未完成": "Previsualization generation incomplete",
-  "当前文件未修改。请重试，或选择其他已连接的模型。": "The current file was not changed. Retry or select another connected model.",
   "错误详情 ·": "Error details ·",
   "已复制": "Copied",
   "复制失败，请选择上方详情复制": "Copy failed. Select and copy the details above.",
@@ -65,5 +64,6 @@
   "参考图片的宽高比不符合要求": "Reference image aspect ratio is unsupported",
   "视频时长不符合模型要求": "Video duration does not meet model requirements",
   "预览播放已中断": "Preview playback was interrupted",
-  "点击重新加载预览，恢复播放器。": "Click Reload preview to restart the player."
+  "点击重新加载预览，恢复播放器。": "Click Reload preview to restart the player.",
+  "已完成的文件修改已保留。请查看当前预演后继续。": "Completed file edits have been saved. Review the current previs and continue."
 }

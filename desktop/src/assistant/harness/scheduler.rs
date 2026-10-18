@@ -45,7 +45,7 @@ async fn group(
             if let Err(error) = host.record("tool/call", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"arguments":call.function.arguments})) {
                 failure = Some(error); break;
             }
-            let invalid = validate(definitions, call);
+            let invalid = validate_with_limit(definitions, call, host.tool_argument_limit());
             in_flight.push(async move {
                 let value = if host.token().is_cancelled() {
                     json!({"error":"Task stopped before dispatch; call not executed", "code":"ABORTED_BEFORE_DISPATCH"})
@@ -79,7 +79,7 @@ async fn group(
             );
             super::read_reuse::annotate(&session.messages, call, &canonical, &mut message);
             // One durable result owns both the model history and the visible tool row.
-            let result = host.record("tool/result", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"value":canonical,"isError":value.get("error").is_some(),"message":message}));
+            let result = host.record("tool/result", json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"value":canonical,"isError":value.get("error").is_some_and(|v| !v.is_null()),"message":message}));
             if let Err(error) = result {
                 failure.get_or_insert(error);
             } else {
@@ -96,17 +96,25 @@ async fn group(
     }
     failure.map_or(Ok(()), Err)
 }
+#[cfg(test)]
 pub(super) fn validate(definitions: &[ToolDefinition], call: &ToolCall) -> Option<Value> {
+    validate_with_limit(definitions, call, 24_000)
+}
+fn validate_with_limit(
+    definitions: &[ToolDefinition],
+    call: &ToolCall,
+    limit: usize,
+) -> Option<Value> {
     let Some(definition) = definitions.iter().find(|d| d.name == call.function.name) else {
         return Some(json!({"error":"Tool not available to this Agent", "code":"UNKNOWN_TOOL"}));
     };
     if serde_json::to_string(&call.function.arguments)
         .unwrap_or_default()
         .len()
-        > 24_000
+        > limit
     {
         return Some(
-            json!({"error":"Tool arguments exceed 24 KB; split the operations", "code":"INVALID_ARGS"}),
+            json!({"error":format!("Tool arguments exceed {limit} bytes; split the operations"), "code":"INVALID_ARGS"}),
         );
     }
     let issues = super::schema::issues(

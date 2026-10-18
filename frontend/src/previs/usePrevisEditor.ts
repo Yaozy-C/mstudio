@@ -19,7 +19,6 @@ export function usePrevisEditor(fileId: string, close: () => void) {
   const [time, setTime] = useState(0);
   const [modelId, setModelId] = useState("");
   const runtime = useRef<RuntimeHandle>(null);
-  const chatEnd = useRef<HTMLDivElement>(null);
   const { catalog } = useModels();
   const model =
     catalog.profiles.find((m) => m.id === modelId) || selectedModel(catalog);
@@ -45,9 +44,6 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     onResult: setDraft,
   });
   const { busy, setBusy, error, setError } = task;
-  useEffect(() => {
-    chatEnd.current?.scrollIntoView({ block: "nearest" });
-  }, [messages.length, busy]);
   async function send(text = prompt) {
     if (!text.trim() || busy) return;
     setPrompt("");
@@ -129,7 +125,6 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     model,
     setModelId,
     runtime,
-    chatEnd,
     catalog,
     models,
     messages,

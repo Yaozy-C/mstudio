@@ -5,10 +5,12 @@ use serde_json::json;
 pub(super) fn request(file: &File, files: &[File], prompt: &str) -> String {
     let inventory = files
         .iter()
-        .filter(|file| file.kind == "model")
-        .map(|model| json!({"id":model.id,"name":model.name,"description":model.description}))
+        .filter(|model| model.kind == "model" && file.asset_ids.contains(&model.id))
+        .map(|model| json!({"id":model.id,"name":model.name,"description":model.description,"path":format!("/models/{}.js",model.id)}))
         .collect::<Vec<_>>();
-    json!({"currentFile":file,"modelInventory":inventory,"request":prompt}).to_string()
+    json!({"currentFile":{"id":file.id,"kind":file.kind,"name":file.name,"description":file.description,"duration":file.duration,"width":file.width,"height":file.height,"fps":file.fps,"bindings":file.bindings},"modelInventory":inventory,"request":prompt,
+        "editorPath":if file.kind=="shot" {"/scene.js"} else {"/model.js"}})
+    .to_string()
 }
 
 #[cfg(test)]
@@ -24,7 +26,7 @@ mod tests {
             description: "Fixed camera".into(),
             code: "current scene code".into(),
             revision: 4,
-            asset_ids: vec![],
+            asset_ids: vec!["bag".into()],
             bindings: Default::default(),
             duration: 2.7,
             width: 720,
@@ -46,12 +48,13 @@ mod tests {
         };
         let payload: serde_json::Value =
             serde_json::from_str(&request(&file, &[model, unrelated], "Open the lid")).unwrap();
-        assert_eq!(payload.as_object().unwrap().len(), 3);
+        assert_eq!(payload.as_object().unwrap().len(), 4);
+        assert_eq!(payload["editorPath"], "/scene.js");
         assert_eq!(payload["request"], "Open the lid");
-        assert_eq!(payload["currentFile"]["code"], "current scene code");
+        assert!(payload["currentFile"].get("code").is_none());
         assert_eq!(
             payload["modelInventory"],
-            json!([{"id":"bag","name":"Bag","description":"Named lid hinge"}])
+            json!([{"id":"bag","name":"Bag","description":"Named lid hinge","path":"/models/bag.js"}])
         );
         assert!(payload.get("recentConversation").is_none());
         assert!(!payload.to_string().contains("private model implementation"));
@@ -62,7 +65,7 @@ mod tests {
         };
         let payload: serde_json::Value =
             serde_json::from_str(&request(&empty, &[], "First scene")).unwrap();
-        assert_eq!(payload["currentFile"]["code"], "");
+        assert!(payload["currentFile"].get("code").is_none());
         assert_eq!(payload["modelInventory"], json!([]));
     }
 }

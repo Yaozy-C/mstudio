@@ -64,6 +64,9 @@ pub trait Host: Sync {
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String>;
     fn definitions(&self) -> Vec<ToolDefinition>;
+    fn tool_argument_limit(&self) -> usize {
+        24_000
+    }
     fn parallel_safe(&self, call: &ToolCall) -> bool;
     /// Returns messages already committed to the session journal with delivery acknowledgements.
     fn injected(&self) -> Result<Vec<Message>, String> {

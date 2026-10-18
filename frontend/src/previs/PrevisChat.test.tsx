@@ -24,7 +24,7 @@ test("previs failures render a readable notice and retain a retryable prompt", (
     </Theme>,
   );
   expect(html).toContain("预演生成未完成");
-  expect(html).toContain("当前文件未修改");
+  expect(html).toContain("已完成的文件修改已保留");
   expect(html).toContain("错误详情");
   expect(html).toContain("error decoding response body");
   expect(html).toContain("请根据镜头说明创建预演");
@@ -60,5 +60,8 @@ test("submitted requests replace the empty invitation with a visible task and ac
   expect(html).toContain("可关闭此窗口，任务将在后台继续。");
   expect(html).not.toContain("描述模型的形状、尺寸和可动部件。");
   expect(html).not.toContain("正在修改代码");
-  expect(html).toMatch(/<button[^>]*aria-busy="false"[^>]*>[\s\S]*停止/);
+  expect(html).toMatch(/<button[^>]*aria-label="停止"[^>]*aria-busy="false"/);
+  expect(html).toContain("预演 Agent");
+  expect(html).toContain("agent-composer");
+  expect(html).toContain("agent-message user");
 });

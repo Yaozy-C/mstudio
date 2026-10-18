@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { bridge } from "../bridge";
 import { t } from "../i18n";
+import { usePrevisAgent } from "./usePrevisAgent";
 import { readyModel, type ModelConnection } from "../models/types";
 import type { RuntimeHandle } from "./RuntimeFrame";
 import type { PrevisFile, PrevisWorkspace } from "./types";
@@ -32,6 +33,7 @@ export function usePrevisTask({
   refresh: () => Promise<void>;
   onResult: (file: PrevisFile) => void;
 }) {
+  const agent = usePrevisAgent();
   const [busy, setBusy] = useState<"chat" | "render" | "save" | "share" | null>(
     null,
   );
@@ -109,20 +111,21 @@ export function usePrevisTask({
       throw Error(t("请先选择已连接的对话模型"));
     setPhase("generating");
     requestId.current = crypto.randomUUID();
-    const result = await bridge<{ file: PrevisFile }>("previs_chat", {
-      request: {
+    try {
+      const result = await agent.run({
         projectId,
         fileId,
         expectedRevision: saved.revision,
         prompt: text,
         modelId: model.id,
         requestId: requestId.current,
-      },
-    });
-    requestId.current = "";
-    await refresh();
-    onResult(result.file);
-    return result.file;
+      });
+      onResult(result.file);
+      return result.file;
+    } finally {
+      requestId.current = "";
+      await refresh();
+    }
   }
   async function send(text: string) {
     if (!text.trim() || !start("chat", text)) return false;
@@ -225,6 +228,8 @@ export function usePrevisTask({
     }
   }
   return {
+    agentPartial: agent.partial,
+    agentEvents: agent.events,
     busy,
     setBusy,
     lastKind,

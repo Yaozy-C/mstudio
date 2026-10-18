@@ -134,3 +134,30 @@ test("nested validation errors show the cause and recovery instead of raw JSON",
   expect(rows[0].detail).toContain("请选择正确模型");
   expect(rows[0].detail).not.toContain('"code"');
 });
+
+test("previs tool titles use the real command without adding an action argument", () => {
+  const [row] = activityRows([
+    {
+      seq: 1,
+      created: 1,
+      kind: "tool/call",
+      payload: {
+        callId: "read",
+        name: "str_replace_editor",
+        arguments: {
+          command: "view",
+          path: "/scene.js",
+          view_range: [200, 500],
+        },
+      },
+    },
+    {
+      seq: 2,
+      created: 2,
+      kind: "tool/result",
+      payload: { callId: "read", result: {} },
+    },
+  ]);
+  expect(row.title).toBe("读取预演文件");
+  expect(row.detail).toBe("已完成");
+});

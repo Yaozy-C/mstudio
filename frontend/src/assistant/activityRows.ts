@@ -6,6 +6,10 @@ export type ActivityEvent = {
   payload: unknown;
 };
 const actions: Record<string, string> = {
+  previs_view: "读取预演文件",
+  previs_create: "创建预演文件",
+  previs_str_replace: "修改预演文件",
+  previs_insert: "修改预演文件",
   inspect: "读取项目内容",
   read_project: "读取项目概况",
   read_creation: "读取创作要求",
@@ -83,6 +87,7 @@ export function activityRows(events: ActivityEvent[]) {
     name?: string;
     arguments?: {
       action?: string;
+      command?: string;
       agentId?: string;
       operations?: { op: string }[];
     };
@@ -105,7 +110,12 @@ export function activityRows(events: ActivityEvent[]) {
           v.kind === "tool/result" &&
           (v.payload as Payload)?.callId === p.callId,
       )?.payload as Payload | undefined;
-      const action = p.arguments?.action ?? p.name?.replace(/^mstudio_/, "");
+      const action = [
+        "str_replace_editor",
+        "str_replace_based_edit_tool",
+      ].includes(p.name ?? "")
+        ? `previs_${p.arguments?.command ?? "edit"}`
+        : (p.arguments?.action ?? p.name?.replace(/^mstudio_/, ""));
       const title =
         action === "edit"
           ? [
