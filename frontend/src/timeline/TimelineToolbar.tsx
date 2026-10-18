@@ -21,6 +21,7 @@ import { frameTime } from "./geometry";
 import { ShortcutHelp } from "./ShortcutHelp";
 import { packClips } from "./packClips";
 import { addTrack } from "./document";
+import { TrimVideoTailsButton } from "./TrimVideoTailsButton";
 export function TimelineToolbar({
   selectedCaption,
   onRemoveCaption,
@@ -119,6 +120,7 @@ export function TimelineToolbar({
         >
           <ArrowsHorizontal />
         </button>
+        <TrimVideoTailsButton {...{ project, clock, onChange }} />
       </div>
       <span className="time-display">
         <ClockReadout clock={clock} />

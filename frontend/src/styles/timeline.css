@@ -29,6 +29,33 @@
   font-size: 10px;
   color: var(--desk-muted);
 }
+.timeline-trim-control {
+  position: relative;
+  display: flex;
+}
+.timeline-trim-control > button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.timeline-trim-notice {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 320px;
+  padding: 8px 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 4px;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  font-size: 11px;
+}
 .time-display {
   font-family: monospace;
   font-size: 12px;

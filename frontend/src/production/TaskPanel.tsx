@@ -93,7 +93,19 @@ export function TaskPanel({
               tasks={previsTasks}
               open={(fileId) => {
                 canvas.setTaskPanelOpen(false);
-                previs?.open(fileId);
+                const task = previsTasks.find(
+                  (entry) => entry.fileId === fileId,
+                );
+                if (
+                  task?.phase === "complete" &&
+                  task.lastKind === "render" &&
+                  !task.error &&
+                  previs?.workspace.exports.some(
+                    (video) => video.fileId === fileId,
+                  )
+                )
+                  previs.showVideos(fileId);
+                else previs?.open(fileId);
               }}
             />
             {!visible.length && !previsTasks.length && (

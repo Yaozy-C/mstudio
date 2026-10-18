@@ -25,6 +25,7 @@ const commandCodes: Record<string, ErrorCode> = {
   save_project: "SAVE_FAILED",
   create_project: "SAVE_FAILED",
   render_video: "EXPORT_FAILED",
+  video_source_ends: "ASSET_OPERATION_FAILED",
   save_export: "EXPORT_SAVE_FAILED",
   reveal_export: "EXPORT_REVEAL_FAILED",
   import_video_url: "ASSET_IMPORT_FAILED",

@@ -20,6 +20,7 @@ import { t } from "../i18n";
 import { Context } from "./context";
 import { attachPrevisVideo } from "./attachReference";
 import type { PrevisTaskSummary } from "./PrevisTaskList";
+import { savedPrevisTasks } from "./savedTasks";
 export function PrevisProvider({
   project,
   flush,
@@ -33,6 +34,12 @@ export function PrevisProvider({
   const [editing, setEditing] = useState<string | null>(null);
   const [sessions, setSessions] = useState<string[]>([]);
   const [tasks, setTasks] = useState<PrevisTaskSummary[]>([]);
+  const [videoPanel, setVideoPanel] = useState<{
+    open: boolean;
+    fileId?: string;
+  }>({
+    open: false,
+  });
   const publishTask = useCallback((task: PrevisTaskSummary) => {
     setTasks((current) =>
       task.phase
@@ -74,6 +81,7 @@ export function PrevisProvider({
     setEditing(null);
     setSessions([]);
     setTasks([]);
+    setVideoPanel({ open: false });
     void refresh();
   }, [refresh]);
   const save = useCallback(
@@ -168,9 +176,10 @@ export function PrevisProvider({
         createModel: () => void createModel(),
         error,
         loading,
-        tasks: tasks.filter((task) =>
-          workspace.files.some((file) => file.id === task.fileId),
-        ),
+        tasks: savedPrevisTasks(workspace, tasks),
+        videoPanel,
+        showVideos: (fileId) => setVideoPanel({ open: true, fileId }),
+        closeVideos: () => setVideoPanel({ open: false }),
       }}
     >
       {children}

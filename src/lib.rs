@@ -1,5 +1,6 @@
 pub mod audio_mix;
 pub mod media;
+pub mod media_timing;
 pub mod model;
 pub mod render;
 

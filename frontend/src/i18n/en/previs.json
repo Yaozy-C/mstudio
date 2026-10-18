@@ -97,5 +97,17 @@
   "读取预演文件": "Read previs file",
   "创建预演文件": "Create previs file",
   "修改预演文件": "Edit previs file",
-  "已保存为项目素材": "Saved to project media"
+  "已保存为项目素材": "Saved to project media",
+  "关闭预演视频": "Close previs videos",
+  "{seconds} 秒": "{seconds}s",
+  "集中查看各镜头最近保存的预演视频。重新进入项目后仍会保留。": "View the latest saved previs for each shot. Videos remain available when you reopen the project.",
+  "预演视频列表": "Previs video list",
+  "预演视频详情": "Previs video details",
+  "镜头已移除，视频已保留": "Shot removed; video retained",
+  "正在读取预演视频…": "Loading previs videos…",
+  "暂无已保存的预演视频。": "No saved previs videos yet.",
+  "从镜头的三维预演中生成视频，完成后会显示在这里。": "Render a video from a shot's 3D previs. Completed videos will appear here.",
+  "场景已有修改；此视频为上次保存的预演。": "The scene has changed. This is the previously saved previs.",
+  "新的预演正在生成；当前仍可查看上次保存的视频。": "A new previs is rendering. You can still view the previously saved video.",
+  "查看或修改预演": "View or edit previs"
 }

@@ -179,6 +179,7 @@ fn main() {
             imports::transfer::finish_import,
             imports::transfer::cancel_import,
             media_commands::render_video,
+            media_commands::video_source_ends,
             media_commands::save_export,
             media_commands::reveal_export
         ])

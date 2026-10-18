@@ -17,6 +17,9 @@ type PrevisContext = {
   error: string;
   loading: boolean;
   tasks: PrevisTaskSummary[];
+  videoPanel: { open: boolean; fileId?: string };
+  showVideos: (fileId?: string) => void;
+  closeVideos: () => void;
   attachReference: (
     fileId: string,
     videoId: string,

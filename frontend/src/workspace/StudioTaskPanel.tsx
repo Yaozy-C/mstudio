@@ -1,6 +1,7 @@
 import { TaskPanel } from "../production/TaskPanel";
 import type { Project } from "../model";
 import type { ProductionController } from "../production/useProduction";
+import { PrevisVideoPanel } from "../previs/PrevisVideoPanel";
 export function StudioTaskPanel({
   project,
   canvas,
@@ -11,13 +12,16 @@ export function StudioTaskPanel({
   onModels: () => void;
 }) {
   return (
-    <TaskPanel
-      project={project}
-      canvas={canvas}
-      settings={() => {
-        canvas.setTaskPanelOpen(false);
-        onModels();
-      }}
-    />
+    <>
+      <TaskPanel
+        project={project}
+        canvas={canvas}
+        settings={() => {
+          canvas.setTaskPanelOpen(false);
+          onModels();
+        }}
+      />
+      <PrevisVideoPanel />
+    </>
   );
 }

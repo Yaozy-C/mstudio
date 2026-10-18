@@ -4,6 +4,43 @@ use serde_json::{Value, json};
 use tauri::{Emitter, Manager};
 
 #[tauri::command]
+pub async fn video_source_ends(
+    app: tauri::AppHandle,
+    project_id: String,
+    asset_ids: Vec<String>,
+) -> Result<std::collections::HashMap<String, f64>, String> {
+    let guard = crate::project_storage::working(&app.state::<Store>(), &project_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = guard;
+        let store = app.state::<Store>();
+        let project = crate::project_service::load(&store.db.lock().unwrap(), &project_id)
+            .map_err(|e| e.to_string())?;
+        let assets: Vec<mstudio::model::Asset> =
+            serde_json::from_value(project["assets"].clone()).map_err(|e| e.to_string())?;
+        let mut ends = std::collections::HashMap::new();
+        for id in asset_ids {
+            if ends.contains_key(&id) {
+                continue;
+            }
+            let asset = assets.iter().find(|a| a.id == id).ok_or("素材不存在")?;
+            if asset.kind != "video" || asset.missing {
+                return Err(format!("无法读取视频：{}", asset.name));
+            }
+            let metadata = media::probe(std::path::Path::new(&asset.path))
+                .map_err(|e| format!("{}：{e}", asset.name))?;
+            let end = mstudio::media_timing::video_end(&metadata)
+                .map_err(|e| format!("{}：{e}", asset.name))?;
+            ends.insert(id, end);
+        }
+        Ok(ends)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn render_video(
     app: tauri::AppHandle,
     project_id: String,

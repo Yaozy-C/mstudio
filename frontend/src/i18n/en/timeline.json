@@ -219,5 +219,13 @@
   "点击卡片应用转场，悬停查看动态效果。": "Hover to preview. Click to apply a transition.",
   "播放倍速": "Playback speed",
   "仅影响预览，不改变成片速度": "Preview only; export speed stays unchanged",
-  "自定义卡片展示组合示例，调整参数后请在时间线预览。": "This card shows a custom example. Preview your adjusted settings on the timeline."
+  "自定义卡片展示组合示例，调整参数后请在时间线预览。": "This card shows a custom example. Preview your adjusted settings on the timeline.",
+  "裁末尾": "Trim tails",
+  "按有效画面时长裁掉视频尾部空档，并前移同轨后续片段（可撤销）": "Trim video tails to the picture endpoint and move later clips on the same track earlier (undoable)",
+  "处理中…": "Processing…",
+  "素材已变化，请重新裁末尾": "The source changed. Trim tails again.",
+  "没有需要裁掉的片尾": "No video tails need trimming",
+  "已裁末尾，可撤销": "Tails trimmed. You can undo this.",
+  "片段不足一帧，未裁切": "The clip is shorter than one frame; nothing was trimmed",
+  "片尾存在重叠片段，请先整理接缝再裁末尾": "Clips overlap at a tail. Resolve the overlap before trimming tails"
 }
