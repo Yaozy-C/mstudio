@@ -250,48 +250,8 @@
 .radix-themes .public-asset-actions button {
   font-size: var(--ui-caption);
 }
-.manual-main .manual-heading {
-  padding-bottom: 24px;
-  border-color: var(--ui-rule);
-}
-.manual-main .manual-layout {
-  gap: 40px;
-  grid-template-columns: 190px minmax(0, 800px);
-  padding-top: 24px;
-}
-.manual-main .manual-section {
-  padding: 28px 32px;
-  margin-bottom: 16px;
-  border: 1px solid var(--ui-rule);
-  border-radius: 3px;
-  background: var(--desk-surface);
-}
-.manual-main .manual-section h2 {
-  font-size: 22px;
-  line-height: 30px;
-}
-.manual-main :is(.manual-number, .manual-contents a span) {
-  font-family: var(--ui-mono);
-  font-size: var(--ui-caption);
-  color: var(--desk-accent);
-}
-.manual-main .manual-note {
-  background: var(--desk-bg);
-}
 @media (max-width: 1200px) {
   .radix-themes .library-main {
     padding: 28px;
-  }
-  .manual-main .manual-layout {
-    gap: 24px;
-    grid-template-columns: 170px minmax(0, 1fr);
-  }
-  .manual-main .manual-section {
-    padding: 24px;
-  }
-}
-@media (max-width: 900px) {
-  .manual-main .manual-layout {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
