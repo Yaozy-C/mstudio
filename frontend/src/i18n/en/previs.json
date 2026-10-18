@@ -85,7 +85,6 @@
   "预演视频不可用，请重新生成。": "The previs video is unavailable. Generate it again.",
   "加入项目素材": "Add to project media",
   "已添加到当前镜头引用。": "Added to this shot’s references.",
-  "添加引用时会自动加入项目素材。": "Adding a reference also adds the video to project media.",
   "正在添加引用…": "Adding reference…",
   "已添加到镜头引用": "Added to shot references",
   "添加到镜头引用": "Add to shot references",
@@ -97,5 +96,6 @@
   "专门生成和修改预演，不带主对话上下文。": "Creates and edits previs, without the main conversation context.",
   "读取预演文件": "Read previs file",
   "创建预演文件": "Create previs file",
-  "修改预演文件": "Edit previs file"
+  "修改预演文件": "Edit previs file",
+  "已保存为项目素材": "Saved to project media"
 }

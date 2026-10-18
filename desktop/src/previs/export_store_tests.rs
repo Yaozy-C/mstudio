@@ -1,7 +1,6 @@
 use super::{
-    export_store, files,
+    export_store, files, references,
     render::Export,
-    sharing,
     tests::{model, setup, shot},
 };
 use crate::{database::Store, project_service, project_storage};
@@ -49,7 +48,7 @@ fn video(store: &Store, name: &str, seconds: f64) -> Export {
         model_revisions: Default::default(),
         signature: name.into(),
         asset,
-        shared_asset_id: None,
+        saved_asset_id: None,
     }
 }
 fn rows(store: &Store) -> Vec<Export> {
@@ -76,137 +75,162 @@ fn edit(store: &Store, update: impl FnOnce(&mut Value)) {
 }
 
 #[test]
-fn successful_renders_replace_one_result_and_retire_old_private_files() {
+fn renders_stay_private_and_retire_unreferenced_previous_files() {
     let store = setup();
     source(&store);
     let first = export_store::replace(&store, "p", video(&store, "one", 0.5)).unwrap();
-    let original_path = first.asset.path.clone();
+    let path = first.asset.path.clone();
     let next = export_store::replace(&store, "p", video(&store, "two", 1.)).unwrap();
     assert_eq!(next.id, first.id);
     assert_eq!(rows(&store).len(), 1);
-    assert_eq!(rows(&store)[0].signature, "two");
+    assert!(!std::path::Path::new(&path).exists());
     assert!(std::path::Path::new(&next.asset.path).exists());
-    assert!(!std::path::Path::new(&original_path).exists());
-    assert!(next.shared_asset_id.is_none());
-    let mut other = video(&store, "other", 0.5);
-    other.file_id = "s2".into();
-    export_store::replace(&store, "p", other).unwrap();
-    assert_eq!(rows(&store).len(), 2);
+    assert!(document(&store)["assets"].as_array().unwrap().is_empty());
+    assert!(store.assets().unwrap().is_empty());
+    assert_eq!(
+        document(&store)["previsAssets"].as_array().unwrap().len(),
+        1
+    );
     let _ = std::fs::remove_dir_all(store.root);
 }
-
 #[test]
-fn shot_references_follow_the_new_video_preserving_purpose_trims_and_other_media() {
+fn rerender_updates_live_refs_but_preserves_task_inputs_and_trimmed_references() {
     let store = setup();
     source(&store);
-    let first = export_store::replace(&store, "p", video(&store, "shared-one", 0.5)).unwrap();
-    let shared = sharing::set_shared(&store, "p", &first.id, true).unwrap();
-    let old_id = shared["assetId"].as_str().unwrap().to_owned();
+    let first = export_store::replace(&store, "p", video(&store, "first", 0.5)).unwrap();
+    references::attach(&store, "p", "s1", &first.id, &first.asset.id).unwrap();
+    let old_id = first.asset.id.clone();
     edit(&store, |doc| {
-        doc["nodes"][0]["references"] = json!([{"assetId":"photo","purpose":"Keep product appearance"},{"assetId":old_id,"purpose":"Follow the camera","start":0,"end":0.5}]);
+        doc["nodes"][0]["references"] = json!([{"assetId":"photo","purpose":"Keep product"},{"assetId":old_id,"purpose":"Camera","start":0.,"end":0.5}]);
         doc["nodes"][1]["references"] =
-            json!([{"assetId":old_id,"purpose":"Trimmed motion","start":0.1,"end":0.3}]);
-        doc["clips"] = json!([{"id":"existing-clip","assetId":old_id,"trimIn":0,"trimOut":0.4}]);
+            json!([{"assetId":old_id,"purpose":"Trim","start":0.1,"end":0.3}]);
+        doc["production"]["drafts"]["submitted"] =
+            json!({"status":"IN_PROGRESS","inputs":[{"assetId":old_id,"role":"video-reference"}]});
     });
-    let next = export_store::replace(&store, "p", video(&store, "shared-two", 1.)).unwrap();
-    let new_id = next.shared_asset_id.unwrap();
+    let next = export_store::replace(&store, "p", video(&store, "next", 1.)).unwrap();
     let doc = document(&store);
-    assert_ne!(old_id, new_id);
     assert_eq!(doc["nodes"][0]["references"][0]["assetId"], "photo");
     assert_eq!(
         doc["nodes"][0]["references"][1],
-        json!({"assetId":new_id,"purpose":"Follow the camera","start":0.,"end":1.})
+        json!({"assetId":next.asset.id,"purpose":"Camera","start":0.,"end":1.})
     );
     assert_eq!(
         doc["nodes"][1]["references"][0],
-        json!({"assetId":new_id,"purpose":"Trimmed motion","start":0.1,"end":0.3})
+        json!({"assetId":next.asset.id,"purpose":"Trim","start":0.1,"end":0.3})
     );
-    assert_eq!(doc["clips"][0]["assetId"], old_id);
-    let assets = doc["assets"].as_array().unwrap();
-    assert_eq!(assets.iter().filter(|a| a["inLibrary"] == true).count(), 1);
-    assert!(
-        assets
-            .iter()
-            .any(|a| a["id"] == old_id && a["inLibrary"] == false)
+    assert_eq!(
+        doc["production"]["drafts"]["submitted"]["inputs"][0]["assetId"],
+        old_id
     );
-    assert_eq!(rows(&store).len(), 1);
+    assert!(super::media::find(&doc, &old_id).is_some());
+    assert!(std::path::Path::new(&first.asset.path).exists());
+    assert!(doc["assets"].as_array().unwrap().is_empty());
+    let owned: i64 = store
+        .db
+        .lock()
+        .unwrap()
+        .query_row(
+            "SELECT count(*) FROM project_assets WHERE project_id='p' AND asset_id IN (?1,?2)",
+            params![old_id, next.asset.id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(owned, 0);
     let _ = std::fs::remove_dir_all(store.root);
 }
-
 #[test]
-fn legacy_stacks_coalesce_to_latest_and_transfer_references_from_an_older_entry() {
+fn explicit_collection_is_an_independent_copy_and_does_not_follow_rerenders() {
     let store = setup();
     source(&store);
-    let old = video(&store, "legacy-old", 0.5);
-    store
-        .db
-        .lock()
-        .unwrap()
-        .execute(
-            "INSERT INTO previs_exports VALUES('p',?1,?2)",
-            params![old.id, serde_json::to_string(&old).unwrap()],
-        )
-        .unwrap();
-    let shared = sharing::set_shared(&store, "p", &old.id, true).unwrap();
-    let old_id = shared["assetId"].as_str().unwrap().to_owned();
-    edit(
-        &store,
-        |doc| {
-            doc["nodes"][0]["references"] =
-                json!([{"assetId":old_id,"purpose":"Motion reference","start":0,"end":0.5}])
-        },
+    let first = export_store::replace(&store, "p", video(&store, "saved-first", 0.5)).unwrap();
+    references::attach(&store, "p", "s1", &first.id, &first.asset.id).unwrap();
+    let saved = references::collect(&store, "p", &first.id, &first.asset.id).unwrap();
+    assert_ne!(saved["id"], first.asset.id);
+    assert_ne!(saved["path"], first.asset.path);
+    assert_eq!(saved["inLibrary"], true);
+    assert_eq!(saved["generated"], true);
+    assert_eq!(
+        references::collect(&store, "p", &first.id, &first.asset.id).unwrap(),
+        saved
     );
-    let latest = video(&store, "legacy-latest", 1.);
-    store
-        .db
-        .lock()
-        .unwrap()
-        .execute(
-            "INSERT INTO previs_exports VALUES('p',?1,?2)",
-            params![latest.id, serde_json::to_string(&latest).unwrap()],
-        )
-        .unwrap();
-    assert!(export_store::normalize(&store, "p").unwrap());
-    let saved = rows(&store);
-    assert_eq!(saved.len(), 1);
-    assert_eq!(saved[0].signature, "legacy-latest");
-    let new_id = saved[0].shared_asset_id.as_ref().unwrap();
+    let next = export_store::replace(&store, "p", video(&store, "saved-next", 1.)).unwrap();
     let doc = document(&store);
-    assert_eq!(doc["nodes"][0]["references"][0]["assetId"], *new_id);
-    assert_eq!(doc["nodes"][0]["references"][0]["end"], 1.);
-    assert_eq!(doc["assets"].as_array().unwrap().len(), 1);
-    assert!(!std::path::Path::new(&old.asset.path).exists());
-    assert!(!export_store::normalize(&store, "p").unwrap());
-    assert_eq!(rows(&store)[0].shared_asset_id.as_ref(), Some(new_id));
-    assert_eq!(document(&store)["assets"].as_array().unwrap().len(), 1);
+    assert_eq!(doc["assets"], json!([saved]));
+    assert_eq!(doc["nodes"][0]["references"][0]["assetId"], next.asset.id);
+    assert!(next.saved_asset_id.is_none());
+    assert!(std::path::Path::new(saved["path"].as_str().unwrap()).exists());
+    assert!(references::collect(&store, "p", &next.id, &first.asset.id).is_err());
     let _ = std::fs::remove_dir_all(store.root);
 }
-
 #[test]
-fn a_stale_or_failed_replacement_leaves_the_valid_video_and_reference_intact() {
+fn stale_targets_and_failed_renders_preserve_the_existing_reference_and_video() {
     let store = setup();
     source(&store);
     let first = export_store::replace(&store, "p", video(&store, "valid", 0.5)).unwrap();
-    let shared = sharing::set_shared(&store, "p", &first.id, true).unwrap();
-    edit(
-        &store,
-        |doc| {
-            doc["nodes"][0]["references"] =
-                json!([{"assetId":shared["assetId"],"purpose":"Motion","start":0,"end":0.5}])
-        },
-    );
+    references::attach(&store, "p", "s1", &first.id, &first.asset.id).unwrap();
     let before = document(&store);
+    assert!(references::attach(&store, "p", "deleted", &first.id, &first.asset.id).is_err());
+    assert!(references::attach(&store, "p", "s1", &first.id, "stale").is_err());
+    assert!(references::attach(&store, "other-project", "s1", &first.id, &first.asset.id).is_err());
     let mut stale = video(&store, "stale", 1.);
     stale.file_revision = 0;
     assert!(export_store::replace(&store, "p", stale).is_err());
-    assert_eq!(rows(&store).len(), 1);
-    assert_eq!(rows(&store)[0].signature, "valid");
-    assert_eq!(document(&store), before);
-    assert!(std::path::Path::new(&first.asset.path).exists());
     let mut invalid = video(&store, "missing", 1.);
-    invalid.asset.path = "/does-not-exist.mp4".into();
+    invalid.asset.path = "/missing.mp4".into();
     assert!(export_store::replace(&store, "p", invalid).is_err());
     assert_eq!(document(&store), before);
     assert_eq!(rows(&store)[0].signature, "valid");
+    assert!(std::path::Path::new(&first.asset.path).exists());
+    let _ = std::fs::remove_dir_all(store.root);
+}
+#[test]
+fn private_metadata_is_derived_and_cannot_be_written_through_project_autosave() {
+    let store = setup();
+    source(&store);
+    let export = export_store::replace(&store, "p", video(&store, "private", 0.5)).unwrap();
+    let base = document(&store);
+    let mut changed = base.clone();
+    changed["previsAssets"][0]["path"] = json!("/untrusted.mp4");
+    let saved = crate::projects::save_merged(&store, changed, base).unwrap();
+    assert_eq!(saved["previsAssets"][0]["path"], export.asset.path);
+    let raw: String = store
+        .db
+        .lock()
+        .unwrap()
+        .query_row("SELECT document FROM projects WHERE id='p'", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert!(
+        serde_json::from_str::<Value>(&raw)
+            .unwrap()
+            .get("previsAssets")
+            .is_none()
+    );
+    let _ = std::fs::remove_dir_all(store.root);
+}
+#[test]
+fn project_deletion_removes_private_media_but_keeps_an_explicit_global_save() {
+    let store = setup();
+    source(&store);
+    let export = export_store::replace(&store, "p", video(&store, "delete-private", 0.5)).unwrap();
+    references::attach(&store, "p", "s1", &export.id, &export.asset.id).unwrap();
+    let saved = references::collect(&store, "p", &export.id, &export.asset.id).unwrap();
+    crate::asset_library::promote(&store.db.lock().unwrap(), saved["id"].as_str().unwrap())
+        .unwrap();
+    crate::project_storage::remove(&store, "p").unwrap();
+    assert!(!std::path::Path::new(&export.asset.path).exists());
+    assert!(std::path::Path::new(saved["path"].as_str().unwrap()).exists());
+    let count: i64 = store
+        .db
+        .lock()
+        .unwrap()
+        .query_row(
+            "SELECT count(*) FROM previs_media WHERE project_id='p'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(count, 0);
     let _ = std::fs::remove_dir_all(store.root);
 }

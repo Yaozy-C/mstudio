@@ -161,7 +161,7 @@ fn video_task_handoff_uses_saved_task_key_without_accepting_rewritten_inputs() {
         !source_message("使用视频", "parent", "turn", &resolved.manifest)
             .contains("保持连续镜头和原台词")
     );
-    assert_eq!(resolved.manifest[0]["projectRevision"], 8);
+    assert!(resolved.manifest[0].get("projectRevision").is_none());
     assert_eq!(
         resolved.manifest[0]["readWith"],
         json!({

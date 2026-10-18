@@ -5,11 +5,40 @@ use serde_json::{Value, json};
 use tauri::Manager;
 const LIMIT: usize = 6000;
 
+// Counters belong to host persistence and conflict detection, not content versions.
+// Keep canonical journal values intact and filter before sizing or paginating so
+// previews, delegated receipts and read-result pages cannot expose them again.
+fn model_view(value: &Value) -> Value {
+    let mut view = value.clone();
+    fn strip(value: &mut Value) {
+        match value {
+            Value::Object(fields) => {
+                fields.retain(|key, value| {
+                    !value.is_number()
+                        || !matches!(
+                            key.as_str(),
+                            "revision" | "projectRevision" | "storageVersion"
+                        )
+                });
+                for value in fields.values_mut() {
+                    strip(value);
+                }
+            }
+            Value::Array(items) => items.iter_mut().for_each(strip),
+            _ => {}
+        }
+    }
+    strip(&mut view);
+    view
+}
+
 pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     // Request-local hosts have no journal from which to retrieve offloaded results.
     if turn.is_none() {
         return value.clone();
     }
+    let view = model_view(value);
+    let value = &view;
     // Bounded editing pages/receipts must not immediately require another read-result call.
     let limit = if super::read_tools::is_read(&call.function.name)
         || (call.function.name == "mstudio_inspect"
@@ -81,7 +110,6 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
         "issues",
         "conflicts",
         "recovery",
-        "revision",
         "code",
         "error",
         "warnings",
@@ -155,7 +183,7 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
                 object.remove("__offloadedImage");
                 object.remove("__offloadedMedia");
             }
-            let text = value.to_string();
+            let text = model_view(&value).to_string();
             let total = text.chars().count();
             json!({"turnId":turn,"callId":call,"text":text.chars().skip(offset).take(LIMIT).collect::<String>(),"totalCharacters":total,"nextOffset":if offset.saturating_add(LIMIT)<total{Some(offset+LIMIT)}else{None}})
         }
@@ -166,130 +194,5 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use rig_core::message::ToolFunction;
-    #[test]
-    fn request_local_and_skill_reads_do_not_require_result_pagination() {
-        let call = ToolCall::from_wire(
-            "skill",
-            rig_core::message::ToolFunction::new(
-                "mstudio_read_skill".try_into().expect("nonempty tool name"),
-                json!({"skill":"creative-ad-director"}),
-            ),
-        );
-        let value = json!({"text":"camera method ".repeat(2000),"nextOffset":null});
-        assert_eq!(project(&call, &value, Some("turn")), value);
-        let editor = ToolCall::from_wire(
-            "editor",
-            ToolFunction::new(
-                "str_replace_based_edit_tool".try_into().unwrap(),
-                json!({"command":"view","path":"/scene.js"}),
-            ),
-        );
-        assert_eq!(project(&editor, &value, None), value);
-    }
-    #[test]
-    fn bounded_clip_page_is_delivered_without_a_second_model_read() {
-        let call = ToolCall::from_wire(
-            "clips",
-            ToolFunction::new(
-                "mstudio_inspect".try_into().expect("nonempty tool name"),
-                json!({"section":"clips"}),
-            ),
-        );
-        let value = json!({"items":[{"visual":"x".repeat(8000)}],"nextOffset":null});
-        assert_eq!(project(&call, &value, Some("t")), value);
-        let huge = json!({"items":"x".repeat(16000),"nextOffset":1});
-        assert_eq!(project(&call, &huge, Some("t"))["detailOffloaded"], true);
-        let delegate = ToolCall::from_wire(
-            "child",
-            ToolFunction::new(
-                "mstudio_delegate".try_into().expect("nonempty tool name"),
-                json!({}),
-            ),
-        );
-        let receipt = json!({"items":[{"id":"clip","values":"x".repeat(7000)}],"complete":true});
-        let delegated = json!({"answer":"a".repeat(900),"changes":[{"result":{"applied":true,"savedClips":receipt}}]});
-        let view = project(&delegate, &delegated, Some("t"));
-        assert_eq!(view["changes"][0]["result"]["savedClips"], receipt);
-        assert_eq!(view["answer"], delegated["answer"]);
-    }
-    #[test]
-    fn large_success_and_errors_keep_identity_and_can_be_read_back() {
-        let root = std::env::temp_dir().join(format!("mstudio-result-{}", mstudio::media::id()));
-        let store = Store::open(root.clone()).unwrap();
-        store
-            .db
-            .lock()
-            .unwrap()
-            .execute("INSERT INTO projects VALUES('p','test','{}',0)", [])
-            .unwrap();
-        let call = ToolCall::from_wire(
-            "c",
-            ToolFunction::new(
-                "mstudio_edit".try_into().expect("nonempty tool name"),
-                json!({}),
-            ),
-        );
-        let original = json!({"applied":true,"revision":12,"items":"中".repeat(12000)});
-        let projected = project(&call, &original, Some("t"));
-        assert_eq!(projected["revision"], 12);
-        assert_eq!(projected["applied"], true);
-        assert!(projected.to_string().len() < 10000);
-        crate::assistant::journal::append(
-            &store,
-            "p",
-            "t",
-            "tool/result",
-            json!({"callId":"c","value":original}),
-        )
-        .unwrap();
-        let mut recovered = String::new();
-        let mut offset = 0;
-        loop {
-            let page = read_page(&store, "p", "t", "c", offset);
-            recovered.push_str(page["text"].as_str().unwrap());
-            if let Some(next) = page["nextOffset"].as_u64() {
-                offset = next as usize
-            } else {
-                break;
-            }
-        }
-        assert_eq!(serde_json::from_str::<Value>(&recovered).unwrap(), original);
-        assert_eq!(
-            read_page(&store, "other", "t", "c", 0)["code"],
-            "RESULT_NOT_FOUND"
-        );
-        let error = project(
-            &call,
-            &json!({"error":"conflict","code":"STALE","details":"x".repeat(10000)}),
-            Some("t"),
-        );
-        assert_eq!(error["error"], "conflict");
-        assert_eq!(error["code"], "STALE");
-        let long_error = project(&call, &json!({"error":"失败".repeat(6000)}), Some("t"));
-        assert!(long_error["error"].as_str().is_some());
-        assert_eq!(long_error["errorTruncated"], true);
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-}
-
-#[cfg(test)]
-#[test]
-fn delegation_view_keeps_the_complete_conclusion_and_receipts() {
-    use rig_core::message::ToolFunction;
-    let call = ToolCall::from_wire(
-        "delegate-1",
-        ToolFunction::new(
-            "mstudio_delegate".try_into().expect("nonempty tool name"),
-            json!({}),
-        ),
-    );
-    let value = json!({"ok":true,"answer":"设计理由".repeat(300),"changes":[{"result":{"applied":true,"revision":7,"savedValues":[{"id":"s4","exists":true,"complete":true,"values":{"shot":{"duration":1.5}}}]}}]});
-    let view = project(&call, &value, Some("turn-1"));
-    assert_eq!(view["changes"], value["changes"]);
-    assert_eq!(view, value);
-    assert_eq!(value["answer"].as_str().unwrap().chars().count(), 1200);
-}
+#[path = "tool_output_tests.rs"]
+mod tests;

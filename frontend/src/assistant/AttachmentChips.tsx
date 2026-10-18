@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { t, useLanguage } from "../i18n";
 import {
   FileText,
@@ -33,7 +34,7 @@ export function AttachmentChips({
       aria-label={remove ? t("本轮附件") : t("消息附件")}
     >
       {items.map((a) => {
-        const asset = project.assets.find((v) => v.id === a.assetId);
+        const asset = referenceAsset(project, a.assetId);
         const Icon =
           a.mediaKind === "video"
             ? FilmStrip
@@ -98,7 +99,7 @@ export function AttachmentChips({
         );
       })}
       <MediaPreview
-        asset={project.assets.find((a) => a.id === previewId)}
+        asset={referenceAsset(project, previewId)}
         close={() => setPreviewId(null)}
       />
     </div>

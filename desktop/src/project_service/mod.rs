@@ -33,6 +33,7 @@ pub fn load(db: &Connection, id: &str) -> Result<Value> {
         .context("Project no longer exists")?;
     let mut document = serde_json::from_str(&raw)?;
     annotation_sources::recover(db, &mut document)?;
+    crate::previs::media::hydrate(db, id, &mut document)?;
     Ok(document)
 }
 pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
@@ -45,6 +46,7 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
     } else {
         after.clone()
     };
+    crate::previs::media::strip(&mut after);
     after["storageVersion"] = json!(before["storageVersion"].as_u64().unwrap_or(0) + 1);
     let name = after["name"]
         .as_str()
@@ -205,6 +207,8 @@ pub(crate) mod tests;
 #[cfg(test)]
 mod concurrent_tests;
 
+#[cfg(test)]
+mod production_reference_merge_tests;
 #[cfg(test)]
 mod production_tests;
 #[cfg(test)]

@@ -1,0 +1,86 @@
+.radix-themes .general-settings-page .hub-main {
+  --settings-inset: clamp(28px, 3.5vw, 72px);
+}
+.radix-themes .general-settings-page .hub-scroll > .general-settings {
+  display: grid;
+  grid-template-columns: minmax(400px, 1fr) minmax(440px, 1.08fr);
+  align-items: start;
+  gap: 28px;
+  width: 100%;
+  max-width: 1480px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.general-settings-page .settings-card {
+  min-width: 0;
+  padding: 28px;
+  background: var(--desk-surface);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+.radix-themes .general-settings-page .general-settings h2 {
+  font-size: 18px;
+  line-height: 26px;
+  margin-bottom: 20px;
+}
+.general-settings-page .storage-settings {
+  max-width: none;
+}
+.general-settings-page .language-option {
+  min-height: 56px;
+  font-size: 14px;
+}
+.general-settings-page .appearance-options {
+  margin-top: 24px;
+  gap: 12px;
+}
+.general-settings-page .appearance-option-label {
+  padding: 14px 10px;
+  gap: 8px;
+}
+.general-settings-page .appearance-settings strong {
+  font-size: 14px;
+}
+.general-settings-page .appearance-options legend {
+  font-size: 13px;
+}
+.general-settings-page .appearance-settings {
+  border: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.general-settings-page .general-info {
+  margin-top: 28px;
+}
+.general-settings-page .action-button {
+  min-height: 36px;
+  font-size: 13px;
+}
+.general-settings-page .general-language {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+}
+.general-settings-page .storage-location code {
+  font-size: 13px;
+  line-height: 1.6;
+}
+@media (max-width: 1320px) {
+  .radix-themes .general-settings-page .hub-scroll > .general-settings {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 900px;
+  }
+}
+@media (max-width: 720px) {
+  .radix-themes .general-settings-page .hub-main {
+    --settings-inset: 18px;
+  }
+  .general-settings-page .settings-card {
+    padding: 20px;
+  }
+  .general-settings-page .general-settings .language-options {
+    grid-template-columns: 1fr;
+  }
+}

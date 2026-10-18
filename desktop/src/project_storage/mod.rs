@@ -1,4 +1,5 @@
 mod cleanup;
+pub(crate) use cleanup::managed;
 pub mod delete_media;
 #[cfg(test)]
 mod delete_media_tests;
@@ -50,8 +51,17 @@ pub async fn working(store: &Store, id: &str) -> Result<OwnedRwLockReadGuard<()>
 // Retain ownership even when a user removes an asset from the canvas/library.
 pub fn remember(db: &Connection, id: &str, document: &Value) -> Result<()> {
     let mut refs = HashSet::new();
-    references(document, &mut refs);
+    let mut ordinary = document.clone();
+    crate::previs::media::strip(&mut ordinary);
+    references(&ordinary, &mut refs);
     for asset in refs {
+        if db.query_row(
+            "SELECT EXISTS(SELECT 1 FROM previs_media WHERE project_id=?1 AND id=?2)",
+            params![id, asset],
+            |r| r.get::<_, bool>(0),
+        )? {
+            continue;
+        }
         db.execute(
             "INSERT OR IGNORE INTO project_assets VALUES(?1,?2)",
             params![id, asset],

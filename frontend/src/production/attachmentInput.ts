@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import {
   describeAttachment,
   type AttachmentRef,
@@ -32,7 +33,7 @@ export function attachmentInput(
         ) ?? []),
       ].join("\n\n"),
     };
-  const asset = p.assets.find((v) => v.id === a.assetId);
+  const asset = referenceAsset(p, a.assetId);
   if (!asset) return;
   const clip =
     ref.kind === "clip" ? p.clips.find((c) => c.id === ref.id) : undefined;

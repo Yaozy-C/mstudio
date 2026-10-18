@@ -5,18 +5,32 @@ import { t } from "../i18n";
 import type { PrevisEditorState } from "./usePrevisEditor";
 
 export function PrevisExports({ state }: { state: PrevisEditorState }) {
-  const { exports, project, busy, addReference, linkingId, fileId } = state;
+  const {
+    exports,
+    project,
+    busy,
+    addReference,
+    saveVideo,
+    linkingId,
+    savingId,
+    fileId,
+  } = state;
   if (!exports.length) return null;
   const target = project.nodes.find((node) => node.id === fileId && node.shot);
   return (
     <section className="previs-exports">
       <h3>{t("预演视频")}</h3>
       {exports.slice(0, 1).map((video) => {
-        const linked =
-          !!video.sharedAssetId &&
-          !!target?.references?.some(
-            (ref) => ref.assetId === video.sharedAssetId,
-          );
+        const linked = !!target?.references?.some(
+          (ref) => ref.assetId === video.asset.id,
+        );
+        const saved = project.assets.some(
+          (asset) =>
+            asset.id === video.savedAssetId &&
+            asset.inLibrary === true &&
+            !asset.missing &&
+            !asset.discarded,
+        );
         return (
           <article key={video.id}>
             <video
@@ -37,6 +51,14 @@ export function PrevisExports({ state }: { state: PrevisEditorState }) {
               >
                 {linked ? <Check /> : <Link />}
                 {linked ? t("已设为参考") : t("设为参考")}
+              </AsyncButton>
+              <AsyncButton
+                busy={savingId === video.id}
+                busyLabel={t("正在保存…")}
+                disabled={!!busy || saved}
+                onClick={() => void saveVideo(video)}
+              >
+                {saved ? t("已保存为项目素材") : t("保存为项目素材")}
               </AsyncButton>
             </div>
           </article>

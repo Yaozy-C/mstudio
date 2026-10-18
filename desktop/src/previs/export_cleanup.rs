@@ -34,8 +34,8 @@ pub(super) fn retire(
             "SELECT data FROM assets",
             "SELECT data FROM jobs",
             "SELECT payload FROM agent_messages",
-            "SELECT payload FROM agent_events",
             "SELECT data FROM previs_exports",
+            "SELECT data FROM previs_media",
         ]
         .iter()
         .any(|sql| {

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Theme } from "@radix-ui/themes";
 import type { Asset } from "../model";
 import { newProject } from "../model";
-import { attachPrevisVideo, withPrevisReference } from "./attachReference";
+import { attachPrevisVideo } from "./attachReference";
 import { PrevisExports } from "./PrevisExports";
 import type { PrevisEditorState } from "./usePrevisEditor";
 
@@ -17,7 +17,7 @@ const asset: Asset = {
   width: 720,
   height: 1280,
   hasAudio: false,
-  inLibrary: true,
+  generated: true,
 };
 function project() {
   const p = newProject("Reference test");
@@ -35,74 +35,35 @@ function project() {
   ];
   return p;
 }
-test("one action imports a private render and persists its full-duration shot reference", async () => {
-  let p = project();
+test("setting a reference delegates one atomic write and never imports an asset", async () => {
   const steps: string[] = [];
-  const attach = () =>
-    attachPrevisVideo({
-      fileId: "shot",
-      videoId: "private-render",
-      share: async (id) => {
-        steps.push(id);
-        return { asset };
-      },
-      change: (fn) => {
-        p = fn(p);
-        steps.push("change");
-      },
-      flush: async () => {
-        steps.push("flush");
-      },
-      refresh: async () => {
-        steps.push("refresh");
-      },
-    });
-  await attach();
-  expect(steps).toEqual([
-    "flush",
-    "private-render",
-    "change",
-    "flush",
-    "refresh",
-  ]);
-  expect(p.assets).toEqual([asset]);
-  expect(p.nodes[0].references).toEqual([
-    { assetId: "photo", purpose: "Product appearance" },
-    {
-      assetId: asset.id,
-      purpose: "预演动作、构图与运镜参考；商品外观以实物参考为准",
-      start: 0,
-      end: 2.7,
+  await attachPrevisVideo({
+    flush: async () => {
+      steps.push("flush");
     },
-  ]);
-  p.nodes[0].references![1].start = 0.5;
-  await attach();
-  expect(p.assets).toHaveLength(1);
-  expect(p.nodes[0].references).toHaveLength(2);
-  expect(p.nodes[0].references![1].start).toBe(0.5);
+    attach: async () => {
+      steps.push("attach");
+    },
+    refresh: async () => {
+      steps.push("refresh");
+    },
+  });
+  expect(steps).toEqual(["flush", "attach", "refresh"]);
 });
-test("invalid or missing targets cannot receive a silent or broken reference", () => {
-  expect(() => withPrevisReference(project(), "deleted-shot", asset)).toThrow(
-    "镜头已删除",
-  );
-  expect(() =>
-    withPrevisReference(project(), "shot", { ...asset, duration: 0 }),
-  ).toThrow("预演视频不可用");
-});
-test("save failures propagate instead of reporting a successfully persisted reference", async () => {
-  let flushes = 0;
+test("host errors do not report a saved reference", async () => {
+  let refreshed = false;
   await expect(
     attachPrevisVideo({
-      fileId: "shot",
-      videoId: "video",
-      share: async () => ({ asset }),
-      change: () => {},
-      flush: async () => {
-        if (++flushes === 2) throw Error("Save failed");
+      flush: async () => {},
+      attach: async () => {
+        throw Error("Shot deleted");
       },
-      refresh: async () => {},
+      refresh: async () => {
+        refreshed = true;
+      },
     }),
-  ).rejects.toThrow("Save failed");
+  ).rejects.toThrow("Shot deleted");
+  expect(refreshed).toBe(false);
 });
 test("unshared renders have an enabled add-reference action without an Agent-sharing prerequisite", () => {
   const p = project();
@@ -114,7 +75,7 @@ test("unshared renders have an enabled add-reference action without an Agent-sha
         fileRevision: 0,
         modelRevisions: {},
         asset,
-        sharedAssetId: null,
+        savedAssetId: null,
       },
     ],
     project: p,
@@ -132,7 +93,7 @@ test("unshared renders have an enabled add-reference action without an Agent-sha
   expect(html).not.toContain("保存视频到");
   expect(html).not.toContain("场景已有修改");
   expect(html).not.toContain("checkbox");
-  expect(html.match(/<button/g)).toHaveLength(1);
+  expect(html.match(/<button/g)).toHaveLength(2);
   expect(html).not.toContain("提供给 Agent");
   const button = html.match(
     /<button[^>]*class="async-button primary"[^>]*>/,
@@ -148,13 +109,13 @@ test("a shot displays only its latest video even when loading an older stacked w
         id: "latest",
         fileId: "shot",
         asset: { ...asset, name: "Latest result", path: "/latest.mp4" },
-        sharedAssetId: null,
+        savedAssetId: null,
       },
       {
         id: "old",
         fileId: "shot",
         asset: { ...asset, name: "Old result", path: "/old.mp4" },
-        sharedAssetId: null,
+        savedAssetId: null,
       },
     ],
     project: project(),
@@ -170,5 +131,5 @@ test("a shot displays only its latest video even when loading an older stacked w
   expect(html).toContain("Latest result");
   expect(html).not.toContain("Old result");
   expect(html.match(/<video/g)).toHaveLength(1);
-  expect(html.match(/<button/g)).toHaveLength(1);
+  expect(html.match(/<button/g)).toHaveLength(2);
 });

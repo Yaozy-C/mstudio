@@ -47,6 +47,7 @@ fn builtin_instructions_and_tool_contracts_are_english_but_content_language_is_p
         assert!(system.contains("Reply in the user's language"));
         if profile.id != "video-analyst" {
             assert!(system.contains("Preserve the requested language of scripts"));
+            assert!(system.contains("Keep internal revision counters out of user-facing reports"));
         }
     }
 }

@@ -8,10 +8,12 @@ import { usePrevis } from "./context";
 import type { PrevisExport } from "./types";
 
 export function usePrevisEditor(fileId: string, close: () => void) {
-  const { workspace, project, refresh, save, attachReference } = usePrevis();
+  const { workspace, project, refresh, save, attachReference, collectVideo } =
+    usePrevis();
   const file = workspace.files.find((f) => f.id === fileId)!;
   const [draft, setDraft] = useState(file);
   const [linkingId, setLinkingId] = useState("");
+  const [savingId, setSavingId] = useState("");
   const referencePending = useRef(false);
   const [prompt, setPrompt] = useState("");
   const [ready, setReady] = useState(false);
@@ -53,19 +55,22 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     setReady(value);
     if (!value) setPlaying(false);
   }
-  async function addReference(video: PrevisExport) {
+  async function useVideo(video: PrevisExport, collect = false) {
     if (busy || referencePending.current) return;
     referencePending.current = true;
-    setLinkingId(video.id);
+    if (collect) setSavingId(video.id);
+    else setLinkingId(video.id);
     setBusy("share");
     setError("");
     try {
-      await attachReference(fileId, video.id);
+      if (collect) await collectVideo(video.id, video.asset.id);
+      else await attachReference(fileId, video.id, video.asset.id);
     } catch (e) {
       setError(String(e));
     } finally {
       referencePending.current = false;
       setLinkingId("");
+      setSavingId("");
       setBusy(null);
     }
   }
@@ -135,8 +140,10 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     dependency,
     manualSave,
     dismiss,
-    addReference,
+    addReference: (video: PrevisExport) => useVideo(video),
+    saveVideo: (video: PrevisExport) => useVideo(video, true),
     linkingId,
+    savingId,
   };
 }
 export type PrevisEditorState = ReturnType<typeof usePrevisEditor>;

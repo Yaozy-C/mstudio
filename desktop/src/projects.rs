@@ -14,6 +14,7 @@ pub async fn list_projects(app: tauri::AppHandle) -> Result<Vec<Value>, String> 
     .map_err(|e| e.to_string())?
 }
 pub fn write_document(store: &Store, mut document: Value, create: bool) -> Result<(), String> {
+    crate::previs::media::strip(&mut document);
     store.normalize_paths(&mut document);
     crate::project_storage::direct_references::document(&mut document);
     let id = document["id"].as_str().ok_or("项目缺少 ID")?;

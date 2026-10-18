@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { fixture, asset } from "./fixtures.test-helper";
 import { applyOperations } from "../assistant/projectCommands";
 import { productionItems } from "./items";
-import { editReferences } from "./editReferences";
+import { editReferences, mergeReferenceDraft } from "./editReferences";
 
 const edit = (p: ReturnType<typeof fixture>, extra: object) =>
   applyOperations(p, [{ op: "set_references", id: "shot", ...extra }]);
@@ -97,4 +97,57 @@ test("updating video reference purpose preserves its source interval", () => {
   expect(next.nodes[1].references).toEqual([
     { assetId: "v", purpose: "camera", start: 2, end: 4 },
   ]);
+});
+
+test("an open shot editor immediately shows a newly attached private previs", () => {
+  const previs = { assetId: "previs", purpose: "camera", start: 0, end: 5 };
+  const p = fixture();
+  const base = p.nodes[1].references!;
+  p.previsAssets = [asset("previs", "video")];
+  p.nodes[1].references = [...base, previs];
+  const visible = mergeReferenceDraft(base, base, p.nodes[1].references);
+  expect(visible).toEqual([...base, previs]);
+  const edited = visible.map((r) =>
+    r.assetId === "previs" ? { ...r, purpose: "movement" } : r,
+  );
+  const saved = editReferences(p, "shot", p.nodes[1].references, edited);
+  expect(saved.nodes[1].references).toEqual([
+    ...base,
+    { ...previs, purpose: "movement" },
+  ]);
+  expect(saved.assets.some((a) => a.id === "previs")).toBe(false);
+});
+
+test("reference refresh preserves unsaved edits and removals, and accepts remote changes", () => {
+  const base = [
+    { assetId: "product", purpose: "appearance" },
+    { assetId: "remove", purpose: "old" },
+    { assetId: "remote", purpose: "before" },
+  ];
+  const local = [
+    { assetId: "product", purpose: "unsaved purpose" },
+    base[2],
+    { assetId: "local", purpose: "new local reference" },
+  ];
+  const previs = { assetId: "previs", purpose: "camera", start: 0, end: 5 };
+  const current = [
+    base[0],
+    base[1],
+    { ...base[2], purpose: "updated" },
+    previs,
+  ];
+  const visible = mergeReferenceDraft(base, local, current);
+  expect(visible).toEqual([
+    local[0],
+    { ...base[2], purpose: "updated" },
+    previs,
+    local[2],
+  ]);
+  // Once visible, a new host reference can also be removed in the same editor.
+  const removedPrevis = visible.filter((r) => r.assetId !== "previs");
+  expect(mergeReferenceDraft(current, removedPrevis, current)).toEqual(
+    removedPrevis,
+  );
+  // An unchanged reference deleted remotely must not reappear.
+  expect(mergeReferenceDraft(base, base, [])).toEqual([]);
 });

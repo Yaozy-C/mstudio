@@ -92,6 +92,8 @@ fn journal_preserves_failed_attempts_and_submission_reservations_are_idempotent(
 fn snapshot_keeps_requirements_and_references() {
     let document = json!({"name":"test","revision":9,"nodes":[{"id":"shot","title":"镜头一","text":"动作","references":[{"assetId":"ref","purpose":"只参考推进动作","start":2,"end":5}],"resultAssetId":"chosen"}],"creation":{"intent":"整片主题","essential":"饮料跳进包","preserve":"网袋不能变","stage":"editing","feedback":[{"id":"done","resolved":true,"text":"已确认"},{"id":"todo","clipId":"clip","assetId":"old-version","time":2,"sourceTime":4,"revision":8,"text":"只修网袋","preserve":"其他部分不变"}]}});
     let snapshot = context::project_snapshot(&document, Some("shot"));
+    assert!(snapshot.get("revision").is_none());
+    assert!(snapshot["_observations"].get("node:shot").is_some());
     assert_eq!(snapshot["creation"]["essential"], "饮料跳进包");
     assert!(snapshot["creation"].get("unresolvedFeedback").is_none());
     assert!(!snapshot.to_string().contains("只修网袋"));

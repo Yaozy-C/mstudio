@@ -92,13 +92,8 @@ pub async fn prepare_media_prompt(
         let db = store.db.lock().unwrap();
         let (model, key) = crate::models::resolve(&db, Some(&request.project_id), None)
             .map_err(|e| e.to_string())?;
-        let document: String = db
-            .query_row(
-                "SELECT document FROM projects WHERE id=?1",
-                [&request.project_id],
-                |r| r.get(0),
-            )
-            .map_err(|e| e.to_string())?;
+        let document =
+            crate::project_service::load(&db, &request.project_id).map_err(|e| e.to_string())?;
         let selected = crate::models::media::read(&db)
             .map_err(|e| e.to_string())?
             .into_iter()
@@ -106,7 +101,7 @@ pub async fn prepare_media_prompt(
             .ok_or("所选生成模型不可用，请重新选择")?;
         let author =
             super::prompt_guidance::quick_profile(&db, &request.kind).map_err(|e| e.to_string())?;
-        let doc: Value = serde_json::from_str(&document).map_err(|e| e.to_string())?;
+        let doc = &document;
         let production = json!({"task":{"kind":request.kind,"modelId":selected.id}});
         let guidance = super::prompt_guidance::for_quick(
             &db,
@@ -114,20 +109,17 @@ pub async fn prepare_media_prompt(
             &request.kind,
             &request.prompt,
             &production,
-            &doc,
+            doc,
         )
         .map_err(|e| e.to_string())?;
         (model, key, document, guidance)
     };
-    let doc: Value = serde_json::from_str(&document).map_err(|e| e.to_string())?;
+    let doc = document;
     let mut refs = vec![];
     let mut metadata = vec![];
     let mut ids = std::collections::HashSet::new();
     for (index, input) in request.inputs.iter().enumerate() {
-        let asset = doc["assets"]
-            .as_array()
-            .and_then(|a| a.iter().find(|a| a["id"] == input.asset_id))
-            .ok_or("引用素材已移除")?;
+        let asset = crate::previs::media::find(&doc, &input.asset_id).ok_or("引用素材已移除")?;
         if !["image", "video"].contains(&asset["kind"].as_str().unwrap_or(""))
             || !ids.insert((&input.asset_id, &input.role))
             || ![

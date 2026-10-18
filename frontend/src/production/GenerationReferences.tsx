@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { t, useLanguage } from "../i18n";
 import { GenerationReferencePicker } from "./GenerationReferencePicker";
 import type { MediaModel } from "../models/mediaRegistry";
@@ -37,7 +38,7 @@ export function GenerationReferences({
               !(["first-frame", "last-frame"].includes(r.role) && frames),
           )
           .map((r) => {
-            const a = project.assets.find((a) => a.id === r.assetId);
+            const a = referenceAsset(project, r.assetId);
             const roles: ProductionInput["role"][] =
               draft.kind === "image"
                 ? ["edit", "reference"]

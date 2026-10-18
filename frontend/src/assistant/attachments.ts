@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { duration, type Project } from "../model";
 export type AttachmentRef = { kind: "node" | "asset" | "clip"; id: string };
 export type Attachment = AttachmentRef & {
@@ -35,7 +36,7 @@ export function describeAttachment(
         (node?.kind === "shot" || node?.kind === "screenplay"
           ? undefined
           : node?.resultAssetId || node?.assetId);
-  const asset = project.assets.find((a) => a.id === assetId);
+  const asset = referenceAsset(project, assetId);
   if (asset?.discarded) return null;
   if (ref.kind === "node" ? !node : !asset) return null;
   return {

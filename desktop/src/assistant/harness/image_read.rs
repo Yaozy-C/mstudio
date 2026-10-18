@@ -23,25 +23,15 @@ pub fn read(store: &Store, project: &str, turn: &str, profile: &Profile, args: &
             profile.inputs.image,
             "Image input is disabled for this chat model. Select an image-capable chat model in settings; no image sent."
         );
-        let raw: String = store.db.lock().unwrap().query_row(
-            "SELECT document FROM projects WHERE id=?1",
-            [project],
-            |r| r.get(0),
+        let doc = crate::project_service::load(&store.db.lock().unwrap(), project)?;
+        let record = crate::previs::media::find(&doc, id).context(
+            "Asset is outside this project; obtain a current-project assetId from inspect",
         )?;
-        let doc: Value = serde_json::from_str(&raw)?;
         ensure!(
-            doc["assets"]
-                .as_array()
-                .is_some_and(|a| a.iter().any(|v| v["id"] == id)),
-            "Asset is outside this project; obtain a current-project assetId from inspect"
-        );
-        ensure!(
-            !doc["assets"]
-                .as_array()
-                .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true)),
+            record["discarded"] != true,
             "Discarded result cannot be read or reused by Agent"
         );
-        let assets = store.assets()?;
+        let assets = crate::previs::media::resolved(store, &doc)?;
         let asset = assets
             .iter()
             .find(|a| a.id == id)

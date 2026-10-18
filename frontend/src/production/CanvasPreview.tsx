@@ -1,5 +1,5 @@
 import { ShotReferences } from "./ShotReferences";
-import { editReferences } from "./editReferences";
+import { editReferences, mergeReferenceDraft } from "./editReferences";
 import "./shot-editor.css";
 import { ActionButton } from "../ui/ActionButton";
 import { ImageReview } from "../workspace/imageReview/ImageReview";
@@ -32,8 +32,16 @@ export function CanvasPreview({
   const node = project.nodes.find((n) => n.id === item.nodeId);
   const [text, setText] = useState(node ? actionText(node) : item.text);
   const [dialogue, setDialogue] = useState(node?.shot?.dialogue ?? "");
-  const [initialReferences] = useState(node?.references ?? []);
-  const [references, setReferences] = useState(initialReferences);
+  const [referenceDraft, setReferenceDraft] = useState(() => ({
+    base: node?.references ?? [],
+    value: node?.references ?? [],
+  }));
+  const initialReferences = node?.references ?? [];
+  const references = mergeReferenceDraft(
+    referenceDraft.base,
+    referenceDraft.value,
+    initialReferences,
+  );
   const [error, setError] = useState("");
   const save = () =>
     change((p) =>
@@ -124,7 +132,9 @@ export function CanvasPreview({
                 <ShotReferences
                   project={project}
                   references={references}
-                  onChange={setReferences}
+                  onChange={(value) =>
+                    setReferenceDraft({ base: initialReferences, value })
+                  }
                 />
               )}
             </div>

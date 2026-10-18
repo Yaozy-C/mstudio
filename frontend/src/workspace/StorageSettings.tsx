@@ -7,6 +7,7 @@ import { ActionButton } from "../ui/ActionButton";
 import { FolderOpen, ArrowsClockwise } from "@phosphor-icons/react";
 import { bridge, native } from "../bridge";
 import { flushBeforeStorageChange } from "./useSafeExit";
+import { StorageUsage } from "./StorageUsage";
 import "../styles/storage-settings.css";
 
 type Storage = { directory: string; available: boolean };
@@ -15,6 +16,7 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
   const [storage, setStorage] = useState<Storage | null>(null);
   const [target, setTarget] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [maintenanceBusy, setMaintenanceBusy] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(native);
   const [loadError, setLoadError] = useState("");
@@ -112,11 +114,14 @@ export function StorageSettings({ projectId }: { projectId?: string }) {
       )}
       <ActionButton
         icon={FolderOpen}
-        disabled={loading || !!loadError || busy || !storage}
+        disabled={loading || !!loadError || busy || maintenanceBusy || !storage}
         onClick={() => void choose()}
       >
         {t("选择新目录并迁移")}
       </ActionButton>
+      {storage?.available && (
+        <StorageUsage disabled={busy} onBusyChange={setMaintenanceBusy} />
+      )}
       {error && !target && (
         <ErrorNotice error={error} fallback="STORAGE_FAILED" />
       )}

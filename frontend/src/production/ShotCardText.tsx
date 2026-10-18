@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { t, useLanguage } from "../i18n";
 import { Cube } from "@phosphor-icons/react";
 import { openPrevis } from "../previs/context";
@@ -43,9 +44,7 @@ export function ShotCardText({
             <p>
               {node.references
                 .map(
-                  (r) =>
-                    project.assets.find((a) => a.id === r.assetId)?.name ??
-                    r.assetId,
+                  (r) => referenceAsset(project, r.assetId)?.name ?? r.assetId,
                 )
                 .join("；")}
             </p>

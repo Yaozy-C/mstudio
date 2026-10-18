@@ -2,7 +2,6 @@ use super::runtime::{RuntimeState, Snapshot};
 use crate::{database::Store, project_storage};
 use anyhow::{Context, Result, ensure};
 use mstudio::{media, model::Asset};
-use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -14,7 +13,6 @@ use tauri::{
     ipc::{InvokeBody, Request},
 };
 use tokio_util::sync::CancellationToken;
-
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Export {
@@ -24,7 +22,7 @@ pub struct Export {
     pub model_revisions: std::collections::BTreeMap<String, u64>,
     pub signature: String,
     pub asset: Asset,
-    pub shared_asset_id: Option<String>,
+    pub saved_asset_id: Option<String>,
 }
 struct Job {
     snapshot: Snapshot,
@@ -36,6 +34,9 @@ struct Job {
 }
 #[derive(Default)]
 pub struct Renders(Mutex<HashMap<String, Arc<Mutex<Job>>>>);
+pub(crate) fn is_rendering(renders: &Renders) -> bool {
+    !renders.0.lock().unwrap().is_empty()
+}
 fn get(state: &Renders, id: &str, project: &str) -> Result<Arc<Mutex<Job>>> {
     let job = state
         .0
@@ -222,7 +223,7 @@ async fn encode(
     let store = app.state::<Store>();
     project_storage::track_file(&store, &s.project, out)?;
     std::fs::create_dir_all(out)?;
-    let output = out.join("previs.mp4");
+    let output = work.join("previs.mp4");
     let mut command = tokio::process::Command::from(media::command("ffmpeg"));
     command
         .args([
@@ -274,6 +275,7 @@ async fn encode(
     tauri::async_runtime::spawn_blocking(move || -> Result<Export> {
         let mut asset = media::import(&output, &prepared)?;
         asset.name = format!("{} · 预演", target.name);
+        asset.generated = true;
         let export = Export {
             id,
             file_id: target.id,
@@ -281,20 +283,10 @@ async fn encode(
             model_revisions,
             signature,
             asset,
-            shared_asset_id: None,
+            saved_asset_id: None,
         };
         let store = app.state::<Store>();
         super::export_store::replace(&store, &project, export)
     })
     .await?
-}
-pub fn read_export(db: &rusqlite::Connection, project: &str, id: &str) -> Result<Export> {
-    let raw: String = db
-        .query_row(
-            "SELECT data FROM previs_exports WHERE project_id=?1 AND id=?2",
-            params![project, id],
-            |r| r.get(0),
-        )
-        .context("预演视频不存在")?;
-    Ok(serde_json::from_str(&raw)?)
 }

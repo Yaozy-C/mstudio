@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { isLibraryAsset } from "../workspace/assetLibrary";
 import { isVideoMode } from "../production/referenceMode";
 import { ImageReview } from "../workspace/imageReview/ImageReview";
@@ -35,7 +36,7 @@ export function MediaReferenceStrip(props: {
   const task = canvas.task;
   const inputs =
     task?.inputs.filter((r) => !props.hiddenRoles?.includes(r.role)) ?? [];
-  const asset = project.assets.find((a) => a.id === preview?.assetId);
+  const asset = referenceAsset(project, preview?.assetId);
   function reorder(key: string, before: string) {
     if (!task || key === before) return;
     const moved = task.inputs.find((r) => r.key === key);
@@ -78,7 +79,7 @@ export function MediaReferenceStrip(props: {
         aria-label={t("本次引用")}
       >
         {inputs.map((ref) => {
-          const a = project.assets.find((a) => a.id === ref.assetId);
+          const a = referenceAsset(project, ref.assetId);
           const node = project.nodes.find((n) => n.id === ref.nodeId);
           const title =
             (ref.sourceRef &&

@@ -145,26 +145,20 @@ export function UserManual({ onBack }: { onBack: () => void }) {
           >
             <header className="manual-chapter-heading">
               <div className="manual-chapter-copy">
+                <div className="manual-chapter-meta">
+                  <span>
+                    {t(
+                      groups.find((group) => group.id === section.group)!.title,
+                    )}
+                  </span>
+                  <span className="manual-chapter-progress">
+                    {number(index)} / {number(chapters.length - 1)}
+                  </span>
+                </div>
                 <h2 id="manual-chapter-title" ref={heading} tabIndex={-1}>
                   {t(section.title)}
                 </h2>
                 <p>{t(section.summary)}</p>
-              </div>
-              <div className="manual-chapter-mark" aria-hidden="true">
-                <svg viewBox="0 0 160 144" fill="none">
-                  <path
-                    className="manual-frame-guide"
-                    d="M24 24H136V120H24Z M8 44H0 M152 100H160 M80 0V8 M80 136V144"
-                  />
-                  <path
-                    className="manual-frame-corners"
-                    d="M8 32V8H32 M128 8H152V32 M152 112V136H128 M32 136H8V112"
-                  />
-                </svg>
-                <span className="manual-chapter-index">{number(index)}</span>
-                <span className="manual-chapter-total">
-                  / {number(chapters.length - 1)}
-                </span>
               </div>
             </header>
             <ManualArticle key={section.id} section={section} />

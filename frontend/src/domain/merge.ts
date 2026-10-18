@@ -36,7 +36,10 @@ export function mergeValue(
       ...Object.keys(local),
       ...Object.keys(current),
     ])) {
-      if (!path && ["revision", "storageVersion"].includes(key)) {
+      if (
+        !path &&
+        ["revision", "storageVersion", "previsAssets"].includes(key)
+      ) {
         output[key] = current[key];
         continue;
       }

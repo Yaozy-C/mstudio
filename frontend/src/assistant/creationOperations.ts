@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { uid, type Project, type Reference, type BoardNode } from "../model";
 import { validCaption } from "../creation/captions";
 import { tracksOf } from "../timeline/document";
@@ -20,7 +21,7 @@ function checkedReferences(
   if (!Array.isArray(raw)) throw new Error("参考数量无效");
   const refs = raw.map((r: Record<string, unknown>) => {
     if (!r || typeof r !== "object") throw new Error("参考格式无效");
-    const a = p.assets.find((a) => a.id === r.assetId);
+    const a = referenceAsset(p, r.assetId);
     if (a?.inLibrary === false && !existing.some((ref) => ref.assetId === a.id))
       throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
     if (!a || a.kind === "audio")

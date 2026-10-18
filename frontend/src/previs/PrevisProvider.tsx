@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { bridge, native } from "../bridge";
-import type { Asset, Project } from "../model";
+import type { Project } from "../model";
 import {
   emptyWorkspace,
   newModel,
@@ -23,12 +23,10 @@ import type { PrevisTaskSummary } from "./PrevisTaskList";
 export function PrevisProvider({
   project,
   flush,
-  change,
   children,
 }: {
   project: Project;
   flush: () => Promise<unknown>;
-  change: (fn: (p: Project) => Project) => void;
   children: ReactNode;
 }) {
   const [workspace, setWorkspace] = useState<PrevisWorkspace>(emptyWorkspace);
@@ -133,18 +131,27 @@ export function PrevisProvider({
       setError(String(e));
     }
   };
-  const attachReference = (fileId: string, videoId: string) =>
+  const attachReference = (fileId: string, videoId: string, assetId: string) =>
     attachPrevisVideo({
-      fileId,
-      videoId,
-      change,
       flush,
       refresh,
-      share: (id) =>
-        bridge<{ asset: Asset }>("share_previs_video", {
+      attach: () =>
+        bridge("attach_previs_reference", {
           projectId: project.id,
-          id,
-          shared: true,
+          fileId,
+          id: videoId,
+          assetId,
+        }),
+    });
+  const collectVideo = (videoId: string, assetId: string) =>
+    attachPrevisVideo({
+      flush,
+      refresh,
+      attach: () =>
+        bridge("collect_previs_video", {
+          projectId: project.id,
+          id: videoId,
+          assetId,
         }),
     });
   return (
@@ -156,6 +163,7 @@ export function PrevisProvider({
         save,
         flush,
         attachReference,
+        collectVideo,
         open: (id) => void open(id),
         createModel: () => void createModel(),
         error,

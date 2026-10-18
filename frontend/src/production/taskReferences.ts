@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { failure } from "../errors/failure";
 import type { Project } from "../model";
 import { attachmentInput } from "./attachmentInput";
@@ -21,7 +22,7 @@ export function replaceTaskReferences(
       if (typeof r.assetId !== "string")
         throw failure("VALIDATION_FAILED", "缺少参考素材 ID");
       const input = attachmentInput(p, { kind: "asset", id: r.assetId });
-      const asset = p.assets.find((a) => a.id === r.assetId);
+      const asset = referenceAsset(p, r.assetId);
       if (asset?.discarded)
         throw failure("VALIDATION_FAILED", "参考素材已废弃，不能用于生成");
       if (!input || !asset || !["image", "video"].includes(asset.kind))
@@ -85,7 +86,7 @@ export function replaceTaskReferences(
 
 export function assertGenerationReferences(p: Project, task: ProductionTask) {
   for (const input of task.inputs.filter((r) => r.role !== "script")) {
-    const asset = p.assets.find((a) => a.id === input.assetId);
+    const asset = referenceAsset(p, input.assetId);
     if (asset?.annotationSourceId)
       throw failure(
         "VALIDATION_FAILED",

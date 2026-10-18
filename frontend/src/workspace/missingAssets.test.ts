@@ -36,4 +36,12 @@ test("missing files retain project content and restored files clear the placehol
   expect(missing.nodes).toBe(p.nodes);
   expect(applyFileStatus(missing, { a: true })).toBe(missing);
   expect(applyFileStatus(missing, { a: false }).assets[0].missing).toBe(false);
+  const privateProject = { ...p, assets: [], previsAssets: [asset] };
+  const privateMissing = applyFileStatus(privateProject, { a: true });
+  expect(privateMissing.assets).toHaveLength(0);
+  expect(privateMissing.previsAssets?.[0].missing).toBe(true);
+  expect(
+    applyFileStatus(privateMissing, { a: false }).previsAssets?.[0].missing,
+  ).toBe(false);
+  expect(privateMissing.clips).toBe(privateProject.clips);
 });

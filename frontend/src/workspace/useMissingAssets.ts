@@ -1,3 +1,4 @@
+import { referenceAssets } from "../previs/media";
 import { useEffect, useRef } from "react";
 import { bridge, native } from "../bridge";
 import type { Project } from "../model";
@@ -7,7 +8,9 @@ export function applyFileStatus(
   status: Record<string, boolean>,
 ): Project {
   if (
-    !project.assets.some((a) => a.id in status && !!a.missing !== status[a.id])
+    !referenceAssets(project).some(
+      (a) => a.id in status && !!a.missing !== status[a.id],
+    )
   )
     return project;
   return {
@@ -15,6 +18,13 @@ export function applyFileStatus(
     assets: project.assets.map((a) =>
       a.id in status ? { ...a, missing: status[a.id] } : a,
     ),
+    ...(project.previsAssets
+      ? {
+          previsAssets: project.previsAssets.map((a) =>
+            a.id in status ? { ...a, missing: status[a.id] } : a,
+          ),
+        }
+      : {}),
   };
 }
 
@@ -22,8 +32,8 @@ export function useMissingAssets(
   project: Project,
   change: (fn: (p: Project) => Project, record?: boolean) => void,
 ) {
-  const latest = useRef(project.assets);
-  latest.current = project.assets;
+  const latest = useRef(referenceAssets(project));
+  latest.current = referenceAssets(project);
   useEffect(() => {
     if (!native) return;
     let stopped = false,

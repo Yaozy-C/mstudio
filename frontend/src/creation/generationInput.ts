@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import type { MediaModel } from "../models/mediaRegistry";
 import { validateMediaModel } from "../models/validateMediaModel";
 import {
@@ -6,11 +7,13 @@ import {
   type ModelInput,
 } from "../models/adapters";
 import type { Project, Reference } from "../model";
+import { referenceGroups } from "./referenceGroups";
 export type UploadedReference = {
   assetId: string;
   kind: "image" | "video";
   url: string;
   role?: ModelInput["role"];
+  sourceAssetIds?: string[];
 };
 export function registeredInput(
   model: MediaModel,
@@ -29,7 +32,7 @@ export function registeredInput(
     model.params,
   );
   for (const [index, ref] of refs.entries()) {
-    const asset = project.assets.find((a) => a.id === ref.assetId);
+    const asset = referenceAsset(project, ref.assetId);
     const file = uploaded[index];
     if (
       !asset ||
@@ -51,9 +54,14 @@ export function registeredInput(
     const field = fields.find((f) => f.role === file.role);
     if (!field)
       throw new Error("此模型不支持所选素材用途，请更换模型或调整素材用途");
+  }
+  for (const group of referenceGroups(project, refs)) {
+    const file = uploaded[group[0]];
+    if (group.some((index) => uploaded[index].url !== file.url))
+      throw new Error("合并参考视频尚未上传");
     request.inputs!.push({
       kind: file.kind,
-      role: field.role,
+      role: file.role,
       url: file.url,
     });
   }
@@ -67,9 +75,19 @@ export function requestPrompt(
 ) {
   let images = 0,
     videos = 0;
-  const roles = refs.map((r) => {
-    const kind = project.assets.find((a) => a.id === r.assetId)?.kind;
-    return `${kind === "image" ? `Image ${++images}` : `Video ${++videos}`}: ${r.purpose || "按镜头描述使用此参考"}`;
+  const roles = referenceGroups(project, refs).flatMap((group) => {
+    const kind = referenceAsset(project, refs[group[0]].assetId)?.kind;
+    const label = kind === "image" ? `Image ${++images}` : `Video ${++videos}`;
+    let offset = 0;
+    return group.map((index) => {
+      const r = refs[index];
+      const asset = referenceAsset(project, r.assetId);
+      const start = offset;
+      offset += (r.end ?? asset?.duration ?? 0) - (r.start ?? 0);
+      const range =
+        group.length > 1 ? ` (${start.toFixed(3)}–${offset.toFixed(3)}s)` : "";
+      return `${label}${range}: ${r.purpose || "按镜头描述使用此参考"}`;
+    });
   });
   return [prompt, ...roles].filter(Boolean).join("\n\n");
 }

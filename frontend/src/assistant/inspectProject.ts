@@ -1,3 +1,4 @@
+import { referenceAssets } from "../previs/media";
 import { archivedSummary } from "../production/archive";
 import { batchSummary } from "../production/batch";
 import { inspectScript } from "./inspectScript";
@@ -33,13 +34,12 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     );
   }
 
-  const revision = p.revision ?? 0;
   const detailLimit = ids.length === 1 || args.taskKey ? 4000 : 1000;
   const snippet = (value: string, max = 1000) => ({
     text: value.slice(textOffset, textOffset + max),
     nextTextOffset: value.length > textOffset + max ? textOffset + max : null,
   });
-  const assets = p.assets
+  const assets = (Array.isArray(args.ids) ? referenceAssets(p) : p.assets)
     .filter(isSelectableAsset)
     .map(({ id, name, kind, duration, width, height }) => ({
       id,
@@ -97,7 +97,6 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       );
   if (args.section === "creation" && !ids.length)
     return {
-      revision,
       creation: {
         brief: snippet(p.brief, 800),
         intent: snippet(creation?.intent ?? p.brief, 800),
@@ -147,7 +146,6 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       size += bytes;
     }
     return {
-      revision,
       section: args.section,
       batch:
         args.section === "generation"
@@ -161,7 +159,6 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     };
   }
   return {
-    revision,
     readDetails: ids.length
       ? "Use fields for full text; script with paragraphIds/scriptFields narrows paragraphs; screenplay returns the full paginated document."
       : undefined,

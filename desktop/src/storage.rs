@@ -1,3 +1,4 @@
+pub(crate) mod maintenance;
 #[cfg(test)]
 mod media_reference_tests;
 mod migration;
@@ -118,7 +119,7 @@ pub async fn migrate_storage(app: tauri::AppHandle, directory: String) -> Result
 pub fn statuses(store: &Store, ids: &[String]) -> Result<HashMap<String, bool>> {
     ensure!(ids.len() <= 100_000, "素材数量过多");
     let db = store.db.lock().unwrap();
-    let mut query = db.prepare("SELECT data FROM assets WHERE id=?1")?;
+    let mut query = db.prepare("SELECT data FROM assets WHERE id=?1 UNION ALL SELECT data FROM previs_media WHERE id=?1 LIMIT 1")?;
     let mut result = HashMap::new();
     for id in ids {
         let raw: Option<String> = query.query_row([id], |r| r.get(0)).optional()?;

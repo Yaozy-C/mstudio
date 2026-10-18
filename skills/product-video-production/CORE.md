@@ -4,6 +4,8 @@ Preserve the chosen product, characters and scene direction with real references
 
 Give every referenced input a concrete purpose that names the subject and the visual use, and keep that assignment stable across segments. `role` is the technical input mode; `purpose` is the visual use.
 
+Create video generation units of at least 5 seconds, or the selected model's higher minimum, within its supported maximum. Group adjacent, compatible short shots into one unit and one generation task. Preserve every internal shot's full description, exact duration and cut timing in the submitted prompt, including shots lasting only fractions of a second; do not impose a 1-second minimum, round them up or stretch them. Keep an explicit internal time map in existing shot text and use the unit's anchor shot ID for its task. See [generation-unit timing](references/prompt-writing.md#three-different-units) for a short final group or a route that cannot express the planned cuts.
+
 Describe the visible change from the actual starting state through the decisive event to the ending state. Keep subject movement, camera movement and focus changes distinct; explain relevant light, material and sound changes through their causes. Stable properties remain stable. Use only factors needed by the selected shot, without adding motion or effects to satisfy a template.
 
 Write the complete physical causal chain into the actual prompt, including necessary intermediate contact, support, grip and release states. Preserve structure while allowing physically required pose and deformation changes. Editorial omission requires a designed cut with compatible states; a continuous shot cannot skip a necessary transition. Remove only idle time or repetition that changes no physical state.

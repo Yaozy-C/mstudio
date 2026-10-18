@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { RunStatus } from "./RunStatus";
 import { t, useLanguage } from "../i18n";
 import { GenerationSettings } from "./GenerationSettings";
@@ -106,7 +107,7 @@ export function GenerationRun({
             {task.inputs
               .filter((r) => r.assetId)
               .map((r) => {
-                const a = project.assets.find((a) => a.id === r.assetId);
+                const a = referenceAsset(project, r.assetId);
                 return (
                   <button
                     type="button"

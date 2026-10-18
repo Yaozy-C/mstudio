@@ -43,7 +43,8 @@ pub fn payload(
     role: &AgentProfile,
 ) -> Result<Value, String> {
     if role.id == "video-analyst" {
-        super::video_analysis::validate_video(store, refs, model).map_err(|e| e.to_string())?;
+        super::video_analysis::validate_video(store, doc, refs, model)
+            .map_err(|e| e.to_string())?;
     }
     super::attachments::payload(store, doc, prompt, refs, model).map_err(|e| e.to_string())
 }

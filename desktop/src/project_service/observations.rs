@@ -42,6 +42,7 @@ pub fn targets(document: &Value) -> BTreeMap<String, Value> {
         ("tracks", "track"),
         ("captions", "caption"),
         ("assets", "asset"),
+        ("previsAssets", "asset"),
     ] {
         for item in document[section].as_array().into_iter().flatten() {
             if let Some(id) = item["id"].as_str() {

@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { assertGenerationReferences } from "./taskReferences";
 import { failure } from "../errors/failure";
 import { taskParameters } from "./parameters";
@@ -11,6 +12,7 @@ import {
   type UploadedReference,
 } from "../creation/generationInput";
 import { framesOf } from "./frames";
+import { referenceGroups } from "../creation/referenceGroups";
 import type { CanvasGeneration, ProductionTask } from "./types";
 
 export const roleLabels = {
@@ -86,7 +88,7 @@ export function inputFor(
   if (model.plugin === "codex-image") pointerDelete(options, "/image");
   const limits = referenceLimits(model);
   const refs = mediaReferences(task);
-  if (limits.count !== null && refs.length > limits.count)
+  if (limits.count !== null && referenceGroups(p, refs).length > limits.count)
     throw failure("VALIDATION_FAILED", `本次最多使用 ${limits.count} 个素材`);
   if (task.inputs.some((r) => r.role === "video-edit"))
     throw failure(
@@ -103,7 +105,7 @@ export function inputFor(
     throw failure("VALIDATION_FAILED", "首尾帧需要分别指定一张首帧和一张尾帧");
   let seconds = 0;
   const files = refs.map((r, index) => {
-    const asset = p.assets.find((a) => a.id === r.assetId);
+    const asset = referenceAsset(p, r.assetId);
     if (!asset || !["image", "video"].includes(asset.kind))
       throw failure("VALIDATION_FAILED", "素材已移除，或不支持用于媒体生成");
     if (asset.kind === "video") {
@@ -129,7 +131,9 @@ export function inputFor(
         "VALIDATION_FAILED",
         `此模型不支持「${roleLabels[ref.role]}」的${asset.kind === "video" ? "视频" : "图片"}输入，请更换模型或素材用途`,
       );
-    const file = uploaded?.find((f) => f.assetId === r.assetId);
+    const file = uploaded?.find(
+      (f) => f.assetId === r.assetId || f.sourceAssetIds?.includes(r.assetId),
+    );
     if (uploaded && !file)
       throw failure("VALIDATION_FAILED", "参考素材上传不完整，请重试");
     return {

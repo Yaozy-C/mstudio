@@ -1,3 +1,4 @@
+import { referenceAsset } from "../previs/media";
 import { useState } from "react";
 import {
   Plus,
@@ -126,7 +127,7 @@ export function ShotReferences({
       )}
       <div className="shot-reference-grid">
         {references.map((ref, index) => {
-          const asset = project.assets.find((a) => a.id === ref.assetId);
+          const asset = referenceAsset(project, ref.assetId);
           return (
             <div className="shot-reference-card" key={ref.assetId}>
               <div className="shot-reference-thumbnail">

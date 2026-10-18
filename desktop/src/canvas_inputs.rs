@@ -1,14 +1,20 @@
 use anyhow::{Context, Result, ensure};
 use serde_json::Value;
 
+/// Load registered private previs media as well as ordinary project assets.
+pub fn validate_project(db: &rusqlite::Connection, project: &str, submitted: &Value) -> Result<()> {
+    let doc = crate::project_service::load(db, project)?;
+    validate(&doc, submitted)
+}
+
 /// Validate project ownership and selected inputs before video submission.
-pub fn validate(doc: &Value, submitted: &Value) -> Result<()> {
+fn validate(doc: &Value, submitted: &Value) -> Result<()> {
     let task = &submitted["canvasGeneration"]["task"];
     ensure!(task["kind"] == "video", "生成类型与任务不一致");
     let inputs = task["inputs"].as_array().context("缺少画布输入")?;
     let refs = submitted["references"].as_array().context("缺少参考素材")?;
     let nodes = doc["nodes"].as_array().context("项目镜头不存在")?;
-    let assets = doc["assets"].as_array().context("项目素材不存在")?;
+    doc["assets"].as_array().context("项目素材不存在")?;
     if let Some(owner) = task["ownerId"].as_str() {
         ensure!(
             submitted["id"] == owner
@@ -26,10 +32,11 @@ pub fn validate(doc: &Value, submitted: &Value) -> Result<()> {
             refs.iter().any(|r| r["assetId"] == id),
             "生成输入与参考素材不一致"
         );
-        let asset = assets
-            .iter()
-            .find(|a| a["id"] == id)
-            .context("所选素材已移除")?;
+        let asset = crate::previs::media::find(doc, id).context("所选素材已移除")?;
+        ensure!(
+            asset["missing"] != true,
+            "参考素材文件缺失，请恢复文件或替换该参考"
+        );
         if input["frame"] == true {
             ensure!(asset["kind"] == "image", "分镜图必须是图片");
             let node = nodes
@@ -46,6 +53,10 @@ pub fn validate(doc: &Value, submitted: &Value) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "canvas_inputs_tests.rs"]
+mod project_tests;
 
 #[cfg(test)]
 mod tests {

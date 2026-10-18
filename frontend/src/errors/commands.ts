@@ -7,7 +7,8 @@ const commandCodes: Record<string, ErrorCode> = {
   begin_previs_render: "EXPORT_FAILED",
   append_previs_frame: "EXPORT_FAILED",
   finish_previs_render: "EXPORT_FAILED",
-  share_previs_video: "ASSET_OPERATION_FAILED",
+  attach_previs_reference: "ASSET_OPERATION_FAILED",
+  collect_previs_video: "ASSET_OPERATION_FAILED",
   native_preview_open: "PREVIEW_FAILED",
   native_preview_control: "PREVIEW_FAILED",
   native_preview_status: "PREVIEW_FAILED",
@@ -36,6 +37,8 @@ const commandCodes: Record<string, ErrorCode> = {
   assistant_chat: "CHAT_FAILED",
   migrate_storage: "STORAGE_FAILED",
   storage_settings: "STORAGE_READ_FAILED",
+  scan_storage: "STORAGE_READ_FAILED",
+  clean_storage: "STORAGE_FAILED",
   choose_storage_directory: "STORAGE_FAILED",
 };
 export function commandError(command: string, value: unknown): string {

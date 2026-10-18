@@ -47,17 +47,8 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let mut tool = parent.clone();
     tool.profile = profile;
     tool.skill_setting = profiles::skill_setting(&tool.profile);
-    let raw: String = store
-        .db
-        .lock()
-        .unwrap()
-        .query_row(
-            "SELECT document FROM projects WHERE id=?1",
-            [&parent.project],
-            |r| r.get(0),
-        )
+    let doc = crate::project_service::load(&store.db.lock().unwrap(), &tool.project)
         .map_err(|e| e.to_string())?;
-    let doc: Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
     let original = crate::assistant::generation_context::request(
         &store.db.lock().unwrap(),
         &parent.project,

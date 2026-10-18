@@ -61,9 +61,7 @@ export function receiveProductionResult(
   asset = {
     ...asset,
     generated: true,
-    ...(source.canvasGeneration.task.generationPurpose === "asset"
-      ? { inLibrary: true }
-      : {}),
+    inLibrary: undefined,
   };
   const original = source.canvasGeneration;
   const ownerId =

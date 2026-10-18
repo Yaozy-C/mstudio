@@ -17,7 +17,12 @@ type PrevisContext = {
   error: string;
   loading: boolean;
   tasks: PrevisTaskSummary[];
-  attachReference: (fileId: string, videoId: string) => Promise<void>;
+  attachReference: (
+    fileId: string,
+    videoId: string,
+    assetId: string,
+  ) => Promise<void>;
+  collectVideo: (videoId: string, assetId: string) => Promise<void>;
 };
 export const Context = createContext<PrevisContext | null>(null);
 export function usePrevis() {

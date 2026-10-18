@@ -50,11 +50,7 @@ pub fn parts(
         source_time.is_finite() && source_time >= 0. && source_time < asset.duration,
         "Frame time outside source duration (end excluded)"
     );
-    let path = Path::new(&asset.path).canonicalize()?;
-    ensure!(
-        path.starts_with(store.media_root().join("assets").canonicalize()?),
-        "Asset path is outside the application media library"
-    );
+    let path = crate::previs::media::managed_path(store, asset)?;
     let grade = mstudio::visual::ffmpeg(visual.as_ref(), asset.width as i64, asset.height as i64)?;
     frame(&path, source_time, &grade, label)
 }

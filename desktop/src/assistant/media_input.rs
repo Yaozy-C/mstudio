@@ -29,11 +29,7 @@ pub fn parts(store: &Store, asset: &Asset, profile: &Profile) -> Result<Vec<Valu
         "文件缺失：{}。请放回原位置后重试。",
         asset.name
     );
-    let path = std::path::Path::new(&asset.path).canonicalize()?;
-    ensure!(
-        path.starts_with(store.media_root().join("assets").canonicalize()?),
-        "素材路径不属于应用素材库"
-    );
+    let path = crate::previs::media::managed_path(store, asset)?;
     let size = std::fs::metadata(&path)?.len();
     let limit = if asset.kind == "image" {
         super::image_input::MAX_SOURCE_BYTES

@@ -82,18 +82,8 @@ pub async fn submit_job(
         ));
     }
     if model.kind == "video" {
-        let raw: String = store
-            .db
-            .lock()
-            .unwrap()
-            .query_row(
-                "SELECT document FROM projects WHERE id=?1",
-                [&project_id],
-                |row| row.get(0),
-            )
+        crate::canvas_inputs::validate_project(&store.db.lock().unwrap(), &project_id, &shot)
             .map_err(crate::app_error::rejected)?;
-        let doc: Value = serde_json::from_str(&raw).map_err(crate::app_error::rejected)?;
-        crate::canvas_inputs::validate(&doc, &shot).map_err(crate::app_error::rejected)?;
     }
     let mut config = model.http.clone().unwrap_or(json!({}));
     config["kind"] = json!(model.kind);

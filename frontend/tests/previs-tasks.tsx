@@ -107,7 +107,7 @@ Object.assign(window, {
           fileRevision: file.revision,
           modelRevisions: {},
           signature: "demo",
-          sharedAssetId: null,
+          savedAssetId: null,
           asset: {
             id: "video",
             name: "Synthetic previs",
@@ -122,15 +122,32 @@ Object.assign(window, {
         });
         return workspace.exports.at(-1);
       }
-      if (command === "share_previs_video") {
+      if (command === "attach_previs_reference") {
         const video = workspace.exports.find((item) => item.id === args.id)!;
-        const asset = project.assets.find(
-          (item) => item.id === video.sharedAssetId,
-        ) ?? { ...video.asset, id: `shared-${video.id}`, inLibrary: true };
-        if (!project.assets.some((item) => item.id === asset.id))
-          project.assets.push(asset);
-        video.sharedAssetId = asset.id;
-        return { shared: true, assetId: asset.id, asset };
+        project.previsAssets = [video.asset];
+        const node = project.nodes.find((node) => node.id === args.fileId)!;
+        node.references = [
+          ...(node.references ?? []),
+          {
+            assetId: video.asset.id,
+            purpose: "Previs",
+            start: 0,
+            end: video.asset.duration,
+          },
+        ];
+        return;
+      }
+      if (command === "collect_previs_video") {
+        const video = workspace.exports.find((item) => item.id === args.id)!;
+        const asset = {
+          ...video.asset,
+          id: `saved-${video.id}`,
+          generated: true,
+          inLibrary: true,
+        };
+        project.assets.push(asset);
+        video.savedAssetId = asset.id;
+        return asset;
       }
       if (
         command === "close_previs_runtime" ||
@@ -191,10 +208,6 @@ function App() {
         project={project}
         flush={async () => {
           calls.fixture_save = (calls.fixture_save || 0) + 1;
-        }}
-        change={(fn) => {
-          Object.assign(project, fn(project));
-          update((n) => n + 1);
         }}
       >
         <main style={{ padding: 32 }}>

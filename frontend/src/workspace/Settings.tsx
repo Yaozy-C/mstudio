@@ -43,7 +43,10 @@ export function Settings({
   useContentMotion(content, tab);
   const pages = sidebarPages();
   return (
-    <main className="settings-page" aria-label={t("设置")}>
+    <main
+      className={`settings-page${tab === "general" ? " general-settings-page" : ""}`}
+      aria-label={t("设置")}
+    >
       <StudioSidebar
         activePage={tab}
         onProjects={onClose}

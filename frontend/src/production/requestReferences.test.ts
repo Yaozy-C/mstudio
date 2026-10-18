@@ -88,7 +88,7 @@ test("asset generation delivers a standalone canvas card and reusable library im
     y: 0,
     canvasGeneration: { task: run, x: 30, y: 40 },
   });
-  expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBe(true);
+  expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBeUndefined();
   expect(next.nodes.filter((n) => n.assetId === image.id)).toHaveLength(1);
   expect(
     productionItems(next).find((n) => n.assetId === image.id),

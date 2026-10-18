@@ -27,7 +27,7 @@ test("asset revision invalidates only shots using that shared model", () => {
     modelRevisions: { [model.id]: 1 },
     signature: "sig",
     asset: {} as never,
-    sharedAssetId: null,
+    savedAssetId: null,
   };
   expect(isStale(video, [model, shot])).toBe(false);
   expect(isStale(video, [{ ...model, revision: 2 }, shot])).toBe(true);

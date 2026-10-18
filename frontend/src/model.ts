@@ -113,6 +113,8 @@ export type Project = {
   id: string;
   name: string;
   assets: Asset[];
+  /** Host-derived private media. Never persisted or collected as project assets. */
+  previsAssets?: Asset[];
   removedAssetIds?: string[];
   nodes: BoardNode[];
   clips: Clip[];

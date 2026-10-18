@@ -119,7 +119,7 @@ pub fn resolve(
                     saved.remove("resultAssetId");
                 }
                 saved.insert("resultAssetIds".into(), usable);
-                manifest.push(json!({"reference":{"kind":"generation","id":id},"projectRevision":doc["revision"],"savedTask":saved,"readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":id}},"authority":"Use actual result assets and task metadata. Read fields=[prompt] only for an explicit user request to edit the prompt, retry unchanged or investigate generation. A generated result does not establish product facts or authorize another generation."}));
+                manifest.push(json!({"reference":{"kind":"generation","id":id},"savedTask":saved,"readWith":{"tool":"mstudio_read_generation","arguments":{"taskKey":id}},"authority":"Use actual result assets and task metadata. Read fields=[prompt] only for an explicit user request to edit the prompt, retry unchanged or investigate generation. A generated result does not establish product facts or authorize another generation."}));
                 continue;
             }
             Artifact::Agent { id, turn_id } => {
@@ -136,10 +136,14 @@ pub fn resolve(
                 continue;
             }
         };
-        let item = doc[collection]
-            .as_array()
-            .and_then(|items| items.iter().find(|v| v["id"] == id))
-            .ok_or_else(|| format!("Referenced {kind} is unavailable in this project"))?;
+        let item = if kind == "asset" {
+            crate::previs::media::find(doc, &id)
+        } else {
+            doc[collection]
+                .as_array()
+                .and_then(|items| items.iter().find(|v| v["id"] == id))
+        }
+        .ok_or_else(|| format!("Referenced {kind} is unavailable in this project"))?;
         let asset_id = if kind == "asset" {
             Some(id.as_str())
         } else {
@@ -163,7 +167,7 @@ pub fn resolve(
             }
             _ => json!({"tool":"mstudio_read_nodes","arguments":{"ids":[id]}}),
         };
-        let mut source = json!({"reference":{"kind":kind,"id":id},"projectRevision":doc["revision"],"readWith":reader,"authority":"Saved project source; consult the original content, not a relay's description. Project objects remain live; agent outputs are pinned to their turn."});
+        let mut source = json!({"reference":{"kind":kind,"id":id},"readWith":reader,"authority":"Saved project source; consult the original content, not a relay's description. Project objects remain live; agent outputs are pinned to their turn."});
         if kind == "node" && item["kind"] == "shot" {
             source["savedWork"] = super::saved_work::shot_state(doc, item);
             source["savedReferences"] = item["references"].clone();

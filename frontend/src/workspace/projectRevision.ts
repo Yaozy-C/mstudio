@@ -39,6 +39,7 @@ export function contentChanged(before: Project, after: Project): boolean {
     !sameExcept(before, after, [
       "revision",
       "storageVersion",
+      "previsAssets",
       "updated",
       "viewport",
       "nodes",

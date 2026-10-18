@@ -15,9 +15,10 @@ mod export_store;
 #[cfg(test)]
 mod export_store_tests;
 pub(crate) mod files;
+pub(crate) mod media;
+pub(crate) mod references;
 pub(crate) mod render;
 pub(crate) mod runtime;
-pub(crate) mod sharing;
 #[cfg(test)]
 mod tests;
 
@@ -109,5 +110,6 @@ pub fn init(db: &Connection) -> Result<()> {
     db.execute_batch("CREATE TABLE IF NOT EXISTS previs_files(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,id TEXT NOT NULL,kind TEXT NOT NULL,data TEXT NOT NULL,PRIMARY KEY(project_id,id));
     CREATE TABLE IF NOT EXISTS previs_messages(id INTEGER PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,file_id TEXT NOT NULL,role TEXT NOT NULL,text TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS previs_exports(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,id TEXT NOT NULL,data TEXT NOT NULL,PRIMARY KEY(project_id,id));")?;
+    media::init(db)?;
     Ok(())
 }

@@ -18,6 +18,8 @@ pub struct Uploaded {
     asset_id: String,
     kind: String,
     url: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    source_asset_ids: Vec<String>,
 }
 fn cdn_url(url: &str) -> Result<String> {
     let u = reqwest::Url::parse(url)?;
@@ -34,7 +36,7 @@ fn cdn_url(url: &str) -> Result<String> {
 }
 #[path = "reference_prepare.rs"]
 mod preparation;
-use preparation::prepare;
+use preparation::{plan, prepare_group};
 #[tauri::command]
 pub async fn upload_references(
     app: tauri::AppHandle,
@@ -75,20 +77,14 @@ async fn upload(
         crate::models::connections::media_key(&store.db.lock().unwrap(), &model)?
     };
     ensure!(native || !key.is_empty(), "请先在服务连接配置 API Key");
-    let doc: String = store.db.lock().unwrap().query_row(
-        "SELECT document FROM projects WHERE id=?1",
-        [&project_id],
-        |r| r.get(0),
-    )?;
-    let document: Value = serde_json::from_str(&doc)?;
-    let owned = document["assets"].as_array().context("项目素材无效")?;
-    let all = store.assets()?;
+    let document = crate::project_service::load(&store.db.lock().unwrap(), &project_id)?;
+    let all = crate::previs::media::resolved(&store, &document)?;
     let mut videos = 0;
     let mut seconds = 0.;
     let mut planned = Vec::new();
     for r in references {
         ensure!(
-            owned.iter().any(|a| a["id"] == r.asset_id),
+            crate::previs::media::find(&document, &r.asset_id).is_some(),
             "参考素材不属于当前项目"
         );
         let asset = all
@@ -116,6 +112,7 @@ async fn upload(
         }
         planned.push((asset, r));
     }
+    let planned = plan(planned)?;
     if let Some(limit) = limits.references {
         ensure!(planned.len() <= limit, "此模型最多上传 {limit} 个参考素材");
     }
@@ -126,15 +123,20 @@ async fn upload(
     let root = store.media_root().join("reference-work");
     let client = jobs::client()?;
     let mut uploaded = vec![];
-    for (asset, r) in planned {
+    for group in planned {
+        let asset = group[0].0.clone();
+        let source_asset_ids = if group.len() > 1 {
+            group.iter().map(|(a, _)| a.id.clone()).collect()
+        } else {
+            Vec::new()
+        };
         let work = root.join(media::id());
         crate::project_storage::track_file(&store, &project_id, &work)?;
         let guard = guard.clone();
-        let copy = asset.clone();
         let (bytes, mime) = tauri::async_runtime::spawn_blocking(move || {
             let _guard = guard;
             std::fs::create_dir_all(&work)?;
-            let result = prepare(&copy, &r, &work);
+            let result = prepare_group(&group, &work);
             let _ = std::fs::remove_dir_all(work);
             result
         })
@@ -144,6 +146,7 @@ async fn upload(
                 asset_id: asset.id,
                 kind: asset.kind,
                 url: format!("data:{mime};base64,{}", STANDARD.encode(bytes)),
+                source_asset_ids,
             });
             continue;
         }
@@ -160,6 +163,7 @@ async fn upload(
                 asset_id: asset.id,
                 kind: asset.kind,
                 url,
+                source_asset_ids,
             });
             continue;
         }
@@ -226,6 +230,7 @@ async fn upload(
             asset_id: asset.id,
             kind: asset.kind,
             url,
+            source_asset_ids,
         });
     }
     Ok(uploaded)

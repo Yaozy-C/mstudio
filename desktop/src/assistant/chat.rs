@@ -124,17 +124,8 @@ async fn execute(
     let profile = model.profile;
     let previous = super::task_context::history(&store, project_id, scope)?;
     let skill_setting = profiles::skill_setting(&agent_profile);
-    let document: String = store
-        .db
-        .lock()
-        .unwrap()
-        .query_row(
-            "SELECT document FROM projects WHERE id=?1",
-            [project_id],
-            |r| r.get(0),
-        )
+    let doc = crate::project_service::load(&store.db.lock().unwrap(), project_id)
         .map_err(|e| e.to_string())?;
-    let doc: Value = serde_json::from_str(&document).map_err(|e| e.to_string())?;
     let refs = attachments.clone().unwrap_or_default();
     let analysis_only = agent_profile.id == "video-analyst";
     let mut payload =

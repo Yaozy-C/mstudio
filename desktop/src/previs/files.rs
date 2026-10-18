@@ -159,9 +159,6 @@ pub async fn previs_workspace(app: tauri::AppHandle, project_id: String) -> Resu
     let _guard = guard;
     let store = app.state::<Store>();
     (|| -> Result<Value> {
-        if super::export_store::normalize(&store, &project_id)? {
-            project_service::notify(&app, &project_id);
-        }
         let db = store.db.lock().unwrap();
         project_service::load(&db, &project_id)?;
         let files = list(&db, &project_id)?;

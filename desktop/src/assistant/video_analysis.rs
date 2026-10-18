@@ -21,7 +21,12 @@ pub fn guidance(db: &Connection, profile: &AgentProfile) -> Result<String> {
     ))
 }
 
-pub fn validate_video(store: &Store, refs: &[Reference], model: &Profile) -> Result<()> {
+pub fn validate_video(
+    store: &Store,
+    doc: &Value,
+    refs: &[Reference],
+    model: &Profile,
+) -> Result<()> {
     if refs.is_empty() {
         return Ok(());
     }
@@ -29,7 +34,7 @@ pub fn validate_video(store: &Store, refs: &[Reference], model: &Profile) -> Res
         model.inputs.video,
         "请在当前对话模型中启用视频输入，再发送原视频进行拆解"
     );
-    let assets = store.assets()?;
+    let assets = crate::previs::media::resolved(store, doc)?;
     ensure!(
         refs.iter()
             .all(|r| r.kind == "asset" && assets.iter().any(|a| a.id == r.id && a.kind == "video")),
@@ -112,22 +117,22 @@ mod tests {
     }
     #[test]
     fn original_video_requires_configured_video_input_and_accepts_no_other_assets() {
-        let (root, store, _) = super::super::attachment_tests::fixture();
+        let (root, store, doc) = super::super::attachment_tests::fixture();
         let mut model = super::super::attachment_tests::multimodal();
         model.adapter = "openai-compatible".into();
         let refs = [Reference {
             kind: "asset".into(),
             id: "video".into(),
         }];
-        validate_video(&store, &refs, &model).unwrap();
+        validate_video(&store, &doc, &refs, &model).unwrap();
         model.inputs.video = false;
-        assert!(validate_video(&store, &refs, &model).is_err());
+        assert!(validate_video(&store, &doc, &refs, &model).is_err());
         model.inputs.video = true;
         let refs = [Reference {
             kind: "asset".into(),
             id: "image".into(),
         }];
-        assert!(validate_video(&store, &refs, &model).is_err());
+        assert!(validate_video(&store, &doc, &refs, &model).is_err());
         drop(store);
         std::fs::remove_dir_all(root).unwrap();
     }

@@ -257,7 +257,7 @@ pub fn result(name: &str, mut value: Value) -> Value {
                 Some(item)
             })
             .collect();
-        return json!({"revision":value["revision"],"items":items,"missingIds":value["missingNodeIds"],"invalidKindIds":invalid});
+        return json!({"items":items,"missingIds":value["missingNodeIds"],"invalidKindIds":invalid});
     }
     if kind == "project" {
         let obj = value.as_object_mut().unwrap();

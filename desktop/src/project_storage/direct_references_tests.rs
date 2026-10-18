@@ -6,6 +6,7 @@ fn database_migration_is_backed_up_atomic_and_idempotent() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE projects(id TEXT PRIMARY KEY,name TEXT,document TEXT,updated INTEGER); CREATE TABLE jobs(id TEXT PRIMARY KEY,project_id TEXT,data TEXT); CREATE TABLE skill_resources(skill_id TEXT,path TEXT,text TEXT,revision INTEGER,updated INTEGER);").unwrap();
     crate::project_storage::init(&db).unwrap();
+    crate::previs::media::init(&db).unwrap();
     let original = json!({"id":"p","assets":[{"id":"photo","path":"/photo.png"}],"sharedAssets":[{"id":"person","name":"Person","views":[{"id":"front","name":"Front","assetId":"photo"}]}],"nodes":[{"id":"a","sharedReferences":[{"sharedAssetId":"person","viewId":"front","purpose":"identity"}]},{"id":"b","sharedReferences":[{"sharedAssetId":"person","viewId":"front","purpose":"wardrobe"}]}]});
     db.execute(
         "INSERT INTO projects VALUES('p','P',?1,7)",

@@ -16,8 +16,10 @@ import messages13 from "./workspace.json";
 import manual from "./manual.json";
 import previs from "./previs.json";
 import polish from "./polish.json";
+import storage from "./storage.json";
 
 export default {
+  ...storage,
   ...manual,
   ...previs,
   ...polish,

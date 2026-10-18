@@ -26,7 +26,7 @@ pub fn payload(
     let mut images = vec![];
     let mut seen = HashSet::new();
     let mut image_ids = HashSet::new();
-    let assets = store.assets()?;
+    let assets = crate::previs::media::resolved(store, doc)?;
     for reference in refs {
         ensure!(
             ["node", "asset", "clip"].contains(&reference.kind.as_str()),
@@ -72,15 +72,11 @@ pub fn payload(
         };
         let asset = if let Some(id) = asset_id {
             ensure!(
-                !doc["assets"]
-                    .as_array()
-                    .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true)),
+                !crate::previs::media::find(doc, id).is_some_and(|a| a["discarded"] == true),
                 "废弃素材不能作为 Agent 附件引用"
             );
             ensure!(
-                doc["assets"]
-                    .as_array()
-                    .is_some_and(|a| a.iter().any(|a| a["id"] == id)),
+                crate::previs::media::find(doc, id).is_some(),
                 "附件素材不属于当前项目"
             );
             Some(assets.iter().find(|a| a.id == id).context("附件素材丢失")?)

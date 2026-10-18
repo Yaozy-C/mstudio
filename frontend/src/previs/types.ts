@@ -20,7 +20,7 @@ export type PrevisExport = {
   modelRevisions: Record<string, number>;
   signature: string;
   asset: Asset;
-  sharedAssetId: string | null;
+  savedAssetId: string | null;
 };
 export type PrevisWorkspace = {
   files: PrevisFile[];
