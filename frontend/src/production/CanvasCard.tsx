@@ -1,6 +1,7 @@
 import { canvasCardActions } from "./canvasCardActions";
 import { t, useLanguage } from "../i18n";
 import { ShotCardText } from "./ShotCardText";
+import { ShotCardHeader } from "./ShotCardHeader";
 import { CanvasAssetStatus } from "./CanvasAssetStatus";
 import { memo, useEffect, useLayoutEffect, useRef } from "react";
 import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
@@ -209,10 +210,14 @@ export const CanvasCard = memo(function CanvasCard({
           if (!dragging.current) preview(item);
         }}
       >
-        <strong className="card-title" title={item.title}>
-          {item.kind !== "script" && <Icon size={16} />}
-          <span>{item.kind === "script" ? item.title : mediaTitle}</span>
-        </strong>
+        {item.kind === "script" ? (
+          <ShotCardHeader item={item} project={project} />
+        ) : (
+          <strong className="card-title" title={item.title}>
+            <Icon size={16} />
+            <span>{mediaTitle}</span>
+          </strong>
+        )}
         {!compact && !!item.usages?.length && (
           <small className="card-usage">
             {t("用于：")}

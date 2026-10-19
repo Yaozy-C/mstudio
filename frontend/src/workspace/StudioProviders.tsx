@@ -8,7 +8,11 @@ type Props = Omit<ComponentProps<typeof ImageReviewProvider>, "workspace"> & {
 };
 export function StudioProviders({ workspace, draft, children }: Props) {
   return (
-    <PrevisProvider project={workspace.project} flush={workspace.flush}>
+    <PrevisProvider
+      project={workspace.project}
+      flush={workspace.flush}
+      change={workspace.change}
+    >
       <ImageReviewProvider workspace={workspace} draft={draft}>
         {children}
       </ImageReviewProvider>

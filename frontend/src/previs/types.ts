@@ -24,8 +24,19 @@ export type PrevisExport = {
 };
 export type PrevisWorkspace = {
   files: PrevisFile[];
-  messages: { fileId: string; role: "user" | "assistant"; text: string }[];
+  messages: PrevisMessage[];
   exports: PrevisExport[];
+};
+export type PrevisImage = Pick<Asset, "id" | "name" | "path"> & {
+  preview?: string;
+};
+export type PrevisMessage = {
+  id?: number;
+  requestId?: string | null;
+  fileId: string;
+  role: "user" | "assistant";
+  text: string;
+  images?: PrevisImage[];
 };
 export const emptyWorkspace: PrevisWorkspace = {
   files: [],

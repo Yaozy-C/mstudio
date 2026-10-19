@@ -6,16 +6,28 @@ import type { RuntimeHandle } from "./RuntimeFrame";
 import { usePrevisTask } from "./usePrevisTask";
 import { usePrevis } from "./context";
 import type { PrevisExport } from "./types";
+import { usePrevisImages } from "./usePrevisImages";
+import { supportsInput } from "../models/inputCapabilities";
+import { submitPrevisDraft } from "./submitDraft";
 
 export function usePrevisEditor(fileId: string, close: () => void) {
-  const { workspace, project, refresh, save, attachReference, collectVideo } =
-    usePrevis();
+  const {
+    workspace,
+    project,
+    refresh,
+    save,
+    attachReference,
+    collectVideo,
+    change,
+    flush,
+  } = usePrevis();
   const file = workspace.files.find((f) => f.id === fileId)!;
   const [draft, setDraft] = useState(file);
   const [linkingId, setLinkingId] = useState("");
   const [savingId, setSavingId] = useState("");
   const referencePending = useRef(false);
   const [prompt, setPrompt] = useState("");
+  const images = usePrevisImages(project, change);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -32,6 +44,7 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     setDraft(file);
   }, [file.revision]);
   async function persist() {
+    await flush();
     if (!dirty) return file;
     const saved = await save(draft);
     setDraft(saved);
@@ -47,9 +60,22 @@ export function usePrevisEditor(fileId: string, close: () => void) {
   });
   const { busy, setBusy, error, setError } = task;
   async function send(text = prompt) {
-    if (!text.trim() || busy) return;
-    setPrompt("");
-    if (!(await task.send(text))) setPrompt(text);
+    if (!text.trim() || busy || images.busy) return;
+    if (images.items.length && (!model || !supportsInput(model, "image")))
+      return;
+    await submitPrevisDraft(text, images, setPrompt, task.send, setError);
+  }
+  async function render() {
+    if (busy || images.busy) return;
+    if (draft.code.trim()) {
+      await task.render();
+      return;
+    }
+    if (images.items.length && (!model || !supportsInput(model, "image")))
+      return;
+    const submitted = [...images.items];
+    images.clear();
+    if (!(await task.render(submitted))) images.restore(submitted);
   }
   function onReady(value: boolean) {
     setReady(value);
@@ -119,6 +145,7 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     setDraft,
     prompt,
     setPrompt,
+    images,
     error,
     setError,
     busy,
@@ -136,6 +163,7 @@ export function usePrevisEditor(fileId: string, close: () => void) {
     exports,
     dirty,
     send,
+    render,
     onReady,
     dependency,
     manualSave,

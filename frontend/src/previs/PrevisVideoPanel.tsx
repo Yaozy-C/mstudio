@@ -138,7 +138,11 @@ export function PrevisVideoPanel() {
             aria-label={t("预演视频详情")}
           >
             {selected ? (
-              <PrevisVideoDetail key={selected.asset.id} video={selected} />
+              <PrevisVideoDetail
+                key={selected.asset.id}
+                video={selected}
+                autoPlay={videoPanel.autoPlay}
+              />
             ) : (
               <div className="previs-videos-empty">
                 <Cube size={40} aria-hidden="true" />

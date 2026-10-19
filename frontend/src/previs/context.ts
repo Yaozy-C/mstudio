@@ -9,6 +9,7 @@ export const openPrevis = (fileId: string) =>
 type PrevisContext = {
   workspace: PrevisWorkspace;
   project: Project;
+  change: (fn: (p: Project) => Project) => void;
   refresh: () => Promise<void>;
   save: (file: PrevisFile) => Promise<PrevisFile>;
   flush: () => Promise<unknown>;
@@ -17,8 +18,8 @@ type PrevisContext = {
   error: string;
   loading: boolean;
   tasks: PrevisTaskSummary[];
-  videoPanel: { open: boolean; fileId?: string };
-  showVideos: (fileId?: string) => void;
+  videoPanel: { open: boolean; fileId?: string; autoPlay?: boolean };
+  showVideos: (fileId?: string, autoPlay?: boolean) => void;
   closeVideos: () => void;
   attachReference: (
     fileId: string,

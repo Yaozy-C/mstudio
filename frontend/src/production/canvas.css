@@ -33,28 +33,6 @@
   position: absolute;
   transform-origin: 0 0;
 }
-.shot-area {
-  position: absolute;
-  top: 10px;
-  width: 1480px;
-  height: 605px;
-  background: transparent;
-  border: 0;
-  pointer-events: none;
-  padding: 23px 34px;
-}
-.shot-area > span {
-  color: #847f74;
-  font-size: 11px;
-  letter-spacing: 1.2px;
-}
-.shot-area h2 {
-  display: inline;
-  margin-left: 18px;
-  font-size: 18px;
-  font-weight: 550;
-  color: #6f6a60;
-}
 .relations {
   position: absolute;
   left: 0;

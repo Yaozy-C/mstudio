@@ -5,18 +5,6 @@
     transparent 0.65px
   );
 }
-.production-workspace .shot-area > span {
-  font-family: var(--ui-mono);
-  font-size: var(--ui-caption);
-  letter-spacing: 0.04em;
-  color: var(--desk-accent);
-}
-.production-workspace .shot-area h2 {
-  margin-left: 14px;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--desk-muted);
-}
 .production-workspace .canvas-card {
   border-color: var(--ui-rule);
   border-radius: var(--ui-card-radius);

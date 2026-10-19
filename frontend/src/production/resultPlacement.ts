@@ -30,7 +30,7 @@ export function resultPlacement(
   );
   if (shot)
     return freeResultPosition(project, task, {
-      x: shot.x + (task.kind === "video" ? 1100 : shot.width + 32),
+      x: shot.x + shot.width + (task.kind === "video" ? 640 : 32),
       y: shot.y,
     });
 

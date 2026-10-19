@@ -1,8 +1,5 @@
 import { referenceAsset } from "../previs/media";
 import { t, useLanguage } from "../i18n";
-import { Cube } from "@phosphor-icons/react";
-import { openPrevis } from "../previs/context";
-import { native } from "../bridge";
 import type { Project } from "../model";
 import type { ProductionItem } from "./types";
 export function ShotCardText({
@@ -22,16 +19,6 @@ export function ShotCardText({
   const dialogue = shot?.dialogue || chapter?.dialogue;
   return (
     <div className="shot-card-content">
-      <div className="shot-card-meta">
-        <span>
-          {t("镜头")} {String(shot?.order ?? 1).padStart(2, "0")}
-        </span>
-        <strong className="shot-card-duration">
-          {shot?.duration != null
-            ? t("{v0} 秒", { v0: Number(shot.duration.toFixed(2)) })
-            : t("时长待定")}
-        </strong>
-      </div>
       {chapter && (
         <div className="shot-card-chapter">
           {t("所属章节 ·")} {chapter.title || t("未命名章节")}
@@ -67,20 +54,6 @@ export function ShotCardText({
             <h3>{t("台词 / 旁白")}</h3>
             <p>{dialogue}</p>
           </section>
-        )}
-        {node?.shot && (
-          <button
-            type="button"
-            className="previs-shot-button"
-            disabled={!native}
-            onClick={(e) => {
-              e.stopPropagation();
-              openPrevis(node.id);
-            }}
-          >
-            <Cube size={15} />
-            {t("三维预演")}
-          </button>
         )}
       </div>
     </div>

@@ -1,0 +1,43 @@
+.shot-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ui-rule, #ded9ce);
+}
+.shot-card-heading-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+.shot-card-number {
+  flex-shrink: 0;
+  color: var(--desk-accent, #d6452d);
+  font-family: var(--ui-mono, monospace);
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.shot-card-heading h2 {
+  margin: 0;
+  color: var(--desk-muted, #6f6a60);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.shot-card-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.shot-card-actions .previs-shot-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}

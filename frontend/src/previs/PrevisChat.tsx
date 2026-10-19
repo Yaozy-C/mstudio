@@ -12,6 +12,10 @@ import { AsyncButton, StatusMessage } from "../ui/AsyncState";
 import { PrevisTaskStatus, previsTaskLabel } from "./PrevisTaskStatus";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { PrevisEditorState } from "./usePrevisEditor";
+import { PrevisImagePicker, PrevisImageStrip } from "./PrevisImagePicker";
+import { supportsInput } from "../models/inputCapabilities";
+import { transferFiles } from "../assistant/fileImports";
+import { isSelectableAsset } from "../workspace/assetLibrary";
 
 export function PrevisChat({ state }: { state: PrevisEditorState }) {
   const {
@@ -28,10 +32,20 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
     setModelId,
     catalog,
     stop,
+    images,
+    project,
   } = state;
   const [ime] = useState(compositionGuard);
   const scroll = usePrevisScroll(state);
-  const canSend = !busy && !!prompt.trim() && !!model && readyModel(model);
+  const imageUnsupported =
+    !!images?.items.length && (!model || !supportsInput(model, "image"));
+  const canSend =
+    !busy &&
+    !images?.busy &&
+    !imageUnsupported &&
+    !!prompt.trim() &&
+    !!model &&
+    readyModel(model);
   const running = busy === "chat" || busy === "render";
   return (
     <section className="previs-chat">
@@ -63,17 +77,69 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
       <form
         className="agent-composer previs-composer"
         aria-busy={running}
+        onPaste={(e) => {
+          if (!images || busy || images.busy) return;
+          const files = transferFiles(e.clipboardData);
+          if (files.length) {
+            e.preventDefault();
+            e.stopPropagation();
+            void images.importFiles(files);
+          }
+        }}
+        onDragOver={(e) => {
+          if (
+            images &&
+            !busy &&
+            !images.busy &&
+            Array.from(e.dataTransfer.types).some(
+              (type) =>
+                type === "Files" || type === "application/x-mstudio-reference",
+            )
+          ) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = "copy";
+          }
+        }}
+        onDrop={(e) => {
+          if (!images || busy || images.busy) return;
+          const raw = e.dataTransfer.getData("application/x-mstudio-reference");
+          const files = transferFiles(e.dataTransfer);
+          if (!raw && !files.length) return;
+          e.preventDefault();
+          e.stopPropagation();
+          if (raw) {
+            try {
+              const ref = JSON.parse(raw);
+              const asset = project.assets.find(
+                (a) => ref.kind === "asset" && a.id === ref.id,
+              );
+              if (asset?.kind === "image" && isSelectableAsset(asset))
+                images.add(asset);
+            } catch {
+              /* Ignore unrelated drag payloads. */
+            }
+          } else void images.importFiles(files);
+        }}
         onSubmit={(e) => {
           e.preventDefault();
           if (canSend) void send();
         }}
       >
+        {images && (
+          <PrevisImageStrip images={images} disabled={!!busy || images.busy} />
+        )}
+        {imageUnsupported && (
+          <p className="agent-attachment-hint" role="status">
+            {t("当前模型不支持图片，请切换支持图片的对话模型。")}
+          </p>
+        )}
         <textarea
           {...ime}
           rows={3}
           aria-label={t("预演修改要求")}
           value={prompt}
-          disabled={!!busy}
+          disabled={!!busy || images?.busy}
           placeholder={
             running
               ? t("任务正在后台执行，完成后可继续修改。")
@@ -93,6 +159,13 @@ export function PrevisChat({ state }: { state: PrevisEditorState }) {
         />
         <div className="agent-compose-actions">
           <div className="composer-tools">
+            {images && (
+              <PrevisImagePicker
+                project={project}
+                images={images}
+                disabled={!!busy || images.busy}
+              />
+            )}
             <StudioSelect
               label={t("预演对话模型")}
               disabled={!!busy}

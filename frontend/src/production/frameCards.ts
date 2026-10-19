@@ -1,6 +1,7 @@
 import type { Project } from "../model";
 import { framesOf } from "./frames";
 import { itemKey } from "./types";
+import { SHOT_COLUMN_WIDTH, SHOT_FRAME_OFFSET } from "./shotLayout";
 
 // Legacy shot frames describe usage. Materialize a standalone card only when
 // the image has no card yet; never collapse user-created copies.
@@ -25,7 +26,7 @@ export function materializeFrameCards(p: Project): Project {
         const key = itemKey("node", id);
         const position = p.production?.positions?.[key] ??
           p.production?.positions?.[legacyKey] ?? {
-            x: i * 1600 + 535 + (j % 2) * 290,
+            x: i * SHOT_COLUMN_WIDTH + SHOT_FRAME_OFFSET + (j % 2) * 290,
             y: 110 + Math.floor(j / 2) * 395,
           };
         next = {

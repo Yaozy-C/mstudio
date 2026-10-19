@@ -79,7 +79,68 @@
 .previs-chat .agent-composer {
   flex-shrink: 0;
 }
+.previs-image-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  max-height: 76px;
+  padding: 2px 4px 10px;
+}
+.previs-message-images {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.previs-message-images figure {
+  width: 96px;
+  margin: 0;
+}
+.previs-message-images img {
+  width: 96px;
+  height: 96px;
+  display: block;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--desk-bg);
+  border: 1px solid var(--ui-rule);
+}
+.previs-message-images figcaption {
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--desk-muted);
+  font-size: 10px;
+}
+.previs-image {
+  position: relative;
+  flex: 0 0 60px;
+  height: 60px;
+}
+.previs-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--ui-rule);
+  border-radius: 8px;
+}
+.radix-themes .previs-dialog .previs-image button {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  display: grid;
+  place-items: center;
+  min-height: 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+}
 .radix-themes .previs-chat .composer-tools .studio-select-trigger {
+  flex: 1 1 0;
+  width: auto;
   min-width: 0;
   max-width: 100%;
   height: 30px;

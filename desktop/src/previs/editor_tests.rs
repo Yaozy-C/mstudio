@@ -193,7 +193,7 @@ fn dsh_null_placeholders_deletion_ranges_and_path_rules_are_preserved() {
     cleanup(store);
 }
 #[test]
-fn existing_empty_files_use_insert_and_deleted_files_can_be_created_again() {
+fn empty_current_files_can_be_initialized_without_overwriting_existing_code() {
     let (store, mut editor) = workspace();
     let code = editor.file.code.clone();
     edit(
@@ -202,20 +202,21 @@ fn existing_empty_files_use_insert_and_deleted_files_can_be_created_again() {
         json!({"command":"str_replace","path":"/scene.js","old_str":code,"new_str":""}),
     )
     .unwrap();
+    edit(
+        &store,
+        &mut editor,
+        json!({"command":"create","path":"/scene.js","file_text":"// new"}),
+    )
+    .unwrap();
+    assert_eq!(editor.file.code, "// new");
     assert!(
         edit(
             &store,
             &mut editor,
-            json!({"command":"create","path":"/scene.js","file_text":"wrong"})
+            json!({"command":"create","path":"/scene.js","file_text":"overwrite"})
         )
         .is_err()
     );
-    edit(
-        &store,
-        &mut editor,
-        json!({"command":"insert","path":"/scene.js","insert_line":0,"new_str":"// new"}),
-    )
-    .unwrap();
     std::fs::remove_file(files::path(&store, "p", &editor.file).unwrap()).unwrap();
     assert!(
         edit(
@@ -232,5 +233,31 @@ fn existing_empty_files_use_insert_and_deleted_files_can_be_created_again() {
     )
     .unwrap();
     assert_eq!(editor.file.code, "// recreated");
+    cleanup(store);
+}
+
+#[test]
+fn empty_model_initialization_checks_for_concurrent_disk_writes() {
+    let store = setup();
+    let mut empty = model("empty", "Empty model");
+    empty.code.clear();
+    let saved = files::save(&store.db.lock().unwrap(), &store, "p", empty, 0).unwrap();
+    let mut editor = Editor::new(&saved, &[]);
+    let path = files::path(&store, "p", &saved).unwrap();
+    std::fs::write(&path, "// another editor").unwrap();
+    let create = json!({"command":"create","path":"/model.js","file_text":"// generated model"});
+    assert!(
+        edit(&store, &mut editor, create.clone())
+            .unwrap_err()
+            .to_string()
+            .contains("File changed")
+    );
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), "// another editor");
+    std::fs::write(&path, "").unwrap();
+    edit(&store, &mut editor, create).unwrap();
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "// generated model"
+    );
     cleanup(store);
 }

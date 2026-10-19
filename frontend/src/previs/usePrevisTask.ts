@@ -5,7 +5,7 @@ import { t } from "../i18n";
 import { usePrevisAgent } from "./usePrevisAgent";
 import { readyModel, type ModelConnection } from "../models/types";
 import type { RuntimeHandle } from "./RuntimeFrame";
-import type { PrevisFile, PrevisWorkspace } from "./types";
+import type { PrevisFile, PrevisImage, PrevisWorkspace } from "./types";
 
 export type PrevisPhase =
   | "saving"
@@ -41,6 +41,9 @@ export function usePrevisTask({
   const [phase, setPhase] = useState<PrevisPhase>(null);
   const [error, setError] = useState("");
   const [pendingPrompt, setPendingPrompt] = useState("");
+  const [pendingImages, setPendingImages] = useState<PrevisImage[]>([]);
+  const [pendingRequestId, setPendingRequestId] = useState("");
+  const accepted = useRef(false);
   const [stopping, setStopping] = useState(false);
   const [frames, setFrames] = useState({ done: 0, total: 0 });
   const [renderFiles, setRenderFiles] = useState<PrevisFile[]>([]);
@@ -88,6 +91,9 @@ export function usePrevisTask({
     setPhase("saving");
     setStopping(false);
     setPendingPrompt(text);
+    setPendingImages([]);
+    setPendingRequestId("");
+    accepted.current = false;
     setFrames({ done: 0, total: 0 });
     setSeconds(0);
     return true;
@@ -101,25 +107,39 @@ export function usePrevisTask({
     requestId.current = "";
     renderId.current = "";
     setPendingPrompt("");
+    setPendingImages([]);
+    setPendingRequestId("");
     setBusy(null);
     setStopping(false);
     setRenderSource(null);
   }
-  async function chat(text: string, saved: PrevisFile) {
+  async function chat(
+    text: string,
+    saved: PrevisFile,
+    images: PrevisImage[] = [],
+  ) {
     checkCancelled();
     if (!model || !readyModel(model))
       throw Error(t("请先选择已连接的对话模型"));
     setPhase("generating");
     requestId.current = crypto.randomUUID();
+    setPendingRequestId(requestId.current);
     try {
-      const result = await agent.run({
-        projectId,
-        fileId,
-        expectedRevision: saved.revision,
-        prompt: text,
-        modelId: model.id,
-        requestId: requestId.current,
-      });
+      const result = await agent.run(
+        {
+          projectId,
+          fileId,
+          expectedRevision: saved.revision,
+          prompt: text,
+          imageAssetIds: images.map((a) => a.id),
+          modelId: model.id,
+          requestId: requestId.current,
+        },
+        () => {
+          accepted.current = true;
+        },
+      );
+      accepted.current = true;
       onResult(result.file);
       return result.file;
     } finally {
@@ -127,15 +147,17 @@ export function usePrevisTask({
       await refresh();
     }
   }
-  async function send(text: string) {
+  async function send(text: string, images: PrevisImage[] = []) {
     if (!text.trim() || !start("chat", text)) return false;
+    setPendingImages(images);
     try {
-      await chat(text, await persist());
+      await chat(text, await persist(), images);
       setPhase("complete");
       return true;
     } catch (e) {
       fail(e);
-      return false;
+      // A generation error does not unsend an already accepted user message.
+      return accepted.current;
     } finally {
       finish();
     }
@@ -151,16 +173,19 @@ export function usePrevisTask({
     }
     throw Error(t("预演加载超时，请检查代码或重新加载"));
   }
-  async function render() {
-    if (!start("render", t("根据镜头说明生成预演视频"))) return;
+  async function render(images: PrevisImage[] = []) {
+    if (!start("render", t("根据镜头说明生成预演视频"))) return false;
     try {
       let source = await persist();
       checkCancelled();
-      if (!source.code.trim())
+      if (!source.code.trim()) {
+        setPendingImages(images);
         source = await chat(
           `请根据当前镜头说明创建预演，优先复用项目模型，不足时新增有名字的模型资产。${source.description}`,
           source,
+          images,
         );
+      }
       checkCancelled();
       const snapshot = await bridge<PrevisWorkspace>("previs_workspace", {
         projectId,
@@ -201,6 +226,7 @@ export function usePrevisTask({
       renderId.current = "";
       await refresh();
       setPhase("complete");
+      return true;
     } catch (e) {
       if (renderId.current)
         await bridge("cancel_previs_render", {
@@ -208,6 +234,7 @@ export function usePrevisTask({
           id: renderId.current,
         }).catch(() => {});
       fail(e);
+      return accepted.current;
     } finally {
       finish();
     }
@@ -237,6 +264,8 @@ export function usePrevisTask({
     error,
     setError,
     pendingPrompt,
+    pendingImages,
+    pendingRequestId,
     stopping,
     frames,
     seconds,

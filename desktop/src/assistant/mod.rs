@@ -18,6 +18,7 @@ mod model_profile;
 mod model_stream;
 pub(crate) mod parent_activation;
 pub(crate) mod permissions;
+pub(crate) mod previs_images;
 pub mod profiles;
 mod progress;
 mod prompt_guidance;

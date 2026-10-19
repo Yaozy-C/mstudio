@@ -1,5 +1,5 @@
 import { CanvasControls } from "./CanvasControls";
-import { shotAreas, timelineAssetIds } from "./canvasIndex";
+import { timelineAssetIds } from "./canvasIndex";
 import { t, useLanguage } from "../i18n";
 import { collectAsset } from "../workspace/assetLibrary";
 import { productionShots } from "./items";
@@ -37,7 +37,6 @@ export function ProductionCanvas({
   const { root, view, latest, setView, size, fit, zoom } =
     useProductionViewport(project, items, focus, shots);
   const visible = visibleItems(items, view, size);
-  const areas = useMemo(() => shotAreas(shots, items), [shots, items]);
   const collect = useCallback(
     (asset: Asset) => change((p) => collectAsset(p, asset)),
     [change],
@@ -131,16 +130,6 @@ export function ProductionCanvas({
             transform: `translate(${view.x}px,${view.y}px) scale(${view.scale})`,
           }}
         >
-          {visibleItems(areas, view, size).map((n) => (
-            <div
-              className="shot-area"
-              key={n.id}
-              style={{ left: n.x, height: n.height }}
-            >
-              <span>SHOT {String(n.index + 1).padStart(2, "0")}</span>
-              <h2>{n.title}</h2>
-            </div>
-          ))}
           {visible.map((item) => (
             <CanvasCard
               onAdd={onAdd}

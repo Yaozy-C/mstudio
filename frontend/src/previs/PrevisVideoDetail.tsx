@@ -7,7 +7,13 @@ import { AsyncButton, StatusMessage } from "../ui/AsyncState";
 import { usePrevis } from "./context";
 import { isStale, type PrevisExport } from "./types";
 
-export function PrevisVideoDetail({ video }: { video: PrevisExport }) {
+export function PrevisVideoDetail({
+  video,
+  autoPlay = false,
+}: {
+  video: PrevisExport;
+  autoPlay?: boolean;
+}) {
   const {
     workspace,
     project,
@@ -67,6 +73,7 @@ export function PrevisVideoDetail({ video }: { video: PrevisExport }) {
           <video
             src={mediaUrl(video.asset.path)}
             controls
+            autoPlay={autoPlay}
             preload="metadata"
             playsInline
             aria-label={video.asset.name}

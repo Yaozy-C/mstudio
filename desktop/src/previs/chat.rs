@@ -4,7 +4,7 @@ use anyhow::{Context, Result, ensure};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{collections::HashMap, sync::Mutex};
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 use tokio_util::sync::CancellationToken;
 
 #[derive(Default)]
@@ -19,6 +19,8 @@ pub struct Request {
     pub prompt: String,
     pub model_id: String,
     pub request_id: String,
+    #[serde(default)]
+    pub image_asset_ids: Vec<String>,
 }
 
 #[tauri::command]
@@ -55,7 +57,7 @@ async fn run(app: &tauri::AppHandle, r: &Request, token: &CancellationToken) -> 
     ensure!(!r.prompt.trim().is_empty(), "请填写修改要求");
     let store = app.state::<Store>();
     // Network and tool execution never hold the storage lock.
-    let (file, all, model, key) = {
+    let (file, all, model, key, doc) = {
         let db = store.db.lock().unwrap();
         let file = files::read(&db, &r.project_id, &r.file_id)?.context("请先创建预演文件")?;
         ensure!(
@@ -64,27 +66,56 @@ async fn run(app: &tauri::AppHandle, r: &Request, token: &CancellationToken) -> 
         );
         let all = files::list(&db, &r.project_id)?;
         let (model, key) = crate::models::resolve(&db, None, Some(&r.model_id))?;
-        (file, all, model, key)
+        let doc = crate::project_service::load(&db, &r.project_id)?;
+        (file, all, model, key, doc)
     };
     let context = super::chat_context::request(&file, &all, &r.prompt);
+    let input = crate::assistant::previs_images::message(
+        &store,
+        &doc,
+        &context,
+        &r.image_asset_ids,
+        &model.profile,
+    )?;
+    let images = super::messages::images(&store, &doc, &r.image_asset_ids)?;
+    {
+        let _guard = project_storage::working(&store, &r.project_id).await?;
+        let db = store.db.lock().unwrap();
+        super::messages::save(
+            &db,
+            &r.project_id,
+            &r.file_id,
+            &r.request_id,
+            "user",
+            &r.prompt,
+            &images,
+        )?;
+    }
+    let _ = app.emit(
+        "previs-agent-progress",
+        serde_json::json!({
+            "projectId":r.project_id,"fileId":r.file_id,"requestId":r.request_id,
+            "kind":"request/accepted","value":{},
+        }),
+    );
     let agent = PrevisAgent {
         editor: Mutex::new(Editor::new(&file, &all)),
         app,
         request: r,
         token,
     };
-    let message = agent.run(&model, &key, &context).await?;
+    let message = agent.run(&model, &key, input).await?;
     let _guard = project_storage::working(&store, &r.project_id).await?;
     let db = store.db.lock().unwrap();
     let file = files::read(&db, &r.project_id, &r.file_id)?.context("File was deleted")?;
-    db.execute(
-        "INSERT INTO previs_messages(project_id,file_id,role,text) VALUES(?1,?2,'user',?3)",
-        rusqlite::params![r.project_id, r.file_id, r.prompt],
+    super::messages::save(
+        &db,
+        &r.project_id,
+        &r.file_id,
+        &r.request_id,
+        "assistant",
+        &message,
+        &serde_json::json!([]),
     )?;
-    db.execute(
-        "INSERT INTO previs_messages(project_id,file_id,role,text) VALUES(?1,?2,'assistant',?3)",
-        rusqlite::params![r.project_id, r.file_id, message],
-    )?;
-    db.execute("DELETE FROM previs_messages WHERE project_id=?1 AND file_id=?2 AND id NOT IN (SELECT id FROM previs_messages WHERE project_id=?1 AND file_id=?2 ORDER BY id DESC LIMIT 100)", rusqlite::params![r.project_id,r.file_id])?;
     Ok(serde_json::json!({"file":file,"message":message}))
 }

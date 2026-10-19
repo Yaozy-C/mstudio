@@ -106,7 +106,7 @@ test("shot results stay beside their shot even when the viewport is far away", (
   p.production = { viewport: { x: 980, y: 660, scale: 0.18 } };
   const t = { ...task(), ownerId: "shot", inputs: [] };
   const position = resultPlacement(p, t);
-  expect(position.x).toBe(527);
+  expect(position.x).toBe(1447);
   expect(position.y).toBeLessThan(1000);
   const next = receiveProductionResult(p, asset("new-frame"), {
     ...p.nodes[1],

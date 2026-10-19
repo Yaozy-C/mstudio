@@ -5,6 +5,10 @@ import { PrevisChat } from "../src/previs/PrevisChat";
 import { newModel } from "../src/previs/types";
 import { newConnection } from "../src/models/types";
 import type { PrevisEditorState } from "../src/previs/usePrevisEditor";
+import { usePrevisImages } from "../src/previs/usePrevisImages";
+import type { Project } from "../src/model";
+import type { PrevisMessage } from "../src/previs/types";
+import { submitPrevisDraft } from "../src/previs/submitDraft";
 import "@radix-ui/themes/styles.css";
 import "../src/styles/color-tokens.css";
 import "../src/styles/motion.css";
@@ -18,7 +22,23 @@ const model = {
   id: "demo",
   name: "Demo",
   adapter: "codex" as const,
+  inputs: { image: true, audio: false, video: false, document: false },
 };
+const project = {
+  id: "demo",
+  assets: [
+    {
+      id: "bag-image",
+      kind: "image",
+      name: "Bag reference",
+      path:
+        "data:image/svg+xml," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#d9b18d"/><rect x="20" y="25" width="60" height="55" rx="10" fill="#786346"/></svg>',
+        ),
+    },
+  ],
+} as Project;
 const paragraph =
   "预演文件操作 · Read the current scene, adjust the camera, and save the file.\n\n";
 const frame = () =>
@@ -26,13 +46,17 @@ const frame = () =>
 let submitted = 0;
 
 function App() {
+  const images = usePrevisImages(project, () => {});
   const [prompt, setPrompt] = useState("");
   const [partial, setPartial] = useState(paragraph.repeat(40));
   const [busy, setBusy] = useState<"chat" | null>("chat");
   const [results, setResults] = useState<string[]>([]);
+  const [messages, setMessages] = useState<PrevisMessage[]>([]);
   const state = {
+    images,
+    project,
     file: newModel("Demo"),
-    messages: [],
+    messages,
     busy,
     phase: busy ? "generating" : null,
     pendingPrompt: "",
@@ -49,8 +73,20 @@ function App() {
     frames: { done: 0, total: 0 },
     lastKind: "chat",
     send: async () => {
-      submitted++;
-      setPrompt("");
+      await submitPrevisDraft(
+        prompt,
+        images,
+        setPrompt,
+        async (text, refs) => {
+          submitted++;
+          setMessages((current) => [
+            ...current,
+            { fileId: "demo", role: "user", text, images: refs },
+          ]);
+          return true;
+        },
+        () => {},
+      );
     },
     stop: async () => setBusy(null),
   } as unknown as PrevisEditorState;
@@ -140,6 +176,7 @@ function App() {
       enter();
       await frame();
       assert(submitted === 1, "empty Enter does not submit");
+      setPartial("");
     } catch (error) {
       setResults([...checks, String(error)]);
     }
@@ -158,7 +195,7 @@ function App() {
         >
           {results.join("\n")}
         </output>
-        <div style={{ display: "flex", height: 650, width: 480 }}>
+        <div className="previs-dialog" style={{ height: 620, width: 480 }}>
           <PrevisChat state={state} />
         </div>
       </main>

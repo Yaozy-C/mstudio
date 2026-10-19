@@ -7,6 +7,7 @@ import { MessageCopyButton } from "../assistant/MessageCopyButton";
 import { t } from "../i18n";
 import type { PrevisEditorState } from "./usePrevisEditor";
 import "../styles/agent-activity.css";
+import { PrevisMessageImages } from "./PrevisMessageImages";
 
 function Message({
   role,
@@ -42,6 +43,8 @@ export function PrevisAgentMessages({ state }: { state: PrevisEditorState }) {
   const {
     messages,
     pendingPrompt,
+    pendingImages,
+    pendingRequestId,
     agentPartial = "",
     agentEvents = [],
     seconds,
@@ -61,14 +64,29 @@ export function PrevisAgentMessages({ state }: { state: PrevisEditorState }) {
   return (
     <>
       {messages.map((message, index) => (
-        <Message key={index} role={message.role} text={message.text}>
+        <Message
+          key={message.id ?? index}
+          role={message.role}
+          text={message.text}
+        >
+          <PrevisMessageImages images={message.images} />
           {completed &&
             index === messages.length - 1 &&
             message.role === "assistant" &&
             activity}
         </Message>
       ))}
-      {pendingPrompt && <Message role="user" text={pendingPrompt} />}
+      {pendingPrompt &&
+        !messages.some(
+          (m) =>
+            m.role === "user" &&
+            !!pendingRequestId &&
+            m.requestId === pendingRequestId,
+        ) && (
+          <Message role="user" text={pendingPrompt}>
+            <PrevisMessageImages images={pendingImages} />
+          </Message>
+        )}
       {!completed && (activity || agentPartial) && (
         <Message role="assistant" text={agentPartial}>
           {activity}

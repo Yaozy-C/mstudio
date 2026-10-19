@@ -162,13 +162,11 @@ pub async fn previs_workspace(app: tauri::AppHandle, project_id: String) -> Resu
         let db = store.db.lock().unwrap();
         project_service::load(&db, &project_id)?;
         let files = list(&db, &project_id)?;
-        let messages = db.prepare("SELECT file_id,role,text FROM previs_messages WHERE project_id=?1 ORDER BY id DESC LIMIT 200")?
-            .query_map([&project_id], |r| Ok(json!({"fileId":r.get::<_,String>(0)?,"role":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?})))?
-            .collect::<rusqlite::Result<Vec<_>>>()?;
+        let messages = super::messages::list(&db, &project_id)?;
         let exports = db.prepare("SELECT data FROM previs_exports WHERE project_id=?1 ORDER BY rowid DESC LIMIT 100")?
             .query_map([&project_id], |r| r.get::<_,String>(0))?.collect::<rusqlite::Result<Vec<_>>>()?
             .iter().map(|s| serde_json::from_str::<Value>(s)).collect::<serde_json::Result<Vec<_>>>()?;
-        Ok(json!({"files":files,"messages":messages.into_iter().rev().collect::<Vec<_>>(),"exports":exports}))
+        Ok(json!({"files":files,"messages":messages,"exports":exports}))
     })().map_err(|e| e.to_string())
     }).await.map_err(|e| e.to_string())?
 }

@@ -31,6 +31,7 @@ function render({
   missing = false,
   stale = false,
   linked = false,
+  autoPlay = false,
 } = {}) {
   const project = newProject("Previs browser");
   if (!orphan)
@@ -59,6 +60,7 @@ function render({
     <Context.Provider value={value}>
       <PrevisVideoDetail
         video={{ ...video, asset: { ...video.asset, missing } }}
+        autoPlay={autoPlay}
       />
     </Context.Provider>,
   );
@@ -72,6 +74,11 @@ test("a saved previs is directly playable with its actual size, duration and ref
   expect(html).toContain("720 × 1280");
   expect(html).toContain("设为参考");
   expect(html).toContain("保存为项目素材");
+});
+
+test("the shot playback shortcut can start the saved video immediately", () => {
+  expect(render()).not.toContain('autoPlay=""');
+  expect(render({ autoPlay: true })).toMatch(/<video[^>]*autoPlay=""/);
 });
 
 test("removed shots keep their saved videos playable without offering an invalid reference", () => {

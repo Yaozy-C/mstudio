@@ -21,13 +21,10 @@ pub struct PrevisAgent<'a> {
     pub token: &'a CancellationToken,
 }
 impl PrevisAgent<'_> {
-    pub async fn run(&self, model: &Model, key: &str, task: &str) -> Result<String> {
+    pub async fn run(&self, model: &Model, key: &str, task: Message) -> Result<String> {
         let transport =
             crate::assistant::provider::text_model(&model.profile, key).map_err(|e| anyhow!(e))?;
-        let session = Session::new(vec![
-            Message::system(editor_schema::CONTRACT),
-            Message::user(task),
-        ]);
+        let session = Session::new(vec![Message::system(editor_schema::CONTRACT), task]);
         harness::run(&transport, &model.profile, self, session, true, key)
             .await
             .map_err(|e| anyhow!(e))

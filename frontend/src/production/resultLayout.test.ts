@@ -7,6 +7,7 @@ import { productionItems } from "./items";
 import { resultPlacement } from "./resultPlacement";
 import { overlapsResult, resultSize } from "./resultLayout";
 import type { ProductionTask } from "./types";
+import { SHOT_CARD_WIDTH } from "./shotLayout";
 
 test("Agent batches reserve the sent canvas coordinates and retain order when results arrive backwards", () => {
   let p = newProject("placement");
@@ -63,7 +64,7 @@ test("targeted Agent tasks anchor to the shot without assigning result ownership
     y: -9000,
     scale: 1,
   });
-  expect(position.x).toBe(527);
+  expect(position.x).toBe(35 + SHOT_CARD_WIDTH + 32);
   expect(position.y).toBeLessThan(1000);
   expect(task.ownerId).toBeUndefined();
 });
@@ -140,8 +141,8 @@ test("shot images and videos reserve their result areas without a viewport", () 
   };
   const image = resultPlacement(p, task);
   const video = resultPlacement(p, { ...task, kind: "video" });
-  expect(image.x).toBe(527);
-  expect(video.x).toBe(1135);
+  expect(image.x).toBe(35 + SHOT_CARD_WIDTH + 32);
+  expect(video.x).toBe(35 + SHOT_CARD_WIDTH + 640);
   expect(Number.isFinite(image.y) && Number.isFinite(video.y)).toBe(true);
 });
 

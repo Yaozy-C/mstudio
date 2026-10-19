@@ -4,6 +4,12 @@ import { takesOf } from "../creative/document";
 import { framesOf } from "./frames";
 import { itemKey, type ProductionItem } from "./types";
 import type { Project } from "../model";
+import {
+  SHOT_CARD_WIDTH,
+  SHOT_COLUMN_WIDTH,
+  SHOT_VIDEO_OFFSET,
+  separateShotCards,
+} from "./shotLayout";
 export function productionShots(p: Project) {
   const indices = new Map(p.nodes.map((node, i) => [node.id, i]));
   return p.nodes
@@ -22,7 +28,7 @@ export function productionItems(p: Project): ProductionItem[] {
   const nodes = new Map(p.nodes.map((node) => [node.id, node]));
   const shots = productionShots(p);
   shots.forEach((n, i) => {
-    const x = i * 1600,
+    const x = i * SHOT_COLUMN_WIDTH,
       ownerId = n.id;
     const script = nodes
       .get(n.shot!.screenplayId)
@@ -41,7 +47,7 @@ export function productionItems(p: Project): ProductionItem[] {
         .join("\n\n"),
       x: x + 35,
       y: 110,
-      width: 460,
+      width: SHOT_CARD_WIDTH,
       height: 300,
     });
     takesOf(n)
@@ -56,7 +62,7 @@ export function productionItems(p: Project): ProductionItem[] {
           assetId: a.id,
           title: a.name,
           text: n.text,
-          x: x + 1135,
+          x: x + SHOT_VIDEO_OFFSET,
           y: 110 + j * 395,
           width: 260,
           height: 350,
@@ -95,7 +101,9 @@ export function productionItems(p: Project): ProductionItem[] {
       });
     });
   const hidden = new Set(p.production?.hidden ?? []);
-  return items
-    .filter((n) => !hidden.has(n.key))
-    .map((n) => ({ ...n, ...p.production?.positions?.[n.key] }));
+  return separateShotCards(
+    items
+      .filter((n) => !hidden.has(n.key))
+      .map((n) => ({ ...n, ...p.production?.positions?.[n.key] })),
+  );
 }

@@ -8,7 +8,7 @@ pub(super) fn request(file: &File, files: &[File], prompt: &str) -> String {
         .filter(|model| model.kind == "model" && file.asset_ids.contains(&model.id))
         .map(|model| json!({"id":model.id,"name":model.name,"description":model.description,"path":format!("/models/{}.js",model.id)}))
         .collect::<Vec<_>>();
-    json!({"currentFile":{"id":file.id,"kind":file.kind,"name":file.name,"description":file.description,"duration":file.duration,"width":file.width,"height":file.height,"fps":file.fps,"bindings":file.bindings},"modelInventory":inventory,"request":prompt,
+    json!({"currentFile":{"id":file.id,"kind":file.kind,"name":file.name,"description":file.description,"duration":file.duration,"width":file.width,"height":file.height,"fps":file.fps,"bindings":file.bindings,"sourceState":if file.code.trim().is_empty() {"empty"} else {"populated"}},"modelInventory":inventory,"request":prompt,
         "editorPath":if file.kind=="shot" {"/scene.js"} else {"/model.js"}})
     .to_string()
 }
@@ -51,6 +51,7 @@ mod tests {
         assert_eq!(payload.as_object().unwrap().len(), 4);
         assert_eq!(payload["editorPath"], "/scene.js");
         assert_eq!(payload["request"], "Open the lid");
+        assert_eq!(payload["currentFile"]["sourceState"], "populated");
         assert!(payload["currentFile"].get("code").is_none());
         assert_eq!(
             payload["modelInventory"],
@@ -67,5 +68,6 @@ mod tests {
             serde_json::from_str(&request(&empty, &[], "First scene")).unwrap();
         assert!(payload["currentFile"].get("code").is_none());
         assert_eq!(payload["modelInventory"], json!([]));
+        assert_eq!(payload["currentFile"]["sourceState"], "empty");
     }
 }

@@ -24,10 +24,12 @@ import { savedPrevisTasks } from "./savedTasks";
 export function PrevisProvider({
   project,
   flush,
+  change,
   children,
 }: {
   project: Project;
   flush: () => Promise<unknown>;
+  change: (fn: (p: Project) => Project) => void;
   children: ReactNode;
 }) {
   const [workspace, setWorkspace] = useState<PrevisWorkspace>(emptyWorkspace);
@@ -37,6 +39,7 @@ export function PrevisProvider({
   const [videoPanel, setVideoPanel] = useState<{
     open: boolean;
     fileId?: string;
+    autoPlay?: boolean;
   }>({
     open: false,
   });
@@ -170,6 +173,7 @@ export function PrevisProvider({
         refresh,
         save,
         flush,
+        change,
         attachReference,
         collectVideo,
         open: (id) => void open(id),
@@ -178,7 +182,8 @@ export function PrevisProvider({
         loading,
         tasks: savedPrevisTasks(workspace, tasks),
         videoPanel,
-        showVideos: (fileId) => setVideoPanel({ open: true, fileId }),
+        showVideos: (fileId, autoPlay = false) =>
+          setVideoPanel({ open: true, fileId, autoPlay }),
         closeVideos: () => setVideoPanel({ open: false }),
       }}
     >

@@ -11,6 +11,7 @@ type Request = {
   expectedRevision: number;
   prompt: string;
   modelId: string;
+  imageAssetIds: string[];
 };
 type Progress = Pick<Request, "projectId" | "fileId" | "requestId"> & {
   kind: string;
@@ -21,7 +22,7 @@ type Progress = Pick<Request, "projectId" | "fileId" | "requestId"> & {
 export function usePrevisAgent() {
   const [partial, setPartial] = useState("");
   const [events, setEvents] = useState<ActivityEvent[]>([]);
-  async function run(request: Request) {
+  async function run(request: Request, onAccepted: () => void) {
     setPartial("");
     setEvents([]);
     let seq = 0;
@@ -33,6 +34,10 @@ export function usePrevisAgent() {
             p.requestId !== request.requestId
           )
             return;
+          if (p.kind === "request/accepted") {
+            onAccepted();
+            return;
+          }
           if (p.kind === "assistant/partial") {
             setPartial(p.value.text || "");
             return;

@@ -125,7 +125,12 @@ impl Editor {
         }
         let before = current
             .as_ref()
-            .filter(|_| source_exists)
+            // A host-created empty source is an uninitialized file, safe to fill with create.
+            // Revision and disk checks above still reject concurrent edits.
+            .filter(|file| {
+                source_exists
+                    && !(is_current && file.code.trim().is_empty() && c.command == "create")
+            })
             .map(|f| f.code.as_str());
         let next = c.apply(before, null_replacement)?;
         ensure!(next.len() <= MAX_BYTES, "File exceeds 2 MB");
