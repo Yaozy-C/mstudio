@@ -177,7 +177,12 @@ fn copy_frame(
     }
     #[cfg(test)]
     if let FrameOutput::Observed(observer) = output {
-        let _ = observer.send((position, data[0]));
+        let segment = sample.segment().ok_or(gst::FlowError::Error)?;
+        let _ = observer.send(crate::ges_output::ObservedFrame {
+            position,
+            red: data[0],
+            rate: segment.rate() * segment.applied_rate(),
+        });
     }
     Ok(gst::FlowSuccess::Ok)
 }

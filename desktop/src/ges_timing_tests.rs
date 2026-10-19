@@ -1,4 +1,5 @@
 use super::{Player, wait_frame};
+use crate::ges_output::ObservedFrame;
 use mstudio::{
     model::{Clip, RenderSpec, Track},
     preview_ges,
@@ -7,6 +8,48 @@ use std::{
     path::Path,
     time::{Duration, Instant},
 };
+
+fn wait_rate(received: &std::sync::mpsc::Receiver<ObservedFrame>, rate: f64, after: u32) -> u32 {
+    let deadline = Instant::now() + Duration::from_secs(4);
+    loop {
+        let frame = received
+            .recv_timeout(deadline.saturating_duration_since(Instant::now()))
+            .unwrap_or_else(|_| {
+                panic!("native playback did not advance after {after} at rate {rate}")
+            });
+        assert!(frame.red > 40, "black playback frame {}", frame.position);
+        if frame.position > after && (frame.rate - rate).abs() < 1e-6 {
+            return frame.position;
+        }
+    }
+}
+
+pub(super) fn playback_rates(p: &Player, received: &std::sync::mpsc::Receiver<ObservedFrame>) {
+    // Verify the rate on actual GStreamer samples, independent of runner scheduling.
+    for step in [8, 1] {
+        let rate = f64::from(step) / 4.;
+        p.control("rate", step).unwrap();
+        let sought = p.control("seek", 0).unwrap();
+        assert_eq!(sought.rate, rate);
+        received.try_iter().for_each(drop);
+        p.control("play", 0).unwrap();
+        let frame = wait_rate(received, rate, 0);
+        let paused = p.control("pause", 0).unwrap();
+        assert!(paused.frame >= frame as i32);
+        assert_eq!(paused.rate, rate);
+    }
+    p.control("seek", 0).unwrap();
+    received.try_iter().for_each(drop);
+    p.control("play", 0).unwrap();
+    let changed = p.control("rate", 6).unwrap();
+    assert!(changed.playing);
+    assert_eq!(changed.rate, 1.5);
+    let frame = wait_rate(received, 1.5, changed.frame as u32);
+    let paused = p.control("pause", 0).unwrap();
+    assert!(paused.frame >= frame as i32);
+    assert_eq!(paused.rate, 1.5);
+    p.control("rate", 4).unwrap();
+}
 
 /// Reuse the existing fixture; validate real cache preparation and GES together.
 pub(super) fn cached_fractional_cuts(root: &Path, source: &Path) {
@@ -100,9 +143,13 @@ pub(super) fn cached_fractional_cuts(root: &Path, source: &Path) {
             std::thread::sleep(Duration::from_millis(10));
         }
         let mut seen = std::collections::BTreeSet::new();
-        for (frame, red) in received.try_iter() {
-            assert!(red > 40, "cache/play black at {frame}, duration {duration}");
-            seen.insert(frame);
+        for frame in received.try_iter() {
+            assert!(
+                frame.red > 40,
+                "cache/play black at {}, duration {duration}",
+                frame.position
+            );
+            seen.insert(frame.position);
         }
         for cut in [duration, 2. * duration] {
             let boundary = (cut * 30.).ceil() as u32;

@@ -1,11 +1,17 @@
 #[cfg(target_os = "macos")]
 use std::sync::Arc;
+#[cfg(test)]
+pub(crate) struct ObservedFrame {
+    pub position: u32,
+    pub red: u8,
+    pub rate: f64,
+}
 #[derive(Clone, Default)]
 pub(crate) enum FrameOutput {
     #[default]
     Rgba,
     #[cfg(test)]
-    Observed(std::sync::mpsc::Sender<(u32, u8)>),
+    Observed(std::sync::mpsc::Sender<ObservedFrame>),
     #[cfg(target_os = "macos")]
     Shared(Arc<crate::preview_shared::SharedFrames>),
 }
