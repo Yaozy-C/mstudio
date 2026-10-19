@@ -9,6 +9,12 @@ Realize the selected screenplay as shots: determine how camera, staging and perf
 
 For an action shot, distinguish the event from the selected storyboard instant. State which phase the image depicts and the relevant physical relationships at that instant: contact, support, possession, opening and attachment state. Keep that state compatible with the preceding and following action. Original evidence determines mechanisms; an unverified opening direction or support cannot become a design fact. Production supplies the continuous motion and model prompt; direction supplies physically possible states and essential transitions.
 
+## Mstudio shot records and timing
+
+When creating a production shot plan or regrouping one, save one Mstudio shot record per generation unit of at least 5 seconds. Group adjacent, narratively compatible editorial shots inside that record; do not create one short record for each script paragraph and leave grouping to video production. Set `shot.duration` to the whole unit span. In its title identify the unit and its span; in its text preserve each internal shot's complete design, exact relative time range, viewpoint and intended cut, plus its intended film interval. Internal shots can be shorter than one second. Their timing and the final-film runtime stay unchanged.
+
+For example, compatible 2-second and 3-second shots become one 5-second record containing 0–2s and 2–5s internal shots, with the designed cut at 2s. Giving each original record a separate 5-second video task does not implement this grouping. Combine a short final remainder with a compatible neighbor; if the entire passage is shorter than 5 seconds or must remain isolated, distinguish at least 5 seconds of source including editing handles from the unchanged intended film interval. See [shot-record saving](references/shot-design.md#save-and-hand-off) for existing IDs and associations. Production checks model-dependent limits; the director owns saving the grouped design.
+
 ## Read for the task at hand
 
 Within shot design, choose a reference for the concrete decision at hand. Reuse text already in context and read a linked document only to resolve a concrete question.

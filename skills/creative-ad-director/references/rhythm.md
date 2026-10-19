@@ -22,8 +22,8 @@ Preserve the script's dialogue, significant sounds and silence. Specify where an
 
 ## Keep the time meanings explicit
 
-Distinguish action time, intended film time and the source duration supplied by production. Generation length does not dictate the duration of an editorial shot or the final film. Production owns grouping the design into supported model requests; editing owns selecting from the resulting footage.
+Distinguish action time, intended film time and the source duration supplied by production. Generation length does not dictate the duration of an editorial shot or the final film. Direction saves the design in grouped Mstudio shot records of at least 5 seconds; production adapts those units to supported model requests, and editing selects from the resulting footage.
 
-In Mstudio, an existing shot record may represent a production generation group rather than one editorial shot. Keep its established meaning and internal cut map when revising the design. The [shot-record guidance](shot-design.md#save-and-hand-off) explains how to preserve these associations without treating generation duration as film duration.
+In a new Mstudio production plan, one shot record represents a generation unit and may contain several editorial shots. Its shot.duration is the whole unit span; exact internal durations, cuts and intended film intervals remain in its text. Preserve existing unit meanings and internal cut maps during local revisions. The [shot-record guidance](shot-design.md#save-and-hand-off) explains how to preserve these associations without treating generation duration as film duration.
 
 Carry whether the user's duration is a maximum or an exact total, and mark provisional allocations accordingly. If essential content cannot fit, identify the conflict for the writer or coordinator. For an existing edit that drags, describe any actual design or performance problem; source trimming, track synchronization and a requested whole-film speed multiplier belong to editing.

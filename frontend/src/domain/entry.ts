@@ -91,7 +91,14 @@ function run(input: Request) {
   );
   const tasks = document.production?.drafts ?? {};
   for (const [key, task] of Object.entries(tasks)) {
-    if (equal(task, before.production?.drafts?.[key])) continue;
+    const previous = before.production?.drafts?.[key];
+    if (equal(task, previous)) continue;
+    // Archiving existing history does not depend on a model still being enabled.
+    if (
+      previous &&
+      equal({ ...task, hiddenFromList: previous.hiddenFromList }, previous)
+    )
+      continue;
     if (!task.modelId) continue;
     const model = input.models.find((m) => m.id === task.modelId && m.enabled);
     if (!model || model.kind !== task.kind)

@@ -7,6 +7,12 @@ type Continuation = {
   trigger: string;
 };
 function continuation(task: ProductionTask, hasResults: boolean): Continuation {
+  if (task.hiddenFromList)
+    return {
+      state: "finished",
+      action: "read_details_on_request",
+      trigger: "new_user_request",
+    };
   if (task.trackingPaused)
     return {
       state: "waiting_user",
@@ -81,6 +87,7 @@ export function taskOutcome(task: ProductionTask) {
     modelId: task.modelId,
     parameters: task.parameters,
     status: task.status ?? "DRAFT",
+    archived: !!task.hiddenFromList,
     resultAssetIds,
     error: task.error,
     continuation: continuation(task, resultAssetIds.length > 0),

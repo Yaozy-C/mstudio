@@ -208,6 +208,8 @@ pub(crate) mod tests;
 mod concurrent_tests;
 
 #[cfg(test)]
+mod archive_tests;
+#[cfg(test)]
 mod production_reference_merge_tests;
 #[cfg(test)]
 mod production_tests;

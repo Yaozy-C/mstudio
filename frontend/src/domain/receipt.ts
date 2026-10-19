@@ -25,10 +25,17 @@ export function receipt(
     savedClips: clipReceipt(before, after),
     scripts: scriptReceipt(after, operations),
     updatedTasks: operations
-      .filter((o) => o.op === "update_generation")
+      .filter((o) =>
+        ["update_generation", "archive_generation"].includes(String(o.op)),
+      )
       .map((o) => {
         const task = after.production?.drafts?.[String(o.taskKey)];
-        return task ? { ...taskOutcome(task), prompt: task.prompt } : null;
+        return task
+          ? {
+              ...taskOutcome(task),
+              ...(o.op === "update_generation" ? { prompt: task.prompt } : {}),
+            }
+          : null;
       }),
     generationTasks: runsOf(after)
       .filter(

@@ -4,6 +4,7 @@ import { agentTimelineEdit } from "../timeline/agentEdits";
 import { patchVisual } from "../timeline/visualSettings";
 import { editTask, regenerateTask } from "../production/taskEditing";
 import { saveTask } from "../production/document";
+import { archiveTask } from "../production/archive";
 import { creativeExtras, validateShotOrder } from "../creative/operations";
 import { assembleScreenplay, chooseTake } from "../creative/timeline";
 import { appendAsset, tracksOf, validateClip } from "../timeline/document";
@@ -158,6 +159,13 @@ export function applyOperations(
         break;
       case "assemble_screenplay":
         next = assembleScreenplay(next, string(op.id, 80));
+        break;
+      case "archive_generation":
+        next = archiveTask(
+          next,
+          string(op.taskKey, 300),
+          op.archived as boolean,
+        );
         break;
       case "update_generation":
         next = editTask(next, string(op.taskKey, 300), {

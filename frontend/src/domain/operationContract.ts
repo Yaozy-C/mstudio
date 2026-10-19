@@ -163,6 +163,17 @@ export const operationContract = {
     op("assemble_screenplay", { id }, ["id"]),
     ...generationOperations,
     op(
+      "archive_generation",
+      {
+        taskKey: text(300),
+        archived: described(
+          boolean,
+          "true removes the task from current work while preserving history; false restores it. Running or uncertain tasks must stop first.",
+        ),
+      },
+      ["taskKey", "archived"],
+    ),
+    op(
       "update_generation",
       {
         taskKey: described(

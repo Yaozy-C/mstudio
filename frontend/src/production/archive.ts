@@ -5,7 +5,8 @@ import { pendingStatuses } from "./recovery";
 
 export function archiveTask(p: Project, key: string, archived: boolean) {
   const task = p.production?.drafts?.[key];
-  if (!task) return p;
+  if (!task) throw new Error("生成任务不存在");
+  if (typeof archived !== "boolean") throw new Error("归档状态无效");
   if (archived && pendingStatuses.includes(task.status ?? ""))
     throw new Error("请先停止生成或等待任务结束，再归档");
   return saveTask(p, { ...task, hiddenFromList: archived });

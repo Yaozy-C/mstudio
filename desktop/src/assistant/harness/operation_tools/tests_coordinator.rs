@@ -119,3 +119,30 @@ fn regeneration_accepts_replacement_prompt_and_references_without_creating_a_tas
         .is_ok()
     );
 }
+
+#[test]
+fn coordinator_has_task_archival_but_no_generation_or_prompt_authoring() {
+    let p = profile("coordinator");
+    let args = decode(
+        &p,
+        "mstudio_archive_generation",
+        json!({"taskKey":"old","archived":true}),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        args["operations"][0],
+        json!({"op":"archive_generation","taskKey":"old","archived":true})
+    );
+    assert!(
+        decode(
+            &p,
+            "mstudio_archive_generation",
+            json!({"taskKey":"old","archived":"true"})
+        )
+        .unwrap()
+        .is_err()
+    );
+    assert!(decode(&p, "mstudio_update_generation", json!({})).is_none());
+    assert!(decode(&p, "mstudio_generate_video", json!({})).is_none());
+}

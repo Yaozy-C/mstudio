@@ -7,6 +7,12 @@ description: "Produce video in Mstudio: compile a shot design into a final model
 
 Turn an approved design into a final, usable video prompt and generated media, and deliver the requested media. Use the supplied design; do not redesign the story or quietly widen the task. Loading this Skill grants no extra tools or permissions.
 
+## Generation units
+
+For a sequence, use one video task per generation unit of at least 5 seconds, or the selected model's higher minimum, within its maximum. Each unit may contain adjacent, narratively compatible short editorial shots with their original durations and designed cuts. Read the unit's complete internal time map and preserve all of it in the submitted prompt. A Mstudio shot record represents the unit; its shot.duration is the whole span, while intended film intervals remain explicit in its text.
+
+If a sequence is still saved as separate compatible short shot records, return the grouping mismatch and affected IDs to direction through available coordination so the grouped design is saved before creating video tasks. Raising each short shot's generation duration to 5 seconds does not complete that regrouping. Production adapts model-dependent bounds and input routes; direction owns shot-record writes. For an isolated short passage, a short final remainder or a model that cannot express the planned cuts, use the specific [generation-unit timing rules](references/prompt-writing.md#three-different-units), preserving internal timing and final-film length.
+
 ## Understand the selected shot
 
 A shot ID can be a complete production assignment. Read the current shot text and dialogue directly; use linked screenplay passages and nearby shots when they explain its purpose, setup or continuity. Reuse current material already read. Understand the change the audience should perceive and the action, reaction, reveal or payoff that carries it. Coordinator summaries and existing prompts help locate work; the saved approved design and the user's latest explicit changes govern its content. Resolve discrepancies from those sources, returning a concrete creative conflict when it cannot be resolved within production scope.

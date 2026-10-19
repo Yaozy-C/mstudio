@@ -27,6 +27,13 @@ pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
         return false;
     }
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
+    if op == "archive_generation" {
+        return has("project-brief")
+            || has("project-production")
+            || has("project-frames")
+            || has("project-assets")
+            || has("project-edit");
+    }
     if op == "update_generation" {
         return has("project-production")
             || has("project-frames")
@@ -127,28 +134,33 @@ pub fn validate(p: &AgentProfile, args: &Value, doc: &Value) -> Result<()> {
         .collect();
     for op in ops {
         let name = op["op"].as_str().unwrap_or("");
-        if matches!(name, "update_generation" | "regenerate_generation") {
+        if matches!(
+            name,
+            "update_generation" | "regenerate_generation" | "archive_generation"
+        ) {
             let key = op["taskKey"]
                 .as_str()
                 .ok_or_else(|| anyhow::anyhow!("Missing task ID"))?;
             let task = &doc["production"]["drafts"][key];
             ensure!(task.is_object(), "Task not found");
-            if asset_only(p) {
+            if name != "archive_generation" || !has("project-brief") {
+                if asset_only(p) {
+                    ensure!(
+                        task["generationPurpose"] == "asset",
+                        "Asset Agent can only modify asset tasks"
+                    );
+                }
+                let kind = task["kind"].as_str().unwrap_or("");
+                // Updating prompt text does not require generation permission.
+                let mut author = p.clone();
+                if !author.tool_ids.iter().any(|id| id == "media-generation") {
+                    author.tool_ids.push("media-generation".into());
+                }
                 ensure!(
-                    task["generationPurpose"] == "asset",
-                    "Asset Agent can only modify asset tasks"
+                    allows_media_kind(&author, kind),
+                    "Task media kind outside this Agent's scope"
                 );
             }
-            let kind = task["kind"].as_str().unwrap_or("");
-            // Updating prompt text does not require generation permission.
-            let mut author = p.clone();
-            if !author.tool_ids.iter().any(|id| id == "media-generation") {
-                author.tool_ids.push("media-generation".into());
-            }
-            ensure!(
-                allows_media_kind(&author, kind),
-                "Task media kind outside this Agent's scope"
-            );
         }
         if name == "request_generation" {
             ensure!(

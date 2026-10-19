@@ -22,6 +22,7 @@ export function prepareGeneration(
 ) {
   const task = p.production?.drafts?.[taskKey];
   if (!task) throw new Error("Generation task no longer exists");
+  if (task.hiddenFromList) throw new Error("请先恢复已归档任务，再开始生成");
   const position = task.position ?? resultPlacement(p, task);
   const snapshot = canvasSnapshot(p, task, position);
   const source = p.nodes.find((n) => n.id === task.ownerId);

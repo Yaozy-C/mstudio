@@ -51,6 +51,7 @@ const operations: Record<string, string> = {
   remove_references: "移除参考素材",
   request_generation: "安排媒体生成",
   update_generation: "修改生成任务",
+  archive_generation: "归档或恢复生成任务",
   regenerate_generation: "重新生成",
   add_node: "添加内容",
   add_shot: "添加镜头",

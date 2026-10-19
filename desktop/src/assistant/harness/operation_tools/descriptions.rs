@@ -1,5 +1,8 @@
 pub fn description(op: &str) -> &'static str {
     match op {
+        "archive_generation" => {
+            "Archive an obsolete generation task by taskKey, or restore it with archived=false. Awaiting-confirmation drafts can be archived directly. Preserves the full history and all media; removes archived tasks from current work and batch submission. Running or uncertain tasks must be stopped first. Does not cancel a service job, delete media or start generation. Use for cleaning up superseded tasks after regrouping shots."
+        }
         "update_generation" => {
             "Save a replacement prompt and/or complete references list on the existing taskKey. Omitted fields are preserved; references=[] clears media inputs. Supply prompt or references. Does not regenerate or change the shot draft."
         }

@@ -1,4 +1,5 @@
 {
+  "归档或恢复生成任务": "Archive or restore generation task",
   "视频将按需抽帧分析，不包含声音；其他资料按模型支持的方式读取。": "Videos are analyzed using frames on demand, without audio. Other attachments use the model’s supported input formats.",
   "修改项目": "Edit project",
   "查找能力": "Find capabilities",

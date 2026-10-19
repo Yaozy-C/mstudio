@@ -77,6 +77,7 @@ export function useProduction(
     const current = get().production?.drafts?.[requested.key];
     if (
       !current ||
+      current.hiddenFromList ||
       !["AWAITING_CONFIRMATION", "READY"].includes(current.status ?? "")
     )
       return;

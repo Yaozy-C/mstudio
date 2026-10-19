@@ -201,3 +201,31 @@ fn specialists_cannot_cross_edit_boundaries() {
         json!({"op":"update_node","id":"p","text":"rewrite"})
     ));
 }
+
+#[test]
+fn task_archival_allows_coordination_without_media_authoring() {
+    let doc = json!({"production":{"drafts":{"image":{"kind":"image"},"video":{"kind":"video"}}}});
+    for (role, key, allowed) in [
+        ("coordinator", "image", true),
+        ("coordinator", "video", true),
+        ("image", "image", true),
+        ("image", "video", false),
+        ("production", "video", true),
+        ("production", "image", false),
+        ("writer", "image", false),
+        ("director", "video", false),
+        ("coordinator", "missing", false),
+    ] {
+        let p = super::super::profiles::builtins()
+            .into_iter()
+            .find(|p| p.id == role)
+            .unwrap();
+        let args =
+            json!({"operations":[{"op":"archive_generation","taskKey":key,"archived":true}]});
+        assert_eq!(validate(&p, &args, &doc).is_ok(), allowed, "{role}: {key}");
+    }
+    assert!(!allows_operation(
+        &read_only_profile(),
+        "archive_generation"
+    ));
+}
