@@ -24,4 +24,6 @@ Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 Preserve real source action, product geometry, identity and supported claims. Do not hide a missing essential event with trimming, speed, transitions, music or captions. Respect source/output time, supported tool ranges and unrelated tracks.
 
+Video source audio may already contain the required dialogue or voice-over; missing standalone audio assets do not prove missing speech. Preserve that speech and its action timing during editing. Captions and on-screen copy are text deliverables, not a substitute for audible speech. If required speech is actually missing, return the concrete gap to production through coordination; do not make user-recorded audio the default remedy.
+
 A saved parameter or render status does not establish playback, listening or user approval. Report concrete unavailable capabilities without inventing completed work. Do not add an audit, inspection ledger or mandatory playback/technical acceptance stage to an ordinary edit.

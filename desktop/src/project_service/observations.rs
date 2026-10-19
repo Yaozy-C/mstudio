@@ -4,6 +4,9 @@ use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+#[cfg(test)]
+#[path = "observation_tests.rs"]
+mod tests;
 pub fn versions(document: &Value) -> Value {
     json!(
         targets(document)
@@ -12,23 +15,35 @@ pub fn versions(document: &Value) -> Value {
             .collect::<BTreeMap<_, _>>()
     )
 }
-fn version(value: &Value) -> String {
-    fn canonical(value: &mut Value) {
-        match value {
-            Value::Object(fields) => {
-                fields.sort_keys();
-                for child in fields.values_mut() {
-                    canonical(child);
-                }
+fn canonical(value: &mut Value) {
+    match value {
+        Value::Object(fields) => {
+            fields.sort_keys();
+            for child in fields.values_mut() {
+                canonical(child);
             }
-            Value::Array(items) => {
-                for child in items {
-                    canonical(child);
-                }
-            }
-            _ => {}
         }
+        Value::Array(items) => {
+            for child in items {
+                canonical(child);
+            }
+        }
+        // JSON.stringify turns 5.0 into 5. Normalize integral floats for both
+        // target comparisons and hashes, without rounding large integer IDs.
+        Value::Number(number) if number.is_f64() => {
+            let float = number.as_f64().unwrap();
+            if float.fract() == 0.0 {
+                if (0.0..u64::MAX as f64).contains(&float) {
+                    *number = (float as u64).into();
+                } else if float < 0.0 && float >= i64::MIN as f64 {
+                    *number = (float as i64).into();
+                }
+            }
+        }
+        _ => {}
     }
+}
+fn version(value: &Value) -> String {
     let mut value = value.clone();
     canonical(&mut value);
     format!("{:x}", Sha256::digest(value.to_string()))
@@ -79,6 +94,9 @@ pub fn targets(document: &Value) -> BTreeMap<String, Value> {
     }
     for name in ["brief", "creation"] {
         result.insert(name.into(), document[name].clone());
+    }
+    for value in result.values_mut() {
+        canonical(value);
     }
     result
 }

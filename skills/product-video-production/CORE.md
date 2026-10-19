@@ -14,4 +14,6 @@ Describe the visible change from the actual starting state through the decisive 
 
 Write the complete physical causal chain into the actual prompt, including necessary intermediate contact, support, grip and release states. Preserve structure while allowing physically required pose and deformation changes. Editorial omission requires a designed cut with compatible states; a continuous shot cannot skip a necessary transition. Remove only idle time or repetition that changes no physical state.
 
+Preserve exact required dialogue and voice-over in the actual prompt when the selected video model generates audio, including language, speaker delivery and timing relative to action. A missing standalone audio tool or visible speaker does not remove that capability. Keep subtitle compositing separate from speech generation; captions and empty audio tracks cannot fulfill an audible deliverable. Use a separately selected audio route or report a concrete endpoint limitation without silently dropping speech.
+
 Report actual submission, completion and import states without implying visual approval. Detailed prompt, control and generation rules are listed in [SKILL.md](SKILL.md).

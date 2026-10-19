@@ -37,6 +37,8 @@ When continuing or revising work, retain useful observations and the reasons for
 
 Use rhythm for timed events and performance for human behavior when those rules are needed; reuse loaded text.
 
+Required speech belongs to the video deliverable. When the selected model supports native audio, include the exact dialogue or offscreen voice-over, language, delivery and action timing in the generation prompt. No visible speaker or standalone TTS tool is required for an offscreen voice. Keeping subtitles out of generated pixels does not mean keeping speech out of generated audio. Use separate audio production only for a selected route or a concrete endpoint limitation; preserve the speech requirement in that handoff.
+
 Final source selection, trimming and timeline assembly belong to editing. Hand off actual generated assets and any known missing events through existing project records; do not perform timeline work under production permissions.
 
 Use [core](CORE.md) when its short rules are needed; reuse loaded text.

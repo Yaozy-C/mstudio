@@ -36,7 +36,7 @@ fn archive_pending_tasks_without_a_model_preserves_history_and_requires_observat
         saved,
         execute(&store, &profile, "p", "turn", "archive", args).unwrap()
     );
-    let document = load(&*store.conn().unwrap(), "p").unwrap();
+    let document = load(&store.conn().unwrap(), "p").unwrap();
     let mut expected = task;
     expected["hiddenFromList"] = json!(true);
     assert_eq!(document["production"]["drafts"]["old"], expected);
@@ -69,7 +69,7 @@ fn archive_rejects_an_active_task_atomically() {
         )
         .unwrap();
     }
-    let before = load(&*store.conn().unwrap(), "p").unwrap();
+    let before = load(&store.conn().unwrap(), "p").unwrap();
     let rejected = execute(
         &store,
         &profile,
@@ -83,7 +83,7 @@ fn archive_rejects_an_active_task_atomically() {
     )
     .unwrap();
     assert_eq!(rejected["outcome"], "not_executed", "{rejected}");
-    assert_eq!(load(&*store.conn().unwrap(), "p").unwrap(), before);
+    assert_eq!(load(&store.conn().unwrap(), "p").unwrap(), before);
     let root = store.root.clone();
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

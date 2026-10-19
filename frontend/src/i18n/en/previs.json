@@ -7,6 +7,7 @@
   "移除参考图片 {v0}": "Remove reference image {v0}",
   "本次最多引用 12 张图片": "You can reference up to 12 images per request",
   "请添加 PNG、JPEG、WebP 或 GIF 图片": "Add PNG, JPEG, WebP, or GIF images",
+  "正在导入附件…": "Importing attachments…",
   "当前模型不支持图片，请切换支持图片的对话模型。": "This model cannot read images. Choose a model that supports image input.",
   "三维预演": "3D previs",
   "共用模型": "Shared model",

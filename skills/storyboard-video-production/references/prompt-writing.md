@@ -49,7 +49,7 @@ This table is an internal authoring aid, not six compulsory prompt headings. Wri
 
 ## Motion and audio capability boundaries
 
-A text description expresses intent. Actual first/last frames, motion references, trajectories, camera controls and native audio require support in the selected endpoint; ordinary reference images do not provide those controls. Use exposed parameters for duration, aspect and other technical specifications instead of inventing prompt commands. If audio, exact timing or a motion-control input is unavailable, preserve the requested relationship in the handoff and report the missing execution route; do not claim prose enabled it or silently switch services. Production does not gain editing/audio tools from this method.
+A text description expresses intent. Actual first/last frames, motion references, trajectories, camera controls and native audio require support in the selected endpoint; ordinary reference images do not provide those controls. Use exposed parameters for duration, aspect and other technical specifications instead of inventing prompt commands. If audio, exact timing or a motion-control input is unavailable, preserve the requested relationship in the handoff and report the missing execution route; do not claim prose enabled it or silently switch services. Producing native speech through an authorized video-generation tool is part of video production; it does not require a standalone audio-generation tool. Include exact required dialogue or voice-over, language, speaker delivery and timing relative to action in the submitted prompt when native audio is supported. A speaker may remain offscreen. A requirement to add subtitles in editing does not authorize a no-speech or no-voice-over instruction. Keep a separately selected audio route when applicable; otherwise report a concrete endpoint limitation before handing required speech elsewhere. Unknown capability is not proof that native speech is unavailable. This method does not grant timeline-editing or standalone audio-generation tools.
 
 A missing movement detail may use a coherent, reversible realization choice within the selected design. Conflicting essential viewpoint, action order or input state requires an explicit conflict report. Do not reopen the creative direction merely to fill every dimension above.
 
@@ -67,7 +67,9 @@ Exact times/frames express targets; editorial cuts establish precise final timin
 
 ## Inputs and modes
 
-Use the minimum relevant set, with roles matching actual upload order:
+Keep every user-designated generation reference as an actual input with its requested purpose. Select the minimum relevant set only for optional additional references, with roles matching actual upload order. Do not substitute prose or sampled stills for required media, or omit it because of placeholder appearance or style risk. If a concrete endpoint limit or missing source prevents use, report the conflict and leave that request unsubmitted until the user changes the requirement or resolves the limitation.
+
+Input roles:
 
 - Product identity: shape, material and parts; not all character blocking or scene layout.
 - Scene: positions, scale, environment and camera direction without overriding original product facts.
