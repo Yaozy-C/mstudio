@@ -1,7 +1,7 @@
 use super::{
     editor::{Editor, TOOL_NAME},
     editor_schema, files,
-    tests::{model, setup, shot},
+    tests::{cleanup, model, setup, shot},
 };
 use crate::{
     assistant::{
@@ -202,7 +202,9 @@ async fn native_error_result_allows_correction_and_success_writes_before_the_fin
             .contains("files are not ready to save")
     );
     drop(requests);
-    std::fs::remove_dir_all(&store.root).unwrap();
+    drop(script);
+    drop(host);
+    cleanup(store);
 }
 #[tokio::test]
 async fn cancellation_after_a_completed_write_retains_the_saved_file() {
@@ -241,5 +243,7 @@ async fn cancellation_after_a_completed_write_retains_the_saved_file() {
             .code
             .starts_with("// keep on cancellation")
     );
-    std::fs::remove_dir_all(&store.root).unwrap();
+    drop(script);
+    drop(host);
+    cleanup(store);
 }

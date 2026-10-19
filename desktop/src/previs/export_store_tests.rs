@@ -1,7 +1,7 @@
 use super::{
     export_store, files, references,
     render::Export,
-    tests::{model, setup, shot},
+    tests::{cleanup, model, setup, shot},
 };
 use crate::{database::Store, project_service, project_storage};
 use rusqlite::params;
@@ -91,7 +91,7 @@ fn renders_stay_private_and_retire_unreferenced_previous_files() {
         document(&store)["previsAssets"].as_array().unwrap().len(),
         1
     );
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }
 #[test]
 fn rerender_updates_live_refs_but_preserves_task_inputs_and_trimmed_references() {
@@ -136,7 +136,7 @@ fn rerender_updates_live_refs_but_preserves_task_inputs_and_trimmed_references()
         )
         .unwrap();
     assert_eq!(owned, 0);
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }
 #[test]
 fn explicit_collection_is_an_independent_copy_and_does_not_follow_rerenders() {
@@ -160,7 +160,7 @@ fn explicit_collection_is_an_independent_copy_and_does_not_follow_rerenders() {
     assert!(next.saved_asset_id.is_none());
     assert!(std::path::Path::new(saved["path"].as_str().unwrap()).exists());
     assert!(references::collect(&store, "p", &next.id, &first.asset.id).is_err());
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }
 #[test]
 fn stale_targets_and_failed_renders_preserve_the_existing_reference_and_video() {
@@ -181,7 +181,7 @@ fn stale_targets_and_failed_renders_preserve_the_existing_reference_and_video() 
     assert_eq!(document(&store), before);
     assert_eq!(rows(&store)[0].signature, "valid");
     assert!(std::path::Path::new(&first.asset.path).exists());
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }
 #[test]
 fn private_metadata_is_derived_and_cannot_be_written_through_project_autosave() {
@@ -207,7 +207,7 @@ fn private_metadata_is_derived_and_cannot_be_written_through_project_autosave() 
             .get("previsAssets")
             .is_none()
     );
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }
 #[test]
 fn project_deletion_removes_private_media_but_keeps_an_explicit_global_save() {
@@ -232,5 +232,5 @@ fn project_deletion_removes_private_media_but_keeps_an_explicit_global_save() {
         )
         .unwrap();
     assert_eq!(count, 0);
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }

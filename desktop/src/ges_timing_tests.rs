@@ -68,7 +68,9 @@ pub(super) fn cached_fractional_cuts(root: &Path, source: &Path) {
             assert_eq!(clip.start, layer.start);
             assert_eq!(clip.duration(), layer.duration);
         }
-        let p = Player::open(plan).unwrap();
+        let (sent, received) = std::sync::mpsc::channel();
+        let p =
+            Player::open_with_output(plan, crate::ges_output::FrameOutput::Observed(sent)).unwrap();
         let total = p.snapshot().total as u32;
         for target in (0..total).rev().chain(0..total) {
             p.control("seek", target as i32).unwrap();
@@ -79,26 +81,28 @@ pub(super) fn cached_fractional_cuts(root: &Path, source: &Path) {
             );
         }
         p.control("seek", 0).unwrap();
+        // Discard seek/preroll samples; observe every playback callback, rather
+        // than assuming a polling consumer sees each overwritten latest frame.
+        received.try_iter().for_each(drop);
         p.control("play", 0).unwrap();
         let deadline = Instant::now() + Duration::from_secs(4);
-        let mut sequence = 0;
-        let mut seen = std::collections::BTreeSet::new();
         loop {
-            let f = p.frame(sequence);
-            if f.len() > 16 {
-                sequence = u32::from_le_bytes(f[..4].try_into().unwrap());
-                let frame = u32::from_le_bytes(f[12..16].try_into().unwrap());
-                assert!(
-                    f[16] > 40,
-                    "cache/play black at {frame}, duration {duration}"
-                );
-                seen.insert(frame);
-            }
-            if p.snapshot().phase == "ended" {
+            let status = p.snapshot();
+            assert!(
+                status.error.is_none(),
+                "playback failed: {:?}",
+                status.error
+            );
+            if status.phase == "ended" {
                 break;
             }
             assert!(Instant::now() < deadline, "fractional playback timed out");
-            std::thread::sleep(Duration::from_millis(1));
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for (frame, red) in received.try_iter() {
+            assert!(red > 40, "cache/play black at {frame}, duration {duration}");
+            seen.insert(frame);
         }
         for cut in [duration, 2. * duration] {
             let boundary = (cut * 30.).ceil() as u32;

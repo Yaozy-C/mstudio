@@ -13,6 +13,27 @@ fn directory(store: &Store, video: &Export) -> Option<PathBuf> {
     }
     Some(root.join(folder))
 }
+fn protected(db: &Connection, prefix: &str) -> bool {
+    [
+        ("assets", "data"),
+        ("jobs", "data"),
+        ("agent_messages", "payload"),
+        ("previs_exports", "data"),
+        ("previs_media", "data"),
+    ]
+    .iter()
+    .any(|(table, column)| {
+        // Inspect decoded JSON strings: Windows separators and quotes are escaped
+        // in the stored document. Match a directory boundary, not a sibling prefix.
+        let query = format!(
+            "SELECT EXISTS(SELECT 1 FROM {table}, json_tree({column}) AS entry
+             WHERE entry.type='text' AND (entry.atom=?1 OR
+             substr(entry.atom,1,length(?1)+1) IN (?1||'/',?1||char(92))))"
+        );
+        db.query_row(&query, [prefix], |r| r.get::<_, bool>(0))
+            .unwrap_or(true)
+    })
+}
 pub(super) fn retire(
     db: &Connection,
     store: &Store,
@@ -30,27 +51,7 @@ pub(super) fn retire(
         }
         let prefix = path.to_string_lossy();
         // Private renders normally have no external users. Preserve any exceptional snapshot.
-        let protected = [
-            "SELECT data FROM assets",
-            "SELECT data FROM jobs",
-            "SELECT payload FROM agent_messages",
-            "SELECT data FROM previs_exports",
-            "SELECT data FROM previs_media",
-        ]
-        .iter()
-        .any(|sql| {
-            let query = format!(
-                "SELECT EXISTS(SELECT 1 FROM ({sql}) WHERE instr({},?1)>0)",
-                if sql.contains("payload") {
-                    "payload"
-                } else {
-                    "data"
-                }
-            );
-            db.query_row(&query, [prefix.as_ref()], |r| r.get::<_, bool>(0))
-                .unwrap_or(true)
-        });
-        if protected {
+        if protected(db, &prefix) {
             continue;
         }
         db.execute(
@@ -64,3 +65,7 @@ pub(super) fn retire(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "export_cleanup_tests.rs"]
+mod tests;

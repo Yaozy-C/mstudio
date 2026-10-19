@@ -43,7 +43,7 @@ fn wait_frame(p: &Player, target: u32) -> Vec<u8> {
 }
 #[test]
 fn ges_composites_seeks_replays_and_closes() {
-    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     #[cfg(windows)]
     if isolated("ges_engine::tests::ges_composites_seeks_replays_and_closes") {
         return;
@@ -207,7 +207,7 @@ fn ges_composites_seeks_replays_and_closes() {
 
 #[test]
 fn ges_seeks_transparent_animated_captions() {
-    let _guard = PLAYER_TEST_LOCK.lock().unwrap();
+    let _guard = PLAYER_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     #[cfg(windows)]
     if isolated("ges_engine::tests::ges_seeks_transparent_animated_captions") {
         return;

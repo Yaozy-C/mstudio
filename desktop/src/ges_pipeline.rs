@@ -169,11 +169,15 @@ fn copy_frame(
         packet.extend_from_slice(&x.to_le_bytes());
     }
     let width = info.width() as usize * 4;
-    if matches!(output, FrameOutput::Rgba) {
+    if output.format() == "RGBA" {
         for row in 0..info.height() as usize {
             let start = row * info.stride()[0] as usize;
             packet.extend_from_slice(&data[start..start + width]);
         }
+    }
+    #[cfg(test)]
+    if let FrameOutput::Observed(observer) = output {
+        let _ = observer.send((position, data[0]));
     }
     Ok(gst::FlowSuccess::Ok)
 }

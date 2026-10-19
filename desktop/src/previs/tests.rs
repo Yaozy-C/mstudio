@@ -8,6 +8,12 @@ pub(super) fn setup() -> Store {
     projects::write_document(&store,json!({"id":"p","name":"Private previs","assets":[],"nodes":[{"id":"s1","kind":"shot","title":"One","text":"","x":0,"y":0,"shot":{"screenplayId":"script","order":1,"duration":3,"dialogue":""}},{"id":"s2","kind":"shot","title":"Two","text":"","x":0,"y":0,"shot":{"screenplayId":"script","order":2,"duration":3,"dialogue":""}}],"clips":[],"tracks":[],"captions":[],"brief":"","width":720,"height":1280,"fps":24}),true).unwrap();
     store
 }
+pub(super) fn cleanup(store: Store) {
+    let root = store.root.clone();
+    // Windows keeps the SQLite database/WAL open until the connection is dropped.
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
 pub(super) fn model(id: &str, name: &str) -> File {
     File {
         id: id.into(),
@@ -97,7 +103,7 @@ fn shared_model_edits_replace_the_original_without_modifying_agent_snapshot() {
     drop(db);
     crate::project_storage::remove(&store, "p").unwrap();
     assert!(!store.media_root().join("previs/p").exists());
-    let _ = std::fs::remove_dir_all(&store.root);
+    cleanup(store);
 }
 #[test]
 fn model_names_and_dependency_scope_are_validated() {
@@ -109,7 +115,7 @@ fn model_names_and_dependency_scope_are_validated() {
     assert!(files::path(&store, "../p", &model("bag", "Bag")).is_err());
     assert!(files::save(&db, &store, "p", shot("unknown-shot", "bag"), 0).is_err());
     drop(db);
-    let _ = std::fs::remove_dir_all(&store.root);
+    cleanup(store);
 }
 #[test]
 fn runtime_serves_only_frozen_declared_modules() {
@@ -179,5 +185,5 @@ fn deleted_shots_do_not_permanently_lock_shared_models() {
     crate::project_service::persist(&db, &before, &after).unwrap();
     assert!(!files::model_in_use(&db, "p", "bag").unwrap());
     drop(db);
-    let _ = std::fs::remove_dir_all(store.root);
+    cleanup(store);
 }

@@ -1,7 +1,7 @@
 use super::{
     editor::{Editor, TOOL_NAME},
     files,
-    tests::{model, setup, shot},
+    tests::{cleanup, model, setup, shot},
 };
 use crate::database::Store;
 use serde_json::{Value, json};
@@ -67,7 +67,7 @@ fn each_edit_is_persisted_and_later_errors_or_dropped_sessions_do_not_undo_it() 
         .unwrap();
     assert_eq!(count, 0);
     drop(db);
-    std::fs::remove_dir_all(&store.root).unwrap();
+    cleanup(store);
 }
 #[test]
 fn a_new_model_is_one_js_file_with_host_owned_name_and_binding() {
@@ -104,7 +104,7 @@ fn a_new_model_is_one_js_file_with_host_owned_name_and_binding() {
             .unwrap()
             .all(|entry| entry.unwrap().path().extension().unwrap() == "js")
     );
-    std::fs::remove_dir_all(&store.root).unwrap();
+    cleanup(store);
 }
 #[test]
 fn stale_edits_require_a_reread_and_preserve_internal_and_external_changes() {
@@ -135,7 +135,7 @@ fn stale_edits_require_a_reread_and_preserve_internal_and_external_changes() {
     assert!(read.contains("// external"));
     edit(&store, &mut b, args).unwrap();
     assert!(b.file.code.contains("// first") && b.file.code.contains("// external"));
-    std::fs::remove_dir_all(&store.root).unwrap();
+    cleanup(store);
 }
 #[test]
 fn dsh_null_placeholders_deletion_ranges_and_path_rules_are_preserved() {
@@ -190,7 +190,7 @@ fn dsh_null_placeholders_deletion_ranges_and_path_rules_are_preserved() {
     )
     .unwrap();
     assert!(!editor.file.code.contains("update(t)"));
-    std::fs::remove_dir_all(&store.root).unwrap();
+    cleanup(store);
 }
 #[test]
 fn existing_empty_files_use_insert_and_deleted_files_can_be_created_again() {
@@ -232,5 +232,5 @@ fn existing_empty_files_use_insert_and_deleted_files_can_be_created_again() {
     )
     .unwrap();
     assert_eq!(editor.file.code, "// recreated");
-    std::fs::remove_dir_all(&store.root).unwrap();
+    cleanup(store);
 }
