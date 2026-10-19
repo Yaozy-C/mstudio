@@ -28,7 +28,7 @@ pub fn run() -> Result<(), String> {
     let output = Arc::new(Mutex::new(stdout()));
     let opened = match frames {
         crate::ges_output::FrameOutput::Rgba => Player::open(plan),
-        #[cfg(target_os = "macos")]
+        #[cfg(any(target_os = "macos", test))]
         output => Player::open_with_output(plan, output),
     };
     let player = match opened {
