@@ -14,6 +14,8 @@ import { DeleteProjectButton } from "./DeleteProjectButton";
 import { PublicAssets } from "./PublicAssets";
 import { UserManual } from "../manual/UserManual";
 import { forgetViewport } from "../canvas/viewportMemory";
+import { CreativeHomeStart } from "./CreativeHomeStart";
+import { videoAnalysisTask, type CreativeTask } from "../creative/aiTasks";
 export function App() {
   const language = useLanguage();
   const [entries, setEntries] = useState<ProjectSummary[]>([]);
@@ -29,7 +31,8 @@ export function App() {
     () => sessionStorage.getItem("mstudio-storage-notice") || "",
   );
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState<"reference" | "new" | null>(null);
+  const [initialTask, setInitialTask] = useState<CreativeTask>();
   const filtered = entries.filter((p) =>
     p.name
       .toLocaleLowerCase(language)
@@ -43,7 +46,10 @@ export function App() {
     const request = ++opening.current;
     try {
       const document = await bridge<Project>("get_project", { projectId: id });
-      if (opening.current === request) setProject(document);
+      if (opening.current === request) {
+        setInitialTask(undefined);
+        setProject(document);
+      }
     } catch (e) {
       if (opening.current === request) setError(String(e));
     }
@@ -93,14 +99,18 @@ export function App() {
       <Studio
         key={project.id}
         initial={project}
+        initialTask={initialTask}
         onBack={() => {
           setProject(null);
+          setInitialTask(undefined);
           void refresh();
         }}
       />
     );
   return (
-    <div className="library-shell">
+    <div
+      className={`library-shell ${page === "projects" ? "creative-home-shell" : ""}`}
+    >
       <StudioSidebar
         activePage={page}
         count={entries.length}
@@ -115,134 +125,137 @@ export function App() {
         <PublicAssets />
       ) : (
         <>
-          <main className="library-main">
-            <header className="library-heading">
-              <div>
-                <h1>{t("项目空间")}</h1>
+          <main className="library-main creative-home">
+            <CreativeHomeStart
+              onReference={() => navigate(() => setCreating("reference"))}
+              onCreate={() => navigate(() => setCreating("new"))}
+            />
+            <section aria-labelledby="home-projects-title">
+              <div className="library-tools">
+                <h2 id="home-projects-title">
+                  {query.trim()
+                    ? t("搜索结果")
+                    : entries.length
+                      ? t("继续创作")
+                      : t("你的项目")}{" "}
+                  <span aria-live="polite">
+                    {filtered.length.toString().padStart(2, "0")}
+                  </span>
+                </h2>
+                <div className="project-search">
+                  <MagnifyingGlass aria-hidden="true" />
+                  <input
+                    type="search"
+                    aria-label={t("搜索项目")}
+                    placeholder={t("搜索项目…")}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      aria-label={t("清空搜索")}
+                      onClick={() => setQuery("")}
+                    >
+                      <X />
+                    </button>
+                  )}
+                </div>
               </div>
-              <button
-                className="primary"
-                onClick={() => navigate(() => setCreating(true))}
-              >
-                <Plus />
-                {t("新建项目")}
-              </button>
-            </header>
-            <div className="library-tools">
-              <h3>
-                {query.trim() ? t("搜索结果") : t("全部项目")}{" "}
-                <span aria-live="polite">
-                  {filtered.length.toString().padStart(2, "0")}
-                </span>
-              </h3>
-              <div className="project-search">
-                <MagnifyingGlass aria-hidden="true" />
-                <input
-                  type="search"
-                  aria-label={t("搜索项目")}
-                  placeholder={t("搜索项目…")}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                {query && (
+              {error && (
+                <ErrorNotice error={error} fallback="OPERATION_FAILED">
+                  <AsyncButton busy={loading} onClick={() => void refresh()}>
+                    {t("重试")}
+                  </AsyncButton>
+                </ErrorNotice>
+              )}
+              {loading && !entries.length && (
+                <LoadingState label={t("正在读取…")} />
+              )}
+              {storageNotice && (
+                <p role="status">
+                  {storageNotice}{" "}
                   <button
-                    type="button"
-                    aria-label={t("清空搜索")}
-                    onClick={() => setQuery("")}
+                    onClick={() => {
+                      setStorageNotice("");
+                      sessionStorage.removeItem("mstudio-storage-notice");
+                    }}
                   >
-                    <X />
+                    {t("知道了")}
+                  </button>
+                </p>
+              )}
+              {!entries.length && !loading && !error && !query.trim() && (
+                <p className="home-projects-empty">
+                  {t("你的下一部作品，从这里开始。创建项目后，随时回来继续。")}
+                </p>
+              )}
+              <div className="project-grid" aria-busy={loading}>
+                {filtered.map((p) => (
+                  <article className="project-card" key={p.id}>
+                    <button
+                      className="project-cover"
+                      onClick={() => void openProject(p.id)}
+                    >
+                      {p.preview ? (
+                        <img
+                          src={mediaUrl(p.preview)}
+                          alt={p.name}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <FilmSlate className="project-empty-mark" />
+                      )}
+                      <span className="cover-ratio">
+                        {p.width}:{p.height}
+                      </span>
+                    </button>
+                    <div className="project-meta">
+                      <button onClick={() => void openProject(p.id)}>
+                        <h3>{p.name}</h3>
+                        <p>
+                          {p.clipCount} {t("个片段 ·")}{" "}
+                          {new Date(p.updated * 1000).toLocaleDateString(
+                            language,
+                          )}
+                        </p>
+                      </button>
+                      <DeleteProjectButton
+                        project={p}
+                        onOpen={() => void openProject(p.id)}
+                        onDelete={async (id) => {
+                          await bridge("delete_project", { id });
+                          opening.current++;
+                          forgetViewport(id);
+                          localStorage.removeItem(`mstudio-chat-draft:${id}`);
+                          setEntries((current) =>
+                            current.filter((entry) => entry.id !== id),
+                          );
+                        }}
+                      />
+                    </div>
+                  </article>
+                ))}
+                {!query.trim() && (
+                  <button
+                    className="new-project-card"
+                    onClick={() => navigate(() => setCreating("new"))}
+                  >
+                    <Plus size={28} />
+                    <strong>{t("新建项目")}</strong>
                   </button>
                 )}
               </div>
-            </div>
-            {error && (
-              <ErrorNotice error={error} fallback="OPERATION_FAILED">
-                <AsyncButton busy={loading} onClick={() => void refresh()}>
-                  {t("重试")}
-                </AsyncButton>
-              </ErrorNotice>
-            )}
-            {loading && !entries.length && (
-              <LoadingState label={t("正在读取…")} />
-            )}
-            {storageNotice && (
-              <p role="status">
-                {storageNotice}{" "}
-                <button
-                  onClick={() => {
-                    setStorageNotice("");
-                    sessionStorage.removeItem("mstudio-storage-notice");
-                  }}
-                >
-                  {t("知道了")}
-                </button>
-              </p>
-            )}
-            <section className="project-grid" aria-busy={loading}>
-              {filtered.map((p) => (
-                <article className="project-card" key={p.id}>
-                  <button
-                    className="project-cover"
-                    onClick={() => void openProject(p.id)}
-                  >
-                    {p.preview ? (
-                      <img
-                        src={mediaUrl(p.preview)}
-                        alt={p.name}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <FilmSlate className="project-empty-mark" />
-                    )}
-                    <span className="cover-ratio">
-                      {p.width}:{p.height}
-                    </span>
+              {!!query.trim() && !filtered.length && !loading && (
+                <div className="project-search-empty" role="status">
+                  <MagnifyingGlass aria-hidden="true" />
+                  <p>{t("没有匹配的项目")}</p>
+                  <button type="button" onClick={() => setQuery("")}>
+                    {t("清空搜索")}
                   </button>
-                  <div className="project-meta">
-                    <button onClick={() => void openProject(p.id)}>
-                      <h3>{p.name}</h3>
-                      <p>
-                        {p.clipCount} {t("个片段 ·")}{" "}
-                        {new Date(p.updated * 1000).toLocaleDateString(
-                          language,
-                        )}
-                      </p>
-                    </button>
-                    <DeleteProjectButton
-                      project={p}
-                      onOpen={() => void openProject(p.id)}
-                      onDelete={async (id) => {
-                        await bridge("delete_project", { id });
-                        opening.current++;
-                        forgetViewport(id);
-                        localStorage.removeItem(`mstudio-chat-draft:${id}`);
-                        setEntries((current) =>
-                          current.filter((entry) => entry.id !== id),
-                        );
-                      }}
-                    />
-                  </div>
-                </article>
-              ))}
-              {!query.trim() && (
-                <button
-                  className="new-project-card"
-                  onClick={() => navigate(() => setCreating(true))}
-                >
-                  <Plus size={28} />
-                  <strong>{t("新建项目")}</strong>
-                </button>
+                </div>
               )}
             </section>
-            {!!query.trim() && !filtered.length && !loading && (
-              <div className="project-search-empty" role="status">
-                <MagnifyingGlass aria-hidden="true" />
-                <p>{t("没有匹配的项目")}</p>
-                <button type="button" onClick={() => setQuery("")}>
-                  {t("清空搜索")}
-                </button>
-              </div>
-            )}
             {!native && (
               <p className="subtle">
                 {t("浏览器界面预览 · 素材导入、生成与导出请使用桌面应用")}
@@ -253,10 +266,14 @@ export function App() {
       )}
       {creating && (
         <NewProjectDialog
-          onClose={() => setCreating(false)}
+          intent={creating}
+          onClose={() => setCreating(null)}
           onCreated={(p) => {
+            setInitialTask(
+              creating === "reference" ? videoAnalysisTask() : undefined,
+            );
             setProject(p);
-            setCreating(false);
+            setCreating(null);
           }}
         />
       )}

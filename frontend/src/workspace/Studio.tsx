@@ -30,12 +30,17 @@ import { StudioMedia } from "./StudioMedia";
 import { StudioTimeline } from "./StudioTimeline";
 import { StudioInspector } from "./StudioInspector";
 import { StudioDialogs, type StudioDialogKind } from "./StudioDialogs";
-type StudioProps = { initial: Project; onBack: () => void };
-export function Studio({ initial, onBack }: StudioProps) {
+import type { CreativeTask } from "../creative/aiTasks";
+type StudioProps = {
+  initial: Project;
+  initialTask?: CreativeTask;
+  onBack: () => void;
+};
+export function Studio({ initial, initialTask, onBack }: StudioProps) {
   const m = useProject(initial);
   const { project, change } = m;
   useMissingAssets(project, change);
-  const attachments = useAttachments(initial.id, change);
+  const attachments = useAttachments(initial.id, change, initialTask);
   const [nodeId, setNodeId] = useState<string | null>(null);
   const [clipId, setClipId] = useState<string | null>(null);
   const [panels, setPanels] = useState(() =>
