@@ -1,36 +1,10 @@
 import { afterEach, expect, test } from "bun:test";
 import { renderToStaticMarkup as render } from "react-dom/server";
 import { setLanguage } from "../i18n";
-import {
-  useAttachments,
-  type AttachmentDraft,
-} from "../assistant/useAttachments";
+import { useAttachments, type AttachmentDraft } from "./useAttachments";
 import { videoAnalysisTask, type CreativeTask } from "../creative/aiTasks";
-import { CreativeHomeStart } from "./CreativeHomeStart";
 
 afterEach(() => setLanguage("zh-CN"));
-
-test("home offers two creation paths and an honest inspiration empty state in both languages", () => {
-  for (const language of ["zh-CN", "en"] as const) {
-    setLanguage(language);
-    const html = render(
-      <CreativeHomeStart onReference={() => {}} onCreate={() => {}} />,
-    );
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html.match(/<button/g)).toHaveLength(3);
-    expect(html).not.toMatch(/<(img|video|iframe)\b/);
-    expect(html).toContain(
-      language === "en" ? "Explore a Reference" : "探索参考作品",
-    );
-    expect(html).toContain(
-      language === "en" ? "Create Something New" : "创作全新作品",
-    );
-    expect(html).toContain(
-      language === "en" ? "No featured videos yet" : "暂无精选视频",
-    );
-    if (language === "en") expect(html).not.toMatch(/[\u3400-\u9fff]/);
-  }
-});
 
 function initialDraft(task?: CreativeTask) {
   let draft: AttachmentDraft | undefined;

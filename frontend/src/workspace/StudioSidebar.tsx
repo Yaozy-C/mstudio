@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Images,
   BookOpen,
+  Compass,
 } from "@phosphor-icons/react";
 export function sidebarPages() {
   return [
@@ -25,14 +26,16 @@ export type SettingsTab = ReturnType<typeof sidebarPages>[number]["id"];
 export function StudioSidebar({
   activePage = "projects",
   onProjects,
+  onBrowse,
   onSettings,
   onPublicAssets,
   onManual,
   count,
   project,
 }: {
-  activePage?: "projects" | "public-assets" | "manual" | SettingsTab;
+  activePage?: "browse" | "projects" | "public-assets" | "manual" | SettingsTab;
   onProjects: () => void;
+  onBrowse?: () => void;
   onSettings: (page: SettingsTab) => void;
   onPublicAssets?: () => void;
   onManual?: () => void;
@@ -62,6 +65,16 @@ export function StudioSidebar({
       </div>
       <div className="sidebar-group" role="group" aria-label={t("工作空间")}>
         <h2 className="sidebar-group-title">{t("工作空间")}</h2>
+        {onBrowse && !project && (
+          <button
+            className={`nav-item ${activePage === "browse" ? "active" : ""}`}
+            aria-current={activePage === "browse" ? "page" : undefined}
+            onClick={onBrowse}
+          >
+            <Compass size={21} />
+            {t("浏览")}
+          </button>
+        )}
         <button
           className={`nav-item ${activePage === "projects" ? "active" : ""}`}
           aria-current={activePage === "projects" ? "page" : undefined}
