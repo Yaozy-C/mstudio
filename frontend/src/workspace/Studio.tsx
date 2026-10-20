@@ -22,7 +22,7 @@ import { useCallback, useState } from "react";
 import { StudioError } from "./StudioError";
 import { useCanvasInsertion } from "./useCanvasInsertion";
 import { StudioChrome } from "./StudioChrome";
-import { type Project, type Asset } from "../model";
+import type { Asset } from "../model";
 import { useImportMedia } from "./useImportMedia";
 import { useProject } from "./useProject";
 import { StudioStage, type StudioView } from "./StudioStage";
@@ -30,12 +30,12 @@ import { StudioMedia } from "./StudioMedia";
 import { StudioTimeline } from "./StudioTimeline";
 import { StudioInspector } from "./StudioInspector";
 import { StudioDialogs, type StudioDialogKind } from "./StudioDialogs";
-type StudioProps = { initial: Project; onBack: () => void };
-export function Studio({ initial, onBack }: StudioProps) {
+import type { StudioProps } from "./StudioProps";
+export function Studio({ initial, initialTask, onBack }: StudioProps) {
   const m = useProject(initial);
   const { project, change } = m;
   useMissingAssets(project, change);
-  const attachments = useAttachments(initial.id, change);
+  const attachments = useAttachments(initial.id, change, initialTask);
   const [nodeId, setNodeId] = useState<string | null>(null);
   const [clipId, setClipId] = useState<string | null>(null);
   const [panels, setPanels] = useState(() =>

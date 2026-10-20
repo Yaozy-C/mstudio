@@ -13,17 +13,25 @@ import {
 export function useAttachments(
   projectId: string,
   change: (fn: (p: Project) => Project) => void,
+  initialTask?: CreativeTask,
 ) {
-  const [items, setItems] = useState<AttachmentRef[]>([]);
+  const [items, setItems] = useState<AttachmentRef[]>(
+    () => initialTask?.refs ?? [],
+  );
   const current = useRef(items);
   const update = (next: AttachmentRef[]) => {
     current.current = next;
     setItems(next);
   };
-  const [targetNodeId, setTargetNodeId] = useState<string | null>(null);
-  const [omitWork, setOmitWork] = useState(false);
-  const [focus, setFocus] = useState(0);
-  const [suggestion, setSuggestion] = useState<CreativeTask | null>(null);
+  const [targetNodeId, setTargetNodeId] = useState<string | null>(
+    () => initialTask?.targetNodeId ?? null,
+  );
+  const [omitWork, setOmitWork] = useState(() => !!initialTask?.isolated);
+  const [focus, setFocus] = useState(() => (initialTask ? 1 : 0));
+  // Keep the handoff until the lazily loaded composer is ready to consume it.
+  const [suggestion, setSuggestion] = useState<CreativeTask | null>(
+    () => initialTask ?? null,
+  );
   useEffect(() => {
     const request = (e: Event) => {
       const task = (e as CustomEvent<CreativeTask>).detail;

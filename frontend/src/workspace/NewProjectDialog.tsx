@@ -1,5 +1,5 @@
 import { Plus as DialogPlus, X as DialogX } from "@phosphor-icons/react";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { t, useLanguage } from "../i18n";
 import { bridge } from "../bridge";
@@ -10,13 +10,16 @@ import { StudioSelect } from "../ui/StudioSelect";
 import "./new-project.css";
 
 export function NewProjectDialog({
+  intent = "new",
   onClose,
   onCreated,
 }: {
+  intent?: "reference" | "new";
   onClose: () => void;
   onCreated: (project: Project) => void;
 }) {
   useLanguage();
+  const descriptionId = useId();
   const [open, setOpen] = useState(true);
   const close = () => setOpen(false);
   const opener = useRef(
@@ -61,7 +64,7 @@ export function NewProjectDialog({
     >
       <Dialog.Content
         className="modal small new-project-dialog"
-        aria-describedby={undefined}
+        aria-describedby={intent === "reference" ? descriptionId : undefined}
         onEscapeKeyDown={(event) => {
           if (saving) event.preventDefault();
         }}
@@ -80,7 +83,19 @@ export function NewProjectDialog({
             void create();
           }}
         >
-          <Dialog.Title>{t("新建项目")}</Dialog.Title>
+          <Dialog.Title>
+            {intent === "reference" ? t("从参考视频开始") : t("新建项目")}
+          </Dialog.Title>
+          {intent === "reference" && (
+            <Dialog.Description
+              id={descriptionId}
+              className="new-project-guidance"
+            >
+              {t(
+                "先创建项目，再用对话中的＋添加视频文件或链接，交给视频分析 Agent 拆解。",
+              )}
+            </Dialog.Description>
+          )}
           <label>
             {t("项目名称")}
             <input
