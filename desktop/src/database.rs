@@ -65,6 +65,7 @@ impl Store {
         crate::asset_library::init(&db)?;
         crate::project_storage::direct_references::migrate(&db, &root)?;
         schema::init(&db)?;
+        crate::video_analysis::history_store::init(&db)?;
         crate::job_recovery::recover_interrupted_submissions(&db)?;
         media_store::init(&db)?;
         schema::migrate(&db)?;

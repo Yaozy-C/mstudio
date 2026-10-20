@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 pub mod transfer;
+mod video_download_progress;
 mod video_downloader;
 pub mod video_url;
 use crate::{database::Store, project_storage};

@@ -68,6 +68,8 @@ export async function bridge<T>(
     );
     return undefined as T;
   }
+  if (command === "list_video_analysis_records")
+    return { items: [], total: 0 } as T;
   if (command === "media_model_catalog") return [] as T;
   if (command === "list_global_assets") return [] as T;
   throw new Error(

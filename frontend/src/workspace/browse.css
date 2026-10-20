@@ -76,6 +76,16 @@
   color: var(--desk-muted);
   font-size: var(--ui-caption);
 }
+.radix-themes .browse-analyze {
+  margin-top: 10px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-text);
+  font-size: var(--ui-label);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .browse-source-note {
   color: var(--desk-muted);
   font-size: var(--ui-caption);

@@ -91,7 +91,23 @@ fn checksum<'a>(text: &'a str, name: &str) -> Option<&'a str> {
     })
 }
 
+#[cfg(test)]
 pub fn command(executable: &Path, work: &Path, url: &str) -> tokio::process::Command {
+    build_command(executable, work, url, false)
+}
+pub(super) fn progress_command(
+    executable: &Path,
+    work: &Path,
+    url: &str,
+) -> tokio::process::Command {
+    build_command(executable, work, url, true)
+}
+fn build_command(
+    executable: &Path,
+    work: &Path,
+    url: &str,
+    progress: bool,
+) -> tokio::process::Command {
     let mut command = tokio::process::Command::new(executable);
     command
         .kill_on_drop(true)
@@ -137,6 +153,16 @@ pub fn command(executable: &Path, work: &Path, url: &str) -> tokio::process::Com
                 .arg("--js-runtimes")
                 .arg(format!("{runtime}:{path}"));
         }
+    }
+    if progress {
+        command.args([
+            "--progress",
+            "--newline",
+            "--progress-delta",
+            "0.3",
+            "--progress-template",
+            "download:MSTUDIO_PROGRESS %(progress)j",
+        ]);
     }
     command.arg("--").arg(url);
     #[cfg(windows)]

@@ -91,7 +91,7 @@ async fn import(
         }
     }
 }
-fn parse_url(raw: &str) -> Result<reqwest::Url> {
+pub(crate) fn parse_url(raw: &str) -> Result<reqwest::Url> {
     ensure!(raw.len() <= 16_000, "视频链接过长");
     let start = raw
         .find("https://")
@@ -113,7 +113,19 @@ fn parse_url(raw: &str) -> Result<reqwest::Url> {
     );
     Ok(url)
 }
-async fn download(url: &reqwest::Url, work: &Path, cache: &Path) -> Result<(PathBuf, String)> {
+pub(crate) async fn download(
+    url: &reqwest::Url,
+    work: &Path,
+    cache: &Path,
+) -> Result<(PathBuf, String)> {
+    download_with_progress(url, work, cache, &|_, _, _| {}).await
+}
+pub(crate) async fn download_with_progress(
+    url: &reqwest::Url,
+    work: &Path,
+    cache: &Path,
+    progress: &(dyn Fn(u64, Option<u64>, bool) + Send + Sync),
+) -> Result<(PathBuf, String)> {
     // Direct files avoid installing the page extractor.
     let extension = Path::new(url.path())
         .extension()
@@ -126,16 +138,18 @@ async fn download(url: &reqwest::Url, work: &Path, cache: &Path) -> Result<(Path
             .build()?;
         let response = client.get(url.clone()).send().await?.error_for_status()?;
         let path = work.join(format!("source.{extension}"));
-        stream_file(response, &path).await?;
+        stream_file(response, &path, progress).await?;
         return Ok((path, format!("链接视频.{extension}")));
     }
     let executable = video_downloader::executable(cache)
         .await
         .context("无法准备视频下载器，请检查网络后重试")?;
-    let output = video_downloader::command(&executable, work, url.as_str())
-        .output()
-        .await
-        .context("无法启动视频下载器")?;
+    let output = super::video_download_progress::run(
+        video_downloader::progress_command(&executable, work, url.as_str()),
+        progress,
+    )
+    .await
+    .context("无法启动视频下载器")?;
     ensure!(
         output.status.success(),
         "视频下载失败：{}",
@@ -180,7 +194,12 @@ async fn download(url: &reqwest::Url, work: &Path, cache: &Path) -> Result<(Path
     );
     Ok((path, name))
 }
-async fn stream_file(mut response: reqwest::Response, path: &Path) -> Result<()> {
+async fn stream_file(
+    mut response: reqwest::Response,
+    path: &Path,
+    progress: &(dyn Fn(u64, Option<u64>, bool) + Send + Sync),
+) -> Result<()> {
+    let total = response.content_length().filter(|n| *n > 0);
     const MAX: u64 = 1024 * 1024 * 1024;
     ensure!(
         response.content_length().unwrap_or(0) <= MAX,
@@ -192,6 +211,7 @@ async fn stream_file(mut response: reqwest::Response, path: &Path) -> Result<()>
         size += chunk.len() as u64;
         ensure!(size <= MAX, "视频超过 1 GiB");
         file.write_all(&chunk)?;
+        progress(size, total, false);
     }
     ensure!(size > 0, "下载的视频为空");
     Ok(())

@@ -7,9 +7,11 @@ import type { BrowseWork } from "./browseWorks";
 export function BrowsePlayer({
   work,
   close,
+  onAnalyze,
 }: {
   work: BrowseWork;
   close: () => void;
+  onAnalyze?: (work: BrowseWork) => void;
 }) {
   useLanguage();
   const [attempt, setAttempt] = useState(0);
@@ -61,6 +63,17 @@ export function BrowsePlayer({
           </button>
         </div>
         <footer>
+          {onAnalyze && (
+            <button
+              className="primary"
+              onClick={() => {
+                close();
+                onAnalyze(work);
+              }}
+            >
+              {t("拆解这部作品")}
+            </button>
+          )}
           <p>{t(work.description)}</p>
           <div className="browse-attribution">
             <span>{work.credit}</span>

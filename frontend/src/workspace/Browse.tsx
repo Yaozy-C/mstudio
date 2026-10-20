@@ -5,7 +5,13 @@ import { browseWorks, type BrowseWork } from "./browseWorks";
 import { BrowsePlayer } from "./BrowsePlayer";
 import "./browse.css";
 
-export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
+export function Browse({
+  works = browseWorks,
+  onAnalyze,
+}: {
+  works?: BrowseWork[];
+  onAnalyze?: (work: BrowseWork) => void;
+}) {
   useLanguage();
   const [watching, setWatching] = useState<BrowseWork | null>(null);
   return (
@@ -41,6 +47,14 @@ export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
               <span className="browse-credit">
                 {work.credit} · {t("AI 概念广告")}
               </span>
+              {onAnalyze && (
+                <button
+                  className="browse-analyze"
+                  onClick={() => onAnalyze(work)}
+                >
+                  {t("拆解这部作品")}
+                </button>
+              )}
             </div>
           </article>
         ))}
@@ -64,6 +78,7 @@ export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
           key={watching.id}
           work={watching}
           close={() => setWatching(null)}
+          onAnalyze={onAnalyze}
         />
       )}
     </main>

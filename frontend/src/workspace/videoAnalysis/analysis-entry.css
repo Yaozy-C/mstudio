@@ -1,0 +1,130 @@
+.analysis-entry {
+  width: 100%;
+  max-width: 1084px;
+  margin: 138px auto 0;
+}
+.analysis-welcome h2 {
+  margin: 0;
+  font-size: clamp(40px, 4.8vw, 70px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -1.8px;
+}
+.analysis-welcome > p {
+  margin-top: 20px;
+  color: var(--desk-muted);
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.analysis-references {
+  margin-top: 76px;
+  padding-top: 42px;
+  border-top: 1px solid var(--ui-rule);
+}
+.analysis-references > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.analysis-references h2 {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 36px;
+  letter-spacing: -0.4px;
+}
+.analysis-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 32px;
+}
+.radix-themes .analysis-reference {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+.analysis-reference img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.analysis-reference h3 {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 26px;
+}
+.analysis-reference p {
+  margin-top: 4px;
+  color: var(--desk-muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  overflow-wrap: anywhere;
+}
+.radix-themes .analysis-reference:hover:not(:disabled) {
+  background: transparent;
+}
+.analysis-reference:hover img {
+  filter: brightness(0.94);
+}
+.analysis-entry > .analysis-preview-note {
+  margin-top: 48px;
+}
+@media (max-width: 1150px) {
+  .analysis-entry {
+    margin-top: 92px;
+  }
+  .analysis-welcome h2 {
+    font-size: 48px;
+  }
+  .analysis-reference h3 {
+    font-size: 16px;
+  }
+  .analysis-reference p {
+    font-size: 12px;
+  }
+}
+@media (max-width: 900px) {
+  .analysis-entry {
+    margin-top: 68px;
+  }
+  .analysis-references {
+    margin-top: 52px;
+    padding-top: 28px;
+  }
+  .analysis-references h2 {
+    font-size: 21px;
+  }
+  .analysis-reference-grid {
+    gap: 16px;
+  }
+}
+@media (max-width: 700px) {
+  .analysis-welcome h2 {
+    font-size: clamp(32px, 7vw, 44px);
+    letter-spacing: -1px;
+  }
+  .analysis-welcome > p {
+    font-size: 17px;
+    line-height: 28px;
+  }
+  .analysis-reference-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .analysis-reference h3 {
+    margin-top: 12px;
+  }
+  .analysis-entry > .analysis-preview-note {
+    margin-top: 32px;
+  }
+}

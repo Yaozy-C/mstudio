@@ -1,0 +1,108 @@
+.analysis-ready {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui-rule);
+  border-radius: 10px;
+  background: var(--desk-surface);
+}
+.analysis-ready > header {
+  padding: 24px 24px 20px;
+}
+.analysis-ready-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 20px;
+}
+.analysis-ready-status > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--desk-text);
+  opacity: 0.55;
+}
+.analysis-ready h2 {
+  margin-top: 14px;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.6px;
+}
+.analysis-ready header p {
+  margin-top: 12px;
+  color: var(--desk-muted);
+  font-size: 14px;
+  line-height: 25px;
+}
+.analysis-ready-features {
+  padding: 0 24px 8px;
+}
+.analysis-ready-features > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 18px 0;
+  border-top: 1px solid var(--ui-rule);
+}
+.analysis-ready-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--desk-bg);
+  color: var(--desk-muted);
+}
+.analysis-ready h3 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+.analysis-ready-features p {
+  margin-top: 5px;
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 22px;
+}
+.analysis-ready footer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 20px 14px 24px;
+  border-top: 1px solid var(--ui-rule);
+  color: var(--desk-muted);
+  font-size: 11px;
+  line-height: 20px;
+}
+.analysis-ready footer p {
+  flex: 1;
+}
+.radix-themes .analysis-ready footer button {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+}
+.analysis-ready footer button:hover {
+  color: var(--desk-text);
+  background: var(--desk-bg);
+}
+@media (max-width: 1200px) {
+  .analysis-ready > header {
+    padding-inline: 20px;
+  }
+  .analysis-ready-features {
+    padding-inline: 20px;
+  }
+  .analysis-ready h2 {
+    font-size: 22px;
+  }
+}

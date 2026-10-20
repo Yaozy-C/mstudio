@@ -18,8 +18,10 @@ import previs from "./previs.json";
 import polish from "./polish.json";
 import storage from "./storage.json";
 import creativeHome from "./creative-home.json";
+import videoAnalysis from "./video-analysis.json";
 
 export default {
+  ...videoAnalysis,
   ...creativeHome,
   ...storage,
   ...manual,

@@ -11,6 +11,7 @@ import {
   Images,
   BookOpen,
   Compass,
+  FilmStrip,
 } from "@phosphor-icons/react";
 export function sidebarPages() {
   return [
@@ -27,15 +28,23 @@ export function StudioSidebar({
   activePage = "projects",
   onProjects,
   onBrowse,
+  onVideoAnalysis,
   onSettings,
   onPublicAssets,
   onManual,
   count,
   project,
 }: {
-  activePage?: "browse" | "projects" | "public-assets" | "manual" | SettingsTab;
+  activePage?:
+    | "browse"
+    | "video-analysis"
+    | "projects"
+    | "public-assets"
+    | "manual"
+    | SettingsTab;
   onProjects: () => void;
   onBrowse?: () => void;
+  onVideoAnalysis?: () => void;
   onSettings: (page: SettingsTab) => void;
   onPublicAssets?: () => void;
   onManual?: () => void;
@@ -73,6 +82,16 @@ export function StudioSidebar({
           >
             <Compass size={21} />
             {t("浏览")}
+          </button>
+        )}
+        {onVideoAnalysis && !project && (
+          <button
+            className={`nav-item ${activePage === "video-analysis" ? "active" : ""}`}
+            aria-current={activePage === "video-analysis" ? "page" : undefined}
+            onClick={onVideoAnalysis}
+          >
+            <FilmStrip size={21} />
+            {t("视频拆解")}
           </button>
         )}
         <button

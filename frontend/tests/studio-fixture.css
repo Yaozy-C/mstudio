@@ -1,0 +1,29 @@
+@import "../src/styles/color-tokens.css";
+@import "../src/styles/base.css";
+@import "../src/styles/workspace.css";
+@import "../src/styles/timeline.css";
+@import "../src/styles/dialogs.css";
+@import "../src/styles/studio.css";
+@import "../src/styles/preview.css";
+@import "../src/styles/workspace-overlays.css";
+@import "../src/styles/agent.css";
+@import "../src/styles/agent-activity.css";
+@import "../src/styles/editing.css";
+@import "../src/styles/attachments.css";
+@import "../src/styles/node-content.css";
+@import "../src/styles/inline-text.css";
+@import "../src/styles/interaction.css";
+@import "../src/styles/production-desk.css";
+@import "../src/styles/production-surfaces.css";
+@import "../src/styles/frame-theme.css";
+@import "../src/styles/frame-workspace.css";
+@import "../src/styles/frame-timeline.css";
+@import "../src/styles/timeline-states.css";
+@import "../src/styles/frame-media.css";
+@import "../src/styles/object-menu.css";
+@import "../src/styles/text-inputs.css";
+@import "../src/styles/motion.css";
+@import "../src/styles/visual-system.css";
+.creation-handoff-fixture .studio-shell {
+  height: calc(100vh - 42px);
+}

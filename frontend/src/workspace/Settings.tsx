@@ -20,12 +20,14 @@ export function Settings({
   projectCount,
   onPublicAssets,
   onBrowse,
+  onVideoAnalysis,
   onManual,
 }: {
   onClose: () => void;
   projectCount?: number;
   onPublicAssets?: () => void;
   onBrowse?: () => void;
+  onVideoAnalysis?: () => void;
   onManual?: () => void;
   project?: { id: string; name: string };
   initialTab?: SettingsTab;
@@ -53,6 +55,7 @@ export function Settings({
         activePage={tab}
         onProjects={onClose}
         onBrowse={onBrowse}
+        onVideoAnalysis={onVideoAnalysis}
         onPublicAssets={onPublicAssets}
         onManual={onManual}
         onSettings={setTab}

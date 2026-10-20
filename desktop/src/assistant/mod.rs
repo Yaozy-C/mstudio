@@ -25,6 +25,7 @@ mod prompt_guidance;
 mod prompt_routing;
 mod prompts;
 pub(crate) mod provider;
+pub(crate) mod standalone_analysis;
 mod task_context;
 mod task_target;
 mod turn_context;

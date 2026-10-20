@@ -1,4 +1,6 @@
 //! Current reference graph and on-demand storage maintenance; no legacy conversion.
+#[cfg(test)]
+mod analysis_record_tests;
 mod graph;
 mod run;
 #[cfg(test)]

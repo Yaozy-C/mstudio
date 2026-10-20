@@ -1,0 +1,153 @@
+.analysis-progress {
+  min-width: 0;
+  padding: 12px 0 28px;
+}
+.analysis-progress.is-standalone {
+  max-width: 1084px;
+  margin: 32px auto 0;
+}
+.analysis-progress-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--ui-rule);
+}
+.radix-themes .analysis-progress-topline button {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--desk-muted);
+  font-size: 12px;
+}
+.analysis-progress-topline button:hover {
+  color: var(--desk-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.analysis-progress-announcement {
+  padding-top: 32px;
+}
+.analysis-progress-step {
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 20px;
+}
+.analysis-progress-announcement h2 {
+  margin-top: 12px;
+  font-size: clamp(23px, 2vw, 28px);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.6px;
+}
+.analysis-progress-announcement > p:last-child {
+  min-height: 48px;
+  margin-top: 14px;
+  color: var(--desk-muted);
+  font-size: 14px;
+  line-height: 24px;
+}
+.analysis-progress-meter-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.analysis-progress-track {
+  height: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--ui-rule);
+}
+.analysis-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--desk-text);
+  transition: width 250ms ease-out;
+}
+.analysis-progress-track[data-indeterminate="true"] > span {
+  width: 32%;
+  animation: analysis-progress-travel 1.8s ease-in-out infinite;
+}
+.analysis-progress-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.analysis-progress-steps li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 20px;
+}
+.analysis-progress-steps li > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 50%;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.analysis-progress-steps li[data-state="active"] {
+  color: var(--desk-text);
+}
+.analysis-progress-steps li[data-state="active"] > span {
+  border-color: var(--desk-text);
+  background: var(--desk-text);
+  color: var(--desk-surface);
+}
+.analysis-progress-steps li[data-state="done"] > span {
+  color: var(--desk-text);
+}
+.analysis-progress-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ui-rule);
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 22px;
+}
+.analysis-progress-footer > span {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.analysis-progress-footer > p {
+  flex: 1;
+  min-width: 180px;
+}
+@keyframes analysis-progress-travel {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(420%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .analysis-progress-track > span {
+    transition: none;
+  }
+  .analysis-progress-track[data-indeterminate="true"] > span {
+    width: 100%;
+    opacity: 0.45;
+    animation: none;
+  }
+}

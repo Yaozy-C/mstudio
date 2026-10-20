@@ -30,6 +30,7 @@ pub const FOLDERS: &[&str] = &[
     "reference-media",
     "downloads",
     "imports",
+    "video-analysis-history",
 ];
 
 #[derive(Clone, Serialize, Deserialize)]

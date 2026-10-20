@@ -39,6 +39,7 @@ mod reference_commands;
 mod storage;
 mod system_voice;
 mod updates;
+mod video_analysis;
 mod waveform;
 #[cfg(windows)]
 mod windows_host;
@@ -73,6 +74,7 @@ fn main() {
             let store = database::Store::open(app.path().app_data_dir()?)?;
             storage::allow(app.handle(), &store.media_root())?;
             app.manage(store);
+            app.manage(video_analysis::Runtime::default());
             app.manage(previs::RuntimeState::default());
             app.manage(previs::Chats::default());
             app.manage(previs::Renders::default());
@@ -90,6 +92,12 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             finish_exit,
+            video_analysis::history::list_video_analysis_records,
+            video_analysis::history::open_video_analysis_record,
+            video_analysis::prepare_video_analysis,
+            video_analysis::analyze_reference_video,
+            video_analysis::cancel_video_analysis,
+            video_analysis::release_video_analysis,
             previs::files::previs_workspace,
             previs::files::save_previs_file,
             previs::files::delete_previs_model,

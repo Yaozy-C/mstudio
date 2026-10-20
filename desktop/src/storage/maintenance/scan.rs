@@ -24,7 +24,7 @@ fn category(path: &Path, root: &Path) -> &'static str {
         .and_then(|p| p.components().next())
         .and_then(|p| p.as_os_str().to_str())
     {
-        Some("assets" | "previews") => "media",
+        Some("assets" | "previews" | "video-analysis-history") => "media",
         Some("previs" | "exports") => "previs",
         Some("reference-media") => "snapshots",
         Some("proxies" | "captions") => "cache",
@@ -51,6 +51,10 @@ fn walk(folder: &Path, out: &mut Vec<(PathBuf, fs::Metadata)>) -> Result<()> {
     Ok(())
 }
 fn kept(path: &Path, root: &Path, graph: &Graph) -> bool {
+    // These are intentional, durable records independent of projects.
+    if path.starts_with(root.join(crate::video_analysis::history_store::FOLDER)) {
+        return true;
+    }
     if graph.paths.contains(path) {
         return true;
     }
