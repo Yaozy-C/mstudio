@@ -19,6 +19,8 @@ Use original product material and accessible research. Keep supported facts, fic
 
 Start with the material that carries the idea: an event, exchange, image, observation, process or sound. Develop it into the audience's experience before arranging timed rows. Let the chosen premise supply the action rather than automatically showing the product's operating sequence.
 
+Carry forward what makes the chosen premise interesting, as well as its message. Develop the consequences, implications or variations of that relationship or experience. A new scene can fit the theme while abandoning the original attraction. Add characters, misunderstandings or emotional resolution when they reveal or change something particular in this piece; they are not default ways to complete its second half. Let the ending answer the experience the passage has set in motion. A quiet, sensory or non-narrative piece need not acquire a plot or a moral.
+
 Write concrete changes, exact words and meaningful responses. Give a speaker an intention and a relationship to the listener; let vocabulary and timing express them. For nonverbal work, write the perceptible sequence itself. Words and pictures can complete or reinterpret each other rather than repeating the same feature. A sound or pause belongs in the script when it changes meaning or rhythm.
 
 Keep the advertised value active in the chosen expression. An end card can identify or clarify the offer; the passage itself should carry the relevant thought. Preserve the contribution of supporting props without attributing their properties to the product.

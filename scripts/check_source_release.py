@@ -17,7 +17,7 @@ forbidden_parts = {
 forbidden_extensions = {'.mp4', '.mov', '.wav', '.mp3', '.dylib', '.dll', '.so', '.exe', '.zip', '.gz', '.db', '.pem', '.key', '.p12', '.pfx'}
 published_docs = {
     'docs/architecture.md', 'docs/development.md', 'docs/image-storyboard-cases.md',
-    'docs/visual-system.md',
+    'docs/visual-system.md', 'docs/creative-concept-development.md',
     'docs/testing/visual-methods.md', 'docs/testing/visual-method-cases.json',
 }
 patterns = [

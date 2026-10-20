@@ -12,18 +12,15 @@ A request naming a shot's storyboard, including "regenerate", uses the current b
 
 Keep previous assets and task history. Report superseded pending tasks separately and do not submit both sets. Do not cancel, hide or delete unrelated work to make the task count look correct. An explicitly selected task retry retaining the old prompt/format remains an exact retry, not a covert redesign. A coordinator's multi-frame instruction does not establish that the user requested multiple independent images.
 
-## Choose four states from the actual design
+## Choose four moments from the actual design
 
-Read shot ID, event order, start/end, continuous-versus-cut structure, chosen camera, product evidence and viewing purpose. Define the board's reading order as top-left, top-right, bottom-left, bottom-right.
+Read shot ID, viewing purpose, event order, selected camera/focus, and continuous-versus-cut structure. Read the board top-left, top-right, bottom-left, bottom-right. The layout is a delivery convention, not a method for inventing the shots.
 
-| Panel | State to depict |
-|---|---|
-| 1 | Actual opening state, before the required change; preserve an intentional black start. |
-| 2 | First informative action phase: entry, approach, opening or initiation selected in the shot. |
-| 3 | Decisive visible phase: contact, crossing, reveal or changed relationship selected in the shot. |
-| 4 | Actual ending arrangement or response, with visible support and relevant clearances. |
+For a continuous take, select informative moments that communicate its development and necessary initial/result relationships. A changing composition or focus can matter even when a person remains still. A hold or nearby states can be valid; do not invent handling, effects or camera positions to differentiate cells. Preserve an intentional black opening and any essential reveal order.
 
-These are state-selection questions, not four compulsory new actions. A simple action may use two nearby phases or a planned hold; do not fabricate extra handling, effects or camera angles. Do not repeat four completed poses when the design needs a visible transition. Preserve surprise order. If the supplied design has too many essential changes for four readable panels, report the specific coverage gap to direction; do not silently drop proof or subdivide existing shot records.
+For a record grouping editorial shots, choose representative moments from those shots in their designed order, preserving the cut map and the contribution of each viewpoint. Do not replace viewpoint choices and cut relationships with a generic operation-step sequence. An action phase is not automatically an editorial shot, and four cells do not require four cuts.
+
+If four panels cannot cover the design's essential relationships or editorial shots, report the specific coverage gap; do not silently drop a shot, rewrite the sequence or subdivide the saved record. Keep the chosen workflow and scope while direction resolves a design/coverage conflict.
 
 ## Preserve shot structure and space
 

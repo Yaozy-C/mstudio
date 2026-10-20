@@ -4,7 +4,7 @@ Use the selected concept, product evidence and user's style constraints. Do not 
 
 ## Start with a visible proposition
 
-State what the viewer should notice first and what the next visual discovery adds. A product floating in particles is not a proposition unless the relationship means something in this concept. An effect can reveal construction, contrast states or connect spaces; it need not appear at all.
+Find the relationship that rewards looking: a gesture in its setting, an encounter of shapes or colors, a scale contrast, material behavior or a discovery within the chosen event. Decide how attention moves through the picture. One dominant subject can organize it; several interacting details can also sustain it. Do not impose an absolute focal hierarchy on every photograph. For open photographic exploration, use [the photographic method](photographic-exploration.md) before fixing the look. A product floating in particles is not a proposition unless the relationship means something in this concept. An effect can reveal construction, contrast states or connect spaces; it need not appear at all.
 
 Translate emotional language into a hypothesis about visible relationships. "Cold and severe" might mean restrained expression, hard lateral separation and controlled negative space, not simply a blue cast. It might instead require a different solution for a warm-coloured brand. Mark the hypothesis as a design choice, not proof that a model understands an emotion.
 
@@ -14,9 +14,9 @@ Record only decisions that change this shot:
 
 | Decision | Specify | Avoid |
 |---|---|---|
-| Attention | First focal point, second discovery, competing detail to suppress | Everything sharp, bright and important |
+| Attention | A focal priority or the relationships among several points of interest; what rewards further looking | Assuming either clarity or complexity guarantees an interesting image |
 | Composition | Viewpoint, subject scale, crop, silhouette gaps, negative space | "Beautiful composition" |
-| Value and colour | Where contrast separates the subject; palette relationships | A colour grade with no focal hierarchy |
+| Value and colour | Hue, value, chroma and area relationships in actual surfaces and light; separation or deliberate blending | Treating a global grade or a fixed palette as the composition |
 | Light | Source direction, apparent size, falloff and reflected shape | "Cinematic lighting" alone |
 | Material | Which reflections, transmission, roughness or folds reveal the material | Applying the same shine to skin, metal and cloth |
 | Motion | What new information camera/subject movement reveals | Orbit, push, zoom and shake without a reason |

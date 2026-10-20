@@ -81,6 +81,16 @@ class SourceReleaseTests(unittest.TestCase):
         (docs / 'image-storyboard-cases.md').write_text('-----BEGIN ' + 'PRIVATE KEY-----')
         self.assertNotEqual(self.check_release().returncode, 0)
 
+    def test_creative_concept_notes_pass_and_still_receive_content_scan(self):
+        docs = self.root / 'docs'
+        docs.mkdir()
+        notes = docs / 'creative-concept-development.md'
+        notes.write_text('# Public creative concept methods\n')
+        result = self.check_release()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        notes.write_text('-----BEGIN ' + 'PRIVATE KEY-----')
+        self.assertNotEqual(self.check_release().returncode, 0)
+
     def test_public_visual_spec_passes_and_still_receives_content_scan(self):
         docs = self.root / 'docs'
         docs.mkdir()

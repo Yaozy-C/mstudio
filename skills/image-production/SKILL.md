@@ -32,6 +32,8 @@ For an effect frame, depict one phase and its material state, protect specified 
 
 ## Physical continuity
 
+Own product fidelity in the rendered image: bind the original evidence, preserve the components and materials visible from the designed camera, and correct observed execution drift within the authorized scope. Direction supplies the shooting decisions and factual boundaries. Do not flatten its camera choices into the source photograph's angle, expose every component in every view, or turn a local product error into a new shot design. Return only an actual design/factual conflict to direction.
+
 Keep cross-frame continuity through stable identity and construction, while pose, support, openings and visible projection change according to the action and camera. Physical plausibility governs every depicted state; "identical in every frame" must not freeze moving parts or override gravity, contact, material response or mechanism operation. For state changes and local edits, apply [physical state rules](references/prompt-writing.md#physical-state-and-continuity) and include the relevant physical relationships in the actual generation prompt, not only in planning notes. Preserve explicitly designed departures from ordinary physics within their stated scope.
 
 ## Bind every input to a concrete purpose

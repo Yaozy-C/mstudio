@@ -7,7 +7,9 @@ description: Realize a selected screenplay through shot design, camera, staging,
 
 Realize the selected screenplay as shots: determine how camera, staging and performance make its events and product meaning perceptible. This is a professional reference library, not a second production workflow. Loading it grants no extra tools or permissions. Separate user requirements, product facts and creative hypotheses; an invented event is never product evidence.
 
-For an action shot, distinguish the event from the selected storyboard instant. State which phase the image depicts and the relevant physical relationships at that instant: contact, support, possession, opening and attachment state. Keep that state compatible with the preceding and following action. Original evidence determines mechanisms; an unverified opening direction or support cannot become a design fact. Production supplies the continuous motion and model prompt; direction supplies physically possible states and essential transitions.
+Own how the passage is photographed: viewpoint, framing, lens/distance relationship, focus, staging, performance, camera movement and cuts. Image and video production own reference binding, visual product fidelity and correction of generated deviations. Give them original asset IDs and the necessary factual boundaries; do not repeat a component inventory in every shot or restrict all views to the product photograph's angle. A changed projection or an occluded part is not a change of product identity.
+
+For an action shot, distinguish the event from the selected storyboard instant. Specify only contact, support, possession or mechanism states needed to realize the intended event and connect the cuts. Do not invent a product function or mechanism that the event depends on. Production realizes the detailed physical transitions and preserves the actual product through them; return an essential factual conflict without replacing the chosen viewing experience with a safer display shot.
 
 ## Mstudio shot records and timing
 
@@ -23,6 +25,7 @@ Within shot design, choose a reference for the concrete decision at hand. Reuse 
 |---|---|
 | How to make the selected opening and payoff readable without changing the premise | [Visual realization of the premise](references/concepts.md) |
 | Shot purpose, viewpoint, staging, cuts and the handoff to production | [Shot grammar](references/cinematography.md) |
+| Lens/distance, perspective, depth of field and focus as expressive choices | [Lens, distance and focus](references/cinematography.md#lens-distance-and-focus) |
 | Turning a chosen script into shots, camera, action beats and continuity | [Shot design](references/shot-design.md) |
 | Whether an earlier design decision, product fact or input is still valid | [Constraints and facts](references/brief-and-facts.md), [project state](references/project-state.md) |
 | Which physical instant a frame depicts, and how shot states connect | [State continuity](references/continuity.md) |
@@ -30,6 +33,7 @@ Within shot design, choose a reference for the concrete decision at hand. Reuse 
 | Weight, force, contact and material response | [Animation principles](references/animation-principles.md) |
 | **Planned shot durations, visible action phases and intended cut/sound relationships** | **[Rhythm](references/rhythm.md)** |
 | **Skin, faces, fabric and light that read as a photograph rather than a polished render** | **[Photographic appearance](references/photographic-appearance.md)** |
+| **Discovering a photographic look across people, everyday scenes and spaces; choosing viewpoint, moment and color relationships** | **[Photographic exploration](references/photographic-exploration.md)** |
 | Reusing the relationship of a real reference shot for a different product | [Transferring a reference](references/shot-references.md) |
 | Handing an approved design to a generation task | [Production handoff](assets/production-brief-template.md) |
 
@@ -37,7 +41,7 @@ Use performance for human behavior, rhythm for timed beats and photographic appe
 
 ## Visual decisions before prompt wording
 
-For a new look, an appearance complaint or an effects shot, decide the visible result before writing style adjectives. State the attention order, subject scale/viewpoint and negative space, light-source direction/size and value separation, material-specific highlights, palette relationships, and exclusions. Reuse an approved look; do not reopen it for every shot. Realism alone is not the criterion, and "cinematic", "premium" or a resolution label is not a lighting or composition decision.
+For a new photographic look or an appearance complaint, read [photographic exploration](references/photographic-exploration.md). Discover a concrete visual relationship before settling on mood labels or a preferred composition formula. A single focal priority and several interacting points of interest are both available. State the selected viewpoint, scale, moment, light/material and color relationships in the handoff. Reuse an approved look; do not reopen it for every shot. Realism alone is not the criterion, and "cinematic", "premium" or a resolution label is not a lighting or composition decision.
 
 Use [visual design and effect intent](references/visual-design.md) for the concrete decision. Separate the action board, a full-frame look reference and actual production controls. Preserve a requested board format; do not silently replace it or add paid look frames. Propose an independent keyframe only when it serves a stated control need and is authorized.
 

@@ -19,7 +19,7 @@ At that instant, specify only relationships that affect the intended action:
 - Possession and count: what each relevant hand holds, where transferred props are, and what has not entered yet.
 - Mechanism state: what is closed, unfastened, partly open or fully open; which parts remain attached and which material may deform.
 
-These are selection criteria, not mandatory fields for every frame. Keep stable identity separate from permitted state changes. Do not freeze all poses to enforce consistency or prescribe every video frame. Do not invent precise angles, paths, hinges or pocket openings that the product evidence does not establish. Resolve a missing structural fact when the chosen interaction depends on it; otherwise retain the uncertainty and use a supported action.
+These are selection criteria, not mandatory fields for every frame. Direction supplies the story-relevant states and spatial relationships; production preserves visual identity, interprets the original component geometry and realizes the detailed physical transition. Do not freeze poses, visible product sides or screen coordinates to enforce consistency. Resolve a missing structural fact when the chosen interaction depends on it; uncertainty about an unrelated hidden part does not prohibit a new camera position.
 
 For example, a frame of a hand starting to lift a lid can show the closure released enough to permit lifting, the fingers supporting the raised edge, the lid still attached to the body, and the base resting on the table. It must not also claim the lid is fully open and the hand has left. Releasing a closure alone does not establish that the lid has swung open.
 
@@ -33,22 +33,13 @@ Hand off initial state, selected frame phase, essential change and outgoing stat
 
 ## State and dependency record
 
-Reference existing project asset IDs and shot IDs for products, people, scenes and props. Describe continuity facts in the current shot and reference purposes; do not create a parallel subject or view registry.
+Reference existing project asset IDs and shot IDs rather than creating a parallel subject or view registry. State intentional changes of identity, outfit, place, time or prop state when they matter to the sequence. Track the possession, count and spatial relationships needed to understand an exchange or reveal; framing may omit everything the shot does not need to show.
 
-| Asset | Stable properties | Permitted state changes |
-|---|---|---|
-| Product | Original structure, color, accessories, connections and supported proportions | Opening, orientation and material-appropriate deformation |
-| Person | Identity, outfit, hands/accessories and project framing restrictions | Poses and actions consistent with the character |
-| Scene | Landmarks, lighting direction and fixed-camera references | Motivated time/place changes |
-| Props | Shape, count, packaging and contents | Insertion, removal or transfer with known start/end positions |
-
-Track openings, counts, positions, support and relevant time/space changes. Transfers conserve item count unless the story explains a change. Framing may omit background or body regions, but not evidence the shot must prove.
-
-Identify original product evidence, selected base frame, character/scene references and each input's role. Resolve conflicting references before generation. Generated base frames help continuity; hidden product structure still requires original evidence. A changed base must not silently alter unrelated assets or their selected design.
+Pass relevant original product, character and scene references to production with their intended visual use. Image and video production own concrete input bindings, preservation of visible components and local generated repairs. A selected base establishes composition/state, not new product facts. A render that changes an accessory or silhouette needs an execution correction; a design that relies on an unsupported function needs a design/factual resolution. Keep these failures distinct.
 
 ## Production handoff
 
-A no-face project must control framing throughout action, camera movement and reflections, not only at the start. Live action needs appropriate handles; stop motion needs explicit state cuts; image-to-video needs a distinction between previews and actual control frames. A middle/end-state image is not automatically a valid action start. Production uses supported input controls.
+A no-face project must control framing throughout action, camera movement and reflections, not only at the start. Live action needs appropriate handles; stop motion needs explicit state cuts; image-to-video needs a distinction between previews and actual control frames. A middle/end-state image is not automatically a valid action start. A full-reference storyboard remains a sequence reference; it does not require additional start/end control images. Production preserves the selected input mode and uses only supported inputs.
 
 ## Source and shot relationships
 

@@ -18,7 +18,7 @@ Only an explicit retry of a particular task or an explicit request to keep its e
 | The task has to decide | Read |
 |---|---|
 | How to write a board prompt with one visible moment per panel | [Image prompt writing](references/prompt-writing.md) |
-| How to select four temporal states, make the shot readable and preserve continuity across the board | [Storyboard frames](references/frames.md) |
+| How to select four useful shot/state moments, make the design readable and preserve continuity across the board | [Storyboard frames](references/frames.md) |
 | Whether subject, location or layout references are missing, and how to design useful reference assets | [Reference assets](references/reference-assets.md) |
 | Viewpoint, contact, part count and cross-frame state constraints | [Frame rules](references/frame-checks.md) |
 | Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](references/scene-execution.md) |
@@ -37,6 +37,8 @@ When alternatives are authorized, vary a named design decision rather than merel
 For an effect frame, depict one phase and its material state, protect specified identity/label regions, and keep start/end composition compatible. Do not put an entire evolving effect into a still. Keep planning notes out of unsupported tool fields; compile relevant decisions into the actual submitted image prompt and concrete reference purposes. Missing assets go back through the existing coordinator handoff, not an invented delegation tool.
 
 ## Physical continuity
+
+Own product fidelity in the rendered image: bind the original evidence, preserve the components and materials visible from the designed camera, and correct observed execution drift within the authorized scope. Direction supplies the shooting decisions and factual boundaries. Do not flatten its camera choices into the source photograph's angle, expose every component in every view, or turn a local product error into a new shot design. Return only an actual design/factual conflict to direction.
 
 Keep cross-frame continuity through stable identity and construction, while pose, support, openings and visible projection change according to the action and camera. Physical plausibility governs every depicted state; "identical in every frame" must not freeze moving parts or override gravity, contact, material response or mechanism operation. For state changes and local edits, apply [physical state rules](references/prompt-writing.md#physical-state-and-continuity) and include the relevant physical relationships in the actual generation prompt, not only in planning notes. Preserve explicitly designed departures from ordinary physics within their stated scope.
 

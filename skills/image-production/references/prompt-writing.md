@@ -15,8 +15,8 @@ For storyboard or video-input images, apply [frame selection and continuity](fra
 ## Visible decisions
 
 - Moment and pose: locate the body/object, its support, weight and decisive contact. Distinguish anticipation from result; do not reveal a planned surprise early. For a difficult pose, consult [animation principles](scene-execution.md).
-- Camera and composition: choose compatible view direction, height, visible surfaces, subject scale and crop. Keep the attention center and essential spatial relationships readable. Consult [shot grammar](scene-execution.md) for unresolved staging.
-- Light and focus: specify coherent source direction, softness and exposure; retain background cues needed to understand the scene. Mood should arise from visible light, material or weather.
+- Camera and composition: realize the selected view direction, height, lens/distance relationship, subject scale and crop. Translate optical intent into the required perspective, relative foreground/background scale and visible surfaces; a focal-length label alone is insufficient. Do not inherit the product reference camera or change the director's view to expose more components. Consult [shot grammar](scene-execution.md) for an execution question; return essential redesign to direction.
+- Light and focus: carry the selected scene lighting and depict the selected sharp subject/plane, depth of field and background legibility. A still shows one focus state; a timed focus transfer remains video handoff context. Preserve common material colors and light relationships across the sequence while allowing justified changes with viewpoint.
 - Output: distinguish a clean scene frame, annotated storyboard and graphic design. Put presentation labels outside clean video-input frames; when text is requested, specify exact copy and placement.
 
 Script, dialogue, sound and camera trajectory are context. Include only what is visible at this moment, with a sound source only when needed. Add details to resolve ambiguity, not new events, people, props or slogans. Surreal effects change the chosen relationships while retaining a compatible source and state.
