@@ -3,54 +3,86 @@ export type BrowseWork = {
   title: string;
   description: string;
   category: string;
-  duration: number;
   poster: string;
-  video: string;
+  embed: string;
   source: string;
   credit: string;
-  licenseSource: string;
 };
 
-// External films, not mstudio output. Full films stream from Blender's own site.
+// AI concept ads for fictional products, published by Runway. Stream from the
+// publisher's Mux player; media is not copied into the app or offered as assets.
+const source = "https://runway.com/AnotherBigAdContest#winners";
 export const browseWorks: BrowseWork[] = [
   {
-    id: "coffee-run",
-    credit: "(CC) Blender Foundation | studio.blender.org",
-    title: "Coffee Run",
-    description: "跟随一杯咖啡，穿行于一段关系的甜蜜与失落。",
-    category: "风格化 · 叙事",
-    duration: 184,
-    poster: "./browse/coffee-run.webp",
-    video:
-      "https://video.blender.org/object-storage/web_videos/ff8fe61b-026f-4f07-b66b-2a790d6f6ab1-720.mp4",
-    source: "https://studio.blender.org/projects/coffee-run/",
-    licenseSource:
-      "https://studio.blender.org/projects/coffee-run/pages/licensing/",
+    id: "mora-mora",
+    title: "Mora Mora",
+    credit: "Herinarivo Rakotomanana",
+    category: "AI 短视频 · 音乐叙事",
+    description: "JAUNT 音箱概念广告，把日常人物与音乐情绪连接起来。",
+    poster:
+      "https://image.mux.com/olm02IZGbsQcr02FwePKtJkycLzksPF6DdEPe2021pIKXA/thumbnail.webp",
+    embed:
+      "https://player.mux.com/olm02IZGbsQcr02FwePKtJkycLzksPF6DdEPe2021pIKXA",
+    source,
   },
   {
-    id: "charge",
-    credit: "© Blender Foundation | studio.blender.org",
-    title: "Charge",
-    description: "一座电池工厂，一场追逐，在紧张的节奏中揭晓行动的理由。",
-    category: "科幻 · 动作",
-    duration: 263,
-    poster: "./browse/charge.jpg",
-    video:
-      "https://video.blender.org/object-storage/web_videos/70528f27-fd51-479f-8146-abb5a7a81fff-720.mp4",
-    source: "https://studio.blender.org/projects/charge/",
-    licenseSource: "https://studio.blender.org/terms-and-conditions/",
+    id: "vero-factory",
+    title: "Vero Factory",
+    credit: "Mathery",
+    category: "视觉创意 · 商品世界",
+    description: "Vero 汽水概念广告，用夸张空间和统一色彩构建商品的世界。",
+    poster:
+      "https://image.mux.com/dV4LLRV9A0100n6kRJYvwDcrn669n3OpUQ8Sp025mkbG3U/thumbnail.webp",
+    embed:
+      "https://player.mux.com/dV4LLRV9A0100n6kRJYvwDcrn669n3OpUQ8Sp025mkbG3U",
+    source,
   },
   {
-    id: "spring",
-    credit: "© Blender Foundation | cloud.blender.org/spring",
-    title: "Spring",
-    description: "牧羊女孩与小狗唤醒山林，用光影、尺度与声音讲述季节的轮回。",
-    category: "奇幻 · 氛围",
-    duration: 464,
-    poster: "./browse/spring.webp",
-    video:
-      "https://video.blender.org/object-storage/web_videos/3d95fb3d-c866-42c8-9db1-fe82f48ccb95-720.mp4",
-    source: "https://studio.blender.org/projects/spring/",
-    licenseSource: "https://studio.blender.org/projects/spring/pages/about/",
+    id: "small-disasters",
+    title: "Small Disasters",
+    credit: "Albert Montero Vera",
+    category: "商品广告 · 生活喜剧",
+    description: "JACK 多功能工具概念广告，从生活中的小意外切入商品用途。",
+    poster:
+      "https://image.mux.com/3j00ilqt02qw02eovORkXO5FHV5FnGPc1Uc67uF00MPQSXo/thumbnail.webp",
+    embed:
+      "https://player.mux.com/3j00ilqt02qw02eovORkXO5FHV5FnGPc1Uc67uF00MPQSXo",
+    source,
+  },
+  {
+    id: "solace-vlad",
+    title: "Solace x Vlad",
+    credit: "László Gaál",
+    category: "商品广告 · 反差创意",
+    description: "Solacé 防晒概念广告，把吸血鬼放进阳光假日的场景。",
+    poster:
+      "https://image.mux.com/Qht5PFlbd025FWjRs38wyNGolsCvR02I2FXXDQyuRgXg4/thumbnail.webp",
+    embed:
+      "https://player.mux.com/Qht5PFlbd025FWjRs38wyNGolsCvR02I2FXXDQyuRgXg4",
+    source,
+  },
+  {
+    id: "not-norway",
+    title: "This is not Norway",
+    credit: "Ciro Kavouras",
+    category: "AI 短视频 · 荒诞叙事",
+    description: "以荒诞场景展开的 AI 概念广告，借鉴设定、反差与信息揭晓。",
+    poster:
+      "https://image.mux.com/todqVbVRatvWi34s5qYP8m3vY585c00kMUc02fjRefcT00/thumbnail.webp",
+    embed:
+      "https://player.mux.com/todqVbVRatvWi34s5qYP8m3vY585c00kMUc02fjRefcT00",
+    source,
+  },
+  {
+    id: "eau-de-paw",
+    title: "CORN CHIPS — Eau de Paw",
+    credit: "XAZINGA",
+    category: "视觉创意 · 幽默广告",
+    description: "虚构香氛概念广告，把宠物、气味与商品表达组合成一个玩笑。",
+    poster:
+      "https://image.mux.com/KAfII0000KRAkVCxNskkb7y1tOKvnFQi3a00AfPm78fDVE/thumbnail.webp",
+    embed:
+      "https://player.mux.com/KAfII0000KRAkVCxNskkb7y1tOKvnFQi3a00AfPm78fDVE",
+    source,
   },
 ];

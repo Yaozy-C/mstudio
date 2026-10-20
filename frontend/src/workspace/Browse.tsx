@@ -31,10 +31,6 @@ export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
               <span className="browse-play" aria-hidden="true">
                 <Play weight="fill" size={24} />
               </span>
-              <span className="browse-duration">
-                {Math.floor(work.duration / 60)}:
-                {String(work.duration % 60).padStart(2, "0")}
-              </span>
             </button>
             <div className="browse-work-meta">
               <span className="browse-category">{t(work.category)}</span>
@@ -43,7 +39,7 @@ export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
               </h2>
               <p>{t(work.description)}</p>
               <span className="browse-credit">
-                Blender Studio · {t("外部参考作品")}
+                {work.credit} · {t("AI 概念广告")}
               </span>
             </div>
           </article>
@@ -58,7 +54,9 @@ export function Browse({ works = browseWorks }: { works?: BrowseWork[] }) {
       )}
       {!!works.length && (
         <p className="browse-source-note">
-          {t("精选外部短片，非 mstudio 制作案例。在线播放需要网络连接。")}
+          {t(
+            "AI 创作者的外部参考作品，商品与品牌为概念设定。在线播放需要网络连接。",
+          )}
         </p>
       )}
       {watching && (

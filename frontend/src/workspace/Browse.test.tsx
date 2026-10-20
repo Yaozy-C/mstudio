@@ -1,6 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
 import { renderToStaticMarkup as render } from "react-dom/server";
-import { existsSync } from "node:fs";
 import { setLanguage } from "../i18n";
 import { Browse } from "./Browse";
 import { browseWorks } from "./browseWorks";
@@ -12,15 +11,13 @@ test("browse is a watch-only gallery in both languages and does not preload film
   for (const language of ["zh-CN", "en"] as const) {
     setLanguage(language);
     const html = render(<Browse />);
-    expect(html).toContain(
-      language === "en" ? "External reference" : "外部参考作品",
-    );
+    expect(html).toContain(language === "en" ? "AI concept ad" : "AI 概念广告");
     expect(html).toContain(
       language === "en"
-        ? "Watch the full film Coffee Run"
-        : "观看完整作品 Coffee Run",
+        ? "Watch the full film Mora Mora"
+        : "观看完整作品 Mora Mora",
     );
-    expect(html.match(/<article/g)).toHaveLength(3);
+    expect(html.match(/<article/g)).toHaveLength(6);
     expect(html).not.toMatch(/<(form|input|video|iframe)\b/);
     expect(html).not.toContain("新建项目");
     expect(html).not.toContain("Create project");
@@ -52,20 +49,17 @@ test("Browse is a distinct active navigation item, hidden in project-scoped sett
   expect(scoped).toContain("返回项目");
 });
 
-test("catalog entries have actual local posters, full-film streams and attribution", () => {
+test("catalog has attributed streaming references, not copied or fake video assets", () => {
   expect(new Set(browseWorks.map((work) => work.id)).size).toBe(
     browseWorks.length,
   );
   for (const work of browseWorks) {
-    expect(new URL(work.video).origin).toBe("https://video.blender.org");
-    expect(work.video).toEndWith(".mp4");
-    expect(work.duration).toBeGreaterThan(180);
-    expect(work.credit).toContain("Blender Foundation");
-    expect(new URL(work.source).origin).toBe("https://studio.blender.org");
-    expect(
-      existsSync(
-        new URL(`../../public/${work.poster.slice(2)}`, import.meta.url),
-      ),
-    ).toBe(true);
+    const embed = new URL(work.embed);
+    const poster = new URL(work.poster);
+    expect(embed.origin).toBe("https://player.mux.com");
+    expect(poster.origin).toBe("https://image.mux.com");
+    expect(poster.pathname.split("/")[1]).toBe(embed.pathname.slice(1));
+    expect(work.credit.length).toBeGreaterThan(2);
+    expect(new URL(work.source).origin).toBe("https://runway.com");
   }
 });

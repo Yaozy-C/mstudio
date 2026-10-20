@@ -12,7 +12,6 @@ export function BrowsePlayer({
   close: () => void;
 }) {
   useLanguage();
-  const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const opener = useRef(
     typeof document === "undefined"
@@ -47,30 +46,20 @@ export function BrowsePlayer({
             </button>
           </Dialog.Close>
         </header>
-        <video
+        <iframe
           key={attempt}
-          src={work.video}
-          poster={work.poster}
-          controls
-          autoPlay
-          playsInline
-          preload="metadata"
-          aria-label={t("完整作品 {title}", { title: work.title })}
-          onError={() => setFailed(true)}
+          src={work.embed}
+          title={t("完整作品 {title}", { title: work.title })}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
         />
-        {failed && (
-          <div className="browse-playback-error" role="alert">
-            <p>{t("视频暂时无法播放，请检查网络连接后重试。")}</p>
-            <button
-              onClick={() => {
-                setFailed(false);
-                setAttempt((v) => v + 1);
-              }}
-            >
-              {t("重新播放")}
-            </button>
-          </div>
-        )}
+        <div className="browse-player-help">
+          <span>{t("若播放器未加载，请重试或查看作品来源。")}</span>
+          <button onClick={() => setAttempt((v) => v + 1)}>
+            {t("重新播放")}
+          </button>
+        </div>
         <footer>
           <p>{t(work.description)}</p>
           <div className="browse-attribution">
@@ -78,19 +67,9 @@ export function BrowsePlayer({
             <a href={work.source} target="_blank" rel="noreferrer">
               {t("作品来源")}
             </a>
-            <a href={work.licenseSource} target="_blank" rel="noreferrer">
-              {t("授权说明")}
-            </a>
-            <a
-              href="https://creativecommons.org/licenses/by/4.0/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              CC BY 4.0
-            </a>
           </div>
           <p className="browse-source-note">
-            {t("外部参考作品 · 完整原片，未经剪辑。")}
+            {t("AI 概念广告 · 通过发布方播放器观看，版权归原作者。")}
           </p>
         </footer>
       </Dialog.Content>
