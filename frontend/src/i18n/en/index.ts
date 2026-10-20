@@ -17,8 +17,10 @@ import manual from "./manual.json";
 import previs from "./previs.json";
 import polish from "./polish.json";
 import storage from "./storage.json";
+import creativeHome from "./creative-home.json";
 
 export default {
+  ...creativeHome,
   ...storage,
   ...manual,
   ...previs,
