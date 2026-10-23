@@ -84,13 +84,13 @@ pub fn prepare(
     );
     Ok(value)
 }
-pub fn sync_job(db: &Connection, job: &Value) -> Result<()> {
+pub fn sync_job(db: &Connection, job: &Value) -> Result<Option<crate::app_error::AppError>> {
     if !job["shot"]["canvasGeneration"].is_object() {
-        return Ok(());
+        return Ok(None);
     }
     let project = job["projectId"].as_str().context("Missing project")?;
     let before = load(db, project)?;
-    let result = runtime::execute(json!({"action":"job","document":before,"job":job}))?;
+    let result = runtime::execute(json!({"action":"recover_jobs","document":before,"jobs":[job]}))?;
     ensure!(
         result.get("error").is_none(),
         "{}",
@@ -101,6 +101,38 @@ pub fn sync_job(db: &Connection, job: &Value) -> Result<()> {
     if before != result["document"] {
         persist(db, &before, &result["document"])?;
     }
-    Ok(())
+    let failures = result["failures"]
+        .as_array()
+        .context("Invalid job reconciliation diagnostics")?;
+    failures
+        .first()
+        .map(|failure| {
+            serde_json::from_str(
+                failure["error"]
+                    .as_str()
+                    .context("Missing job reconciliation error")?,
+            )
+            .context("Invalid job reconciliation error")
+        })
+        .transpose()
 }
 pub use super::production_recovery::recover;
+pub fn sync_tracking(db: &Connection, job: &Value) -> Result<()> {
+    if !job["shot"]["canvasGeneration"].is_object() {
+        return Ok(());
+    }
+    let project = job["projectId"].as_str().context("Missing project")?;
+    let before = load(db, project)?;
+    let result = runtime::execute(json!({"action":"job_tracking","document":before,"job":job}))?;
+    ensure!(
+        result["document"].is_object() && result.get("error").is_none(),
+        "Job tracking reconciliation failed: {}",
+        result["error"]
+            .as_str()
+            .unwrap_or("Invalid domain response")
+    );
+    if before != result["document"] {
+        persist(db, &before, &result["document"])?;
+    }
+    Ok(())
+}

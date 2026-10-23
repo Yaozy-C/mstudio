@@ -1,9 +1,5 @@
 import { expect, test } from "bun:test";
-import {
-  analysisCreationTask,
-  analysisProject,
-  analysisProjectKey,
-} from "./creationBrief";
+import { analysisCreationTask, analysisProject } from "./creationBrief";
 import { createAnalysisLauncher } from "./creationHandoff";
 import { browseWorks } from "../browseWorks";
 import type { Project } from "../../model";
@@ -98,6 +94,7 @@ test("handoff includes the entire analysis and creative intent, with no transien
   expect(task.text).toContain(browseWorks[0].source);
   expect(task.text).not.toContain("/private/cache");
   expect(task.refs).toEqual([]);
+  expect(task.text).not.toContain(state.recordId!);
   const project = analysisProject(state);
   expect(project.name).toBe("Mora Mora · 新创作");
   expect([project.width, project.height]).toEqual([1920, 1080]);
@@ -117,29 +114,34 @@ test("one click creates a project and seeds its composer draft before lazy mount
   expect(drafts.getItem(`mstudio-chat-draft:${result.project.id}`)).toBe(
     result.task.text,
   );
-  expect(drafts.getItem(analysisProjectKey(state))).toBe(result.project.id);
+  expect(drafts.values.size).toBe(1);
 });
-test("returning from the same saved analysis reopens the project and preserves edited or already-sent drafts", async () => {
+test("one saved analysis creates independent projects without changing prior projects or drafts", async () => {
   const db = projects();
   const drafts = storage();
+  const snapshot = structuredClone(state);
   const service = createAnalysisLauncher(db.invoke, drafts);
   const first = await service.create(state);
   const key = `mstudio-chat-draft:${first.project.id}`;
   drafts.setItem(key, "我已经补充了自己的商品资料");
-  const reopened = await createAnalysisLauncher(db.invoke, drafts).create(
-    state,
-  );
-  expect(reopened.project.id).toBe(first.project.id);
-  expect(reopened.task.text).toBe("");
-  expect(reopened.task.isolated).toBe(false);
+  first.project.name = "我的第一个独立项目";
+  const second = await service.create(state);
+  const third = await createAnalysisLauncher(db.invoke, drafts).create(state);
+  expect(
+    new Set([first.project.id, second.project.id, third.project.id]).size,
+  ).toBe(3);
+  expect(db.documents.size).toBe(3);
+  expect(db.calls).toEqual([
+    "create_project",
+    "create_project",
+    "create_project",
+  ]);
   expect(drafts.getItem(key)).toBe("我已经补充了自己的商品资料");
-  expect(db.documents.size).toBe(1);
-  drafts.removeItem(key);
-  await service.create(state);
-  expect(drafts.getItem(key)).toBeNull();
-  db.documents.delete(first.project.id);
-  const replacement = await service.create(state);
-  expect(replacement.project.id).not.toBe(first.project.id);
+  expect(first.project.name).toBe("我的第一个独立项目");
+  expect(second.task.text).toBe(first.task.text);
+  expect(third.task.isolated).toBe(true);
+  expect(drafts.values.size).toBe(3);
+  expect(state).toEqual(snapshot);
 });
 test("a lost creation response recovers the committed project instead of creating a duplicate", async () => {
   const db = projects();
@@ -156,7 +158,7 @@ test("a lost creation response recovers the committed project instead of creatin
   expect(result.project.id).toBe([...db.documents.keys()][0]);
   expect(db.documents.size).toBe(1);
 });
-test("definite create failures clean up only their reservation; unavailable draft storage creates nothing", async () => {
+test("definite create failures clean up their draft; unavailable draft storage creates nothing", async () => {
   const db = projects();
   const drafts = storage();
   drafts.setItem("another-project-draft", "Keep");
@@ -168,7 +170,6 @@ test("definite create failures clean up only their reservation; unavailable draf
     drafts,
   );
   await expect(service.create(state)).rejects.toThrow("Disk full");
-  expect(drafts.getItem(analysisProjectKey(state))).toBeNull();
   expect(drafts.values.size).toBe(1);
   const blocked = createAnalysisLauncher(db.invoke, {
     ...drafts,
@@ -192,13 +193,6 @@ test("different analyses remain separate and creation requires a completed, idle
   await expect(
     service.create({ ...state, result: undefined }),
   ).rejects.toThrow();
-  expect(analysisProjectKey({ ...state, recordId: undefined })).not.toBe(
-    analysisProjectKey({
-      ...state,
-      recordId: undefined,
-      result: { ...state.result!, summary: "Revised" },
-    }),
-  );
   const huge = analysisProject({
     ...state,
     video: { ...state.video!, width: 7681, height: 4321 },

@@ -8,8 +8,7 @@ test("named project tools share call/result status", () => {
       kind: "tool/call",
       payload: {
         callId: "a",
-        name: "mstudio_edit",
-        arguments: { operations: [{ op: "add_node" }] },
+        name: "mstudio_add_screenplay",
       },
     },
     {
@@ -39,7 +38,7 @@ test("named project tools share call/result status", () => {
     },
   ]);
   expect(rows.map((r) => [r.title, r.detail])).toEqual([
-    ["添加内容", "已完成"],
+    ["添加剧本", "已完成"],
     ["修改镜头设计", "已停止"],
   ]);
   expect(rows[1].error).toBe(true);

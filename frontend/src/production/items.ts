@@ -1,4 +1,5 @@
 import { materializeFrameCards } from "./frameCards";
+import { mediaCardSize } from "./mediaCardSize";
 import { actionText } from "../creative/shotText";
 import { takesOf } from "../creative/document";
 import { framesOf } from "./frames";
@@ -50,10 +51,12 @@ export function productionItems(p: Project): ProductionItem[] {
       width: SHOT_CARD_WIDTH,
       height: 300,
     });
+    let videoY = 110;
     takesOf(n)
       .filter((t) => assets.get(t.assetId)?.kind === "video")
-      .forEach((t, j) => {
+      .forEach((t) => {
         const a = assets.get(t.assetId)!;
+        const size = mediaCardSize(a);
         items.push({
           key: itemKey("take", n.id, a.id),
           kind: "video",
@@ -63,16 +66,27 @@ export function productionItems(p: Project): ProductionItem[] {
           title: a.name,
           text: n.text,
           x: x + SHOT_VIDEO_OFFSET,
-          y: 110 + j * 395,
-          width: 260,
-          height: 350,
+          y: videoY,
+          ...size,
         });
+        videoY += size.height + 45;
       });
   });
+  let rowY = 1050;
+  let rowHeight = 0;
   p.nodes
     .filter((n) => !n.shot && n.kind !== "screenplay")
     .forEach((n, i) => {
       const a = assets.get(n.assetId ?? "");
+      const size =
+        a && ["image", "video"].includes(a.kind)
+          ? mediaCardSize(a)
+          : { width: n.width ?? 260, height: n.height ?? 310 };
+      if (i > 0 && i % 4 === 0) {
+        rowY += rowHeight + 45;
+        rowHeight = 0;
+      }
+      rowHeight = Math.max(rowHeight, size.height);
       items.push({
         key: itemKey("node", n.id),
         usages: shots.flatMap((shot) =>
@@ -95,9 +109,8 @@ export function productionItems(p: Project): ProductionItem[] {
         title: n.title,
         text: n.text,
         x: shots.length ? (i % 4) * 300 : n.x,
-        y: shots.length ? 1050 + Math.floor(i / 4) * 360 : n.y,
-        width: a?.kind === "image" ? 250 : (n.width ?? 260),
-        height: a?.kind === "image" ? 350 : (n.height ?? 310),
+        y: shots.length ? rowY : n.y,
+        ...size,
       });
     });
   const hidden = new Set(p.production?.hidden ?? []);

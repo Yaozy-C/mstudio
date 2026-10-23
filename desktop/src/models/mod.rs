@@ -6,7 +6,11 @@ mod connection_tests;
 pub mod connections;
 pub mod context;
 pub mod context_commands;
-pub(crate) mod context_migration;
+#[cfg(test)]
+mod context_discovery_tests;
+#[cfg(test)]
+mod context_execution_tests;
+pub(crate) mod context_policy;
 pub mod media;
 mod storage;
 #[cfg(test)]
@@ -41,11 +45,8 @@ pub struct Catalog {
 
 pub fn init(db: &Connection) -> Result<()> {
     db.execute_batch("CREATE TABLE IF NOT EXISTS model_profiles(id TEXT PRIMARY KEY,data TEXT NOT NULL);
-        CREATE TABLE IF NOT EXISTS model_credentials(id TEXT PRIMARY KEY REFERENCES model_profiles(id) ON DELETE CASCADE,endpoint TEXT NOT NULL,api_key TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS agent_model_preferences(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,model_id TEXT REFERENCES model_profiles(id) ON DELETE SET NULL);")?;
     connections::init(db)?;
-    capabilities::migrate(db)?;
-    context_migration::migrate(db)?;
     Ok(())
 }
 

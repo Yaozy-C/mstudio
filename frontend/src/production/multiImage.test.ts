@@ -4,10 +4,8 @@ import { requestTask, runsOf } from "./requestTask";
 import { receiveProductionResult, saveTask } from "./document";
 import { retryTask } from "./recovery";
 import { productionItems } from "./items";
-import {
-  needsTracking,
-  type GeneratedJob,
-} from "../workspace/generatedJobTracking";
+import type { GeneratedJob } from "../workspace/generatedJobTracking";
+import { reconcileJob } from "../domain/generation";
 import type { ProductionSource } from "./types";
 
 function setup() {
@@ -16,6 +14,7 @@ function setup() {
     p,
     {
       mediaKind: "image",
+      title: "产品 · 三视图",
       text: "依次生成 FRONT、RIGHT、TOP 三张独立图片",
     },
     {
@@ -54,9 +53,8 @@ test("partial failure retains its output without rewriting a retry request", () 
   } as GeneratedJob;
   task = { ...task, status: "FAILED" };
   p = saveTask(p, task);
-  expect(needsTracking(job, p)).toBe(true);
-  p = receiveProductionResult(p, asset("front"), source);
-  expect(needsTracking(job, p)).toBe(false);
+  p = reconcileJob(p, { ...job, assets: [asset("front")] });
+  expect(runsOf(p)[0].status).toBe("FAILED");
   const retry = retryTask(runsOf(p)[0]);
   expect(retry.prompt).toBe(task.prompt);
   expect(retry.resultAssetIds).toBeUndefined();
@@ -71,12 +69,17 @@ test("all outputs must be imported before tracking stops, including after an imp
     outputCount: 3,
     shot: source,
   } as GeneratedJob;
-  p = receiveProductionResult(p, asset("front"), source);
-  p = saveTask(p, { ...runsOf(p)[0], status: "COMPLETED" });
-  expect(needsTracking(job, p)).toBe(true);
-  p = receiveProductionResult(p, asset("right"), source);
-  p = receiveProductionResult(p, asset("top"), source);
-  expect(needsTracking(job, p)).toBe(false);
+  p = reconcileJob(p, { ...job, assets: [asset("front"), null, asset("top")] });
+  expect(runsOf(p)[0].status).toBe("RECEIVING");
+  expect(runsOf(p)[0].resultAssetIds).toEqual(["front", "top"]);
+  p = reconcileJob(p, {
+    ...job,
+    assets: [asset("front"), asset("right"), asset("top")],
+  });
+  expect(runsOf(p)[0].status).toBe("COMPLETED");
+  expect(new Set(runsOf(p)[0].resultAssetIds)).toEqual(
+    new Set(["front", "right", "top"]),
+  );
 });
 
 test("multiple outputs sharing a source position do not move earlier cards or overlap", () => {

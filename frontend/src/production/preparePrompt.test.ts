@@ -24,6 +24,24 @@ const draft: ProductionTask = {
     { key: "b", assetId: "b", role: "last-frame", purpose: "尾帧" },
   ],
 };
+test("asset prompt preparation carries its purpose without becoming a storyboard task", async () => {
+  const asset: ProductionTask = {
+    ...draft,
+    kind: "image",
+    generationPurpose: "asset",
+    ownerId: undefined,
+    mode: "single",
+    inputs: [],
+  };
+  const invoke = (async (_command: string, input: any) => {
+    expect(input.request.generationPurpose).toBe("asset");
+    expect(input.request.kind).toBe("image");
+    return { prompt: "独立人物资产", references: [] };
+  }) as typeof bridge;
+  const prepared = await preparePrompt(invoke, "project", asset);
+  expect(prepared.generationPurpose).toBe("asset");
+  expect(prepared.ownerId).toBeUndefined();
+});
 test("preparation sends only current prompt, parameters and explicit text references; preserves exact frame roles", async () => {
   let args: unknown;
   const invoke = (async (command: string, input: unknown) => {

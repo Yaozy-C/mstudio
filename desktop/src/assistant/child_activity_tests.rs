@@ -30,8 +30,16 @@ fn child_activity_is_scoped_to_parent_call_and_survives_terminal_states_and_rest
             .unwrap()
             .is_none()
         );
-        let value=update(&db,"p","child-1","tool/call",&json!({"name":"mstudio_inspect","arguments":{"section":"assets","text":"private prompt"}})).unwrap().unwrap();
-        assert_eq!(value["phase"]["payload"]["name"], "mstudio_inspect");
+        let value = update(
+            &db,
+            "p",
+            "child-1",
+            "tool/call",
+            &json!({"name":"mstudio_read_assets","arguments":{"ids":["private-reference"]}}),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(value["phase"]["payload"]["name"], "mstudio_read_assets");
         assert!(!value.to_string().contains("private"));
         update(
             &db,
@@ -48,7 +56,7 @@ fn child_activity_is_scoped_to_parent_call_and_survives_terminal_states_and_rest
         "p",
         "child-1",
         "tool/call",
-        json!({"callId":"read","name":"mstudio_inspect"}),
+        json!({"callId":"read","name":"mstudio_read_assets"}),
     )
     .unwrap();
     let children = list(&store, "p", "parent").unwrap();
@@ -112,35 +120,4 @@ fn child_activity_is_scoped_to_parent_call_and_survives_terminal_states_and_rest
     assert!(list(&store, "p", "parent").unwrap().is_empty());
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
-}
-
-#[test]
-fn historical_handoffs_link_by_child_identity_without_guessing_by_role() {
-    let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE projects(id TEXT PRIMARY KEY); CREATE TABLE subagent_runs(id TEXT PRIMARY KEY,project_id TEXT,parent_turn TEXT,agent_id TEXT,mode TEXT,status TEXT,last_turn TEXT,created INTEGER,updated INTEGER); CREATE TABLE agent_events(project_id TEXT,turn_id TEXT,kind TEXT,payload TEXT); INSERT INTO projects VALUES('p'); INSERT INTO subagent_runs VALUES('child','p','parent','art','oneShot','completed','child-turn',10,280); INSERT INTO subagent_runs VALUES('other','p','parent','art','oneShot','completed','other-turn',11,290);").unwrap();
-    db.execute(
-        "INSERT INTO agent_events VALUES('p','parent','tool/result',?1)",
-        [
-            json!({"callId":"delegate","result":{"childId":"child","stopReason":"completed"}})
-                .to_string(),
-        ],
-    )
-    .unwrap();
-    init(&db).unwrap();
-    assert_eq!(
-        snapshot(&db, "p", "child-turn").unwrap().unwrap()["callId"],
-        "delegate"
-    );
-    assert_eq!(
-        snapshot(&db, "p", "child-turn").unwrap().unwrap()["state"],
-        "completed"
-    );
-    assert!(snapshot(&db, "p", "other-turn").unwrap().is_none());
-    init(&db).unwrap();
-    assert_eq!(
-        db.query_row("SELECT count(*) FROM agent_child_activity", [], |r| r
-            .get::<_, i64>(0))
-            .unwrap(),
-        1
-    );
 }

@@ -180,7 +180,7 @@ fn summarize(rows: Vec<(String, String)>) -> anyhow::Result<Value> {
         if kind == "tool/result"
             && let Some(targets) = calls.get(event["callId"].as_str().unwrap_or(""))
         {
-            let result = event.get("value").unwrap_or(&event["result"]);
+            let result = &event["value"];
             for target in targets {
                 if result["error"].is_null() {
                     failures.remove(target);
@@ -211,7 +211,7 @@ mod outcome_tests {
         };
         let failed = (
             "tool/result".into(),
-            json!({"callId":"a","result":{"error":"Failed"}}).to_string(),
+            json!({"callId":"a","value":{"error":"Failed"}}).to_string(),
         );
         assert_eq!(
             summarize(vec![call("a"), failed.clone()]).unwrap()["error"],
@@ -219,7 +219,7 @@ mod outcome_tests {
         );
         let success = (
             "tool/result".into(),
-            json!({"callId":"b","result":{"generationTasks":[{"id":"task"}]}}).to_string(),
+            json!({"callId":"b","value":{"generationTasks":[{"id":"task"}]}}).to_string(),
         );
         let result = summarize(vec![call("a"), failed, call("b"), success]).unwrap();
         assert!(result["error"].is_null());
@@ -233,7 +233,7 @@ mod outcome_tests {
         let result = |id: &str, value: Value| {
             (
                 "tool/result".into(),
-                json!({"callId":id,"result":value}).to_string(),
+                json!({"callId":id,"value":value}).to_string(),
             )
         };
         let mut rows = vec![

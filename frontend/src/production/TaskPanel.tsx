@@ -14,10 +14,12 @@ import type { ProductionController } from "./useProduction";
 import { GenerationRun } from "./GenerationRun";
 import { pendingRun } from "./useRunActions";
 import { RunStatus } from "./RunStatus";
+import { taskTitle } from "./taskTitle";
 import { mediaUrl } from "../bridge";
 import "./task-panel.css";
 import { useOptionalPrevis } from "../previs/context";
 import { PrevisTaskList } from "../previs/PrevisTaskList";
+import { RuntimeIssues, useRuntimeIssues } from "./RuntimeIssues";
 
 export function TaskPanel({
   project,
@@ -31,6 +33,7 @@ export function TaskPanel({
   const language = useLanguage();
   const [archived, setArchived] = useState(false);
   const previs = useOptionalPrevis();
+  const runtimeIssues = useRuntimeIssues(project.id);
   const previsTasks = archived ? [] : (previs?.tasks ?? []);
   const runs = [...canvas.runs].reverse();
   const visible = runs.filter(
@@ -42,6 +45,8 @@ export function TaskPanel({
     visible.filter(pendingRun).length +
     previsTasks.filter((task) => task.running).length;
   const failed =
+    runtimeIssues.issues.length +
+    Number(!!runtimeIssues.error) +
     visible.filter((t) => t.status === "FAILED").length +
     previsTasks.filter((task) => !!task.error).length;
   return (
@@ -87,6 +92,7 @@ export function TaskPanel({
             </button>
           </Dialog.Close>
         </header>
+        <RuntimeIssues {...runtimeIssues} />
         <div className="task-panel-body">
           <div className="task-panel-list" aria-label={t("任务列表")}>
             <PrevisTaskList
@@ -131,12 +137,9 @@ export function TaskPanel({
                   !!asset.preview,
               );
               const owner = project.nodes.find(
-                (node) => node.id === task.ownerId,
+                (node) => node.id === (task.targetNodeId ?? task.ownerId),
               );
-              const title =
-                owner?.title ||
-                task.instruction ||
-                (task.kind === "image" ? t("图片生成") : t("视频生成"));
+              const title = taskTitle(task);
               const date =
                 task.createdAt && Number.isFinite(task.createdAt)
                   ? new Date(task.createdAt)

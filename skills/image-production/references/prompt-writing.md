@@ -10,7 +10,7 @@ Select the requested start, key or end state before describing it. A full shot s
 
 Describe motion as a visible pose, support/contact, fabric tension or deliberately requested motion blur. Do not carry camera travel, playback timing or sound instructions into a still. A completely dark image can be an intentional control frame when explicitly requested; do not replace it with a visible product reveal. For a whole-sequence review, a multi-panel board is a valid route: state reading order and one event/state per panel. Individually requested images and production controls stay separate. Do not confuse a subject reference sheet with a story sequence.
 
-For storyboard or video-input images, apply [frame selection and continuity](frames.md) before writing: identify the requested shot and representative/start/key/end use, then describe only its selected instant. A representative image and an actual starting control frame can legitimately need different states. Keep movement directions, camera trajectories, dialogue and sound as handoff notes rather than asking a still to perform them. A sequence board can keep those notes outside or beside its panels; they do not establish that the depicted action is readable.
+For an assigned standalone still, depict only its selected instant. Movement, camera trajectories, dialogue and sound remain handoff context. Reference assets establish identity, construction or layout rather than a shot sequence.
 
 ## Visible decisions
 
@@ -20,6 +20,26 @@ For storyboard or video-input images, apply [frame selection and continuity](fra
 - Output: distinguish a clean scene frame, annotated storyboard and graphic design. Put presentation labels outside clean video-input frames; when text is requested, specify exact copy and placement.
 
 Script, dialogue, sound and camera trajectory are context. Include only what is visible at this moment, with a sound source only when needed. Add details to resolve ambiguity, not new events, people, props or slogans. Surreal effects change the chosen relationships while retaining a compatible source and state.
+
+## Write a photograph, not a production checklist
+
+One call should do one job: an identity plate, a location plate, a look frame, a board, or a local edit. Do not ask one prompt to establish identity, geography, four states and the final look at once.
+
+Use five short blocks as a drafting aid, then merge them into coherent prose:
+
+1. **Capture and camera.** Photographic fact or medium, lens, distance, height and the visible consequence.
+2. **Instant and blocking.** Who or what is where, the action or held state, gaze, hands, support and contact.
+3. **Light and color.** Source, size, direction, ratio, bounce, palette relationship and what stays neutral.
+4. **Material and skin at scale.** Two or three specific responses that matter at this framing.
+5. **Reference roles.** One line per input: what it supplies and what it must not transfer.
+
+Keep continuity rules, part counts, negative constraints and acceptance checks in the task checklist or `references[].purpose`. Repeat a constraint in the prompt only if the model has already violated it. The prompt should read as a photograph; five unrelated clauses will be averaged into a safe catalogue image.
+
+Example of the same scene written as a photograph:
+
+> A photorealistic 35mm film still, camera at seated eye level on wet sand, 50mm at T2.8. A woman singer stands on a low timber platform at dusk, hand just released from a microphone, looking down-left with a small dawning smile. In the lower left foreground an older woman sits cross-legged, hands meeting in a clap. The sun is below the horizon: a thin apricot band remains, the sky above is dusty blue-grey, the sea is dark slate. Warm sand bounce lights the faces; a cool ambient fill keeps the shadow side readable. Rust-red linen, cream trousers, grey curls, weathered planks and matte black metal each catch the light differently. Fine grain, soft highlight roll-off, open shadows, muted natural color.
+
+Not: a paragraph of "no text, no logo, no extra people, no orange filter, do not copy the reference pose, keep the same identity, 1920x1080" before the scene has been described.
 
 ## Spatial coherence before prose
 
@@ -63,4 +83,6 @@ Write the visible output, selected state, composition, light and necessary refer
 
 Compare actual output with the intended state, viewpoint, support/contact, identity, components and requested text. For a sequence, also check that changing support, tension, openings and movable parts follow the depicted action rather than repeating a frozen reference state. Repair the observed mismatch. Fine detail does not by itself establish realism.
 
-For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic appearance](scene-execution.md) only when that task needs the additional detail. These examples do not set the style for other projects.
+For photographic work, also check the camera relationship, light direction and ratio, color relationships and skin/material response. If the result reads as synthetic, use the diagnosis in [visual quality](visual-quality.md) and repair the cause rather than adding more detail.
+
+For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md), plus [photographic appearance](scene-execution.md) for scene-specific light. These examples do not set the style for other projects.

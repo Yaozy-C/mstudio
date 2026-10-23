@@ -7,7 +7,7 @@ fn stale_recovery_never_overwrites_concurrent_edits_or_job_changes() {
     doc["name"] = json!("Human edit");
     crate::projects::write_document(&store, doc, false).unwrap();
     assert_eq!(
-        commit(&store, "p", &before, &before.document).unwrap(),
+        commit(&store, "p", &before, &before.document, &[]).unwrap(),
         None
     );
     assert_eq!(
@@ -21,7 +21,7 @@ fn stale_recovery_never_overwrites_concurrent_edits_or_job_changes() {
         .execute("INSERT INTO jobs VALUES('reserved','p','{}')", [])
         .unwrap();
     assert_eq!(
-        commit(&store, "p", &before, &before.document).unwrap(),
+        commit(&store, "p", &before, &before.document, &[]).unwrap(),
         None
     );
     let before = snapshot(&store.conn().unwrap(), "p").unwrap().unwrap();
@@ -31,7 +31,7 @@ fn stale_recovery_never_overwrites_concurrent_edits_or_job_changes() {
         .execute("UPDATE jobs SET data='{\"status\":\"UNKNOWN\"}'", [])
         .unwrap();
     assert_eq!(
-        commit(&store, "p", &before, &before.document).unwrap(),
+        commit(&store, "p", &before, &before.document, &[]).unwrap(),
         None
     );
     let root = store.root.clone();
@@ -40,33 +40,51 @@ fn stale_recovery_never_overwrites_concurrent_edits_or_job_changes() {
 }
 
 #[test]
-fn startup_recovers_status_despite_corrupt_omitted_input_and_is_idempotent() {
+fn a_failed_restart_reconciliation_retains_pause_and_only_a_success_clears_it() {
     let (store, mut doc, _) = fixture();
-    let task = json!({"key":"run","kind":"image","mode":"multi","prompt":"Keep","inputs":[],"jobId":"job","submissionId":"job","status":"SUBMITTING"});
+    let task = json!({"key":"run","title":"Portrait","kind":"image","mode":"multi","prompt":"Keep","inputs":[],"jobId":"job","submissionId":"job","status":"IN_QUEUE","trackingPaused":true});
     doc["production"] = json!({"drafts":{"run":task}});
     crate::projects::write_document(&store, doc, false).unwrap();
-    let mut job = json!({"id":"job","projectId":"p","status":"FAILED","error":"Synthetic failure","input":{"image":"x".repeat(10000)},"shot":{"canvasGeneration":{"task":task,"x":0,"y":0}}});
-    {
-        let db = store.conn().unwrap();
-        db.execute("INSERT INTO jobs VALUES('job','p','{}')", [])
-            .unwrap();
-        crate::database::blobs::pack(&db, crate::database::blobs::Owner::Job("job"), &mut job)
-            .unwrap();
-        db.execute("UPDATE jobs SET data=?1", [job.to_string()])
-            .unwrap();
-        db.execute("UPDATE content_blobs SET data=x'0000'", [])
-            .unwrap();
-        assert!(
-            crate::database::blobs::hydrate(&db, crate::database::blobs::Owner::Job("job"), job)
-                .is_err()
-        );
-    }
-    assert_eq!(recover(&store).unwrap(), vec!["p"]);
-    let saved = load(&store.conn().unwrap(), "p").unwrap();
-    assert_eq!(saved["production"]["drafts"]["run"]["status"], "FAILED");
-    assert_eq!(saved["revision"], 0); // Runtime status does not change creative content.
-    assert!(recover(&store).unwrap().is_empty());
-    assert_eq!(load(&store.conn().unwrap(), "p").unwrap(), saved);
+    let mut job = json!({"id":"job","projectId":"p","status":"COMPLETED","outputCount":1,
+        "assets":[{"id":"result","kind":"video","name":"Wrong kind","path":"/synthetic","preview":"/synthetic.png","duration":1,"width":100,"height":100,"hasAudio":false}],
+        "sync":{"stage":"reconcile","attempt":4,"paused":true,"error":"previous failure"},
+        "reconciliation":{"error":"previous reconciliation failure"},
+        "shot":{"canvasGeneration":{"task":task,"x":0,"y":0}}});
+    store
+        .conn()
+        .unwrap()
+        .execute("INSERT INTO jobs VALUES('job','p',?1)", [job.to_string()])
+        .unwrap();
+    let report = recover(&store).unwrap();
+    assert_eq!(report.deferred.len(), 1);
+    let document = load(&store.conn().unwrap(), "p").unwrap();
+    assert_eq!(
+        document["production"]["drafts"]["run"]["trackingPaused"],
+        true
+    );
+    let saved = crate::jobs::metadata(&store, "job").unwrap();
+    assert_eq!(saved["sync"]["attempt"], 4);
+    assert_eq!(saved["sync"]["paused"], true);
+    job["assets"][0]["kind"] = json!("image");
+    store
+        .conn()
+        .unwrap()
+        .execute("UPDATE jobs SET data=?1 WHERE id='job'", [job.to_string()])
+        .unwrap();
+    let report = recover(&store).unwrap();
+    assert!(report.deferred.is_empty());
+    let document = load(&store.conn().unwrap(), "p").unwrap();
+    assert_eq!(
+        document["production"]["drafts"]["run"]["trackingPaused"],
+        false
+    );
+    assert_eq!(
+        document["production"]["drafts"]["run"]["status"],
+        "COMPLETED"
+    );
+    let saved = crate::jobs::metadata(&store, "job").unwrap();
+    assert!(saved.get("sync").is_none());
+    assert!(saved.get("reconciliation").is_none());
     let root = store.root.clone();
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

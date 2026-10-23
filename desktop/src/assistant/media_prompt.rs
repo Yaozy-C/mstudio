@@ -10,6 +10,7 @@ pub struct Request {
     project_id: String,
     media_model_id: String,
     kind: String,
+    generation_purpose: Option<String>,
     prompt: String,
     parameters: Value,
     inputs: Vec<Input>,
@@ -69,7 +70,7 @@ fn parse_reply(raw: &str, inputs: &[Input]) -> Result<Prepared, String> {
         || result.references.iter().zip(inputs).any(|(r, i)| {
             r.asset_id != i.asset_id
                 || r.purpose.trim().is_empty()
-                || r.purpose.chars().count() > 1000
+                || r.purpose.chars().count() > 400
         })
     {
         return Err("提示词整理改变了引用素材，请重试；尚未提交生成任务".into());
@@ -99,8 +100,12 @@ pub async fn prepare_media_prompt(
             .into_iter()
             .find(|m| m.id == request.media_model_id && m.enabled && m.kind == request.kind)
             .ok_or("所选生成模型不可用，请重新选择")?;
-        let author =
-            super::prompt_guidance::quick_profile(&db, &request.kind).map_err(|e| e.to_string())?;
+        let author = super::prompt_guidance::quick_profile(
+            &db,
+            &request.kind,
+            request.generation_purpose.as_deref(),
+        )
+        .map_err(|e| e.to_string())?;
         let doc = &document;
         let production = json!({"task":{"kind":request.kind,"modelId":selected.id}});
         let guidance = super::prompt_guidance::for_quick(
@@ -130,7 +135,7 @@ pub async fn prepare_media_prompt(
                 "video-reference",
             ]
             .contains(&input.role.as_str())
-            || input.purpose.chars().count() > 1000
+            || input.purpose.chars().count() > 400
         {
             return Err("引用素材或用途无效".into());
         }
@@ -145,7 +150,7 @@ pub async fn prepare_media_prompt(
     }
     refs.extend(request.context_references.iter().cloned());
     let description =
-        serde_json::to_string(&json!({"kind":request.kind,"description":request.prompt,
+        serde_json::to_string(&json!({"kind":request.kind,"generationPurpose":request.generation_purpose,"description":request.prompt,
         "parameters":request.parameters,"references":metadata}))
         .map_err(|e| e.to_string())?;
     let payload = super::attachments::payload(&store, &doc, &description, &refs, &model.profile)

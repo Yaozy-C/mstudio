@@ -1,9 +1,11 @@
 import { expect, test } from "bun:test";
 import { clipLabel } from "./clipLabel";
 import { fixture } from "../production/fixtures.test-helper";
+import { createTask } from "../production/tasks";
+import { saveTask } from "../production/document";
 
-test("generated clip labels use actual shot ownership while imported names stay verbatim", () => {
-  const project = fixture();
+test("generated clips use their named task or explicitly assigned shot, never user instructions or guessed numbers", () => {
+  let project = fixture();
   const asset = {
     ...project.assets[3],
     generated: true,
@@ -20,7 +22,14 @@ test("generated clip labels use actual shot ownership while imported names stay 
     start: 0,
     trackId: "v1",
   };
-  expect(clipLabel(project, clip, asset)).toBe("Pack");
+  const task = {
+    ...createTask(project, [], "video"),
+    title: "Pack · video",
+    resultAssetId: asset.id,
+    instruction: "Generate everything",
+  };
+  project = saveTask(project, task);
+  expect(clipLabel(project, clip, asset)).toBe("Pack · video");
   expect(clipLabel(project, clip, { ...asset, generated: false })).toBe(
     asset.name,
   );
@@ -32,6 +41,8 @@ test("generated clip labels use actual shot ownership while imported names stay 
   expect(clipLabel(project, { ...clip, shotId: "shared" }, asset)).toBe(
     "Another shot",
   );
-  expect(clipLabel(project, clip, asset)).toBe("视频 01");
+  expect(() => saveTask(project, { ...task, title: undefined })).toThrow(
+    "任务名称",
+  );
   expect(asset.name).toBe("生成结果-123.mp4");
 });

@@ -10,8 +10,6 @@ use serde::{Deserialize, Serialize};
 
 const KINDS: [&str; 3] = ["image", "video", "audio"];
 const ROLES: [&str; 4] = ["reference", "first-frame", "last-frame", "mask"];
-/// Marks the one-time stamping of declarations onto models saved before this schema.
-const MIGRATION_KEY: &str = "media-capabilities-v1";
 
 fn is_false(value: &bool) -> bool {
     !*value
@@ -164,12 +162,6 @@ pub fn validate_input(model: &MediaModel, input: &serde_json::Value) -> Result<(
 #[path = "capabilities_validation.rs"]
 mod validation;
 pub use validation::validate;
-
-#[path = "capabilities_legacy.rs"]
-mod legacy;
-#[cfg(test)]
-pub use legacy::legacy_declaration;
-pub use legacy::migrate;
 
 #[cfg(test)]
 #[path = "capabilities_tests.rs"]

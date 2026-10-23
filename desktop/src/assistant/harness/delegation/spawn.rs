@@ -135,47 +135,50 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     let child_id = format!("subagent-{}", mstudio::media::id());
     let child_turn = format!("{child_id}-1");
     let binding = json!({"provider":child_profile.adapter,"endpoint":child_profile.endpoint,"model":child_profile.model,"agentId":tool.profile.id,"revision":tool.profile.revision});
-    {
-        let db = store.db.lock().unwrap();
-        db.execute("INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn) VALUES(?1,?2,?3,?4,?5,?6,'running',?7,?8,?9)",rusqlite::params![child_id,parent.project,parent.turn,parent.profile.id,id,mode,serde_json::to_string(&tool.profile).map_err(|e|e.to_string())?,model_id,child_turn]).map_err(|e|e.to_string())?;
-    }
-    journal::append(&store, &parent.project, &child_turn, "subagent/created", json!({"childId":child_id,"parentTurn":parent.turn,"agentId":id,"provider":provider_name,"mode":mode})).map_err(|e|e.to_string())?;
-    super::super::session::start(&store, &parent.project, &child_turn, binding, &messages)?;
+    let mut events = vec![
+        (
+            "subagent/created",
+            json!({"childId":child_id,"parentTurn":parent.turn,"agentId":id,"provider":provider_name,"mode":mode}),
+        ),
+        (
+            "subagent/requirements",
+            json!({"expectedGenerations":args["expectedGenerations"]}),
+        ),
+        (
+            "subagent/context",
+            json!({
+                "childId":child_id,"parentTurn":parent.turn,"provider":provider_name,
+                "inheritedMessageCount":if provider_name=="fork" { route.fork_history.len() } else { 0 },
+                "taskMessageIndex":task_message_index,
+                "source":super::super::mailbox::agent_source(&parent.profile.id, &parent.turn),
+                "profile":tool.profile,"artifacts":sources.manifest,"expectedGenerations":args["expectedGenerations"]
+            }),
+        ),
+    ];
     if !user_refs.is_empty() {
-        journal::append(
-            &store,
-            &parent.project,
-            &child_turn,
+        events.push((
             "media/forwarded",
             json!({"childId":child_id,"requestTurnId":parent.turn}),
-        )
-        .map_err(|e| e.to_string())?;
+        ));
     }
-    journal::append(
-        &store,
-        &parent.project,
-        &child_turn,
-        "subagent/requirements",
-        json!({"expectedGenerations":args["expectedGenerations"]}),
-    )
-    .map_err(|e| e.to_string())?;
-    journal::append(&store, &parent.project, &child_turn, "subagent/context", json!({
-        "childId":child_id,"parentTurn":parent.turn,"provider":provider_name,
-        "inheritedMessageCount":if provider_name=="fork" { route.fork_history.len() } else { 0 },
-        "taskMessageIndex":task_message_index,
-        "source":super::super::mailbox::agent_source(&parent.profile.id, &parent.turn),
-        "profile":tool.profile,"artifacts":sources.manifest,"expectedGenerations":args["expectedGenerations"]
-    })).map_err(|e| e.to_string())?;
-    crate::assistant::child_activity::start(
-        &store.db.lock().unwrap(),
-        &parent.project,
-        &child_turn,
-        &child_id,
-        &parent.turn,
+    persistence::spawn(
+        &mut store.db.lock().unwrap(),
+        persistence::Start {
+            child: &child_id,
+            project: &parent.project,
+            parent_turn: &parent.turn,
+            parent_agent: &parent.profile.id,
+            turn: &child_turn,
+            profile: &tool.profile,
+            binding,
+            messages: &messages,
+            events,
+        },
+        mode,
+        &model_id,
         call.id.wire().as_ref(),
-        id,
     )
-    .map_err(|e| e.to_string())?;
+    .map_err(|error| error.to_string())?;
     tool.turn = child_turn.clone();
     // Keep the immutable user evidence; a delegated task is not a user quote.
     tool.prompt = original["production"]["instruction"]
@@ -194,6 +197,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
             delegation: None,
         },
         id: child_id.clone(),
+        parent_turn: parent.turn.clone(),
         changes: Mutex::new(vec![]),
         terminal_reason: Mutex::new(None),
     };
@@ -213,9 +217,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
     tokio::spawn(async move {
         let answer = drive_child(&child, &child_profile, &child_key, messages, deadline).await;
         // Every child is detached; its durable notice is the parent's result path.
-        settle(&child, &spawned_id, &answer, false);
-        remove_active(&spawned_id, &generation);
-        wake_pending(&child, &spawned_id);
+        execution::finish(&child, &spawned_id, &generation, &answer);
     });
     Ok(running)
 }

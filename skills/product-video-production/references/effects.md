@@ -77,7 +77,7 @@ Example compiled prose:
 
 > Begin from the supplied opening composition and lighting. Fine frost first forms at the can's lower rim, then branches along the lower body and side edges. The visible growth front advances over the metal; regions it has not reached retain their condensation and original finish. The branches thicken into a thin translucent frost layer and stop before the front label. Keep the rim, can silhouette and bare label area consistent with the input. Small ice edges catch the existing side-rear strip reflection; keep the background clear rather than filling it with fog. As growth settles, a few water droplets continue down the unfrosted region. End on the completed product view with the label readable and the camera still.
 
-Exact label pixels need a verified retained-layer route. Check continuous growth in the generated video rather than inferring it from endpoint images.
+Exact label pixels need a supported retained-layer route. Endpoint images alone do not establish continuous growth in the generated video.
 
 ## Example: disintegrating a wrapper to reveal a product
 
@@ -91,10 +91,10 @@ For a smoke transition, identify the outgoing ending and incoming opening first.
 
 For ground-to-space travel, establish the location anchors and ending composition. Evaluate the available route before promising one continuous shot. Propose bridge segments only as an explicit tradeoff when authorized; a hidden cut is still a cut. A speed adjective does not supply a geographic or scale bridge.
 
-## Verify only what is accessible, within budget
+## Return results within the assigned scope
 
-For an authorized quality task, inspect the actual target, change boundary, meaningful intermediate states, preservation region, occlusion and final state. Compare the result to the selected visual direction. If playback is available, check motion and timing; if audio is accessible, check it separately. Sampled frames can expose defects but cannot prove smooth motion, absence of flicker, exact timing or sound quality.
+For an assigned effect revision, use the target and feedback from the user or coordinator to define the change boundary, intermediate states, preservation region, occlusion and final state. Return the generated result without conducting output review or deciding acceptance.
 
-Distinguish generated, frame-inspected, playback-inspected and user-selected states in ordinary reporting. A completed task does not establish visual quality. If media cannot be inspected, explicitly mark visual quality and motion unverified.
+Report actual generation status and output IDs. Quality review belongs to the coordinator and selection to the user; completion does not establish acceptance.
 
-Fix a diagnosed failure by revising the relevant input, mechanism or route within existing authorization. Do not regenerate endlessly or apply every possible repair. Stop at the authorized budget and report the best available result and remaining uncertainty. Ordinary single-execution requests do not require a new review ceremony.
+Apply a user- or coordinator-assigned correction by revising the relevant input, mechanism or route within existing authorization. Do not regenerate endlessly or apply every possible repair. Stop at the authorized budget and return the actual results and remaining execution limits. Ordinary single-execution requests do not require a new review ceremony.

@@ -1,10 +1,6 @@
-import nativeRequests from "./config/native-requests.json";
-
-/** Resolve old transport aliases while keeping explicitly selected IDs unchanged. */
+/** Generation requests require an explicit model ID. */
 export function codexImageModel(params: Record<string, unknown>): string {
   const id = params.model;
-  if (id === undefined || id === "codex-image")
-    return nativeRequests["codex-image"].legacyModel;
   if (
     typeof id !== "string" ||
     id.length > 100 ||

@@ -86,7 +86,7 @@ export function fixture(
   const sent: Record<string, Attachment[]> = {};
   const calls: {
     args: Record<string, unknown>;
-    result: ReturnType<typeof deferred<string>>;
+    result: ReturnType<typeof deferred<{ text: string; status: string }>>;
   }[] = [];
   let agent: string | null = initialAgent;
   let savedAgents = structuredClone(defaultAgents);
@@ -118,7 +118,7 @@ export function fixture(
         calls.at(-1)?.result.reject(new Error("已停止"));
         return undefined as T;
       }
-      const result = deferred<string>();
+      const result = deferred<{ text: string; status: string }>();
       calls.push({ args: args!.request as Record<string, unknown>, result });
       return (await result.promise) as T;
     },

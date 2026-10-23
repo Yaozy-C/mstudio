@@ -3,7 +3,6 @@ import { useState } from "react";
 import { AsyncButton } from "../ui/AsyncState";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { ServicePicker } from "./ServicePicker";
-import { codexImageModel } from "./codexImageModel";
 import type { MediaModel } from "./mediaRegistry";
 import { t, useLanguage } from "../i18n";
 export function CodexImageForm({
@@ -17,7 +16,9 @@ export function CodexImageForm({
 }) {
   useLanguage();
   const [model, setModel] = useState(initial);
-  const [modelId, setModelId] = useState(() => codexImageModel(initial.params));
+  const [modelId, setModelId] = useState(() =>
+    typeof initial.params.model === "string" ? initial.params.model : "",
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function submit() {

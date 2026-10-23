@@ -285,8 +285,5 @@ fn the_request_body_is_checked_against_the_declaration() {
     .unwrap();
 }
 
-#[path = "capabilities_tests_migration.rs"]
-mod migration;
-
 #[path = "capabilities_tests_regression.rs"]
 mod regression;

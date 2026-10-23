@@ -17,4 +17,5 @@ mod metering;
 
 mod step_limits;
 
+mod result_failures;
 mod thinking;

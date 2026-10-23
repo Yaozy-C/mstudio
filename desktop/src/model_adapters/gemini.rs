@@ -5,12 +5,7 @@ use serde_json::{Value, json};
 pub struct Gemini;
 pub fn endpoint(value: &str) -> Result<()> {
     ensure!(
-        matches!(
-            value.trim_end_matches('/'),
-            "https://generativelanguage.googleapis.com"
-                | "https://generativelanguage.googleapis.com/v1beta"
-                | "https://generativelanguage.googleapis.com/v1"
-        ),
+        value.trim_end_matches('/') == "https://generativelanguage.googleapis.com",
         "Google 官方连接请使用 generativelanguage.googleapis.com"
     );
     Ok(())
@@ -43,33 +38,39 @@ fn payload(input: &Value) -> Result<Value> {
 }
 fn parse(value: &Value) -> Result<super::ProviderUpdate> {
     let mut outputs = vec![];
-    for part in value["candidates"][0]["content"]["parts"]
+    for candidate in value["candidates"]
         .as_array()
-        .into_iter()
-        .flatten()
+        .context("Gemini 未返回候选结果数组")?
     {
-        if part["thought"] == true {
-            continue;
-        }
-        if let (Some(mime), Some(data)) = (
-            part["inlineData"]["mimeType"].as_str(),
-            part["inlineData"]["data"].as_str(),
-        ) {
-            let url = format!("data:{mime};base64,{data}");
-            image_bytes(&url)?;
-            outputs.push(ModelOutput {
-                kind: "image".into(),
-                url,
-            });
+        for part in candidate["content"]["parts"]
+            .as_array()
+            .into_iter()
+            .flatten()
+        {
+            if part["thought"] == true {
+                continue;
+            }
+            if let Some(data) = part.get("inlineData") {
+                let mime = data["mimeType"]
+                    .as_str()
+                    .context("Gemini inlineData.mimeType 须为字符串")?;
+                let data = data["data"]
+                    .as_str()
+                    .context("Gemini inlineData.data 须为字符串")?;
+                let url = format!("data:{mime};base64,{data}");
+                image_bytes(&url)?;
+                outputs.push(ModelOutput {
+                    kind: "image".into(),
+                    url,
+                });
+            }
         }
     }
     ensure!(
         !outputs.is_empty(),
         "Gemini 未返回图片，请检查模型能力或内容限制"
     );
-    Ok(serde_json::from_value(
-        json!({"status":"COMPLETED","result":{"outputs":outputs}}),
-    )?)
+    super::ProviderUpdate::completed(outputs, value.clone())
 }
 impl ProviderAdapter for Gemini {
     fn id(&self) -> &'static str {
@@ -99,13 +100,8 @@ impl ProviderAdapter for Gemini {
                 "模型 ID 无效"
             );
             let root = base.trim_end_matches('/');
-            let root = if root.ends_with("/v1beta") || root.ends_with("/v1") {
-                root.into()
-            } else {
-                format!("{root}/v1beta")
-            };
             let mut response = crate::jobs::client()?
-                .post(format!("{root}/models/{model}:generateContent"))
+                .post(format!("{root}/v1beta/models/{model}:generateContent"))
                 .header("x-goog-api-key", key)
                 .json(&payload(input)?)
                 .send()
@@ -133,16 +129,17 @@ impl ProviderAdapter for Gemini {
                 job["status"] == "COMPLETED",
                 "Google 同步请求无法轮询，请到服务端核查结果"
             );
-            Ok(serde_json::from_value(json!({"status":"COMPLETED"}))?)
+            super::ProviderUpdate::completed_job(job)
         })
     }
     fn cancel<'a>(&'a self, _: &'a str, _: &'a Value) -> ProviderFuture<'a> {
         Box::pin(async { anyhow::bail!("Google 同步图像请求不支持远程取消") })
     }
-    fn outputs(&self, result: &Value) -> Vec<ModelOutput> {
-        serde_json::from_value(result["outputs"].clone()).unwrap_or_default()
-    }
 }
+#[cfg(test)]
+#[path = "gemini_portrait_tests.rs"]
+mod portrait_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -159,7 +156,7 @@ mod tests {
             json!(["TEXT", "IMAGE"])
         );
         let update = parse(&json!({"candidates":[{"content":{"parts":[{"thought":true,"inlineData":{"mimeType":"image/png","data":"Yg=="}},{"inlineData":{"mimeType":"image/png","data":"YQ=="}}]}}]})).unwrap();
-        assert_eq!(Gemini.outputs(&update.result.unwrap())[0].url, image);
+        assert_eq!(update.outputs.unwrap()[0].url, image);
         let many = payload(&json!({"prompt":"reference", "image_urls":vec![image;16]})).unwrap();
         assert_eq!(many["contents"][0]["parts"].as_array().unwrap().len(), 17);
         assert!(parse(&json!({"candidates":[]})).is_err());
@@ -168,5 +165,31 @@ mod tests {
         );
         assert!(endpoint("https://evil.example").is_err());
         assert!(image_bytes("data:text/html;base64,YQ==").is_err());
+    }
+    #[test]
+    fn all_final_images_are_top_level_outputs_and_versions_are_not_endpoints() {
+        let mut job = json!({});
+        parse(&json!({"candidates":[{"content":{"parts":[
+            {"inlineData":{"mimeType":"image/png","data":"YQ=="}}
+        ]}},{"content":{"parts":[
+            {"inlineData":{"mimeType":"image/jpeg","data":"Yg=="}}
+        ]}}]}))
+        .unwrap()
+        .apply(&mut job)
+        .unwrap();
+        assert_eq!(job["outputCount"], 2);
+        assert_eq!(job["outputs"][1]["url"], "data:image/jpeg;base64,Yg==");
+        assert!(job["result"].get("candidates").is_some());
+        assert!(job["result"].get("outputs").is_none());
+        assert!(parse(&json!({"candidates":[{"content":{"parts":[{"inlineData":{"mimeType":"image/png","data":"YQ=="}},{"inlineData":{"mimeType":"image/png"}}]}}]})).is_err());
+        assert!(endpoint("https://generativelanguage.googleapis.com/").is_ok());
+        for suffix in ["/v1", "/v1beta", "/v1beta/", "?key=secret"] {
+            assert!(
+                endpoint(&format!(
+                    "https://generativelanguage.googleapis.com{suffix}"
+                ))
+                .is_err()
+            );
+        }
     }
 }

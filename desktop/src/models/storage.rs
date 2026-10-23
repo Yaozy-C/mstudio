@@ -22,17 +22,14 @@ fn get(db: &Connection, id: &str) -> Result<Model> {
 }
 
 pub(super) fn credential(db: &Connection, model: &Model) -> Result<String> {
-    if let Some(id) = &model.connection_id {
-        return super::connections::key(db, id);
-    }
-    Ok(db
-        .query_row(
-            "SELECT api_key FROM model_credentials WHERE id=?1 AND endpoint=?2",
-            params![model.id, model.profile.endpoint],
-            |r| r.get(0),
+    let id = model.connection_id.as_deref().ok_or_else(|| {
+        crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "connection",
+            "对话模型缺少服务连接，请在设置中重新选择连接",
         )
-        .optional()?
-        .unwrap_or_default())
+    })?;
+    super::connections::key(db, id)
 }
 
 pub fn catalog(db: &Connection, project: Option<&str>) -> Result<Catalog> {
@@ -82,6 +79,7 @@ pub fn resolve(
         })?;
     let model = get(db, id)?;
     config::validate(&model.profile)?;
+    super::context_policy::validate_execution(&model.profile)?;
     let key = credential(db, &model)?;
     ensure!(
         model.profile.adapter == "codex"
@@ -96,12 +94,8 @@ pub fn resolve(
     Ok((model, key))
 }
 
-pub fn save(db: &Connection, mut model: Model, key: Option<String>, clear: bool) -> Result<()> {
+pub fn save(db: &Connection, mut model: Model) -> Result<()> {
     super::connections::bind_text(db, &mut model)?;
-    ensure!(
-        model.connection_id.is_none() || (key.as_ref().is_none_or(|k| k.is_empty()) && !clear),
-        "请在服务连接中修改共用密钥"
-    );
     model.name = model.name.trim().into();
     model.profile.endpoint = model.profile.endpoint.trim().trim_end_matches('/').into();
     model.profile.model = model.profile.model.trim().into();
@@ -115,46 +109,18 @@ pub fn save(db: &Connection, mut model: Model, key: Option<String>, clear: bool)
         "请填写 80 字以内的连接名称"
     );
     config::validate(&model.profile)?;
-    let old = db
-        .query_row(
-            "SELECT data FROM model_profiles WHERE id=?1",
-            [&model.id],
-            |r| r.get::<_, String>(0),
-        )
-        .optional()?
-        .map(|s| serde_json::from_str::<Model>(&s))
-        .transpose()?;
-    let key = key.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
-    ensure!(
-        key.as_ref()
-            .is_none_or(|k| k.len() <= 8192 && !k.contains(['\n', '\r'])),
-        "API Key 格式无效"
-    );
-    let changed = old
-        .as_ref()
-        .is_some_and(|p| p.profile.endpoint != model.profile.endpoint);
-    let old_key = old
-        .as_ref()
-        .map(|p| credential(db, p))
-        .transpose()?
-        .unwrap_or_default();
-    ensure!(
-        model.connection_id.is_some() || !changed || old_key.is_empty() || clear || key.is_some(),
-        "更改 API 地址后，请重新填写密钥或移除旧密钥"
-    );
+    let exists: bool = db.query_row(
+        "SELECT EXISTS(SELECT 1 FROM model_profiles WHERE id=?1)",
+        [&model.id],
+        |r| r.get(0),
+    )?;
     let count: i64 = db.query_row("SELECT count(*) FROM model_profiles", [], |r| r.get(0))?;
-    ensure!(old.is_some() || count < 50, "最多保存 50 个模型连接");
+    ensure!(exists || count < 50, "最多保存 50 个模型连接");
     model.has_key = false;
     db.execute(
         "INSERT INTO model_profiles VALUES(?1,?2) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
         params![model.id, serde_json::to_string(&model)?],
     )?;
-    if changed || clear || model.connection_id.is_some() {
-        db.execute("DELETE FROM model_credentials WHERE id=?1", [&model.id])?;
-    }
-    if let Some(key) = key {
-        db.execute("INSERT INTO model_credentials VALUES(?1,?2,?3) ON CONFLICT(id) DO UPDATE SET endpoint=excluded.endpoint,api_key=excluded.api_key", params![model.id, model.profile.endpoint, key])?;
-    }
     if setting(db, "default-agent-model")?.is_none() && resolve(db, None, Some(&model.id)).is_ok() {
         set_default(db, &model.id)?;
     }

@@ -182,10 +182,7 @@ mod tests_objects;
 pub fn is_edit(name: &str) -> bool {
     static NAMES: std::sync::OnceLock<std::collections::HashSet<String>> =
         std::sync::OnceLock::new();
-    matches!(
-        name,
-        "mstudio_edit" | "mstudio_set_image_prompt" | "mstudio_set_video_prompt"
-    ) || NAMES
+    NAMES
         .get_or_init(|| {
             let mut profile = crate::assistant::profiles::builtins().remove(0);
             profile.tool_ids = crate::assistant::profiles::TOOL_IDS

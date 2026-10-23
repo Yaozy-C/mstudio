@@ -10,6 +10,7 @@ import { tracksOf } from "../timeline/document";
 import { framesOf } from "../production/frames";
 import { runsOf } from "../production/requestTask";
 import { taskOutcome } from "../production/taskOutcome";
+import { taskTitle } from "../production/taskTitle";
 const offsetOf = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
 export function inspectProject(p: Project, args: Record<string, unknown>) {
@@ -76,6 +77,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
           : {
               continuation: taskOutcome(t).continuation,
               id: t.key,
+              title: taskTitle(t),
               turnId: t.turnId,
               kind: t.kind,
               generationPurpose: t.generationPurpose,

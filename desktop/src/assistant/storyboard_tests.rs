@@ -19,6 +19,7 @@ fn shipped_roles_have_independent_edit_and_generation_boundaries() {
         "video-analyst",
         "writer",
         "director",
+        "assets",
         "image",
         "production",
         "editor",
@@ -60,7 +61,7 @@ fn shipped_roles_have_independent_edit_and_generation_boundaries() {
                 } else {
                     "production"
                 };
-            let mut op = json!({"op":"request_generation","mediaKind":kind,"text":"Synthetic"});
+            let mut op = json!({"op":"request_generation","title":"Synthetic task","mediaKind":kind,"text":"Synthetic"});
             if kind == "video" {
                 op["mode"] = json!("multi");
             }
@@ -111,18 +112,12 @@ fn saved_role_instructions_are_authoritative_even_at_default_revision() {
 
 #[test]
 fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
-    // The shipped roster has no dedicated asset role; the asset-only boundary
-    // (project-assets without frames, production or edit) is kept as an inline profile.
-    let mut agent = profiles::builtins()
+    let agent = profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "production")
+        .find(|p| p.id == "assets")
         .unwrap();
-    agent.tool_ids = vec![
-        "project-read".into(),
-        "project-assets".into(),
-        "media-generation".into(),
-    ];
     profiles::validate(&agent).unwrap();
+    assert!(permissions::asset_only(&agent));
     let doc = json!({"nodes":[{"id":"asset","kind":"asset"},{"id":"shot","kind":"shot"}],
         "production":{"drafts":{"asset-task":{"kind":"image","generationPurpose":"asset"},"frame":{"kind":"image"}}}});
     let check = |op: Value| {
@@ -138,7 +133,7 @@ fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
         json!({"op":"update_node","id":"asset","text":"inspected"})
     ));
     assert!(check(
-        json!({"op":"request_generation","mediaKind":"image","generationPurpose":"asset","references":[],"text":"Subject on white"})
+        json!({"op":"request_generation","title":"Synthetic task","mediaKind":"image","generationPurpose":"asset","references":[],"text":"Subject on white"})
     ));
     assert!(check(
         json!({"op":"update_generation","taskKey":"asset-task","text":"White background"})
@@ -146,9 +141,9 @@ fn asset_specialist_can_register_assets_but_not_change_story_or_frame_tasks() {
     for op in [
         json!({"op":"update_generation","taskKey":"frame","text":"rewrite"}),
         json!({"op":"regenerate_generation","taskKey":"frame"}),
-        json!({"op":"request_generation","mediaKind":"image"}),
-        json!({"op":"request_generation","generationPurpose":"asset","mediaKind":"video"}),
-        json!({"op":"request_generation","generationPurpose":"asset","mediaKind":"image","id":"shot"}),
+        json!({"op":"request_generation","title":"Synthetic task","mediaKind":"image"}),
+        json!({"op":"request_generation","title":"Synthetic task","generationPurpose":"asset","mediaKind":"video"}),
+        json!({"op":"request_generation","title":"Synthetic task","generationPurpose":"asset","mediaKind":"image","id":"shot"}),
         json!({"op":"update_node","id":"shot","shot":{"frames":[]}}),
         json!({"op":"add_node","id":"new","kind":"shot"}),
         json!({"op":"remove_node","id":"shot"}),

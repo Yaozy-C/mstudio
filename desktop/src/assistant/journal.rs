@@ -1,22 +1,11 @@
 use crate::database::Store;
 use crate::database::event_retention;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde_json::Value;
 pub fn init(db: &rusqlite::Connection) -> Result<()> {
     db.execute_batch("CREATE TABLE IF NOT EXISTS agent_events(seq INTEGER PRIMARY KEY AUTOINCREMENT,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,turn_id TEXT NOT NULL,kind TEXT NOT NULL,payload TEXT NOT NULL,created INTEGER NOT NULL DEFAULT(unixepoch())); CREATE INDEX IF NOT EXISTS agent_events_project ON agent_events(project_id,seq);")?;
-    db.execute_batch("CREATE TABLE IF NOT EXISTS subagent_runs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,parent_turn TEXT NOT NULL,parent_agent_id TEXT NOT NULL,agent_id TEXT NOT NULL,mode TEXT NOT NULL,status TEXT NOT NULL,profile TEXT NOT NULL,model_id TEXT NOT NULL,last_turn TEXT,output TEXT NOT NULL DEFAULT '',notified INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch()),updated INTEGER NOT NULL DEFAULT(unixepoch())); CREATE INDEX IF NOT EXISTS subagent_parent ON subagent_runs(project_id,parent_turn,created); CREATE TABLE IF NOT EXISTS subagent_inbox(seq INTEGER PRIMARY KEY AUTOINCREMENT,child_id TEXT NOT NULL REFERENCES subagent_runs(id) ON DELETE CASCADE,text TEXT NOT NULL,consumed INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch())); CREATE TABLE IF NOT EXISTS subagent_notices(seq INTEGER PRIMARY KEY AUTOINCREMENT,child_id TEXT NOT NULL REFERENCES subagent_runs(id) ON DELETE CASCADE,project_id TEXT NOT NULL,parent_agent_id TEXT NOT NULL,status TEXT NOT NULL,output TEXT NOT NULL,delivered INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch())); CREATE INDEX IF NOT EXISTS subagent_notice_parent ON subagent_notices(project_id,parent_agent_id,delivered,seq);")?;
+    db.execute_batch("CREATE TABLE IF NOT EXISTS subagent_runs(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,parent_turn TEXT NOT NULL,parent_agent_id TEXT NOT NULL,agent_id TEXT NOT NULL,mode TEXT NOT NULL,status TEXT NOT NULL,profile TEXT NOT NULL,model_id TEXT NOT NULL,last_turn TEXT,output TEXT NOT NULL DEFAULT '',notified INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch()),updated INTEGER NOT NULL DEFAULT(unixepoch())); CREATE INDEX IF NOT EXISTS subagent_parent ON subagent_runs(project_id,parent_turn,created); CREATE TABLE IF NOT EXISTS subagent_inbox(seq INTEGER PRIMARY KEY AUTOINCREMENT,child_id TEXT NOT NULL REFERENCES subagent_runs(id) ON DELETE CASCADE,text TEXT NOT NULL,source TEXT NOT NULL,consumed INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch())); CREATE TABLE IF NOT EXISTS subagent_notices(seq INTEGER PRIMARY KEY AUTOINCREMENT,child_id TEXT NOT NULL REFERENCES subagent_runs(id) ON DELETE CASCADE,project_id TEXT NOT NULL,parent_agent_id TEXT NOT NULL,status TEXT NOT NULL,output TEXT NOT NULL,delivered INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL DEFAULT(unixepoch())); CREATE INDEX IF NOT EXISTS subagent_notice_parent ON subagent_notices(project_id,parent_agent_id,delivered,seq);")?;
     super::child_activity::init(db)?;
-    let has_source: bool = db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('subagent_inbox') WHERE name='source')",
-        [],
-        |row| row.get(0),
-    )?;
-    if !has_source {
-        db.execute(
-            "ALTER TABLE subagent_inbox ADD COLUMN source TEXT NOT NULL DEFAULT '{}'",
-            [],
-        )?;
-    }
     db.execute(
         "UPDATE subagent_runs SET status='ready' WHERE status='running'",
         [],
@@ -56,7 +45,7 @@ pub fn append(store: &Store, project: &str, turn: &str, kind: &str, payload: Val
     let tx = db.transaction()?;
     insert(&tx, project, turn, kind, payload.clone())?;
     if kind == "assistant/partial" {
-        let text = payload["text"].as_str().unwrap_or("");
+        let text = payload["text"].as_str().context("回答片段缺少文本")?;
         tx.execute("UPDATE agent_messages SET content=?3,payload=?4 WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2 AND json_extract(attribution,'$.status')='running'", rusqlite::params![project,turn,text,serde_json::json!(text).to_string()])?;
     }
     if matches!(kind, "turn/end" | "subagent/settled") {

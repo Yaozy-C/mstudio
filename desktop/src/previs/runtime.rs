@@ -70,7 +70,14 @@ impl PrevisRuntime {
             .name("previs-resources".into())
             .spawn(move || {
                 let active = Arc::new(AtomicUsize::new(0));
-                for socket in listener.incoming().flatten() {
+                for socket in listener.incoming() {
+                    let socket = match socket {
+                        Ok(socket) => socket,
+                        Err(error) => {
+                            tracing::error!(event = "previs_listener_failed", error = %error);
+                            break;
+                        }
+                    };
                     if active.load(Ordering::Relaxed) >= 16 {
                         continue;
                     }
@@ -79,7 +86,9 @@ impl PrevisRuntime {
                     let host = host.clone();
                     let active = active.clone();
                     std::thread::spawn(move || {
-                        let _ = serve(socket, &host, &state);
+                        if let Err(error) = serve(socket, &host, &state) {
+                            tracing::warn!(event = "previs_resource_failed", error = %error);
+                        }
                         active.fetch_sub(1, Ordering::Relaxed);
                     });
                 }

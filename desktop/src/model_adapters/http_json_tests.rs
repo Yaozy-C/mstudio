@@ -80,7 +80,7 @@ async fn custom_provider_submits_and_polls_a_real_http_queue() {
             write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body).unwrap();
         }
     });
-    let config = json!({"outputPointer":"/url","idPointer":"/id","pollUrl":"/tasks/{id}","statusPointer":"/state","doneValue":"done","headers":{"X-DashScope-Async":"enable"}});
+    let config = json!({"kind":"image","outputPointer":"/url","idPointer":"/id","pollUrl":"/tasks/{id}","statusPointer":"/state","doneValue":"done","headers":{"X-DashScope-Async":"enable"}});
     let endpoint = format!("{base}/generate");
     let submitted = HttpJson
         .submit(
@@ -102,4 +102,22 @@ async fn custom_provider_submits_and_polls_a_real_http_queue() {
         "https://example.com/result.png"
     );
     server.join().unwrap();
+}
+
+#[test]
+fn output_kind_is_required_and_partial_failure_keeps_each_mapped_result() {
+    let value = json!({"data":["https://example.com/a.png", "https://example.com/b.png"]});
+    assert!(complete(&value, &json!({"outputPointer":"/data"})).is_err());
+    let config = json!({"kind":"image","outputPointer":"/data"});
+    let mut done = json!({});
+    complete(&value, &config).unwrap().apply(&mut done).unwrap();
+    assert_eq!(done["outputCount"], 2);
+    let mut partial = json!({});
+    failed(&value, &config)
+        .unwrap()
+        .apply(&mut partial)
+        .unwrap();
+    assert_eq!(partial["status"], "FAILED");
+    assert_eq!(partial["outputCount"], 2);
+    assert_eq!(partial["outputs"], done["outputs"]);
 }

@@ -110,56 +110,6 @@
   font-size: var(--ui-heading);
   font-weight: 500;
 }
-.radix-themes .browse-player {
-  padding: 20px;
-}
-.browse-player > header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.browse-player > header h1 {
-  margin: 0;
-  font-size: var(--ui-heading);
-}
-.browse-player iframe {
-  display: block;
-  width: 100%;
-  height: min(60dvh, 600px);
-  border: 0;
-  background: #000;
-  border-radius: var(--ui-radius);
-}
-.browse-player > footer {
-  margin-top: 16px;
-}
-.browse-player > footer > p:first-child {
-  font-size: var(--ui-body);
-}
-.browse-attribution {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-block: 12px 8px;
-  color: var(--desk-muted);
-  font-size: var(--ui-caption);
-}
-.browse-attribution a {
-  color: var(--desk-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.browse-player-help {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
-  color: var(--desk-muted);
-  font-size: var(--ui-caption);
-}
 @media (hover: none) {
   .browse-play {
     opacity: 1;

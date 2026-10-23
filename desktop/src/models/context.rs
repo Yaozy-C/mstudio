@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::sync::OnceLock;
 
-pub const UNKNOWN_CONTEXT: usize = 262_144;
 pub const DEFAULT_HEADROOM: usize = 65_536;
 
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -88,7 +87,9 @@ pub fn automatic(profile: &Profile) -> Option<Limits> {
     if profile.adapter == "codex" {
         return None;
     }
-    profile
+    let known = known(profile);
+    let default_max_tokens = known.as_ref().and_then(|limits| limits.default_max_tokens);
+    let mut limits = profile
         .limits
         .model_limits
         .as_ref()
@@ -99,18 +100,10 @@ pub fn automatic(profile: &Profile) -> Option<Limits> {
                 && (8192..=2_000_000).contains(&limits.context_window)
         })
         .cloned()
-        .or_else(|| known(profile))
-        .or_else(|| {
-            Some(Limits {
-                endpoint: profile.endpoint.trim_end_matches('/').into(),
-                model: profile.model.clone(),
-                context_window: UNKNOWN_CONTEXT,
-                max_output_tokens: None,
-                default_max_tokens: (profile.adapter == "anthropic-native").then_some(8192),
-                source: "fallback".into(),
-                source_url: None,
-            })
-        })
+        .or(known)?;
+    // Only the verified catalog declares a default request output limit.
+    limits.default_max_tokens = default_max_tokens;
+    Some(limits)
 }
 
 pub fn window(profile: &Profile) -> Option<usize> {
@@ -183,7 +176,7 @@ pub fn from_service(profile: &Profile, row: &Value) -> Option<Limits> {
         model: profile.model.clone(),
         context_window,
         max_output_tokens: None,
-        default_max_tokens: (profile.adapter == "gemini-native").then_some(65_536),
+        default_max_tokens: None,
         source: String::new(),
         source_url: None,
     });
@@ -194,15 +187,12 @@ pub fn from_service(profile: &Profile, row: &Value) -> Option<Limits> {
 }
 
 pub fn apply_automatic(profile: &mut Profile) {
-    if profile.limits.context_window_mode == Some(Mode::Auto) || profile.context_window.is_none() {
+    if profile.limits.context_window_mode == Some(Mode::Auto)
+        || (profile.limits.context_window_mode.is_none() && profile.context_window.is_none())
+    {
         profile.limits.context_window_mode = Some(Mode::Auto);
         profile.limits.model_limits = automatic(profile);
-        // Materialize for older app versions; mode keeps it distinct from an override.
-        profile.context_window = profile
-            .limits
-            .model_limits
-            .as_ref()
-            .map(|limits| limits.context_window);
+        profile.context_window = None;
     }
 }
 

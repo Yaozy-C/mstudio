@@ -31,9 +31,10 @@ mod tests {
         let root =
             std::env::temp_dir().join(format!("mstudio-media-tools-{}", mstudio::media::id()));
         let store = Store::open(root.clone()).unwrap();
+        store.conn().unwrap().execute("INSERT INTO service_connections VALUES('fal-fixture','Fixture','fal','https://queue.fal.run','fixture-key')", []).unwrap();
         let models = json!([
-            {"id":"image","name":"Image","kind":"image","plugin":"fal","endpoint":"fal-ai/flux/schnell","params":{},"enabled":true},
-            {"id":"video","name":"Video","kind":"video","plugin":"fal","endpoint":"fal-ai/video","params":{},"enabled":false}
+            {"id":"image","name":"Image","kind":"image","plugin":"fal","connectionId":"fal-fixture","endpoint":"fal-ai/flux/schnell","params":{},"enabled":true},
+            {"id":"video","name":"Video","kind":"video","plugin":"fal","connectionId":"fal-fixture","endpoint":"fal-ai/video","params":{},"enabled":false}
         ]);
         store
             .set_setting("media-models", &models.to_string())

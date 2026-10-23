@@ -128,11 +128,20 @@ impl ProviderAdapter for Fal {
                         return completed_error(error);
                     }
                     let result = json_response(response, "result").await?;
-                    update["outputs"] = serde_json::to_value(normalize_outputs(&result))?;
-                    update["result"] = result;
+                    return super::ProviderUpdate::completed(normalize_outputs(&result)?, result);
                 }
             }
-            Ok(serde_json::from_value(update)?)
+            let mut state: super::ProviderUpdate = serde_json::from_value(update)?;
+            if matches!(state.status.as_str(), "FAILED" | "CANCELLED")
+                && ["image", "images", "video", "audio"]
+                    .iter()
+                    .any(|field| response.get(field).is_some_and(|value| !value.is_null()))
+            {
+                state.outputs = Some(normalize_outputs(&response)?);
+                state.result = Some(response);
+            }
+            state.validate()?;
+            Ok(state)
         })
     }
     fn cancel<'a>(&'a self, key: &'a str, job: &'a Value) -> ProviderFuture<'a> {
@@ -153,31 +162,41 @@ impl ProviderAdapter for Fal {
             )?)
         })
     }
-    fn outputs(&self, value: &Value) -> Vec<super::ModelOutput> {
-        normalize_outputs(value)
-    }
 }
-fn normalize_outputs(value: &Value) -> Vec<super::ModelOutput> {
+pub(super) fn normalize_outputs(value: &Value) -> Result<Vec<super::ModelOutput>> {
     let mut outputs = Vec::new();
     for kind in ["video", "audio", "image"] {
-        if let Some(url) = value[kind]["url"].as_str() {
+        if let Some(item) = value.get(kind).filter(|item| !item.is_null()) {
+            let url = item["url"]
+                .as_str()
+                .filter(|url| !url.trim().is_empty())
+                .with_context(|| format!("fal 结果格式无效：{kind}.url 须为非空字符串"))?;
             outputs.push(super::ModelOutput {
                 kind: kind.into(),
                 url: url.into(),
             });
         }
     }
-    if let Some(images) = value["images"].as_array() {
-        for image in images {
-            if let Some(url) = image["url"].as_str() {
-                outputs.push(super::ModelOutput {
-                    kind: "image".into(),
-                    url: url.into(),
-                });
-            }
+    if let Some(images) = value.get("images").filter(|item| !item.is_null()) {
+        let images = images
+            .as_array()
+            .context("fal 结果格式无效：images 须为数组")?;
+        for (index, image) in images.iter().enumerate() {
+            let url = image["url"]
+                .as_str()
+                .filter(|url| !url.trim().is_empty())
+                .with_context(|| format!("fal 结果格式无效：images[{index}].url 须为非空字符串"))?;
+            outputs.push(super::ModelOutput {
+                kind: "image".into(),
+                url: url.into(),
+            });
         }
     }
-    outputs
+    ensure!(
+        !outputs.is_empty(),
+        "fal 未返回媒体结果：缺少 image、images、video 或 audio"
+    );
+    Ok(outputs)
 }
 
 fn is_cancelled_error(error: &crate::app_error::AppError) -> bool {
@@ -189,33 +208,6 @@ fn is_cancelled_error(error: &crate::app_error::AppError) -> bool {
                 .trim()
                 .trim_end_matches('.')
                 .eq_ignore_ascii_case("Request was cancelled"))
-}
-
-// Older versions persisted Fal's cancellation result as a paused polling error.
-// Recover only explicit provider evidence, never infer success from the cancel click.
-pub(crate) fn recover_cancelled(job: &mut Value) -> bool {
-    if job["providerId"] != "fal"
-        || !matches!(
-            job["status"].as_str(),
-            Some("CANCEL_REQUESTED" | "IN_QUEUE" | "IN_PROGRESS")
-        )
-    {
-        return false;
-    }
-    let confirmed = [job["sync"]["error"].as_str(), job["error"].as_str()]
-        .into_iter()
-        .flatten()
-        .filter_map(|raw| serde_json::from_str::<crate::app_error::AppError>(raw).ok())
-        .any(|error| is_cancelled_error(&error));
-    if !confirmed {
-        return false;
-    }
-    job["status"] = json!("CANCELLED");
-    let fields = job.as_object_mut().unwrap();
-    fields.remove("error");
-    fields.remove("sync");
-    fields.remove("progress");
-    true
 }
 
 fn completed_error(mut error: crate::app_error::AppError) -> Result<super::ProviderUpdate> {
@@ -232,31 +224,15 @@ fn completed_error(mut error: crate::app_error::AppError) -> Result<super::Provi
     )?)
 }
 #[cfg(test)]
-mod recovery_tests {
+mod response_tests {
     use super::*;
     use crate::app_error::AppError;
     #[test]
-    fn plain_fal_499_is_terminal_and_legacy_paused_jobs_recover() {
+    fn explicit_fal_499_cancellation_is_terminal() {
         let error = AppError::http(499, "result", "Request was cancelled");
-        let update = completed_error(error.clone()).unwrap();
+        let update = completed_error(error).unwrap();
         assert_eq!(update.status, "CANCELLED");
         assert!(update.error.is_none());
-        let mut job = json!({"providerId":"fal","status":"CANCEL_REQUESTED","requestId":"r","input":{"prompt":"keep"},"outputs":[{"url":"partial"}],"sync":{"paused":true,"error":error.to_string()}});
-        assert!(recover_cancelled(&mut job));
-        assert_eq!(job["status"], "CANCELLED");
-        assert_eq!(job["requestId"], "r");
-        assert_eq!(job["input"]["prompt"], "keep");
-        assert_eq!(job["outputs"].as_array().unwrap().len(), 1);
-        assert!(job.get("sync").is_none());
-        assert!(!recover_cancelled(&mut job));
-        for (provider, status, details) in [
-            ("other", 499, "Request was cancelled"),
-            ("fal", 499, "Connection closed"),
-            ("fal", 503, "Request was cancelled"),
-        ] {
-            let mut job = json!({"providerId":provider,"status":"CANCEL_REQUESTED","sync":{"error":AppError::http(status,"result",details).to_string()}});
-            assert!(!recover_cancelled(&mut job));
-        }
         assert!(completed_error(AppError::http(499, "result", "Connection closed")).is_err());
     }
     #[test]

@@ -40,36 +40,15 @@ pub struct File {
     pub id: String,
     pub kind: String,
     pub name: String,
-    #[serde(default)]
     pub description: String,
-    #[serde(default)]
     pub code: String,
-    #[serde(default)]
     pub revision: u64,
-    #[serde(default)]
     pub asset_ids: Vec<String>,
-    #[serde(default)]
     pub bindings: BTreeMap<String, String>,
-    #[serde(default = "duration")]
     pub duration: f64,
-    #[serde(default = "width")]
     pub width: u32,
-    #[serde(default = "height")]
     pub height: u32,
-    #[serde(default = "fps")]
     pub fps: u32,
-}
-fn duration() -> f64 {
-    5.0
-}
-fn width() -> u32 {
-    720
-}
-fn height() -> u32 {
-    1280
-}
-fn fps() -> u32 {
-    24
 }
 
 impl File {
@@ -80,8 +59,9 @@ impl File {
             "预演文件类型无效"
         );
         ensure!(!self.name.trim().is_empty(), "请给模型或镜头填写名称");
+        ensure!(self.fps > 0, "预演帧率须大于零");
         ensure!(
-            self.duration.is_finite() && self.duration >= 1.0 / self.fps.max(1) as f64,
+            self.duration.is_finite() && self.duration >= 1.0 / self.fps as f64,
             "预演时长须至少一帧"
         );
         ensure!(
@@ -91,7 +71,6 @@ impl File {
                 && self.height.is_multiple_of(2),
             "预演宽高须为正偶数"
         );
-        ensure!(self.fps > 0, "预演帧率须大于零");
         for id in &self.asset_ids {
             identifier(id)?;
         }
@@ -111,9 +90,8 @@ pub fn identifier(id: &str) -> Result<()> {
 }
 pub fn init(db: &Connection) -> Result<()> {
     db.execute_batch("CREATE TABLE IF NOT EXISTS previs_files(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,id TEXT NOT NULL,kind TEXT NOT NULL,data TEXT NOT NULL,PRIMARY KEY(project_id,id));
-    CREATE TABLE IF NOT EXISTS previs_messages(id INTEGER PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,file_id TEXT NOT NULL,role TEXT NOT NULL,text TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS previs_messages(id INTEGER PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,file_id TEXT NOT NULL,role TEXT NOT NULL,text TEXT NOT NULL,images TEXT NOT NULL,request_id TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS previs_exports(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,id TEXT NOT NULL,data TEXT NOT NULL,PRIMARY KEY(project_id,id));")?;
     media::init(db)?;
-    messages::init(db)?;
     Ok(())
 }

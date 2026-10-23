@@ -6,6 +6,7 @@ import { applyOperations, inspectProject } from "../assistant/projectCommands";
 import type { ProductionTask } from "./types";
 const task: ProductionTask = {
   key: "original",
+  title: "Pack · 视频",
   turnId: "turn",
   createdAt: 1,
   kind: "video",
@@ -61,12 +62,12 @@ test("editing every submitted state updates the single prompt without changing j
     });
   }
 });
-test("hidden records expose one prompt after migrating a saved edit", () => {
+test("hidden records expose their saved prompt", () => {
   const original = {
     ...task,
     status: "COMPLETED",
     hiddenFromList: true,
-    nextPrompt: "新描述",
+    prompt: "新描述",
   };
   const p = saveTask(fixture(), original);
   const result = inspectProject(p, {
@@ -89,7 +90,7 @@ test("explicit regenerate resets the existing task once with new prompt and the 
     hiddenFromList: true,
     jobId: "old-job",
     resultAssetIds: ["result"],
-    nextPrompt: "新描述",
+    prompt: "新描述",
   };
   const p = saveTask(fixture(), original);
   const context = {
@@ -115,7 +116,6 @@ test("explicit regenerate resets the existing task once with new prompt and the 
   });
   expect(run.jobId).toBeUndefined();
   expect(run.resultAssetIds).toBeUndefined();
-  expect("nextPrompt" in run).toBe(false);
   expect(Object.keys(next.production!.drafts!)).toEqual(
     Object.keys(p.production!.drafts!),
   );
@@ -134,24 +134,6 @@ test("invalid prompts do not change task records", () => {
     ]),
   ).toThrow();
   expect(p.production!.drafts![task.key]).toEqual(task);
-});
-test("legacy prompt edits migrate once without losing text or touching job metadata", () => {
-  const legacy = {
-    ...task,
-    status: "COMPLETED",
-    prompt: "submitted",
-    nextPrompt: "edited",
-    jobId: "immutable-job",
-    resultAssetIds: ["image"],
-  };
-  const p = saveTask(fixture(), legacy);
-  const restored = p.production!.drafts!.original;
-  expect(restored.prompt).toBe("edited");
-  expect("nextPrompt" in restored).toBe(false);
-  expect(restored.jobId).toBe("immutable-job");
-  expect(restored.resultAssetIds).toEqual(["image"]);
-  expect(regenerationDraft(restored).prompt).toBe("edited");
-  expect(legacy.prompt).toBe("submitted");
 });
 
 test("explicit generation reuses an unsubmitted hidden task and respects execution mode", () => {

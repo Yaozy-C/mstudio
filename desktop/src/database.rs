@@ -6,7 +6,6 @@ mod event_retention_tests;
 pub(crate) mod history_cleanup;
 #[cfg(test)]
 mod history_cleanup_tests;
-mod media_migration;
 pub(crate) mod media_store;
 #[cfg(test)]
 pub(crate) mod media_tests;
@@ -63,14 +62,9 @@ impl Store {
         crate::previs::init(&db)?;
         crate::project_service::init(&db)?;
         crate::asset_library::init(&db)?;
-        crate::project_storage::direct_references::migrate(&db, &root)?;
         schema::init(&db)?;
         crate::video_analysis::history_store::init(&db)?;
         crate::job_recovery::recover_interrupted_submissions(&db)?;
-        media_store::init(&db)?;
-        schema::migrate(&db)?;
-        event_retention::migrate(&db)?;
-        media_migration::migrate(&db)?;
         history_cleanup::startup(&db)?;
         media_store::sweep(&db)?;
         if let Err(error) = crate::project_storage::resume_cleanup(&db, &location.directory) {
@@ -149,7 +143,6 @@ impl Store {
         rows.into_iter()
             .map(|(id, name, updated, document)| {
                 let mut document: Value = serde_json::from_str(&document)?;
-                crate::project_service::annotation_sources::recover(&db, &mut document)?;
                 if let Some(assets) = document["assets"].as_array_mut() {
                     for asset in assets {
                         asset["missing"] = json!(

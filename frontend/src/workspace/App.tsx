@@ -142,7 +142,6 @@ export function App() {
         <VideoAnalysis
           {...analysis}
           onCreate={createFromAnalysis}
-          continuing={launcher.hasProject(analysis.state)}
           onBrowse={() => setPage("browse")}
           onSettings={() => setSettings("models")}
         />

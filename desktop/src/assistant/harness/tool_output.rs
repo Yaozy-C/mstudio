@@ -41,14 +41,6 @@ pub fn project(call: &ToolCall, value: &Value, turn: Option<&str>) -> Value {
     let value = &view;
     // Bounded editing pages/receipts must not immediately require another read-result call.
     let limit = if super::read_tools::is_read(&call.function.name)
-        || (call.function.name == "mstudio_inspect"
-            && matches!(
-                call.function
-                    .arguments
-                    .get("section")
-                    .and_then(Value::as_str),
-                Some("clips" | "assets" | "tracks" | "captions" | "generation")
-            ))
         || call.function.name == "mstudio_await_generation"
         || (super::operation_tools::is_edit(&call.function.name)
             && value.get("savedClips").is_some())
@@ -148,10 +140,20 @@ pub fn read(t: &ProjectTool, args: &Value) -> Value {
     let store = t.app.state::<Store>();
     let turn = args["turnId"].as_str().unwrap_or(&t.turn);
     if turn != t.turn && !crate::assistant::profiles::allows(&t.profile, "inspect") {
-        let owner =
-            crate::database::session_checkpoint::owner(&store.db.lock().unwrap(), &t.project, turn)
-                .ok()
-                .flatten();
+        let owner = match crate::database::session_checkpoint::owner(
+            &store.db.lock().unwrap(),
+            &t.project,
+            turn,
+        ) {
+            Ok(owner) => owner,
+            Err(error) => {
+                return super::read_failure::result(
+                    error,
+                    "RESULT_NOT_FOUND",
+                    "RESULT_READ_FAILED",
+                );
+            }
+        };
         if owner.as_deref() != Some(&t.profile.id) {
             return json!({"error":"Cannot read another role's results","code":"FORBIDDEN"});
         }
@@ -174,7 +176,10 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
             return Ok(receipt);
         }
         let (seq,raw): (i64,String) = db.query_row("SELECT seq,payload FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='tool/result' AND json_extract(payload,'$.callId')=?3 ORDER BY seq DESC LIMIT 1", rusqlite::params![project,turn,call],|r|Ok((r.get(0)?,r.get(1)?)))?;
-        Ok(crate::database::blobs::event(&db, seq, &raw)?["value"].take())
+        crate::database::blobs::event(&db, seq, &raw)?
+            .get("value")
+            .cloned()
+            .ok_or_else(|| anyhow::anyhow!("Tool result is missing its canonical value"))
     })();
     match raw {
         Ok(mut value) => {
@@ -187,9 +192,7 @@ pub fn read_page(store: &Store, project: &str, turn: &str, call: &str, offset: u
             let total = text.chars().count();
             json!({"turnId":turn,"callId":call,"text":text.chars().skip(offset).take(LIMIT).collect::<String>(),"totalCharacters":total,"nextOffset":if offset.saturating_add(LIMIT)<total{Some(offset+LIMIT)}else{None}})
         }
-        Err(_) => {
-            json!({"error":"Tool result not found in this project; use its original turnId and callId","code":"RESULT_NOT_FOUND"})
-        }
+        Err(error) => super::read_failure::result(error, "RESULT_NOT_FOUND", "RESULT_READ_FAILED"),
     }
 }
 

@@ -21,6 +21,8 @@ export function CodexServiceForm({
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [connected, setConnected] = useState<ServiceConnection | null>(null);
+  const [modelSelectionRequired, setModelSelectionRequired] = useState(false);
   async function connect() {
     setBusy(true);
     onBusyChange?.(true);
@@ -30,11 +32,17 @@ export function CodexServiceForm({
       const result = await bridge<{
         status: string;
         connection?: ServiceConnection;
+        imageError?: string;
+        modelSelectionRequired?: boolean;
       }>("connect_codex_service", { connection });
       setStatus(result.status);
       if (result.connection) {
         serviceChanged();
-        saved(result.connection);
+        if (result.imageError || result.modelSelectionRequired) {
+          setConnected(result.connection);
+          setModelSelectionRequired(Boolean(result.modelSelectionRequired));
+          setError(result.imageError ?? "");
+        } else saved(result.connection);
       }
     } catch (e) {
       setError(String(e));
@@ -61,6 +69,11 @@ export function CodexServiceForm({
         )}
       </p>
       {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
+      {modelSelectionRequired && (
+        <p role="status">
+          {t("Codex 未声明默认型号，请在此连接下添加并选择对话模型。")}
+        </p>
+      )}
       <footer>
         <button type="button" disabled={busy} onClick={cancel}>
           <DialogX aria-hidden="true" />
@@ -84,14 +97,20 @@ export function CodexServiceForm({
           type="button"
           className="primary"
           disabled={busy || !native}
-          onClick={() => void connect()}
+          onClick={() => (connected ? saved(connected) : void connect())}
         >
           {status === "login_required" ? (
             <SignIn size={16} />
           ) : (
             <MagnifyingGlass size={16} />
           )}
-          {t(status === "login_required" ? "登录 ChatGPT" : "一键连接")}
+          {t(
+            connected
+              ? "完成连接"
+              : status === "login_required"
+                ? "登录 ChatGPT"
+                : "一键连接",
+          )}
         </AsyncButton>
       </footer>
     </div>

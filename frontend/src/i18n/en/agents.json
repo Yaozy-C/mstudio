@@ -69,5 +69,7 @@
   "原视频的声画记录、节奏、结构与表达机制": "Original-video audiovisual record, pace, structure and expression",
   "读取画布文本、素材目录、尺寸时长、任务状态和项目历史": "Read canvas text, asset listings, dimensions, duration, task status and project history",
   "读取媒体内容": "Read media content",
-  "按需读取素材原图、视频帧和历史图片；直接发送的附件不受此开关影响": "Read asset images, video frames and historical images on demand; directly sent attachments are always included"
+  "按需读取素材原图、视频帧和历史图片；直接发送的附件不受此开关影响": "Read asset images, video frames and historical images on demand; directly sent attachments are always included",
+  "先建立并修订角色、服装、场景与关键道具，交付跨镜头共用的视觉参考": "Establish and revise shared character, wardrobe, location and key prop references before storyboarding",
+  "管理目标、分工与依赖，负责内部审核并向用户交付": "Manage goals, handoffs and dependencies; own internal review and user delivery"
 }

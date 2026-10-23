@@ -1,25 +1,7 @@
-# Shared reference assets
+# Use selected shared assets
 
-Use for subjects repeated across distinct shots that need consistent identity, or an explicit request for a reference asset. Reusable locations and spatial layouts can also anchor several shots. Same-shot A/B continuity and final scene frames use [storyboard frames](frames.md). Read the short [core](../CORE.md) and [image prompt writing](prompt-writing.md) when needed; reuse their current text already in context.
+Read the saved shot design and supplied character, wardrobe, prop and location images. Bind each actual image to its named subject and concrete purpose. Titles alone do not establish suitability; original product images remain structural evidence.
 
-## Decide what is missing
+Preserve selected identity, construction and art direction while changing pose, framing and scene light for the designed shot. An asset sheet is not a temporal board or an exact video endpoint. A photographic character reference should read as an identity plate, not a catalogue cutout; use [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md) when its face, skin or hands are weak. Use [frame continuity](frames.md) for shot states and [photographic appearance](scene-execution.md) when needed.
 
-Use the scoped storyboard and available project assets to identify actual consumers, required views and stable attributes. Read missing shot detail or candidate images only where it changes that decision; a direct request for one asset need not inventory the whole film. Titles alone cannot establish suitability.
-
-For each relevant subject, record the consuming shot IDs, reusable image IDs and specific gap. Reuse suitable originals and real existing references; do not regenerate a usable image merely to fill an asset pack. Similar category objects are not automatically the same subject, and planned outfit/state changes are legitimate variants. Multiple frames of one shot do not require a shared asset pack.
-
-Generate only necessary missing views. Original product photos remain structural evidence; a generated cleanup cannot prove an unseen mechanism. Existing suitable images do not need regeneration merely because their background is not white.
-
-## Reference image design
-
-For isolated subjects, choose a neutral white or gray background and readable light with sufficient margins; preserve a requested background. Show required outfit, footwear and accessories, real product markings and connections. A multi-view or full-body/detail sheet is useful when those views have actual consumers. State panel order, view, shared identity and scale; use labels only where they clarify the reference. No fixed front/side/back pack is required, and a sheet is not automatically a valid single-frame video control.
-
-For a recurring location, retain its environment, light direction, time of day, material appearance and useful landmarks as the shared baseline. An empty location may leave room for later staging; isolate a set piece only when that is the needed asset. A layout sketch can specify relative position, scale and direction when text or generations leave these unstable. The director owns the selected layout; execute it without inventing a different setting. Lock selected identity, outfit and product construction across useful views. Derive additional views from the selected identity image; a front/side/back pack is not automatic.
-
-For photographic characters, consult [photographic appearance](scene-execution.md) when skin, lighting or realism needs specific treatment. At full-body scale, identity and complete clothing matter more than microscopic skin descriptions. Reference lighting supports identification; it does not dictate downstream scene lighting.
-
-## Asset links and handoff
-
-Create standalone asset tasks with the declared tool contract. Preserve original identity, geometry, outfit, completeness and the selected background. Attach suitable real image IDs directly to consuming shot references, preserving unrelated references. Describe front view, side view or identity as visual uses in purpose or the asset name; do not create a parallel subject/view registry.
-
-Return real assets, intended visual uses, fixed attributes and any unresolved visual dependency. Shared identity references do not replace the artist's composition/state reference for dependent frames. Keep changes to asset work and allowed shot references.
+Return a missing or conflicting shared-reference requirement, its consuming shot IDs and the specific gap to the coordinator for the assets Agent. Do not independently create a new cast, location design or asset pack. Execute an explicitly assigned standalone still or control frame in its requested format.

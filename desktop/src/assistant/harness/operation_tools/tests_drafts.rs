@@ -22,7 +22,7 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
     )
     .unwrap();
     crate::assistant::history::append_attributed(&store, "p", "Prepare video task", &json!("Prepare video task"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"execution":"automatic"},"instruction":"Prepare video task"}}}))).unwrap();
-    let input = json!({"id":"shot","prompt":"New video prompt"});
+    let input = json!({"id":"shot","title":"Shot - video","prompt":"New video prompt"});
     let args = decode(&p, "mstudio_generate_video", input.clone())
         .unwrap()
         .unwrap();
@@ -79,7 +79,7 @@ fn direct_prompt_tool_commits_once_and_recovers_its_receipt() {
     let mut messages = vec![Message::Assistant(
         rig_core::message::AssistantMessage::new(vec![AssistantContent::ToolCall(call)]),
     )];
-    super::super::session_recovery::repair(&store, "p", "turn", &mut messages);
+    super::super::session_recovery::repair(&store, "p", "turn", &mut messages).unwrap();
     assert_eq!(messages.len(), 2);
     let restored = serde_json::to_string(&messages[1]).unwrap();
     assert!(restored.contains("committed"), "{restored}");

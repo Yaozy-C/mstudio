@@ -5,7 +5,6 @@ import { productionItems } from "../production/items";
 import { createTask } from "../production/tasks";
 import { inspectProject } from "../assistant/inspectProject";
 import { reconcileJob } from "../domain/generation";
-import { needsTracking } from "./generatedJobTracking";
 import { restoreProject } from "./restoreProject";
 import "../domain/entry";
 
@@ -122,7 +121,7 @@ test("late job reconciliation does not resurrect a deleted output or keep tracki
   expect(next.assets.some((a) => a.id === "a")).toBe(false);
   expect(next.production?.drafts?.run.resultAssetIds).toEqual([]);
   expect(next.production?.drafts?.run.status).toBe("COMPLETED");
-  expect(needsTracking(job, next)).toBe(false);
+  expect(reconcileJob(next, job)).toEqual(next);
 });
 
 test("concurrent edits cannot restore removed references through merge", () => {

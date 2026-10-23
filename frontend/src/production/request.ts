@@ -6,6 +6,7 @@ import type { Project, Reference } from "../model";
 import type { MediaModel } from "../models/mediaRegistry";
 import { mediaAdapter, type ModelInput } from "../models/adapters";
 import { pointerDelete, referenceLimits } from "../models/capabilities";
+import { codexImageSize } from "../models/codexImageSize";
 import {
   registeredInput,
   requestPrompt,
@@ -86,6 +87,12 @@ export function inputFor(
   // Fixed native builders still recognize these fields when references are disabled.
   if (model.plugin === "gemini-native") pointerDelete(options, "/image_urls");
   if (model.plugin === "codex-image") pointerDelete(options, "/image");
+  if (model.plugin === "codex-image") {
+    if (typeof options.size !== "string" || options.size === "auto")
+      options.size = codexImageSize(p.width, p.height);
+    if (typeof options.quality !== "string" || options.quality === "auto")
+      options.quality = "high";
+  }
   const limits = referenceLimits(model);
   const refs = mediaReferences(task);
   if (limits.count !== null && referenceGroups(p, refs).length > limits.count)

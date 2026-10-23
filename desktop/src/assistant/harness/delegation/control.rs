@@ -143,8 +143,12 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         .map_err(|e| e.to_string())?;
         db.last_insert_rowid()
     };
-    if status != "running" {
-        start_continuation(parent, id, &profile_json, &model_id, &last_turn)?;
+    if status != "running"
+        && let Err(error) = start_continuation(parent, id, &profile_json, &model_id, &last_turn)
+    {
+        return Ok(
+            json!({"ok":false,"accepted":true,"agentId":id,"messageId":message_id,"error":error,"code":"SUBAGENT_CONTINUATION_FAILED"}),
+        );
     }
     Ok(json!({"ok":true,"agentId":id,"messageId":message_id}))
 }

@@ -50,7 +50,7 @@ fn finish_exit(app: tauri::AppHandle) {
     app.exit(0);
 }
 fn main() {
-    ges_runtime::configure();
+    ges_runtime::configure().expect("初始化媒体运行库失败");
     if std::env::args().nth(1).as_deref() == Some("--preview-worker") {
         if let Err(error) = preview_worker::run() {
             eprintln!("{error}");
@@ -74,6 +74,7 @@ fn main() {
             let store = database::Store::open(app.path().app_data_dir()?)?;
             storage::allow(app.handle(), &store.media_root())?;
             app.manage(store);
+            app.manage(jobs::runtime_health::Runtime::default());
             app.manage(video_analysis::Runtime::default());
             app.manage(previs::RuntimeState::default());
             app.manage(previs::Chats::default());
@@ -168,6 +169,7 @@ fn main() {
             models::commands::select_conversation_model,
             models::commands::test_model,
             jobs::list_jobs,
+            jobs::runtime_health::generation_runtime_issues,
             jobs::submit_job,
             jobs::refresh_job,
             job_recovery::resolve_unknown_job,

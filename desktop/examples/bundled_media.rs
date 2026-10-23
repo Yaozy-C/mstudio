@@ -16,7 +16,7 @@ use mstudio::{
 };
 use std::path::Path;
 fn main() -> anyhow::Result<()> {
-    ges_runtime::configure();
+    ges_runtime::configure()?;
     let args: Vec<_> = std::env::args().collect();
     anyhow::ensure!(args.len() == 3, "bundled_media source.mp4 work-directory");
     #[cfg(not(windows))]

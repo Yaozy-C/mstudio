@@ -126,8 +126,6 @@
   "原片访问与局限": "Access and limitations",
   "{title} · 新创作": "{title} · New creation",
   "正在准备…": "Preparing…",
-  "继续创作": "Continue creating",
-  "去创作": "Create from this",
-  "回到项目，接着完成这条视频": "Return to the project and continue your video",
-  "自动创建项目，带入完整拆解": "Create a project with the full analysis"
+  "创建新项目": "Create new project",
+  "带入完整拆解，可用于多个独立项目": "Use the full analysis in multiple independent projects"
 }

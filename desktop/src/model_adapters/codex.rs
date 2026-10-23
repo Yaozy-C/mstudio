@@ -16,18 +16,21 @@ pub static CODEX: Codex = Codex;
 static SLOTS: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(2);
 static ACTIVE: LazyLock<Mutex<HashMap<String, CancellationToken>>> =
     LazyLock::new(Default::default);
-fn update(status: &str, result: Option<Value>, error: Option<String>) -> ProviderUpdate {
-    ProviderUpdate {
+fn update(status: &str, result: Option<Value>, error: Option<String>) -> Result<ProviderUpdate> {
+    let outputs = result.as_ref().map(|r| CODEX.outputs(r)).transpose()?;
+    let value = ProviderUpdate {
         status: status.into(),
         progress: None,
         request_id: None,
         status_url: None,
         response_url: None,
         cancel_url: None,
-        outputs: result.as_ref().map(|r| CODEX.outputs(r)),
+        outputs,
         result,
         error,
-    }
+    };
+    value.validate()?;
+    Ok(value)
 }
 fn directory(config: &Value, id: &str) -> Result<PathBuf> {
     ensure!(
@@ -44,36 +47,56 @@ fn directory(config: &Value, id: &str) -> Result<PathBuf> {
     .join(id))
 }
 fn persist(root: &std::path::Path, value: &ProviderUpdate) -> Result<()> {
+    value.validate()?;
     let pending = root.join("state.tmp");
     std::fs::write(&pending, serde_json::to_vec(value)?)?;
     std::fs::rename(pending, root.join("state.json"))?;
     Ok(())
 }
+fn read_state(root: &std::path::Path) -> Result<ProviderUpdate> {
+    let bytes = std::fs::read(root.join("state.json")).context("读取 Codex 任务状态失败")?;
+    let state: ProviderUpdate = serde_json::from_slice(&bytes).context("Codex 任务状态格式无效")?;
+    state.validate()?;
+    Ok(state)
+}
 fn phase(root: &std::path::Path, stage: &str, message: &str) -> Result<()> {
-    let previous = std::fs::read(root.join("state.json"))
-        .ok()
-        .and_then(|s| serde_json::from_slice::<ProviderUpdate>(&s).ok());
-    let mut state = update("IN_PROGRESS", previous.and_then(|s| s.result), None);
+    let mut state = read_state(root)?;
+    state.status = "IN_PROGRESS".into();
+    state.error = None;
     state.progress = Some(
         json!({"stage":stage,"message":message,"updatedAt":SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()}),
     );
     persist(root, &state)
 }
+fn finish(
+    root: &std::path::Path,
+    result: Result<Value>,
+    cancelled: bool,
+) -> Result<ProviderUpdate> {
+    if !cancelled && let Ok(value) = &result {
+        return update("COMPLETED", Some(value.clone()), None);
+    }
+    let mut state = read_state(root)?;
+    state.status = if cancelled { "CANCELLED" } else { "FAILED" }.into();
+    state.error = result
+        .err()
+        .filter(|_| !cancelled)
+        .map(|error| error.to_string());
+    Ok(state)
+}
 fn read(job: &Value) -> Result<ProviderUpdate> {
     let id = job["requestId"].as_str().context("缺少 Codex 任务编号")?;
     let root = directory(&job["providerConfig"], id)?;
-    let value: ProviderUpdate = serde_json::from_slice(&std::fs::read(root.join("state.json"))?)?;
-    if matches!(value.status.as_str(), "IN_QUEUE" | "IN_PROGRESS")
+    let mut state = read_state(&root)?;
+    if matches!(state.status.as_str(), "IN_QUEUE" | "IN_PROGRESS")
         && !ACTIVE.lock().unwrap().contains_key(id)
     {
-        return Ok(update(
-            "FAILED",
-            value.result,
-            Some("本机 Codex 任务已中断，已完成的图片已保留".into()),
-        ));
+        state.status = "FAILED".into();
+        state.error = Some("本机 Codex 任务已中断，已完成的图片已保留".into());
     }
-    Ok(value)
+    Ok(state)
 }
+
 async fn wait_for_slot<'a>(
     slots: &'a tokio::sync::Semaphore,
     cancel: &CancellationToken,
@@ -113,7 +136,7 @@ async fn generate(
         images.extend(result);
         persist(
             root,
-            &update("IN_PROGRESS", Some(json!({"data":images})), None),
+            &update("IN_PROGRESS", Some(json!({"data":images})), None)?,
         )?;
     }
     Ok(json!({"data":images}))
@@ -144,7 +167,7 @@ impl ProviderAdapter for Codex {
             let root = directory(config, &id)?;
             std::fs::create_dir_all(&root)?;
             let cancel = CancellationToken::new();
-            let mut initial = update("IN_QUEUE", None, None);
+            let mut initial = update("IN_QUEUE", None, None)?;
             initial.progress =
                 Some(json!({"stage":"queued","message":"排队中，最多同时执行 2 个本机生图任务"}));
             initial.request_id = Some(id.clone());
@@ -163,19 +186,8 @@ impl ProviderAdapter for Codex {
                             result.unwrap_or_else(|_| Err(anyhow::anyhow!("Codex 请求超时，已完成的图片已保留"))),
                     }
                 }.await;
-                let partial = std::fs::read(root.join("state.json"))
-                    .ok()
-                    .and_then(|s| serde_json::from_slice::<ProviderUpdate>(&s).ok())
-                    .and_then(|s| s.result);
-                let finished = if cancel.is_cancelled() {
-                    update("CANCELLED", partial, None)
-                } else {
-                    match result {
-                        Ok(value) => update("COMPLETED", Some(value), None),
-                        Err(e) => update("FAILED", partial, Some(e.to_string())),
-                    }
-                };
-                if let Err(e) = persist(&root, &finished) {
+                let finished = finish(&root, result, cancel.is_cancelled());
+                if let Err(e) = finished.and_then(|state| persist(&root, &state)) {
                     eprintln!("Codex 任务保存失败：{e}");
                 }
                 ACTIVE.lock().unwrap().remove(&id);
@@ -197,24 +209,33 @@ impl ProviderAdapter for Codex {
                 {
                     token.cancel();
                 }
-                return Ok(update(
+                return update(
                     "IN_PROGRESS",
                     None,
                     Some("正在取消本地等待，服务端生成可能继续…".into()),
-                ));
+                );
             }
             Ok(state)
         })
     }
-    fn outputs(&self, value: &Value) -> Vec<ModelOutput> {
-        value["data"]
+}
+impl Codex {
+    pub(super) fn outputs(&self, value: &Value) -> Result<Vec<ModelOutput>> {
+        let data = value["data"]
             .as_array()
-            .into_iter()
-            .flatten()
-            .filter_map(|v| {
-                v["b64_json"].as_str().map(|b| ModelOutput {
+            .context("Codex 结果格式无效：data 须为数组")?;
+        data.iter()
+            .enumerate()
+            .map(|(index, value)| {
+                let bytes = value["b64_json"]
+                    .as_str()
+                    .filter(|s| !s.is_empty())
+                    .with_context(|| {
+                        format!("Codex 结果格式无效：data[{index}].b64_json 须为非空字符串")
+                    })?;
+                Ok(ModelOutput {
                     kind: "image".into(),
-                    url: format!("data:image/png;base64,{b}"),
+                    url: format!("data:image/png;base64,{bytes}"),
                 })
             })
             .collect()
@@ -224,3 +245,7 @@ impl ProviderAdapter for Codex {
 #[cfg(test)]
 #[path = "codex_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "codex_portrait_tests.rs"]
+mod portrait_tests;

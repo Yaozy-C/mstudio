@@ -70,7 +70,7 @@ fn model_guidance_is_selected_without_eagerly_loading_skill_bodies() {
 fn quick_prompt_preparation_receives_the_current_database_bodies() {
     let (root, store) = fixture();
     let db = store.db.lock().unwrap();
-    let profile = quick_profile(&db, "video").unwrap();
+    let profile = quick_profile(&db, "video", None).unwrap();
     assert_eq!(profile.id, "production");
     let context = json!({"models":{"video":"h3"}});
     let brief = "Shot 1, 0-3s: the lead lowers the bag; the coworker leans in and asks a question. Shot 2, 3-6s: one hand opens the zipper and lifts the lid.";
@@ -96,6 +96,7 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     // The prompt-writing guide is always present for the bound kind.
     assert!(guidance.contains("storyboard-video-production/references/prompt-writing.md"));
     assert!(guidance.contains("### storyboard-video-production/references/shot-execution.md"));
+    assert!(guidance.contains("### storyboard-video-production/references/motion-realism.md"));
     // Even a vague request needs local spatial rules, but never another role's library.
     let short = for_quick(
         &db,
@@ -134,7 +135,7 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     assert!(!portable.contains("MiniMax H3 prompt adapter"));
 
     // The image panel binds the image Skill, not the video one.
-    let image = quick_profile(&db, "image").unwrap();
+    let image = quick_profile(&db, "image", None).unwrap();
     let image_guidance = for_quick(
         &db,
         &image,
@@ -148,6 +149,20 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     assert!(!image_guidance.contains("CURRENT_SPATIAL_RULE"));
     assert!(image_guidance.contains("storyboard-image-production/references/scene-execution.md"));
     assert!(image_guidance.contains("### storyboard-image-production/references/frames.md"));
+    assert!(image_guidance.contains(
+        "### storyboard-image-production/references/photographic-direction.md"
+    ));
+    assert!(!image_guidance.contains("### storyboard-image-production/references/skin-realism.md"));
+    let portrait = for_quick(
+        &db,
+        &image,
+        "image",
+        "a portrait of a woman by a window",
+        &json!({"models":{"image":"image"}}),
+        &json!({}),
+    )
+    .unwrap();
+    assert!(portrait.contains("### storyboard-image-production/references/skin-realism.md"));
     assert!(!image_guidance.contains("### storyboard-video-production/"));
     assert!(!image_guidance.contains("### creative-ad-director/"));
     assert!(!image_guidance.contains("storyboard-video-production/references/control.md"));
@@ -160,7 +175,7 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
 fn quick_preparation_fails_if_its_required_local_method_is_missing() {
     let (root, store) = fixture();
     let db = store.db.lock().unwrap();
-    let profile = quick_profile(&db, "video").unwrap();
+    let profile = quick_profile(&db, "video", None).unwrap();
     db.execute("DELETE FROM skill_resources WHERE skill_id='storyboard-video-production' AND path='references/shot-execution.md'", []).unwrap();
     assert!(
         for_quick(
@@ -179,10 +194,36 @@ fn quick_preparation_fails_if_its_required_local_method_is_missing() {
 }
 
 #[test]
+fn asset_prompt_preparation_uses_asset_rules_even_when_the_description_mentions_storyboards() {
+    let (root, store) = fixture();
+    let db = store.db.lock().unwrap();
+    let profile = quick_profile(&db, "image", Some("asset")).unwrap();
+    assert_eq!(profile.id, "assets");
+    let guidance = for_quick(
+        &db,
+        &profile,
+        "image",
+        "为后续分镜准备人物资产",
+        &json!({"models":{"image":"image"}}),
+        &json!({}),
+    )
+    .unwrap();
+    assert!(guidance.contains("### image-production/SKILL.md"));
+    assert!(guidance.contains("### image-production/references/reference-assets.md"));
+    assert!(!guidance.contains("storyboard-image-production/"));
+    assert!(!guidance.contains("references/frames.md"));
+    assert!(quick_profile(&db, "video", Some("asset")).is_err());
+    assert!(quick_profile(&db, "image", Some("unknown")).is_err());
+    drop(db);
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn video_motion_method_uses_current_db_text_and_stays_the_same_across_models() {
     let (root, store) = fixture();
     let db = store.db.lock().unwrap();
-    let profile = quick_profile(&db, "video").unwrap();
+    let profile = quick_profile(&db, "video", None).unwrap();
     let brief = "按附件脚本整理视频提示词";
     let generic = json!({"models":{"video":"generic-video"}});
     let original = for_quick(&db, &profile, "video", brief, &generic, &json!({})).unwrap();
@@ -227,7 +268,7 @@ fn video_motion_method_uses_current_db_text_and_stays_the_same_across_models() {
     );
     assert!(!updated.contains("MiniMax H3 prompt adapter"));
     assert!(h3.contains("MiniMax H3 prompt adapter"));
-    let image = quick_profile(&db, "image").unwrap();
+    let image = quick_profile(&db, "image", None).unwrap();
     let still = for_quick(
         &db,
         &image,

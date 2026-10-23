@@ -2,11 +2,34 @@
 
 Apply these methods within the selected image deliverable and existing authorization.
 
+## One art direction, different deliverables
+
+Read the selected project look and relevant approved images before choosing appearance. Carry the same medium, degree of realism or stylization, period, palette relationships, material language and finish from reference assets into storyboard imagery. Use the existing project notes, asset records and reference purposes to retain those decisions; do not create a separate style registry or reopen a settled look for each shot.
+
+Adapt presentation to purpose. An asset image should expose useful identity and construction with readable pose, scale and light; a storyboard panel should express the designed attention order, camera, action state and motivated scene light. A neutral background does not require generic commercial photography, glamour retouching or a different rendering style. Shared aesthetics do not require identical exposure, background, pose or lighting: for example, a clear daytime character reference can support a blue-hour scene while preserving the same face, clothing, material character and photographic texture. Do not erase intentional story-driven light or state changes to match the reference's presentation.
+
 ## Resolve appearance before execution
 
 Use the approved look. If it is missing, make a compact, clearly stated execution hypothesis rather than automatically generating alternatives: attention order, viewpoint and scale, light/value separation, material response, palette relationship and exclusions. Return concept or shot-design conflicts to the coordinator. Do not reopen an approved direction just because a sample has a local defect.
 
 Replace generic adjectives with visible relationships. Metal can be described by the shape and roll-off of its reflections, transparent material by edge thickness and transmission, and cloth by fold scale and directional response. Do not give all surfaces the same glossy treatment. A cleaner background cannot compensate for a silhouette that merges into it.
+
+## Photographic direction and the AI look
+
+For live-action panels, read [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md). Decide the shared capture, lens, camera height, light and palette once; give each panel its own visible state and light/value decision.
+
+When a panel looks synthetic, diagnose the cause before adding detail:
+
+| Symptom | Likely cause | Positive repair |
+|---|---|---|
+| Identical faces across cells | One description repeated, no per-panel state | A distinct gaze, mouth, hand and weight state in each cell |
+| Orange or teal wash | "Warm sunset" without color relationships | Separate sky, sea, skin and neutral values; one warm source |
+| Flat panels | "Soft even light" in every cell | A motivated source with direction, ratio and shadow-side fill |
+| Catalogue look | Asset-plate backdrop carried into the scene | The actual location with depth and landmarks |
+| Waxy skin | "Smooth", "flawless", "beauty" | Regional color, scale-appropriate pores, fine lines, a light-driven sheen |
+| Mushy hands | Detail demanded below panel scale | Simpler pose, occupied and visible hands, accept blocking scale |
+
+Do not answer the AI look with more slogans. Replace the cause with a visible relationship, or state the panel-scale limitation.
 
 ## Bind reference transfer explicitly
 
@@ -18,6 +41,7 @@ Resolve reference conflicts before generating. Keep the smallest relevant set an
 
 | Artifact | What it establishes | What it does not establish |
 |---|---|---|
+| Reference asset | Selected identity, wardrobe, construction, material or location baseline | Scene staging, action timing or mandatory scene lighting |
 | Temporal board | Ordered scene states and continuity | Full-frame detail or exact video endpoints |
 | Look frame | A selected appearance and composition | Motion or elapsed time |
 | Start/end control image | An actual endpoint state for a supported route | Guaranteed interpolation, identity or timing |
@@ -29,31 +53,31 @@ A still describes one moment. For an evolving effect, select a meaningful phase:
 
 ## Compose the actual prompt
 
-Resolve the shot into a short visual description in this order when useful: subject and current state; framing and spatial relationships; light and material; background and palette; reference transfer and preservation boundaries. This is an ordering aid, not a fixed vendor syntax.
+Resolve the board into photographs, not a production checklist. Write the shared capture, camera, light, palette and finish once; then write one visible state per panel. This is a working order, not a fixed vendor syntax.
 
-Put technical aspect, resolution and supported controls in the actual parameter fields. Do not paste planning labels or fictional API keys into a prompt. A final prompt must be self-contained for the current call; the service will not automatically read the project's shot notes.
+Keep continuity rules, part counts, negative constraints and acceptance checks in the task checklist or reference purposes, not in the prompt. A board prompt should read as four photographs sharing one setup; if it reads as a contract with twenty unrelated clauses, the model will average them into four safe catalogue panels.
+
+Put technical aspect, resolution and supported controls in the actual parameter fields. Do not paste planning labels or fictional API keys into a prompt. A final prompt must be self-contained for the current call; the service will not automatically read the project's shot notes. Do not promise a panel resolution the selected endpoint does not expose.
 
 ## Explore only within the authorized budget
 
 A single-generation task stays a single-generation task. Alternatives and repairs require explicit existing authorization.
 
-When exploration is authorized, use distinct design hypotheses with comparable scope. Compare against the chosen direction and hard constraints, not an unsupported aesthetic score. Tell the user when the difference is a preference rather than a defect. Do not hide extra sampling cost when comparing old and new methods.
+When exploration is authorized, use distinct design hypotheses with comparable scope. State the intended design difference and return the candidates for coordinator review and user selection; do not score or select them. Do not hide extra sampling cost when comparing old and new methods.
 
-## Check what was actually generated
+## Return generated work
 
-First inspect identity, construction, part count, support/contact, required text and the requested format. Then inspect whether attention, silhouette separation, composition, light shape and material differentiation realize the selected design. Cite visible defects rather than judging an image only from its prompt.
+Return real image IDs, task status and concrete execution limits to the coordinator. Internal review belongs to the coordinator and final selection to the user; the generating specialist does not issue pass/fail judgments, rank candidates or add an acceptance gate.
 
-Compare at the intended viewing scale as well as detail scale when access permits. Do not say "reviewed" when only task status or a thumbnail was available. Without image access, label the result unverified and ask for the necessary review through the existing handoff; do not fabricate a pass.
+## Execute assigned local revisions
 
-## Repair locally and retain the selected image
+Use the selected image and the specific change assigned by the user or coordinator. Prefer a supported edit that preserves the specified composition, identity and unaffected styling. An edit instruction does not guarantee pixel preservation; a text-to-image reroll is not a retained-pixel edit. Return the new output without starting another revision yourself.
 
-Identify the defect and the part of the frame that already works. Prefer a supported edit of the selected image when it can address the defect, while keeping composition, identity and unaffected styling. Reinspect the result: an edit instruction is not a preservation guarantee. If editing is unsupported, explain the tradeoff before another authorized generation; do not claim a text-to-image reroll preserved pixels.
-
-Change one relevant execution dimension per repair when practical. Do not add a new background, camera move or particle field to fix an incorrect highlight. Stop within budget and carry known issues forward honestly.
+Keep each change within its assigned scope and budget; do not add a new background, camera move or particle field to change a highlight.
 
 ## Effect control example: partial frost on a can
 
-The chosen shot is a locked three-quarter product view. The opening image has sparse condensation. The ending image has thin frost on the lower body and side edges, stopping before the front label. Keep the can opening, silhouette, viewpoint and light arrangement compatible across both images. Build the ending through a supported edit of the selected opening when available, then inspect it.
+The chosen shot is a locked three-quarter product view. The opening image has sparse condensation. The ending image has thin frost on the lower body and side edges, stopping before the front label. Keep the can opening, silhouette, viewpoint and light arrangement compatible across both images. Build the ending through a supported edit of the selected opening when available, then return both real images to the coordinator.
 
 The completed frame is not evidence that frost grew continuously. If the selected video endpoint lacks last-frame control, do not label the ending reference as a bound endpoint. Preserve exact label pixels only with an available retained-layer/compositing route; text requests do not provide that guarantee.
 

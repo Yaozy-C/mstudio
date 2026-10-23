@@ -13,7 +13,7 @@ fn codex_unknown_window_is_not_32k_and_delayed_usage_prices_only_its_prefix() {
     let mut session = Session::new(vec![Message::user("request"), Message::assistant("call")]);
     assert_eq!(route.context_window(), None);
     assert_eq!(budget::input_budget(&session, &route), None);
-    let measured = budget::raw_pressure(&session, &host);
+    let measured = budget::raw_pressure(&session, &host).unwrap();
     session.messages.extend([
         Message::user("tool result"),
         Message::assistant("next call"),
@@ -21,21 +21,21 @@ fn codex_unknown_window_is_not_32k_and_delayed_usage_prices_only_its_prefix() {
     budget::anchor_response(
         &mut session,
         &route,
-        budget::header(&route, &host.definitions()),
+        budget::header(&route, &host.definitions().unwrap()),
         &json!({"tokenUsage":{"modelContextWindow":258400,"last":{"totalTokens":40000},"total":{"totalTokens":900000}},"contextMessageCount":2}),
         900000,
     );
     assert_eq!(budget::input_budget(&session, &route), Some(206720));
     assert_eq!(
-        budget::pressure(&session, &route, &host),
-        40000 + budget::raw_pressure(&session, &host) - measured
+        budget::pressure(&session, &route, &host).unwrap(),
+        40000 + budget::raw_pressure(&session, &host).unwrap() - measured
     );
-    assert!(!budget::over_budget(&session, &route, &host));
+    assert!(!budget::over_budget(&session, &route, &host).unwrap());
     route.context_window = Some(8192);
     assert_eq!(budget::input_budget(&session, &route), Some(6553));
     route.context_window = None;
     session.provider_context_window = Some(8192);
-    assert!(budget::over_budget(&session, &route, &host));
+    assert!(budget::over_budget(&session, &route, &host).unwrap());
 }
 
 #[tokio::test]

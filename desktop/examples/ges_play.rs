@@ -10,7 +10,7 @@ mod ges_runtime;
 #[path = "../src/preview_shared.rs"]
 mod preview_shared;
 fn main() -> anyhow::Result<()> {
-    ges_runtime::configure();
+    ges_runtime::configure()?;
     let path = std::env::args().nth(1).expect("ges_play plan.json");
     let plan: mstudio::preview_ges::Plan = serde_json::from_slice(&std::fs::read(path)?)?;
     let p = ges_engine::Player::open(plan).map_err(anyhow::Error::msg)?;

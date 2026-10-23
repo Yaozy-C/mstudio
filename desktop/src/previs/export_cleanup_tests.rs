@@ -32,17 +32,17 @@ fn referenced_directories_survive_json_escaping_in_every_snapshot_source() {
                 [snapshot.to_string()],
             )
             .unwrap();
-            assert!(protected(&db, prefix), "{table}: {prefix}");
-            assert!(!protected(&db, &format!("{prefix}-unused")));
+            assert!(protected(&db, prefix).unwrap(), "{table}: {prefix}");
+            assert!(!protected(&db, &format!("{prefix}-unused")).unwrap());
             // A different render whose name starts with the same text is not a reference.
-            assert!(!protected(&db, prefix.rsplit_once('-').unwrap().0));
+            assert!(!protected(&db, prefix.rsplit_once('-').unwrap().0).unwrap());
             assert!(
                 db.execute(&format!("UPDATE {table} SET {column}='{{'"), [])
                     .is_ok()
             );
             assert!(
-                protected(&db, prefix),
-                "unreadable snapshots must prevent deletion"
+                protected(&db, prefix).is_err(),
+                "unreadable snapshots must report failure before deletion"
             );
         }
     }

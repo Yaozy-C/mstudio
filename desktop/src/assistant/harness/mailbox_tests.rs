@@ -20,10 +20,10 @@ fn delivery_rolls_back_on_journal_failure_and_retries_once() {
     let store = Store::open(root.clone()).unwrap();
     {
         let db = store.db.lock().unwrap();
-        db.execute_batch("INSERT INTO projects VALUES('p','p','{}',0);
+        db.execute_batch("INSERT INTO projects VALUES('p','p','{\"id\":\"p\"}',0);
                 INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn)
                 VALUES('child','p','parent','coordinator','concept','continuable','running','{}','model','turn');
-                INSERT INTO subagent_inbox(child_id,text,source) VALUES('child','first','{\"kind\":\"agent-message\",\"senderAgentId\":\"coordinator\"}'),('child','second','{\"kind\":\"agent-message\",\"senderAgentId\":\"coordinator\"}');
+                INSERT INTO subagent_inbox(child_id,text,source) VALUES('child','first','{\"kind\":\"agent-message\",\"senderAgentId\":\"coordinator\",\"senderTurnId\":\"parent\"}'),('child','second','{\"kind\":\"agent-message\",\"senderAgentId\":\"coordinator\",\"senderTurnId\":\"parent\"}');
                 INSERT INTO subagent_notices(child_id,project_id,parent_agent_id,status,output)
                 VALUES('child','p','coordinator','idle','done');
                 CREATE TRIGGER fail_journal BEFORE INSERT ON agent_events

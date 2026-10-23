@@ -15,7 +15,7 @@ use std::{
     time::{Duration, Instant},
 };
 fn main() -> anyhow::Result<()> {
-    ges_runtime::configure();
+    ges_runtime::configure()?;
     let args: Vec<_> = std::env::args().collect();
     anyhow::ensure!(args.len() == 4, "ges_frame plan.json seconds output.ppm");
     let plan: mstudio::preview_ges::Plan = serde_json::from_slice(&std::fs::read(&args[1])?)?;

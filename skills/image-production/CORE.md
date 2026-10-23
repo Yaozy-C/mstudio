@@ -1,13 +1,13 @@
-# Core: image execution
+# Core: assets and standalone images
 
-Preserve the selected scene, identity, outfit and original product geometry. Each scene panel shows one visible moment with a readable pose, support, contact and viewpoint; a preparation frame must not show a completed result. Use concrete surfaces and lighting instead of generic polish or quality slogans. Continuity preserves identity, construction and actual dimensions, not a frozen pose: state changes obey support, gravity, contact and material behavior. Put the relevant physical relationships into the generation prompt; do not use consistency to override them.
+Reusable assets establish identity, wardrobe, geometry, material or location layout. Keep the selected project art direction while choosing framing and light for readable reference use. Neither temporal panels nor a fixed view pack is required.
 
-Image production owns visual product fidelity and local render repairs. Use the original references to realize the director's viewpoint, lens/distance, focus and scene look. Keep construction stable while projection, occlusion, pose and visible components follow the designed view. Do not force the same product faces or source-photo angle across shots. Return a concrete design conflict to direction; repair an execution mismatch without redesigning the camera.
+For live-action, decide the photographic treatment before the subject: capture, lens, camera height, motivated light, color relationships and surface finish. A character asset is an identity plate, not a catalogue cutout; when appearance matters, read [photographic direction](references/photographic-direction.md) and [skin realism](references/skin-realism.md).
 
-Reuse suitable real images rather than regenerating them. Use a neutral white or gray background for isolated identity references when it helps readability. A location reference instead preserves the selected environment, lighting and spatial anchors. Reference sheets can show necessary views; neither a white backdrop nor a fixed view pack is mandatory. Derive additional views from the selected identity image and attach real asset IDs to consuming shots.
+Preserve the selected identity, outfit and original product construction. Pose, support, contact, occlusion and projection follow the requested view and physical state. Use concrete surfaces and lighting instead of generic polish. A changed viewpoint does not change subject identity.
 
-Give every referenced image a concrete purpose — edit target, identity, product geometry, composition or state, or motion — and never rely on a generic label. Identity references do not dictate downstream pose, background or lighting. Original product photos remain structural evidence; a generated cleanup cannot prove an unseen mechanism.
+Reuse selected originals. Derive assigned additional views from the selected image, with a concrete purpose for each input. Neutral backgrounds and simplified light are optional aids; location references retain their environment and spatial anchors. A generated cleanup cannot prove unseen mechanisms.
 
-For storyboard work, choose each frame by its representative/start/key/end use and the selected shot's purpose. Same-view dependent frames preserve the anchor; changed viewpoints preserve world relationships without freezing screen coordinates. Choose rough sequence boards for story review or clean independent frames for production inputs; each panel still depicts its own instant. Keep presentation labels and motion notes outside clean control images. Frame count does not multiply shot duration, and previews are not automatically video controls.
+Return real candidate IDs, fixed properties, intended reference uses and concrete limits. Apply assigned revisions; the coordinator reviews and the user selects. Shared shot links change only when that selection is supplied. Storyboards and video controls are handed to image production through coordination.
 
-Detailed frame, reference-asset and prompt rules are listed in [SKILL.md](SKILL.md).
+Detailed subject and appearance methods are listed in [SKILL.md](SKILL.md).

@@ -8,7 +8,6 @@ use tauri::{Emitter, Manager};
 pub fn init(db: &Connection) -> Result<()> {
     let tx = db.unchecked_transaction()?;
     let db = &tx;
-    let existing: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='agent_child_activity')", [], |r| r.get(0))?;
     db.execute_batch("CREATE TABLE IF NOT EXISTS agent_child_activity(
         project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
         turn_id TEXT NOT NULL, child_id TEXT NOT NULL REFERENCES subagent_runs(id) ON DELETE CASCADE,
@@ -18,17 +17,6 @@ pub fn init(db: &Connection) -> Result<()> {
         PRIMARY KEY(project_id,turn_id));
         CREATE INDEX IF NOT EXISTS child_activity_parent ON agent_child_activity(project_id,parent_turn);
         UPDATE agent_child_activity SET state='interrupted',updated=unixepoch() WHERE state='running';")?;
-    if !existing {
-        // One-time projection of settled one-shot runs. The result's childId is
-        // the authoritative link; never infer a child from its role or time.
-        db.execute_batch("INSERT OR IGNORE INTO agent_child_activity(project_id,turn_id,child_id,parent_turn,call_id,agent_id,state,phase,started,updated)
-            SELECT r.project_id,r.last_turn,r.id,r.parent_turn,json_extract(e.payload,'$.callId'),r.agent_id,
-                CASE WHEN r.status='completed' THEN 'completed' WHEN json_extract(e.payload,'$.result.stopReason')='aborted' THEN 'cancelled' ELSE 'failed' END,
-                '{\"kind\":\"subagent/settled\",\"payload\":{}}',r.created,r.updated
-            FROM subagent_runs r JOIN agent_events e ON e.project_id=r.project_id AND e.turn_id=r.parent_turn
-                AND e.kind='tool/result' AND json_extract(e.payload,'$.result.childId')=r.id
-            WHERE r.mode='oneShot' AND r.status IN ('completed','failed') AND r.last_turn IS NOT NULL AND json_type(e.payload,'$.callId')='text';")?;
-    }
     tx.commit()?;
     Ok(())
 }
@@ -81,7 +69,7 @@ pub fn update(
 }
 fn snapshot(db: &Connection, project: &str, turn: &str) -> Result<Option<Value>> {
     Ok(db.query_row("SELECT child_id,parent_turn,call_id,agent_id,state,phase,note,started,updated FROM agent_child_activity WHERE project_id=?1 AND turn_id=?2",params![project,turn],|r| Ok(json!({
-        "projectId":project,"turnId":turn,"childId":r.get::<_,String>(0)?,"parentTurn":r.get::<_,String>(1)?,"callId":r.get::<_,String>(2)?,"agentId":r.get::<_,String>(3)?,"state":r.get::<_,String>(4)?,"phase":serde_json::from_str::<Value>(&r.get::<_,String>(5)?).unwrap_or(Value::Null),"note":r.get::<_,String>(6)?,"started":r.get::<_,i64>(7)?,"updated":r.get::<_,i64>(8)?
+        "projectId":project,"turnId":turn,"childId":r.get::<_,String>(0)?,"parentTurn":r.get::<_,String>(1)?,"callId":r.get::<_,String>(2)?,"agentId":r.get::<_,String>(3)?,"state":r.get::<_,String>(4)?,"phase":serde_json::from_str::<Value>(&r.get::<_,String>(5)?).map_err(|e|rusqlite::Error::FromSqlConversionFailure(5,rusqlite::types::Type::Text,Box::new(e)))?,"note":r.get::<_,String>(6)?,"started":r.get::<_,i64>(7)?,"updated":r.get::<_,i64>(8)?
     }))).optional()?)
 }
 pub fn record(tool: &super::tools::ProjectTool, kind: &str, value: &Value) -> Result<()> {

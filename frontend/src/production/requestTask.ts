@@ -4,7 +4,7 @@ import {
 } from "./taskReferences";
 import { existingShotRun } from "./existingShotRun";
 import { resultPlacement } from "./resultPlacement";
-import { normalizeTaskPrompt } from "./taskPrompt";
+import { checkedTaskTitle } from "./taskTitle";
 import { failure } from "../errors/failure";
 import type { Project } from "../model";
 import { saveTask } from "./document";
@@ -20,7 +20,6 @@ export type GenerationCommandContext = {
 const isRun = (t: ProductionTask) => !!t.turnId && !!t.createdAt;
 export const runsOf = (p: Project, turnId?: string) =>
   Object.values(p.production?.drafts ?? {})
-    .map(normalizeTaskPrompt)
     .filter((t) => isRun(t) && (!turnId || t.turnId === turnId))
     .sort((a, b) => a.createdAt! - b.createdAt!);
 
@@ -38,6 +37,7 @@ export function requestTask(
   if (op.generationPurpose !== undefined && op.generationPurpose !== "asset")
     throw failure("VALIDATION_FAILED", "生成用途无效");
   const assetTask = op.generationPurpose === "asset";
+  const title = checkedTaskTitle(op.title);
   if (
     assetTask &&
     (op.mediaKind !== "image" ||
@@ -144,6 +144,7 @@ export function requestTask(
     (!assetTask && turn.task?.kind === kind ? turn.task.parameters : undefined);
   const run: ProductionTask = {
     key,
+    title,
     generationPurpose: assetTask ? "asset" : undefined,
     kind,
     mode: task.mode,
@@ -162,7 +163,7 @@ export function requestTask(
     turnId,
     instruction: turn.instruction,
     createdAt: Date.now() + index,
-    status: op.draftOnly === true ? "DRAFT" : "AWAITING_CONFIRMATION",
+    status: "AWAITING_CONFIRMATION",
   };
   const existing = existingShotRun(
     runsOf(p).filter((t) => t.key !== saved?.key),

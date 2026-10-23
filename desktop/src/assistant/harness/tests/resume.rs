@@ -8,14 +8,14 @@ fn interrupted_calls_get_unknown_effect_result_never_reexecuted() {
             AssistantContent::ToolCall(tool),
         ])),
     ];
-    session::repair_pending(&mut messages, |_| None);
+    session::repair_pending(&mut messages, |_| Ok(None)).unwrap();
     assert_eq!(messages.len(), 3);
     assert!(
         serde_json::to_string(&messages[2])
             .unwrap()
             .contains("EFFECT_UNKNOWN")
     );
-    session::repair_pending(&mut messages, |_| None);
+    session::repair_pending(&mut messages, |_| Ok(None)).unwrap();
     assert_eq!(messages.len(), 3);
 }
 #[test]
@@ -46,7 +46,10 @@ fn resume_requires_same_request_and_interrupted_turn() {
         json!({"text":"prefix","delta":"prefix"}),
     )
     .unwrap();
-    assert_eq!(session::partial(&store, "p", "turn"), "prefix");
+    assert_eq!(
+        session::partial_in(&store.db.lock().unwrap(), "p", "turn").unwrap(),
+        "prefix"
+    );
     store.db.lock().unwrap().execute("UPDATE agent_messages SET attribution=json_set(attribution,'$.status','failed') WHERE role='assistant'",[]).unwrap();
     session::validate_resume(&store, "p", "turn", &request).unwrap();
     assert!(session::validate_resume(&store, "other", "turn", &request).is_err());

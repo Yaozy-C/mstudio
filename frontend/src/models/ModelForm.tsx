@@ -72,8 +72,6 @@ export function ModelForm({
         setError("");
         void bridge("save_model", {
           profile,
-          key: null,
-          clearKey: false,
         })
           .then(saved)
           .catch((e) => setError(String(e)))

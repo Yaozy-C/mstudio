@@ -62,13 +62,14 @@ pub(super) async fn prepare(
         duration.is_finite() && duration > 0. && duration <= 600.,
         "请使用 10 分钟以内的视频"
     );
+    let (width, height) = mstudio::media::picture_dimensions(stream)?;
     Ok(Some(Video {
         id: String::new(),
         name,
         path: path.to_string_lossy().into(),
         duration,
-        width: stream["width"].as_u64().unwrap_or(0),
-        height: stream["height"].as_u64().unwrap_or(0),
+        width: width.into(),
+        height: height.into(),
         has_audio: streams.iter().any(|s| s["codec_type"] == "audio"),
     }))
 }

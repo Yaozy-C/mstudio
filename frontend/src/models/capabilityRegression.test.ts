@@ -134,10 +134,28 @@ test("disabling native references cannot leak preset images into a conversation 
         plugin === "gemini-native"
           ? "https://generativelanguage.googleapis.com"
           : "codex://local/images",
-      params: { model: "codex-image", [field]: ["data:image/png;base64,YQ=="] },
+      params: { model: "gpt-image-2", [field]: ["data:image/png;base64,YQ=="] },
       capabilities: { references: [] },
     };
     expect(inputFor(p, task, m)[field]).toBeUndefined();
     expect(m.params[field]).toEqual(["data:image/png;base64,YQ=="]);
   }
+});
+
+test("codex image requests use explicit size and quality instead of auto", () => {
+  const p = fixture();
+  p.width = 1920;
+  p.height = 1080;
+  const task = createTask(p, [], "image");
+  task.prompt = "p";
+  const m: MediaModel = {
+    ...model("codex://local/images", "image"),
+    plugin: "codex-image",
+    endpoint: "codex://local/images",
+    params: { model: "gpt-image-2.5-sunburst" },
+    capabilities: { references: [] },
+  };
+  const body = inputFor(p, task, m);
+  expect(body.size).toBe("2048x1152");
+  expect(body.quality).toBe("high");
 });

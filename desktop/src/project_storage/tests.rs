@@ -100,29 +100,6 @@ fn directly_uploaded_global_assets_have_no_project_owner() {
 }
 
 #[test]
-fn legacy_generation_is_classified_by_job_identity_without_changing_project_membership() {
-    let f = Fixture::new();
-    let asset = f.asset("generated");
-    write_document(
-        &f.store,
-        json!({"id":"one","name":"one","assets":[asset],"nodes":[]}),
-        false,
-    )
-    .unwrap();
-    jobs::save(
-        &f.store,
-        &json!({"id":"job","projectId":"one","asset":asset}),
-    )
-    .unwrap();
-    crate::asset_library::init(&f.store.db.lock().unwrap()).unwrap();
-    let projects = f.store.projects().unwrap();
-    let project = projects.iter().find(|p| p["id"] == "one").unwrap();
-    assert_eq!(project["document"]["assets"][0]["generated"], true);
-    assert_eq!(project["document"]["assets"][0]["id"], "generated");
-    assert_eq!(f.count("global_assets"), 0);
-}
-
-#[test]
 fn removes_files_and_all_project_rows_but_keeps_global_settings() {
     let f = Fixture::new();
     let asset = f.asset("exclusive");
@@ -142,7 +119,7 @@ fn removes_files_and_all_project_rows_but_keeps_global_settings() {
     db.execute_batch("INSERT INTO agent_messages(project_id,role,content,model,payload) VALUES('one','user','hello','model','{}');
         INSERT INTO agent_events(project_id,turn_id,kind,payload) VALUES('one','turn','test','{}');
         INSERT INTO model_profiles VALUES('model','{}');
-        INSERT INTO model_credentials VALUES('model','endpoint','secret');
+        INSERT INTO service_connections VALUES('service','Service','openai-compatible','https://example.com','secret');
         INSERT INTO agent_model_preferences VALUES('one','model');
         INSERT INTO settings VALUES('setting','keep');").unwrap();
     drop(db);
@@ -172,7 +149,7 @@ fn removes_files_and_all_project_rows_but_keeps_global_settings() {
     ] {
         assert_eq!(f.count(table), 0, "{table}");
     }
-    for table in ["projects", "model_profiles", "model_credentials"] {
+    for table in ["projects", "model_profiles", "service_connections"] {
         assert_eq!(f.count(table), 1, "{table}");
     }
     remove(&f.store, "one").unwrap();

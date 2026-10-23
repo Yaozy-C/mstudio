@@ -13,16 +13,14 @@ fn directory(store: &Store, video: &Export) -> Option<PathBuf> {
     }
     Some(root.join(folder))
 }
-fn protected(db: &Connection, prefix: &str) -> bool {
-    [
+fn protected(db: &Connection, prefix: &str) -> Result<bool> {
+    for (table, column) in [
         ("assets", "data"),
         ("jobs", "data"),
         ("agent_messages", "payload"),
         ("previs_exports", "data"),
         ("previs_media", "data"),
-    ]
-    .iter()
-    .any(|(table, column)| {
+    ] {
         // Inspect decoded JSON strings: Windows separators and quotes are escaped
         // in the stored document. Match a directory boundary, not a sibling prefix.
         let query = format!(
@@ -30,9 +28,11 @@ fn protected(db: &Connection, prefix: &str) -> bool {
              WHERE entry.type='text' AND (entry.atom=?1 OR
              substr(entry.atom,1,length(?1)+1) IN (?1||'/',?1||char(92))))"
         );
-        db.query_row(&query, [prefix], |r| r.get::<_, bool>(0))
-            .unwrap_or(true)
-    })
+        if db.query_row(&query, [prefix], |r| r.get::<_, bool>(0))? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 pub(super) fn retire(
     db: &Connection,
@@ -51,7 +51,7 @@ pub(super) fn retire(
         }
         let prefix = path.to_string_lossy();
         // Private renders normally have no external users. Preserve any exceptional snapshot.
-        if protected(db, &prefix) {
+        if protected(db, &prefix)? {
             continue;
         }
         db.execute(

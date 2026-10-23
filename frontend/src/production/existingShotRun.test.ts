@@ -20,6 +20,7 @@ test("new calls and turns cannot duplicate a shot generation; changed prompts ca
   };
   const op = {
     op: "request_generation",
+    title: "Pack · 分镜图",
     id,
     mediaKind: "image",
     text: "A complete shot description",

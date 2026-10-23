@@ -7,6 +7,8 @@ description: "Produce video in Mstudio: compile a shot design into a final model
 
 Turn an approved design into a final, usable video prompt and generated media, and deliver the requested media. Use the supplied design; do not redesign the story or quietly widen the task. Loading this Skill grants no extra tools or permissions.
 
+Specialists execute assigned production work and return real outputs and task status. Only the coordinator conducts internal review; the user makes the final selection. Reading references is for execution, not approval. Apply assigned revisions without initiating self-review, acceptance gates or extra generation.
+
 ## Generation units
 
 For a sequence, use one video task per generation unit of at least 5 seconds, or the selected model's higher minimum, within its maximum. Each unit may contain adjacent, narratively compatible short editorial shots with their original durations and designed cuts. Read the unit's complete internal time map and preserve all of it in the submitted prompt. A Mstudio shot record represents the unit; its shot.duration is the whole span, while intended film intervals remain explicit in its text.
@@ -21,13 +23,14 @@ Use actual images and accessible video frames to understand what the available m
 
 Choose a supported realization from that understanding, the available evidence and the user's locked choices. Reuse suitable assets, request a concrete missing still through image production, or organize compatible generation units as needed. Preserve the shot's narrative result as well as physical action when adapting execution. No particular frame set, reference bundle or route is required for every shot. For spatial, performance or timing decisions, use [shot execution](references/shot-execution.md).
 
-When continuing or revising work, retain useful observations and the reasons for production choices in existing task descriptions, reference purposes and normal handoffs. Reassess affected choices when the shot or material changes; an old prompt is not a substitute for the intended shot. Use relevant accessible output to judge whether the chosen approach realized it. Keep the amount of inspection proportional to the actual uncertainty, without adding a fixed approval sequence or authorizing extra paid work.
+When continuing or revising work, retain useful observations and the reasons for production choices in existing task descriptions, reference purposes and normal handoffs. Reassess affected choices when the shot or material changes; an old prompt is not a substitute for the intended shot. Use the user's or coordinator's feedback for assigned revisions; return results without judging acceptance or adding extra paid work.
 
 ## Read for the task at hand
 
 | The task has to decide | Read |
 |---|---|
 | How to describe changing screen states, subject/camera motion, focus, light and sound in one final prompt | [Video prompt writing](references/prompt-writing.md) |
+| How to make a product, hand interaction and camera move read as live action rather than AI motion | [Product motion realism](references/motion-realism.md) |
 | Which input mode and control route can express the planned action | [Control routes](references/control.md) |
 | Reference selection, segmentation and recovering a specific defect | [Controlled generation](references/generation.md) |
 | **How long each generated segment earns, what to leave out, and how cuts and sound line up in time** | **[Rhythm](references/shot-execution.md)** |
@@ -37,6 +40,12 @@ When continuing or revising work, retain useful observations and the reasons for
 
 Use rhythm for timed events and performance for human behavior when those rules are needed; reuse loaded text.
 
+## Product motion realism
+
+A product clip is a physical demonstration, not a moving still. Write one product benefit or handling beat per short clip: the start state, the decisive contact, the end state and the camera move. Keep rigid parts rigid, let soft goods deform under load, show support and contact, and keep the label plane readable when it matters. Read [product motion realism](references/motion-realism.md) when the product drifts, a hand mutates, the object floats or the clip reads as a synthetic turntable.
+
+The supplied product and scene references constrain geometry and appearance; the prompt should mostly supply action, camera, material response and sound. Do not re-describe the whole product sheet or ask one clip to prove every feature.
+
 Required speech belongs to the video deliverable. When the selected model supports native audio, include the exact dialogue or offscreen voice-over, language, delivery and action timing in the generation prompt. No visible speaker or standalone TTS tool is required for an offscreen voice. Keeping subtitles out of generated pixels does not mean keeping speech out of generated audio. Use separate audio production only for a selected route or a concrete endpoint limitation; preserve the speech requirement in that handoff.
 
 Final source selection, trimming and timeline assembly belong to editing. Hand off actual generated assets and any known missing events through existing project records; do not perform timeline work under production permissions.
@@ -45,7 +54,7 @@ Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 ## Visual effects are shot plans, not pasted presets
 
-For an effect name, effect-card description, material transformation, light trail, portal, transition or unusual camera move, use [effect construction and verification](references/effects.md) when tools permit. The essential rule also applies without a method-read loop: determine intent, target, protected region, trigger, visible progression, final state, camera/occlusion relation, required inputs and failure conditions before compiling the prompt. Apply these decisions to the actual submitted prompt and supported reference bindings, not only a saved note. Do not invent effect tools, schema fields, masks, frames or service capabilities.
+For an effect name, effect-card description, material transformation, light trail, portal, transition or unusual camera move, use [effect construction](references/effects.md) when tools permit. The essential rule also applies without a method-read loop: determine intent, target, protected region, trigger, visible progression, final state, camera/occlusion relation, required inputs and failure conditions before compiling the prompt. Apply these decisions to the actual submitted prompt and supported reference bindings, not only a saved note. Do not invent effect tools, schema fields, masks, frames or service capabilities.
 
 Choose the route from the selected endpoint's actual capabilities and supplied inputs: a controlled opening may use a first frame; a specified ending may require supported first/last controls; an existing clip with retained action requires a real editing route. Exact labels may require an available retained layer/composite workflow; text cannot promise pixel preservation. A transition needs its outgoing and incoming material. Missing inputs, unsupported routes or contradictory preservation requirements block that paid call; return the specific gap through the existing handoff without silently changing model, format or story.
 

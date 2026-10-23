@@ -11,6 +11,7 @@ test("image and video tasks retain settings after cancellation and reset executi
   for (const kind of ["image", "video"] as const) {
     const task: ProductionTask = {
       key: kind,
+      title: `Subject · ${kind}`,
       kind,
       mode: "single",
       prompt: "Subject",
@@ -35,6 +36,8 @@ test("image and video tasks retain settings after cancellation and reset executi
     expect(html).toContain("已取消");
     expect(html).toContain('class="task-generation-settings"');
     expect(html).toContain("生成模型");
+    expect(html).toContain("任务名称");
+    expect(html).toContain(`value="${task.title}"`);
     expect(html).toContain("添加参考素材");
     expect(html).not.toMatch(/>设置(?:<\/span>)?<\/button>/);
     expect(html).not.toContain("保存设置");

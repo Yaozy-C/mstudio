@@ -197,12 +197,12 @@ pub(super) fn restore_through(
         }
     }
     if let Some(messages) = &mut messages {
-        super::session_recovery::repair(store, project, turn, messages);
+        super::session_recovery::repair(store, project, turn, messages)?;
     }
     Ok(messages)
 }
-pub fn partial(store: &Store, project: &str, turn: &str) -> String {
-    store.db.lock().unwrap().query_row("SELECT content FROM agent_messages WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2", rusqlite::params![project,turn], |r|r.get(0)).unwrap_or_default()
+pub fn partial_in(db: &rusqlite::Connection, project: &str, turn: &str) -> anyhow::Result<String> {
+    Ok(db.query_row("SELECT content FROM agent_messages WHERE project_id=?1 AND role='assistant' AND json_extract(attribution,'$.turnId')=?2", rusqlite::params![project,turn], |r|r.get(0))?)
 }
 pub fn start(
     store: &Store,
@@ -211,27 +211,35 @@ pub fn start(
     binding: Value,
     messages: &[Message],
 ) -> Result<(), String> {
-    {
-        let db = store.db.lock().unwrap();
-        for message in messages {
-            if let Some((_, source)) = super::context_source::source(message)
-                && source["projectId"] == project
-                && let Some(versions) = source["versions"].as_object()
-            {
-                for (key, version) in versions {
-                    db.execute("INSERT INTO project_observations VALUES(?1,?2,?3,?4) ON CONFLICT(project_id,turn_id,target) DO UPDATE SET value=excluded.value", rusqlite::params![project,turn,key,version.as_str()]).map_err(|e| e.to_string())?;
-                }
+    let mut db = store.db.lock().unwrap();
+    let tx = db.transaction().map_err(|error| error.to_string())?;
+    start_in(&tx, project, turn, binding, messages).map_err(|error| error.to_string())?;
+    tx.commit().map_err(|error| error.to_string())
+}
+pub fn start_in(
+    db: &rusqlite::Connection,
+    project: &str,
+    turn: &str,
+    binding: Value,
+    messages: &[Message],
+) -> anyhow::Result<()> {
+    for message in messages {
+        if let Some((_, source)) = super::context_source::source(message)
+            && source["projectId"] == project
+            && let Some(versions) = source["versions"].as_object()
+        {
+            for (key, version) in versions {
+                db.execute("INSERT INTO project_observations VALUES(?1,?2,?3,?4) ON CONFLICT(project_id,turn_id,target) DO UPDATE SET value=excluded.value", rusqlite::params![project,turn,key,version.as_str()])?;
             }
         }
     }
-    journal::append(
-        store,
+    journal::insert(
+        db,
         project,
         turn,
         "session/start",
         json!({"binding":binding,"messages":messages}),
     )
-    .map_err(|e| e.to_string())
 }
 
 pub fn validate_resume(
@@ -241,7 +249,7 @@ pub fn validate_resume(
     request: &Value,
 ) -> Result<(), String> {
     let db = store.db.lock().unwrap();
-    let (status, original):(String,String)=db.query_row("SELECT json_extract(a.attribution,'$.status'),json_extract(u.attribution,'$.request') FROM agent_messages a JOIN agent_messages u ON a.project_id=u.project_id AND json_extract(a.attribution,'$.turnId')=json_extract(u.attribution,'$.turnId') WHERE a.project_id=?1 AND json_extract(a.attribution,'$.turnId')=?2 AND a.role='assistant' AND u.role='user'",rusqlite::params![project,turn],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|_|"找不到可恢复的原任务")?;
+    let (status, original):(String,String)=db.query_row("SELECT json_extract(a.attribution,'$.status'),json_extract(u.attribution,'$.request') FROM agent_messages a JOIN agent_messages u ON a.project_id=u.project_id AND json_extract(a.attribution,'$.turnId')=json_extract(u.attribution,'$.turnId') WHERE a.project_id=?1 AND json_extract(a.attribution,'$.turnId')=?2 AND a.role='assistant' AND u.role='user'",rusqlite::params![project,turn],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|error|match error {rusqlite::Error::QueryReturnedNoRows=>"找不到可恢复的原任务".to_owned(),error=>error.to_string()})?;
     if !["failed", "cancelled", "interrupted"].contains(&status.as_str()) {
         return Err("原任务尚未中断，不能重复恢复".into());
     }
@@ -253,31 +261,5 @@ pub fn validate_resume(
 }
 
 #[cfg(test)]
-#[test]
-fn native_error_flag_keeps_structured_recovery_fields_and_plain_text_success() {
-    use rig_core::message::ToolFunction;
-    let call = ToolCall::from_wire(
-        "result",
-        ToolFunction::new("write".try_into().unwrap(), json!({})),
-    );
-    let value = json!({"error":"Invalid arguments","issues":[{"path":"$.new_str","message":"Required"}],"recovery":{"action":"correct_arguments"}});
-    let Message::User { content } = result_message(&call, &value) else {
-        panic!()
-    };
-    let UserContent::ToolResult(result) = &content[0] else {
-        panic!()
-    };
-    assert!(result.is_error);
-    let ToolResultContent::Text(text) = &result.content[0] else {
-        panic!()
-    };
-    assert!(text.text.contains("$.new_str") && text.text.contains("correct_arguments"));
-    let Message::User { content } = result_message(&call, &json!("File saved")) else {
-        panic!()
-    };
-    let UserContent::ToolResult(result) = &content[0] else {
-        panic!()
-    };
-    assert!(!result.is_error);
-    assert!(matches!(&result.content[0],ToolResultContent::Text(text) if text.text=="File saved"));
-}
+#[path = "session_tests.rs"]
+mod tests;

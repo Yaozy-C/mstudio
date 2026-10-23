@@ -37,12 +37,12 @@ impl Host for PrevisAgent<'_> {
     fn tool_argument_limit(&self) -> usize {
         4 * super::editor::MAX_BYTES
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
-        vec![ToolDefinition::new(
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        Ok(vec![ToolDefinition::new(
             super::editor::TOOL_NAME.try_into().unwrap(),
             editor_schema::DESCRIPTION,
             editor_schema::schema(),
-        )]
+        )])
     }
     fn parallel_safe(&self, _: &ToolCall) -> bool {
         false

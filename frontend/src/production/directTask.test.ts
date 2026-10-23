@@ -11,6 +11,7 @@ test("direct execution freezes only explicit prompt, parameters and media, exclu
   const m = model("minimax/h3/image-to-video");
   const draft: ProductionTask = {
     key: "draft",
+    title: "Pack · 推进镜头",
     kind: "video",
     mode: "ends",
     modelId: m.id,
@@ -31,6 +32,7 @@ test("direct execution freezes only explicit prompt, parameters and media, exclu
     jobId: "旧任务",
   };
   const run = directTask(p, draft, m, "one");
+  expect(run.title).toBe("Pack · 推进镜头");
   const request = inputFor(p, run, m, [
     { assetId: "a", kind: "image", url: "https://example.com/a" },
     { assetId: "b", kind: "image", url: "https://example.com/b" },
@@ -54,6 +56,7 @@ test("image execution uses selected media model without an Agent model", () => {
   m.params = { model: "gemini-3.1-flash-image-preview" };
   const task: ProductionTask = {
     key: "draft",
+    title: "产品 · 白底图",
     kind: "image",
     mode: "multi",
     inputs: [],
@@ -62,6 +65,10 @@ test("image execution uses selected media model without an Agent model", () => {
     parameters: { aspectRatio: "1:1" },
   };
   expect(directTask(fixture(), task, m, "image").modelId).toBe(m.id);
+  for (const title of [undefined, " ", "x".repeat(101)])
+    expect(() =>
+      directTask(fixture(), { ...task, title }, m, "unnamed"),
+    ).toThrow("任务名称");
   expect(() =>
     directTask(fixture(), { ...task, prompt: "" }, m, "invalid"),
   ).toThrow();
@@ -75,6 +82,7 @@ test("accepting a direct task clears composer media, frames and owner but preser
     m = model("minimax/h3/image-to-video");
   const draft: ProductionTask = {
     key: "selected-shot",
+    title: "Pack · 视频",
     ownerId: "shot",
     kind: "video",
     mode: "ends",
@@ -92,6 +100,7 @@ test("accepting a direct task clears composer media, frames and owner but preser
     const cleared = next.production!.drafts![key];
     expect(cleared.inputs).toEqual([]);
     expect(cleared.prompt).toBe("");
+    expect(cleared.title).toBeUndefined();
     expect(cleared.ownerId).toBeUndefined();
     expect(cleared.modelId).toBe(m.id);
     expect(cleared.parameters).toEqual({ duration: 8 });

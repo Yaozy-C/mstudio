@@ -1,4 +1,7 @@
+pub(crate) mod outputs;
 mod persistence;
+pub(crate) mod reconciliation;
+pub(crate) mod runtime_health;
 use crate::database::Store;
 use anyhow::{Context, Result, ensure};
 use persistence::credential;
@@ -23,6 +26,8 @@ pub fn client() -> Result<Client> {
 #[cfg(test)]
 pub use crate::model_adapters::queue_url;
 pub use persistence::{get, save};
+pub(crate) use reconciliation::issue as reconciliation_issue;
+pub(crate) use reconciliation::{metadata, reconcile, save_tracking};
 #[tauri::command]
 pub fn list_jobs(app: tauri::AppHandle, project_id: String) -> Result<Vec<Value>, String> {
     let store = app.state::<Store>();
@@ -209,15 +214,14 @@ pub async fn refresh_job(app: tauri::AppHandle, id: String) -> Result<Value, Str
 pub(crate) async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
     let _job_guard = crate::job_locks::acquire(id).await;
     let store = app.state::<Store>();
+    if metadata(&store, id)?["reconciliation"]["error"].is_string() {
+        reconcile(&store, id)?;
+    }
     let mut job = get(&store, id)?;
     if matches!(
         job["status"].as_str(),
         Some("COMPLETED" | "FAILED" | "CANCELLED")
     ) {
-        return Ok(job);
-    }
-    if crate::model_adapters::recover_cancelled(&mut job) {
-        save(&store, &job)?;
         return Ok(job);
     }
     let provider = crate::model_adapters::for_job(&job)?;
@@ -230,6 +234,14 @@ pub(crate) async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
         job["status"] = json!("CANCEL_REQUESTED");
     }
     save(&store, &job)?;
+    if job["status"] == "UNKNOWN"
+        && let Some(error) = job["error"].as_str()
+    {
+        let issue: crate::app_error::AppError = serde_json::from_str(error)?;
+        if !issue.retryable {
+            return Err(issue.into());
+        }
+    }
     Ok(job)
 }
 #[tauri::command]

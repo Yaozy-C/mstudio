@@ -41,7 +41,7 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         "任务尚未结束"
     );
     let output = output_at(&job, index)?;
-    let (temp, extension) = if output.url.starts_with("data:") {
+    let temp = if output.url.starts_with("data:") {
         let (mime, bytes) = crate::model_adapters::image_data::image_bytes(&output.url)?;
         let extension = match mime {
             "image/png" => "png",
@@ -51,12 +51,19 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
         let temp = downloads.join(format!("download-{}.{}", mstudio::media::id(), extension));
         crate::project_storage::track_file(&store, &project, &temp)?;
         std::fs::write(&temp, bytes)?;
-        (temp, extension)
+        temp
     } else {
         let parsed = reqwest::Url::parse(&output.url)?;
         crate::model_adapters::http_json::endpoint(&output.url)?;
         let mut response = jobs::client()?.get(parsed).send().await?;
-        ensure!(response.status().is_success(), "媒体下载失败");
+        if !response.status().is_success() {
+            return Err(crate::app_error::AppError::http(
+                response.status().as_u16(),
+                "import",
+                "媒体结果下载被服务拒绝",
+            )
+            .into());
+        }
         const MAX: u64 = 1024 * 1024 * 1024;
         ensure!(
             response.content_length().unwrap_or(0) <= MAX,
@@ -94,14 +101,14 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
             let _ = std::fs::remove_file(temp);
             return Err(e);
         }
-        (temp, extension)
+        temp
     };
     let root = store.media_root();
     let copy = temp.clone();
     let _guard = guard.clone();
     let app_copy = app.clone();
     let owner = project.clone();
-    let name = format!("生成结果-{}-{}.{}", id, index + 1, extension);
+    let name = crate::project_service::production_names::result_name(&*store.conn()?, &job)?;
     let result = tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
         let mut asset = mstudio::media::import(&copy, &root)?;
@@ -131,15 +138,16 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
 }
 
 fn output_at(job: &serde_json::Value, index: usize) -> Result<crate::model_adapters::ModelOutput> {
-    if let Some(output) = job["outputs"].get(index) {
-        ensure!(output["deleted"] != true, "生成结果已删除");
-        return Ok(serde_json::from_value(output.clone())?);
-    }
-    crate::model_adapters::for_job(job)?
-        .outputs(&job["result"])
-        .into_iter()
-        .nth(index)
-        .context("未找到可导入的媒体结果；请检查模型输出类型")
+    let outputs = job["outputs"]
+        .as_array()
+        .context("生成任务缺少规范化输出列表")?;
+    ensure!(
+        outputs.len() == jobs::outputs::count(job)?,
+        "实际输出数量与输出列表不一致"
+    );
+    let output = outputs.get(index).context("未找到可导入的媒体结果")?;
+    ensure!(output["deleted"] != true, "生成结果已删除");
+    Ok(serde_json::from_value(output.clone())?)
 }
 
 #[cfg(test)]
@@ -147,7 +155,7 @@ mod deletion_tests {
     use super::*;
     #[test]
     fn deleting_one_output_preserves_other_output_indices() {
-        let job = serde_json::json!({"outputs":[{"deleted":true},{"kind":"image","url":"https://example.com/keep.png"}],"result":null});
+        let job = serde_json::json!({"status":"COMPLETED","outputCount":2,"outputs":[{"deleted":true},{"kind":"image","url":"https://example.com/keep.png"}],"result":null});
         assert!(
             output_at(&job, 0)
                 .unwrap_err()
@@ -157,6 +165,16 @@ mod deletion_tests {
         assert_eq!(
             output_at(&job, 1).unwrap().url,
             "https://example.com/keep.png"
+        );
+    }
+    #[test]
+    fn importing_never_recovers_outputs_from_a_provider_result_body() {
+        let job = serde_json::json!({"providerId":"gemini-native","result":{"outputs":[{"kind":"image","url":"data:image/png;base64,YQ=="}]}});
+        assert!(
+            output_at(&job, 0)
+                .unwrap_err()
+                .to_string()
+                .contains("规范化输出列表")
         );
     }
 }

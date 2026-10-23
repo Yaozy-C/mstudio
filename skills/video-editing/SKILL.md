@@ -7,6 +7,8 @@ description: Assemble existing media in Mstudio through source selection, timeli
 
 Assemble accepted media into the final viewing experience. Editing decides what the audience sees and for how long. It does not repair an essential event that was never captured, and it does not make an untrue performance true. Loading this Skill grants no extra tools or permissions.
 
+Specialists execute assigned production work and return real outputs and task status. Only the coordinator conducts internal review; the user makes the final selection. Reading references is for execution, not approval. Apply assigned revisions without initiating self-review, acceptance gates or extra generation.
+
 ## Read for the task at hand
 
 | The task has to decide | Read |

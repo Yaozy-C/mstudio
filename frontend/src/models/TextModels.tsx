@@ -2,6 +2,7 @@ import { AsyncButton, LoadingState } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { inputSummary } from "./inputCapabilities";
+import { contextPolicyIssue } from "./contextLimits";
 import { StudioSelect } from "../ui/StudioSelect";
 import { ModelMark } from "../ui/Identity";
 import { useEffect, useState } from "react";
@@ -203,6 +204,9 @@ export function TextModels() {
                       ? t("本机连接")
                       : t("待配置密钥")}
               </small>
+              {contextPolicyIssue(p) && (
+                <small>{t(contextPolicyIssue(p))}</small>
+              )}
             </div>
             <div className="model-row-actions">
               <AsyncButton

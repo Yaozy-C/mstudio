@@ -130,7 +130,8 @@ fn budget_never_omits_assistant_outputs() {
 async fn context_pressure_releases_only_enough_old_media_without_summarizing() {
     let host = TestHost::default();
     let model = TestModel::default();
-    let route = profile();
+    let mut route = profile();
+    route.context_window = Some(262_144);
     let mut state = Session::new(vec![
         Message::User {
             content: vec![image("aaaa"), image("bbbb"), image("cccc")],
@@ -152,7 +153,7 @@ async fn context_pressure_releases_only_enough_old_media_without_summarizing() {
             .await
             .unwrap()
     );
-    assert!(!budget::over_budget(&state, &route, &host));
+    assert!(!budget::over_budget(&state, &route, &host).unwrap());
     assert_eq!(image_budget::images(&state.messages).len(), 3);
     assert!(model.requests.lock().unwrap().is_empty());
 }
@@ -162,12 +163,14 @@ impl Host for ImageHost {
     fn token(&self) -> &tokio_util::sync::CancellationToken {
         &self.0.token
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
-        vec![ToolDefinition {
-            name: "mstudio_read_image".try_into().unwrap(),
-            description: "read pixels".into(),
-            parameters: json!({"type":"object","properties":{"assetId":{"type":"string"}},"required":["assetId"]}),
-        }]
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        Ok({
+            vec![ToolDefinition {
+                name: "mstudio_read_image".try_into().unwrap(),
+                description: "read pixels".into(),
+                parameters: json!({"type":"object","properties":{"assetId":{"type":"string"}},"required":["assetId"]}),
+            }]
+        })
     }
     fn parallel_safe(&self, _: &ToolCall) -> bool {
         false

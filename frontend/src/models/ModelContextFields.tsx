@@ -3,6 +3,7 @@ import { bridge, native } from "../bridge";
 import { t } from "../i18n";
 import { contextPolicy } from "./contextLimits";
 import type { ModelConnection, TextModelLimits } from "./types";
+import { ErrorNotice } from "../errors/ErrorNotice";
 
 export function ModelContextFields({
   profile,
@@ -14,9 +15,12 @@ export function ModelContextFields({
   const [refresh, setRefresh] = useState(0);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
   const policy = contextPolicy(profile);
   useEffect(() => {
     setLoading(false);
+    setError("");
+    setNotice("");
     if (
       !native ||
       !profile.connectionId ||
@@ -28,16 +32,18 @@ export function ModelContextFields({
     const timer = window.setTimeout(() => {
       setLoading(true);
       setNotice("");
+      setError("");
       void bridge<TextModelLimits | null>("resolve_text_model_limits", {
         id: profile.connectionId,
         model: profile.model.trim(),
       })
         .then((limits) => {
-          if (active) update({ modelLimits: limits });
+          if (!active) return;
+          if (limits) update({ modelLimits: limits });
+          else setNotice(t("服务未提供此型号的容量，请按官方说明手动填写。"));
         })
-        .catch(() => {
-          if (active)
-            setNotice(t("服务元数据暂不可用，使用模型目录或已保存的容量。"));
+        .catch((error: unknown) => {
+          if (active) setError(String(error));
         })
         .finally(() => {
           if (active) setLoading(false);
@@ -64,7 +70,7 @@ export function ModelContextFields({
         ? t("服务元数据")
         : policy.limits?.source === "catalog"
           ? t("官方模型目录")
-          : t("默认估值（未查到官方容量）");
+          : t("容量未知，请刷新或手动填写");
   return (
     <>
       <div>
@@ -77,10 +83,12 @@ export function ModelContextFields({
             step={1}
             disabled={policy.automatic}
             value={policy.window ?? ""}
-            placeholder={t("运行时获取")}
+            placeholder={t(
+              profile.adapter === "codex" ? "运行时获取" : "填写服务公布的容量",
+            )}
             onChange={(e) =>
               update({
-                contextWindow: Number(e.target.value),
+                contextWindow: e.target.value ? Number(e.target.value) : null,
                 contextWindowMode: "manual",
               })
             }
@@ -96,7 +104,7 @@ export function ModelContextFields({
                 contextWindowMode: e.target.checked ? "auto" : "manual",
                 contextWindow: e.target.checked
                   ? null
-                  : (policy.window ?? 262144),
+                  : (policy.window ?? null),
               })
             }
           />{" "}
@@ -120,6 +128,9 @@ export function ModelContextFields({
           max={2000000}
           step={1}
           value={profile.maxOutputTokens ?? ""}
+          required={
+            profile.adapter === "anthropic-native" && policy.output == null
+          }
           disabled={
             profile.adapter === "codex" && profile.maxOutputTokens == null
           }
@@ -159,12 +170,17 @@ export function ModelContextFields({
       </label>
       <p className="model-hint model-field-wide" role="status">
         {policy.threshold == null
-          ? t("压缩阈值将在服务报告窗口后计算。")
+          ? t(
+              profile.adapter === "codex"
+                ? "压缩阈值将在服务报告窗口后计算。"
+                : "上下文容量未知；刷新容量或手动填写后才能使用此模型。",
+            )
           : t("预计压缩阈值：{v0} token", {
               v0: policy.threshold.toLocaleString(),
             })}{" "}
         {notice}
       </p>
+      {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}
     </>
   );
 }

@@ -122,6 +122,7 @@ fn fields(kind: &str) -> &'static [&'static str] {
         "tracks" => &["title", "kind", "muted", "hidden"],
         "captions" => &["text", "start", "end", "style"],
         "generation" => &[
+            "title",
             "status",
             "targetNodeId",
             "resultAssetId",

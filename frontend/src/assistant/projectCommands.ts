@@ -104,7 +104,7 @@ export function applyOperations(
           next.nodes.some((n) => n.kind === "screenplay")
         )
           throw new Error(
-            "项目已有脚本，请使用 update_node 修改现有脚本并保留 ID",
+            "项目已有脚本，请使用 mstudio_update_screenplay 修改现有脚本并保留 ID",
           );
         const assetId =
           op.assetId === undefined ? undefined : string(op.assetId, 100);
@@ -169,6 +169,7 @@ export function applyOperations(
         break;
       case "update_generation":
         next = editTask(next, string(op.taskKey, 300), {
+          title: op.title as string | undefined,
           text: op.text as string | undefined,
           references: op.references,
         });
@@ -181,6 +182,7 @@ export function applyOperations(
         if (!source) throw new Error("任务不存在");
         if (source.lastRegenerationId === actionId) break;
         next = regenerateTask(next, source.key, {
+          title: op.title as string | undefined,
           text: op.text as string | undefined,
           references: op.references,
           keepPreviousResults: op.keepPreviousResults === true,

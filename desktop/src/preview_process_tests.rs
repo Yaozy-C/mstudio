@@ -52,11 +52,12 @@ fn snapshot_reads_do_not_wait_for_control_and_crash_fails_pending_call() {
     std::thread::sleep(Duration::from_millis(30));
     let start = Instant::now();
     assert_eq!(p.snapshot().unwrap().total, 300);
-    assert!(p.frame(0).is_empty());
+    assert!(p.frame(0).unwrap().is_empty());
     assert!(start.elapsed() < Duration::from_millis(100));
     assert_eq!(task.join().unwrap().unwrap().frame, 123);
     assert!(p.control(Command::Seek { frame: 999 }).is_err());
     assert!(p.snapshot().is_err());
+    assert!(p.frame(0).is_err());
     // A fresh worker remains available after a crash.
     let next = fake(false);
     next.ready().unwrap();

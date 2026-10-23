@@ -57,6 +57,7 @@
   border: 0;
   font-size: 15px;
   font-weight: 550;
+  line-height: 18px;
   text-align: left;
   padding: 0 0 10px;
   white-space: nowrap;
@@ -66,8 +67,8 @@
 }
 .canvas-card > img {
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  height: auto;
+  flex: none;
   object-fit: contain;
   background: #e7e4db;
 }
@@ -96,8 +97,7 @@
   border-radius: 5px;
 }
 .card-video {
-  min-height: 0;
-  flex: 1;
+  flex: none;
   position: relative;
   background: #e7e4db;
 }

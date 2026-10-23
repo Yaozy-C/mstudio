@@ -15,11 +15,10 @@ fn db() -> Connection {
         CREATE TABLE subagent_runs(project_id TEXT,last_turn TEXT);
         INSERT INTO projects VALUES('p',1);").unwrap();
     schema::init(&db).unwrap();
-    media_store::init(&db).unwrap();
     db
 }
 #[test]
-fn migration_is_lossless_resumable_and_deduplicates_across_owners() {
+fn current_writes_are_lossless_and_deduplicate_across_owners() {
     let db = db();
     let large = "图片 / ~ 🐈".repeat(2000);
     let event = json!({"a/b~c":[large],"callId":"call","userMarker":{"blob":"not-a-reference"}});
@@ -31,15 +30,16 @@ fn migration_is_lossless_resumable_and_deduplicates_across_owners() {
     .unwrap();
     db.execute("INSERT INTO jobs VALUES('j','p',?1)", [job.to_string()])
         .unwrap();
-    // Simulate an interruption after one parent was packed, before the version commit.
     let tx = db.unchecked_transaction().unwrap();
     let mut packed = event.clone();
     blobs::pack(&tx, Owner::Event(1), &mut packed).unwrap();
     tx.execute("UPDATE agent_events SET payload=?1", [packed.to_string()])
         .unwrap();
+    let mut packed_job = job.clone();
+    blobs::pack(&tx, Owner::Job("j"), &mut packed_job).unwrap();
+    tx.execute("UPDATE jobs SET data=?1", [packed_job.to_string()])
+        .unwrap();
     tx.commit().unwrap();
-    schema::migrate(&db).unwrap();
-    schema::migrate(&db).unwrap();
     let raw: String = db
         .query_row("SELECT payload FROM agent_events", [], |r| r.get(0))
         .unwrap();
@@ -135,27 +135,4 @@ fn hot_queries_use_matching_indexes() {
             .unwrap();
         assert!(plan.contains(index), "{plan}");
     }
-}
-
-#[test]
-fn startup_removes_retired_storage_and_preserves_projects() {
-    let db = db();
-    db.execute_batch("CREATE TABLE project_memory(project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE, document TEXT NOT NULL);
-        INSERT INTO project_memory VALUES('p','{}');").unwrap();
-    schema::init(&db).unwrap();
-    schema::init(&db).unwrap();
-    let exists: bool = db
-        .query_row(
-            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='project_memory')",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    assert!(!exists);
-    assert_eq!(
-        db.query_row("SELECT count(*) FROM projects WHERE id='p'", [], |r| r
-            .get::<_, i64>(0))
-            .unwrap(),
-        1
-    );
 }

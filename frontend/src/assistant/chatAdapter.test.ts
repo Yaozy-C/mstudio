@@ -22,7 +22,7 @@ test("send clears text and refs before saving or replying; completion keeps the 
   await until(() => f.calls.length === 1);
   expect(f.calls[0].args.attachments).toEqual([f.a]);
   expect(f.calls[0].args.agentId).toBe("concept");
-  f.calls[0].result.resolve("完成");
+  f.calls[0].result.resolve({ text: "完成", status: "completed" });
   await sending;
   await until(() => f.thread.messages.at(-1)?.status?.type !== "running");
   expect(f.thread.composer.text).toBe("下一条草稿");
@@ -81,7 +81,7 @@ test("failed canvas request retries original context without consuming the next 
   expect(f.context.canvas!.task!.key).toBe("selected-b");
   expect(f.draft.items).toEqual([f.a, f.b]);
   expect(f.thread.composer.text).toBe("下一条草稿");
-  second.result.resolve("重试完成");
+  second.result.resolve({ text: "重试完成", status: "completed" });
   await retry;
   expect(f.draft.items).toEqual([f.a, f.b]);
   expect(f.thread.composer.text).toBe("下一条草稿");
@@ -155,7 +155,7 @@ test("reopened failed history retries its saved request and preserves the curren
   expect(f.context.canvas!.task!.key).toBe("selected-a");
   expect(f.draft.items).toEqual([f.b]);
   expect(f.thread.composer.text).toBe("新的草稿");
-  f.calls[0].result.resolve("已完成");
+  f.calls[0].result.resolve({ text: "已完成", status: "completed" });
   await retry;
   expect(f.thread.composer.text).toBe("新的草稿");
 });
@@ -178,7 +178,7 @@ test("unselected agent uses coordinator and dismissed context stays absent", asy
   expect((f.calls[0].args.messageContext as { work: unknown }).work).toEqual({
     view: "script",
   });
-  f.calls[0].result.resolve("好的");
+  f.calls[0].result.resolve({ text: "好的", status: "completed" });
   await sending;
 });
 
@@ -217,7 +217,7 @@ test("explicit new task survives retry without following the next draft", async 
   await until(() => f.calls.length === 2);
   expect(f.calls[1].args.newTask).toBe(true);
   expect(f.calls[1].args.resumeTurnId).toBe(f.calls[0].args.clientTurnId);
-  f.calls[1].result.resolve("完成");
+  f.calls[1].result.resolve({ text: "完成", status: "completed" });
   await retry;
 });
 
@@ -236,7 +236,7 @@ test("Agent request freezes the live viewport before flushing the project", asyn
       production: { canvas: { view: typeof view } };
     };
     expect(request.production.canvas.view).toEqual(view);
-    f.calls[0].result.resolve("完成");
+    f.calls[0].result.resolve({ text: "完成", status: "completed" });
     await sending;
   } finally {
     forgetViewport(f.context.project.id);

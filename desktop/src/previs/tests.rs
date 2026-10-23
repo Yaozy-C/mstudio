@@ -40,6 +40,35 @@ pub(super) fn shot(id: &str, asset: &str) -> File {
 }
 
 #[test]
+fn saved_files_require_the_complete_current_metadata() {
+    let value = serde_json::to_value(model("bag", "Bag")).unwrap();
+    for field in [
+        "description",
+        "code",
+        "revision",
+        "assetIds",
+        "bindings",
+        "duration",
+        "width",
+        "height",
+        "fps",
+    ] {
+        let mut incomplete = value.clone();
+        incomplete.as_object_mut().unwrap().remove(field);
+        assert!(
+            serde_json::from_value::<File>(incomplete).is_err(),
+            "{field}"
+        );
+    }
+    assert!(
+        serde_json::from_value::<File>(value)
+            .unwrap()
+            .validate()
+            .is_ok()
+    );
+}
+
+#[test]
 fn shared_model_edits_replace_the_original_without_modifying_agent_snapshot() {
     let store = setup();
     let before = crate::project_service::load(&store.db.lock().unwrap(), "p").unwrap();

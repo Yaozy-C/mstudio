@@ -203,3 +203,36 @@ fn persisted_scope_survives_retry_and_reset_starts_fresh() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn invalid_persisted_payload_is_an_error_instead_of_empty_model_history() {
+    let root = std::env::temp_dir().join(format!("mstudio-payload-{}", mstudio::media::id()));
+    let store = Store::open(root.clone()).unwrap();
+    store
+        .conn()
+        .unwrap()
+        .execute("INSERT INTO projects VALUES('p','p','{}',0)", [])
+        .unwrap();
+    let scope = scope("task", "writer", &[]);
+    history::append_attributed(
+        &store,
+        "p",
+        "request",
+        &json!("request"),
+        "answer",
+        "model",
+        Some(&json!({"turnId":"turn","agentId":"writer","taskScope":scope,"status":"completed"})),
+    )
+    .unwrap();
+    store
+        .conn()
+        .unwrap()
+        .execute(
+            "UPDATE agent_messages SET payload='invalid JSON' WHERE role='assistant'",
+            [],
+        )
+        .unwrap();
+    assert!(history(&store, "p", &scope).is_err());
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

@@ -55,8 +55,8 @@ fn context_pressure_offloads_old_images_and_restores_replacement() {
                 std::sync::OnceLock::new();
             TOKEN.get_or_init(tokio_util::sync::CancellationToken::new)
         }
-        fn definitions(&self) -> Vec<rig_core::completion::ToolDefinition> {
-            vec![]
+        fn definitions(&self) -> Result<Vec<rig_core::completion::ToolDefinition>, String> {
+            Ok(vec![])
         }
         fn parallel_safe(&self, _: &rig_core::message::ToolCall) -> bool {
             false

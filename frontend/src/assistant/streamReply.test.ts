@@ -4,17 +4,15 @@ import type { bridge } from "../bridge";
 
 function fixture() {
   let receive!: (event: AgentProgress) => void;
-  let resolve!: (text: string | { text: string; status: string }) => void;
+  let resolve!: (reply: unknown) => void;
   let reject!: (error: Error) => void;
   let subscribed = false;
   let closed = false;
   const request = { projectId: "p", clientTurnId: "t" };
-  const response = new Promise<string | { text: string; status: string }>(
-    (yes, no) => {
-      resolve = yes;
-      reject = no;
-    },
-  );
+  const response = new Promise<unknown>((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
   const invoke = (async () => {
     expect(subscribed).toBe(true);
     return response;
@@ -34,7 +32,8 @@ function fixture() {
   );
   return {
     stream,
-    resolve: (s: string | { text: string; status: string }) => resolve(s),
+    resolve: (reply: { text: string; status: string }) => resolve(reply),
+    malformed: (reply: unknown) => resolve(reply),
     abort: () => controller.abort(),
     wait: () => receive({ projectId: "p", turnId: "t", kind: "turn/waiting" }),
     end: (status = "completed", error?: string) =>
@@ -44,6 +43,8 @@ function fixture() {
         kind: "turn/end",
         payload: { status, error },
       }),
+    incompleteEnd: () =>
+      receive({ projectId: "p", turnId: "t", kind: "turn/end" }),
     reject: (e: Error) => reject(e),
     closed: () => closed,
     emit: (text: string, turnId = "t") =>
@@ -63,7 +64,7 @@ test("streams before completion, ignores another turn and closes subscription", 
   f.emit("第一段");
   expect((await first).value).toBe("第一段");
   const last = f.stream.next();
-  f.resolve("第一段和结尾");
+  f.resolve({ text: "第一段和结尾", status: "completed" });
   expect((await last).value).toBe("第一段和结尾");
   expect((await f.stream.next()).done).toBe(true);
   expect(f.closed()).toBe(true);
@@ -80,6 +81,37 @@ test("failed request retains delivered prefix and always unsubscribes", async ()
   expect(f.closed()).toBe(true);
 });
 
+test("a string reply is rejected instead of being accepted as a completed response", async () => {
+  const f = fixture();
+  const next = f.stream.next();
+  await Bun.sleep(0);
+  f.malformed("unstructured reply");
+  await expect(next).rejects.toThrow("Agent 返回格式无效");
+  expect(f.closed()).toBe(true);
+});
+
+test("a terminal event without a status cannot finish a waiting response successfully", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Waiting", status: "waiting" });
+  await first;
+  const next = f.stream.next();
+  f.incompleteEnd();
+  await expect(next).rejects.toThrow("Agent 结束事件缺少有效状态");
+  expect(f.closed()).toBe(true);
+});
+
+test("a failed reply stays failed when its progress event was not received", async () => {
+  const f = fixture();
+  const first = f.stream.next();
+  await Bun.sleep(0);
+  f.resolve({ text: "Saved partial answer", status: "failed" });
+  expect((await first).value).toBe("Saved partial answer");
+  await expect(f.stream.next()).rejects.toThrow("回答未完成");
+  expect(f.closed()).toBe(true);
+});
+
 test("clears completed progress before streaming the final answer", async () => {
   const f = fixture();
   const first = f.stream.next();
@@ -90,7 +122,7 @@ test("clears completed progress before streaming the final answer", async () => 
   f.emit("");
   expect((await reset).value).toBe("");
   const final = f.stream.next();
-  f.resolve("已保存分镜");
+  f.resolve({ text: "已保存分镜", status: "completed" });
   expect((await final).value).toBe("已保存分镜");
   expect((await f.stream.next()).done).toBe(true);
 });

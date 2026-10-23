@@ -91,7 +91,11 @@ pub async fn run(
     )
     .map_err(|e| e.to_string())?;
     drop(pending);
-    super::parent_activation::settled(&request.project_id, &request.client_turn_id, result.is_ok());
+    super::parent_activation::settled(
+        &request.project_id,
+        &request.client_turn_id,
+        result.is_ok(),
+    )?;
     result.map(|text| super::execution::Reply { text, status })
 }
 

@@ -48,25 +48,3 @@ pub fn record(
     }
     Ok(true)
 }
-
-pub fn migrate(db: &Connection) -> Result<()> {
-    let rows = {
-        let mut stmt = db.prepare("SELECT seq,project_id,turn_id,kind,payload FROM agent_events WHERE kind IN ('request/usage','compaction/end') ORDER BY seq")?;
-        stmt.query_map([], |r| {
-            Ok((
-                r.get::<_, i64>(0)?,
-                r.get::<_, String>(1)?,
-                r.get::<_, String>(2)?,
-                r.get::<_, String>(3)?,
-                r.get::<_, String>(4)?,
-            ))
-        })?
-        .collect::<rusqlite::Result<Vec<_>>>()?
-    };
-    for (seq, project, turn, kind, raw) in rows {
-        record(db, &project, &turn, &kind, &serde_json::from_str(&raw)?)?;
-        db.execute("DELETE FROM agent_events WHERE seq=?1", [seq])?;
-    }
-    db.execute_batch("CREATE UNIQUE INDEX IF NOT EXISTS agent_events_usage ON agent_events(project_id,turn_id) WHERE kind='turn/usage';")?;
-    Ok(())
-}

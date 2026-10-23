@@ -1,7 +1,9 @@
 //! Codex's internal Images transport. No agent turn and no automatic POST retries.
 use super::{codex_auth::Credentials, codex_request};
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
 use serde_json::Value;
+#[path = "codex_http_errors.rs"]
+mod errors;
 
 pub(super) const BASE_URL: &str = "https://chatgpt.com/backend-api/codex";
 pub(super) fn client() -> Result<reqwest::Client> {
@@ -27,24 +29,12 @@ pub(super) async fn request(
         .json(&body)
         .send()
         .await
-        .map_err(|_| anyhow::anyhow!("Codex 图片连接中断或超时；未自动重试，服务端可能仍在生成"))?;
-    // Never persist raw error bodies: they may echo prompts or authentication data.
-    match response.status().as_u16() {
-        200..=299 => {}
-        401 => bail!("Codex 登录已失效，请重新登录后提交；未自动重试"),
-        403 => bail!("Codex 图片接口拒绝访问，请检查账号权限"),
-        429 => bail!("Codex 图片额度不足或请求过于频繁，请稍后重试"),
-        400 | 404 | 422 => {
-            bail!("Codex 图片接口拒绝了请求，请检查模型 ID、账号权限、描述和参考图片；未切换型号")
-        }
-        status => bail!("Codex 图片请求失败（HTTP {status}）；未自动重试"),
+        .map_err(errors::transport)?;
+    if !response.status().is_success() {
+        return Err(errors::response(response).await.into());
     }
     let mut bytes = Vec::new();
-    while let Some(chunk) = response
-        .chunk()
-        .await
-        .map_err(|_| anyhow::anyhow!("Codex 图片响应读取失败；未自动重试"))?
-    {
+    while let Some(chunk) = response.chunk().await.map_err(errors::transport)? {
         ensure!(
             bytes.len() + chunk.len() <= 90_000_000,
             "Codex 图片响应超过大小限制"
@@ -104,6 +94,8 @@ mod tests {
                 let body: Value = serde_json::from_slice(&bytes[end..end + length]).unwrap();
                 assert_eq!(body["model"], "gpt-image-2.5-sunburst");
                 assert_eq!(body["prompt"], "  中文\n\"unchanged\"\t");
+                assert_eq!(body["size"], "2048x1152");
+                assert_eq!(body["quality"], "high");
                 let line = String::from_utf8_lossy(&bytes[..end]);
                 assert!(line.starts_with(if edit {
                     "POST /images/edits "
@@ -139,6 +131,8 @@ mod tests {
                 assert_eq!(result.unwrap().len(), 1);
             } else {
                 let error = result.unwrap_err().to_string();
+                let issue: crate::app_error::AppError = serde_json::from_str(&error).unwrap();
+                assert_eq!(issue.http_status, Some(status));
                 assert!(!error.contains("fake-token"));
                 assert!(!error.contains("private prompt"));
                 if status == 404 {

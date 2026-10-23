@@ -31,14 +31,12 @@ export function VideoAnalysis({
   onBrowse,
   onSettings,
   onCreate,
-  continuing,
 }: {
   state: AnalysisState;
   controller: AnalysisController;
   onBrowse: () => void;
   onSettings: () => void;
   onCreate?: () => Promise<void>;
-  continuing?: boolean;
 }) {
   const language = useLanguage();
   const main = useRef<HTMLElement>(null);
@@ -244,7 +242,7 @@ export function VideoAnalysis({
               key={state.recordId ?? state.video?.id}
               onHistory={() => history.setOpen(true)}
               onCreate={onCreate}
-              continuing={continuing}
+
               result={state.result}
               seek={seek}
               currentTime={currentTime}

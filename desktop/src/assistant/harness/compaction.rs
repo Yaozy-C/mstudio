@@ -6,11 +6,11 @@ pub async fn recover(
     session: &mut Session,
     overflow: bool,
 ) -> Result<bool, String> {
-    let before = raw_pressure(session, host);
+    let before = raw_pressure(session, host)?;
     // Consumption only makes old inputs eligible; it does not trigger eviction.
     // Release oldest occurrences until the calibrated context fits, keeping the
     // latest unseen batch and assistant output intact (DSH image/offload order).
-    while over_budget(session, profile, host) {
+    while over_budget(session, profile, host)? {
         if host.token().is_cancelled() {
             return Err(crate::app_error::cancelled());
         }
@@ -21,7 +21,7 @@ pub async fn recover(
     prune_tool_results(session, host)?;
     let result = if overflow {
         compact_manual(model, profile, host, session).await
-    } else if over_budget(session, profile, host) {
+    } else if over_budget(session, profile, host)? {
         compact(model, profile, host, session).await
     } else {
         Ok(false)
@@ -35,7 +35,7 @@ pub async fn recover(
             json!({"reason":error,"trigger":if overflow {"context-overflow"} else {"pressure"}}),
         )?;
     }
-    Ok(raw_pressure(session, host) < before)
+    Ok(raw_pressure(session, host)? < before)
 }
 
 /// Keep the newest messages intact and only replace a balanced historical prefix.
@@ -133,13 +133,10 @@ async fn compact_with_retain(
         request.model = None;
         request.chat_history = history;
         request.documents = vec![];
-        request.tools = host.definitions();
+        request.tools = host.definitions()?;
         request.temperature = None;
-        request.max_tokens = Some(
-            crate::models::context::output_cap(profile)
-                .unwrap_or(65_536)
-                .min(8192) as u64,
-        );
+        request.max_tokens =
+            crate::models::context::output_cap(profile).map(|cap| cap.min(8192) as u64);
         request.tool_choice = Some(rig_core::message::ToolChoice::None);
         request.additional_params = None;
         request.output_schema = None;

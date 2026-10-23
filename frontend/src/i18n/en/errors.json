@@ -1,4 +1,6 @@
 {
+  "任务记录尚未写回项目": "Task updates have not been saved to the project",
+  "重试同步原任务，无需重新生成。": "Sync the original task again; no new generation is needed.",
   "预演生成未完成": "Previsualization generation incomplete",
   "错误详情 ·": "Error details ·",
   "已复制": "Copied",
@@ -61,9 +63,13 @@
   "$1[已隐藏]": "$1[Hidden]",
   "[已隐藏]": "[Hidden]",
   "无法读取错误详情": "Unable to read error details",
+  "Agent 返回格式无效": "The agent returned an invalid response",
+  "Agent 结束事件缺少有效状态": "The agent completion event has no valid status",
   "参考图片的宽高比不符合要求": "Reference image aspect ratio is unsupported",
   "视频时长不符合模型要求": "Video duration does not meet model requirements",
   "预览播放已中断": "Preview playback was interrupted",
   "点击重新加载预览，恢复播放器。": "Click Reload preview to restart the player.",
-  "已完成的文件修改已保留。请查看当前预演后继续。": "Completed file edits have been saved. Review the current previs and continue."
+  "已完成的文件修改已保留。请查看当前预演后继续。": "Completed file edits have been saved. Review the current previs and continue.",
+  "服务商无法再查询原任务": "The provider can no longer look up this task",
+  "请先到服务商核查任务与结果，再决定如何处理。": "Check the original task and results with the provider before deciding how to proceed."
 }

@@ -8,6 +8,7 @@ function fixture() {
   const p = newProject("100 video batch");
   const tasks: ProductionTask[] = Array.from({ length: 100 }, (_, i) => ({
     key: `run:${i}`,
+    title: `Shot ${i}`,
     kind: "video",
     mode: "single",
     modelId: "video-model",

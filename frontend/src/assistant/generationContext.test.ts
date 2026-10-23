@@ -7,6 +7,7 @@ test("sent chat carries referenced result media without either task's old prompt
   f.context.canvas!.referencedTask = {
     ...f.context.canvas!.task!,
     key: "referenced-task",
+    title: "Pack · storyboard",
     prompt: "OLD_RESULT_PROMPT",
     instruction: "OLD_RESULT_INSTRUCTION",
     status: "COMPLETED",
@@ -21,6 +22,6 @@ test("sent chat carries referenced result media without either task's old prompt
   expect(args.prompt).toContain("referenced-task");
   expect(args.prompt).not.toContain("OLD_");
   expect(args.attachments).toEqual([f.a, f.b]);
-  result.resolve("完成");
+  result.resolve({ text: "完成", status: "completed" });
   await sending;
 });

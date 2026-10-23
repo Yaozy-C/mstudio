@@ -135,7 +135,7 @@ fn image_agent_local_shot_edits_do_not_require_the_unread_or_changed_screenplay(
     let mut changed = before.clone();
     let asset = json!({"id":"frame","kind":"image","name":"Frame","path":"","preview":"","duration":0,"width":1,"height":1,"hasAudio":false});
     changed["assets"] = json!([asset]);
-    changed["production"] = json!({"drafts":{"task":{"key":"task","kind":"image","mode":"single","inputs":[],"prompt":"Original image","modelId":"","status":"AWAITING_CONFIRMATION","targetNodeId":"shot","turnId":"original","createdAt":1}}});
+    changed["production"] = json!({"drafts":{"task":{"key":"task","title":"Shot image","kind":"image","mode":"single","inputs":[],"prompt":"Original image","modelId":"","status":"AWAITING_CONFIRMATION","targetNodeId":"shot","turnId":"original","createdAt":1}}});
     crate::projects::save_merged(&store, changed, before).unwrap();
     execute(
         &store,

@@ -88,7 +88,7 @@ fn mapped_outputs(value: &Value, config: &Value) -> Result<Vec<ModelOutput>> {
         .as_array()
         .cloned()
         .unwrap_or_else(|| vec![target.clone()]);
-    let kind = config["kind"].as_str().unwrap_or("image");
+    let kind = output_kind(config)?;
     let mut outputs = Vec::new();
     for item in values {
         let url =
@@ -107,11 +107,27 @@ fn mapped_outputs(value: &Value, config: &Value) -> Result<Vec<ModelOutput>> {
     ensure!(!outputs.is_empty(), "生成接口未返回媒体结果");
     Ok(outputs)
 }
+fn output_kind(config: &Value) -> Result<&str> {
+    config["kind"]
+        .as_str()
+        .filter(|kind| matches!(*kind, "image" | "video" | "audio"))
+        .context("请明确配置 HTTP 输出类型 kind（image/video/audio）")
+}
 fn complete(value: &Value, config: &Value) -> Result<super::ProviderUpdate> {
     let outputs = mapped_outputs(value, config)?;
-    Ok(serde_json::from_value(
-        json!({"status":"COMPLETED","outputs":outputs,"result":{"outputs":outputs}}),
-    )?)
+    super::ProviderUpdate::completed(outputs, value.clone())
+}
+fn failed(value: &Value, config: &Value) -> Result<super::ProviderUpdate> {
+    let outputs = match value.pointer(config["outputPointer"].as_str().context("缺少结果字段")?)
+    {
+        Some(target) if !target.is_null() => Some(mapped_outputs(value, config)?),
+        _ => None,
+    };
+    let update: super::ProviderUpdate = serde_json::from_value(
+        json!({"status":"FAILED","error":"模型任务失败，请查看生成服务","outputs":outputs,"result":value}),
+    )?;
+    update.validate()?;
+    Ok(update)
 }
 pub(super) fn poll_url(base: &str, template: &str, id: &str) -> Result<String> {
     let escaped: String = id
@@ -150,6 +166,7 @@ impl ProviderAdapter for HttpJson {
         Box::pin(async move {
             let _storage_lease = storage_lease;
             validate(config)?;
+            output_kind(config)?;
             for field in ["pollUrl", "resultUrl"] {
                 if let Some(template) = config[field].as_str().filter(|s| !s.is_empty()) {
                     poll_url(endpoint_url, template, "validation")?;
@@ -184,10 +201,11 @@ impl ProviderAdapter for HttpJson {
     fn refresh<'a>(&'a self, key: &'a str, job: &'a Value) -> ProviderFuture<'a> {
         Box::pin(async move {
             if job["status"] == "COMPLETED" {
-                return Ok(serde_json::from_value(json!({"status":"COMPLETED"}))?);
+                return super::ProviderUpdate::completed_job(job);
             }
             let config = &job["providerConfig"];
             validate(config)?;
+            output_kind(config)?;
             let url = poll_url(
                 job["endpoint"].as_str().context("缺少端点")?,
                 config["pollUrl"].as_str().context("此接口没有轮询地址")?,
@@ -226,9 +244,7 @@ impl ProviderAdapter for HttpJson {
                 .as_array()
                 .is_some_and(|v| v.iter().any(|v| v.as_str() == Some(status)))
             {
-                Ok(serde_json::from_value(
-                    json!({"status":"FAILED","error":"模型任务失败，请查看生成服务"}),
-                )?)
+                failed(&value, config)
             } else {
                 Ok(serde_json::from_value(json!({"status":"IN_PROGRESS"}))?)
             }
@@ -238,9 +254,6 @@ impl ProviderAdapter for HttpJson {
         Box::pin(async {
             anyhow::bail!("此自定义接口未配置取消操作，请在服务端取消任务")
         })
-    }
-    fn outputs(&self, result: &Value) -> Vec<ModelOutput> {
-        serde_json::from_value(result["outputs"].clone()).unwrap_or_default()
     }
 }
 

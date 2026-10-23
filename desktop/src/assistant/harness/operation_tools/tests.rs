@@ -6,16 +6,8 @@ pub(super) fn profile(id: &str) -> AgentProfile {
         .find(|p| p.id == id)
         .unwrap()
 }
-// The shipped roster has no dedicated asset role; the asset-only boundary
-// (project-assets without frames or production) is kept as an inline profile.
 pub(super) fn asset_profile() -> AgentProfile {
-    let mut p = profile("production");
-    p.tool_ids = vec![
-        "project-read".into(),
-        "project-assets".into(),
-        "media-generation".into(),
-    ];
-    p
+    profile("assets")
 }
 // Exercise the real scheduler validation boundary before translating operations.
 pub(super) fn decode(
@@ -68,13 +60,13 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
     let args = decode(
         &p,
         "mstudio_generate_video",
-        json!({"id":"s", "prompt":"English dialogue"}),
+        json!({"title":"Synthetic task","id":"s", "prompt":"English dialogue"}),
     )
     .unwrap()
     .unwrap();
     assert_eq!(
         args,
-        json!({"action":"edit","operations":[{"op":"request_generation","id":"s","mediaKind":"video","text":"English dialogue","draftOnly":false}]})
+        json!({"action":"edit","operations":[{"op":"request_generation","title":"Synthetic task","id":"s","mediaKind":"video","text":"English dialogue"}]})
     );
     // Still authoring belongs to the image role.
     assert!(decode(&p, "mstudio_save_image_generation", json!({})).is_none());
@@ -89,14 +81,13 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
             .is_none()
         );
     }
-    let args = decode(
+    decode(
         &profile("image"),
         "mstudio_generate_image",
-        json!({"id":"s", "prompt":"English still"}),
+        json!({"title":"Synthetic task","id":"s", "prompt":"English still"}),
     )
     .unwrap()
     .unwrap();
-    assert_eq!(args["operations"][0]["draftOnly"], false);
     assert!(
         decode(
             &profile("image"),
@@ -122,7 +113,7 @@ fn production_has_direct_prompt_tools_without_storyboard_writes() {
 #[test]
 fn generation_and_task_prompts_map_without_source_edits() {
     let p = profile("production");
-    let args = decode(&p,"mstudio_generate_video",json!({"id":"s","prompt":"Final prompt","mode":"multi","parameters":{"duration":5,"resolution":"1080P"}})).unwrap().unwrap();
+    let args = decode(&p,"mstudio_generate_video",json!({"title":"Synthetic task","id":"s","prompt":"Final prompt","mode":"multi","parameters":{"duration":5,"resolution":"1080P"}})).unwrap().unwrap();
     assert_eq!(args["operations"][0]["op"], "request_generation");
     assert_eq!(args["operations"][0]["mediaKind"], "video");
     assert_eq!(args["operations"][0]["text"], "Final prompt");
@@ -151,7 +142,7 @@ fn generation_and_task_prompts_map_without_source_edits() {
     let args = decode(
         &asset,
         "mstudio_generate_reference_image",
-        json!({"prompt":"x","references":[]}),
+        json!({"title":"Synthetic task","prompt":"x","references":[]}),
     )
     .unwrap()
     .unwrap();
@@ -176,7 +167,9 @@ fn every_role_has_unique_classified_tools_and_valid_internal_mapping() {
             );
         }
     }
-    assert!(is_edit("mstudio_edit")); // historical receipt recovery
+    assert!(!is_edit("mstudio_edit"));
+    assert!(!is_edit("mstudio_set_image_prompt"));
+    assert!(!is_edit("mstudio_set_video_prompt"));
     assert!(!is_edit("mstudio_inspect"));
     let mut p = profile("production");
     p.tool_ids = vec!["project-read".into(), "project-edit".into()];
@@ -200,6 +193,15 @@ fn every_role_has_unique_classified_tools_and_valid_internal_mapping() {
 }
 #[test]
 fn creation_tools_fix_kind_and_keep_body_separate_from_shot_fields() {
+    assert!(
+        decode(
+            &asset_profile(),
+            "mstudio_add_asset",
+            json!({"id":"placeholder","title":"Missing media"}),
+        )
+        .unwrap()
+        .is_err()
+    );
     for (p, name, input, kind) in [
         (
             profile("director"),

@@ -1,4 +1,6 @@
 import { GenerationDuration } from "./GenerationDuration";
+import { TaskTitleField } from "./TaskTitleField";
+import { checkedTaskTitle } from "./taskTitle";
 import { t, useLanguage } from "../i18n";
 import { failure } from "../errors/failure";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -85,7 +87,10 @@ export function GenerationSettings({
           { ...draft, prompt: draft.prompt || (start ? "" : t("参数校验")) },
           model,
         );
-      save({ ...draft, error: undefined }, start);
+      const saved = { ...draft, error: undefined };
+      if (draft.title !== task.title)
+        saved.title = checkedTaskTitle(draft.title);
+      save(saved, start);
       close();
     } catch (e) {
       setError(String(e).replace(/^Error: /, ""));
@@ -140,6 +145,13 @@ export function GenerationSettings({
         <p className="generation-setting-note">
           {project.nodes.find((n) => n.id === draft.ownerId)?.title}
         </p>
+      )}
+      {!inline && (
+        <TaskTitleField
+          value={draft.title ?? ""}
+          change={(title) => patch({ title })}
+          commitOnBlur={!!onPatch}
+        />
       )}
       <GenerationMethod draft={draft} models={models} change={patch} />
       {!inline && (

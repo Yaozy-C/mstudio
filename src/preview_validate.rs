@@ -16,6 +16,13 @@ pub fn validate(spec: &RenderSpec, assets: &[Asset], edge: u32) -> Result<()> {
     for c in &spec.clips {
         let a = assets.get(c.asset_id.as_str()).context("预览素材不存在")?;
         ensure!(!a.missing, "预览素材缺失：{}", a.name);
+        if a.kind != "audio" {
+            ensure!(
+                a.width > 0 && a.height > 0,
+                "预览素材画面尺寸无效：{}",
+                a.name
+            );
+        }
         c.validate(a)?;
         let t = tracks.get(c.track_id.as_str()).context("预览轨道不存在")?;
         ensure!(t.kind == "video" || t.kind == "audio", "轨道类型无效");
@@ -35,6 +42,8 @@ pub fn validate(spec: &RenderSpec, assets: &[Asset], edge: u32) -> Result<()> {
                 .get(c.asset_id.as_str())
                 .is_some_and(|a| (a.kind == "image"
                     || (a.kind == "video" && a.duration + 0.05 >= c.end - c.start))
+                    && a.width > 0
+                    && a.height > 0
                     && !a.missing),
             "字幕画面尚未准备"
         );

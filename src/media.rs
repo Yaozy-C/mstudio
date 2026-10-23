@@ -117,7 +117,7 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
     let ext = path
         .extension()
         .and_then(|e| e.to_str())
-        .unwrap_or("bin")
+        .context("素材文件没有有效扩展名")?
         .to_ascii_lowercase();
     let kind =
         if ["png", "jpg", "jpeg", "webp", "heic", "bmp", "tiff", "gif"].contains(&ext.as_str()) {
@@ -128,11 +128,12 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
             "audio"
         };
     ensure!(video.is_some() || has_audio, "不支持的媒体格式");
-    let duration = metadata["format"]["duration"]
-        .as_str()
-        .and_then(|s| s.parse::<f64>().ok())
-        .unwrap_or(5.0);
-    ensure!(duration.is_finite() && duration > 0.0, "素材时长无效");
+    ensure!(kind != "image" || video.is_some(), "图片没有可读取的画面");
+    let duration = import_duration(kind, &metadata)?;
+    let (width, height) = match video {
+        Some(stream) => picture_dimensions(stream)?,
+        None => (0, 0),
+    };
     let id = id();
     std::fs::create_dir_all(root.join("assets"))?;
     std::fs::create_dir_all(root.join("previews"))?;
@@ -160,7 +161,7 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
         id,
         name: path
             .file_name()
-            .unwrap_or_default()
+            .context("素材文件名无效")?
             .to_string_lossy()
             .into(),
         kind: kind.into(),
@@ -171,11 +172,36 @@ pub fn import(path: &Path, root: &Path) -> Result<Asset> {
             String::new()
         },
         duration,
-        width: video.and_then(|v| v["width"].as_u64()).unwrap_or(0) as u32,
-        height: video.and_then(|v| v["height"].as_u64()).unwrap_or(0) as u32,
+        width,
+        height,
         has_audio,
     })
 }
+
+fn import_duration(kind: &str, metadata: &Value) -> Result<f64> {
+    // A still image has a display duration; audio/video require a measured duration.
+    if kind == "image" {
+        return Ok(5.0);
+    }
+    let duration: f64 = metadata["format"]["duration"]
+        .as_str()
+        .context("无法读取音视频时长")?
+        .parse()
+        .context("音视频时长格式无效")?;
+    ensure!(duration.is_finite() && duration > 0., "音视频时长无效");
+    Ok(duration)
+}
+
+pub fn picture_dimensions(stream: &Value) -> Result<(u32, u32)> {
+    let width = u32::try_from(stream["width"].as_u64().context("无法读取画面宽度")?)?;
+    let height = u32::try_from(stream["height"].as_u64().context("无法读取画面高度")?)?;
+    ensure!(width > 0 && height > 0, "画面宽高必须大于零");
+    Ok((width, height))
+}
+
+#[cfg(test)]
+#[path = "media_import_tests.rs"]
+mod import_tests;
 
 #[cfg(test)]
 mod binary_tests {

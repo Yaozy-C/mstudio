@@ -7,11 +7,9 @@ import {
   mediaReferences,
 } from "../production/request";
 import { resultPlacement } from "../production/resultPlacement";
-import {
-  receiveProductionResult,
-  jobStatus,
-  saveTask,
-} from "../production/document";
+import { checkedTaskTitle, taskTitle } from "../production/taskTitle";
+import { receiveProductionResult, jobStatus } from "../production/document";
+import { jobIssue, syncJobTracking } from "./generationTracking";
 import type { GeneratedJob } from "../workspace/generatedJobTracking";
 import { terminalOutputCount } from "../workspace/generatedJobTracking";
 export function prepareGeneration(
@@ -23,6 +21,7 @@ export function prepareGeneration(
   const task = p.production?.drafts?.[taskKey];
   if (!task) throw new Error("Generation task no longer exists");
   if (task.hiddenFromList) throw new Error("请先恢复已归档任务，再开始生成");
+  checkedTaskTitle(task.title);
   const position = task.position ?? resultPlacement(p, task);
   const snapshot = canvasSnapshot(p, task, position);
   const source = p.nodes.find((n) => n.id === task.ownerId);
@@ -31,7 +30,8 @@ export function prepareGeneration(
     references,
     input: inputFor(p, task, model, uploaded),
     shot: {
-      ...(source ?? { title: "画布生成" }),
+      ...source,
+      title: taskTitle(task),
       references,
       canvasGeneration: snapshot,
       submissionId: task.submissionId,
@@ -61,14 +61,9 @@ export function reconcileJob(p: Project, job: GeneratedJob): Project {
     p,
     job.id,
     assets.some((a) => !a?.id) ? "RECEIVING" : job.status,
-    job.sync?.error ?? job.error,
+    jobIssue(job),
     job.progress,
     job.requestId,
   );
-  const task = Object.values(p.production?.drafts ?? {}).find(
-    (t) => t.jobId === job.id || t.submissionId === job.id,
-  );
-  return task && !!task.trackingPaused !== !!job.sync?.paused
-    ? saveTask(p, { ...task, trackingPaused: !!job.sync?.paused })
-    : p;
+  return syncJobTracking(p, job);
 }

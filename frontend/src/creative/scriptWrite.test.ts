@@ -36,7 +36,7 @@ test("agent creates, edits, inserts, reorders, deletes and replaces structured s
       id: "screenplay",
       kind: "screenplay",
       title: "Script",
-      screenplay: { scriptMode: "replace", script: [a, b] },
+      screenplay: { script: [a, b] },
     },
   ]);
   const edit = (screenplay: object) => {
@@ -69,29 +69,27 @@ test("agent creates, edits, inserts, reorders, deletes and replaces structured s
   expect(restoreProject(before, p).nodes[0].screenplay!.script).toEqual(
     before.nodes[0].screenplay!.script,
   );
-  edit({ scriptMode: "replace", script: [{ ...b, action: "Rewritten" }] });
+  edit({ script: [{ ...b, action: "Rewritten" }], removeParagraphIds: ["c"] });
   expect(p.nodes[0].screenplay!.script).toEqual([
     { ...b, action: "Rewritten" },
   ]);
   expect(
     JSON.stringify(inspectProject(p, { nodeIds: ["screenplay"] })),
   ).toContain('"duration":6');
-  edit({ scriptMode: "replace", script: [] });
+  edit({ removeParagraphIds: ["b"] });
   expect(p.nodes[0].screenplay!.script).toEqual([]);
   expect(p.nodes[1].resultAssetId).toBe("video");
 });
-test("invalid replacements and ambiguous deletions fail without partial mutation", () => {
+test("invalid paragraph edits and ambiguous deletions fail without partial mutation", () => {
   const old = [a, b];
   for (const patch of [
-    { scriptMode: "replace", script: [{ id: "a", action: "partial" }] },
-    { scriptMode: "replace" },
-    { scriptMode: "typo" },
+    { script: [{ action: "missing ID" }] },
+    { script: [{ id: "a", sound: 42 }] },
     { removeParagraphIds: ["unknown"] },
     { removeParagraphIds: ["a", "a"] },
     { script: [{ id: "a", action: "change" }], removeParagraphIds: ["a"] },
     { paragraphOrder: ["a"] },
     { paragraphOrder: ["a", "a"] },
-    { scriptMode: "replace", script: [a], removeParagraphIds: ["b"] },
   ])
     expect(() => writeScript(old, patch)).toThrow();
   expect(old).toEqual([a, b]);
@@ -137,7 +135,5 @@ test("screen text roundtrips separately, invalidates linked shots and preserves 
   expect(() =>
     writeScript([a], { script: [{ id: "a", onScreenText: 42 }] }),
   ).toThrow();
-  expect(
-    writeScript([a], { scriptMode: "replace", script: [a] })[0].onScreenText,
-  ).toBeUndefined();
+  expect(writeScript([a], { script: [a] })[0].onScreenText).toBeUndefined();
 });

@@ -21,6 +21,14 @@ export function replaceTaskReferences(
       const r = value as Record<string, unknown>;
       if (typeof r.assetId !== "string")
         throw failure("VALIDATION_FAILED", "缺少参考素材 ID");
+      if (
+        r.purpose !== undefined &&
+        (typeof r.purpose !== "string" || [...r.purpose].length > 400)
+      )
+        throw failure(
+          "VALIDATION_FAILED",
+          "参考素材用途须为不超过 400 字的文本",
+        );
       const input = attachmentInput(p, { kind: "asset", id: r.assetId });
       const asset = referenceAsset(p, r.assetId);
       if (asset?.discarded)
@@ -66,9 +74,7 @@ export function replaceTaskReferences(
         nodeId: frame?.nodeId ?? input.nodeId,
         frame: !!frame && !!p.nodes.find((n) => n.id === frame.nodeId)?.shot,
         purpose:
-          typeof r.purpose === "string"
-            ? r.purpose.slice(0, 1000)
-            : input.purpose,
+          r.purpose === undefined ? input.purpose : (r.purpose as string),
       };
     });
     if (

@@ -35,8 +35,17 @@ export async function* streamReply(
     if (event.kind === "turn/waiting") {
       parked = true;
     } else if (event.kind === "turn/end") {
-      terminal = event.payload ?? { status: "completed" };
-      if (returned) finished = true;
+      if (
+        !event.payload?.status ||
+        !["completed", "failed", "cancelled"].includes(event.payload.status)
+      ) {
+        failed = true;
+        failure = new Error("Agent 结束事件缺少有效状态");
+        finished = true;
+      } else {
+        terminal = event.payload;
+        if (returned) finished = true;
+      }
     } else if (
       event.kind === "assistant/partial" &&
       typeof event.payload?.text === "string"
@@ -57,30 +66,34 @@ export async function* streamReply(
     if (signal.aborted) throw new Error("已停止");
     signal.addEventListener("abort", abort, { once: true });
     // Catch immediately: a rejection must wake the consumer without an unhandled promise.
-    const pending = invoke<string | { text: string; status: string }>(
-      "assistant_chat",
-      { request },
-    )
-      .then(
-        (reply) => {
-          // A fast background continuation may finish before the initial IPC returns.
-          if (!terminal && !continued) {
-            latest = typeof reply === "string" ? reply : reply.text;
-            dirty = true;
-          }
-          returned = true;
-          finished =
-            typeof reply === "string" ||
-            reply.status !== "waiting" ||
-            !!terminal;
-        },
-        (error: unknown) => {
-          failed = true;
-          failure = error;
-          returned = true;
-          finished = true;
-        },
-      )
+    const pending = invoke<{ text: string; status: string }>("assistant_chat", {
+      request,
+    })
+      .then((reply) => {
+        if (
+          !reply ||
+          typeof reply.text !== "string" ||
+          !["waiting", "completed", "failed", "cancelled"].includes(
+            reply.status,
+          )
+        )
+          throw new Error("Agent 返回格式无效");
+        // A fast background continuation may finish before the initial IPC returns.
+        if (!terminal && !continued) {
+          latest = reply.text;
+          dirty = true;
+        }
+        if (!terminal && reply.status !== "waiting")
+          terminal = { status: reply.status };
+        returned = true;
+        finished = failed || reply.status !== "waiting" || !!terminal;
+      })
+      .catch((error: unknown) => {
+        failed = true;
+        failure = error;
+        returned = true;
+        finished = true;
+      })
       .finally(() => {
         wake?.();
       });

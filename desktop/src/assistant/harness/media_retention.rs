@@ -146,22 +146,23 @@ pub fn read(
         let mut event = crate::database::blobs::event(db, seq, &raw)?;
         let content: UserContent =
             serde_json::from_value(event["offloads"][index]["content"].take())?;
-        anyhow::ensure!(
-            match &content {
+        Ok(content)
+    })();
+    match read {
+        Ok(content) => {
+            let supported = match &content {
                 UserContent::Audio(_) => model.inputs.audio,
                 UserContent::Video(_) => model.inputs.video,
                 UserContent::Document(_) => model.inputs.document,
                 UserContent::Text(text) => super::context_source::is_attachment(text),
                 _ => false,
-            },
-            "Current model does not support this media input"
-        );
-        Ok(content)
-    })();
-    match read {
-        Ok(content) => json!({"ok":true,"mediaId":id,"__offloadedMedia":content}),
-        Err(_) => {
-            json!({"error":"Media reference is unavailable in this project or unsupported by this model","code":"MEDIA_UNAVAILABLE"})
+            };
+            if supported {
+                json!({"ok":true,"mediaId":id,"__offloadedMedia":content})
+            } else {
+                json!({"error":"Current model does not support this media input","code":"MEDIA_UNSUPPORTED"})
+            }
         }
+        Err(error) => super::read_failure::result(error, "MEDIA_NOT_FOUND", "MEDIA_READ_FAILED"),
     }
 }

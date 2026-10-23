@@ -28,6 +28,7 @@ function setup() {
   };
   const op = {
     op: "request_generation",
+    title: "Pack · 分镜图",
     mediaKind: "image",
     text: "Keep the bag. Closer shot.",
     canvasTaskKey: task.key,
@@ -144,6 +145,7 @@ test("a full-reference source can cover fractional editorial timing without chan
     p,
     {
       op: "request_generation",
+      title: "Pack · 视频",
       id: "shot",
       mediaKind: "video",
       mode: "multi",

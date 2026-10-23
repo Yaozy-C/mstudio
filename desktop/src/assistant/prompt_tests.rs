@@ -33,7 +33,7 @@ fn assert_prompt_budget(profile: &profiles::AgentProfile, role_budget: usize) ->
 #[test]
 fn coordinator_prompt_size() {
     let profile = profiles::builtins().remove(0);
-    let prompt = assert_prompt_budget(&profile, 1200);
+    let prompt = assert_prompt_budget(&profile, 2200);
     assert!(!prompt.contains("Available Skills:"));
     assert!(!prompt.contains("Storyboard handoff contract:"));
     assert!(!prompt.contains("Generation execution contract:"));

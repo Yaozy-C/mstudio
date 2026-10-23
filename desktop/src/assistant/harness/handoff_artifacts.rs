@@ -26,7 +26,7 @@ enum Artifact {
 }
 
 pub fn schema() -> Value {
-    json!({"type":"array","maxItems":24,"description":"Saved source artifacts to read directly, not paraphrase into task/message. Use node/asset/clip IDs, generation task keys (kind=generation, id=taskKey), or an agent outputRef from a settled run. Original user attachments are supplied separately by the host.","items":{"oneOf":[
+    json!({"type":"array","maxItems":24,"description":"Saved project sources: node/asset/clip IDs, generation task keys (id=taskKey), or settled agent outputRefs. Original user attachments and task text are forwarded by the host. Supplementary specialist notes use the agent outputRef, not a screenplay paragraph.","items":{"oneOf":[
         {"type":"object","properties":{"kind":{"type":"string","enum":["node","asset","clip","generation"]},"id":{"type":"string","minLength":1,"maxLength":200}},"required":["kind","id"],"additionalProperties":false},
         {"type":"object","properties":{"kind":{"type":"string","const":"agent"},"id":{"type":"string","minLength":1,"maxLength":200},"turnId":{"type":"string","minLength":1,"maxLength":200}},"required":["kind","id","turnId"],"additionalProperties":false}
     ]}})
@@ -129,8 +129,13 @@ pub fn resolve(
                     &id,
                     &turn_id,
                 )
-                .map_err(|_| {
-                    "Agent artifact is unavailable in this project or has not settled".to_owned()
+                .map_err(|error| {
+                    if super::read_failure::missing(&error) {
+                        "Agent artifact is unavailable in this project or has not settled"
+                            .to_owned()
+                    } else {
+                        format!("Cannot read saved Agent artifact: {error}")
+                    }
                 })?;
                 manifest.push(json!({"reference":super::agent_artifacts::reference(&id,&turn_id),"status":value["status"],"stopReason":value["stopReason"],"readWith":{"tool":"mstudio_read_agent_result","arguments":{"id":id,"turnId":turn_id}},"authority":"Specialist-authored output and execution receipts; not a user statement or proof of product construction."}));
                 continue;
@@ -143,7 +148,7 @@ pub fn resolve(
                 .as_array()
                 .and_then(|items| items.iter().find(|v| v["id"] == id))
         }
-        .ok_or_else(|| format!("Referenced {kind} is unavailable in this project"))?;
+        .ok_or_else(|| format!("Referenced {kind} {id} is unavailable in project {project}; use the source's actual reference kind and ID"))?;
         let asset_id = if kind == "asset" {
             Some(id.as_str())
         } else {
@@ -220,6 +225,24 @@ pub fn message(
             .as_str()
             .unwrap_or_default()
     );
+    if role.id != "video-analyst"
+        && let Some(scope) = crate::assistant::task_context::saved(
+            store,
+            doc["id"].as_str().ok_or("Missing project ID")?,
+            source["senderTurnId"]
+                .as_str()
+                .ok_or("Missing sending turn")?,
+        )?
+        && scope.original_instruction
+            != original["production"]["instruction"]
+                .as_str()
+                .unwrap_or_default()
+    {
+        text.push_str(&format!(
+            "Original task context (current user requirements take precedence): {}\n",
+            scope.original_instruction
+        ));
+    }
     if role.id != "video-analyst" && original["production"].is_object() {
         text.push_str(&format!("User-selected production settings: {}\n", json!({"models":original["production"]["models"],"parameters":original["production"]["task"]["parameters"]})));
     }

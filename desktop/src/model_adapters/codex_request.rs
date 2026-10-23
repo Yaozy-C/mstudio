@@ -1,15 +1,71 @@
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
 
-/// Old saved configurations used a transport alias, not an actual model ID.
-pub fn model(input: &Value) -> Result<&str> {
-    let id = match input.get("model") {
-        None => "codex-image",
-        Some(value) => value.as_str().context("请填写有效的 Codex 图像模型 ID")?,
+fn config() -> Result<Value> {
+    serde_json::from_str(include_str!(
+        "../../../frontend/src/models/config/native-requests.json"
+    ))
+    .context("原生请求配置无效")
+}
+fn default<'a>(transport: &'a Value, key: &str) -> Result<&'a str> {
+    transport["defaults"][key]
+        .as_str()
+        .with_context(|| format!("原生请求配置缺少默认值 {key}"))
+}
+fn valid_size(value: &str) -> bool {
+    let Some((width, height)) = value.split_once('x') else {
+        return false;
     };
-    if id == "codex-image" {
-        return Ok("gpt-image-2");
-    }
+    let (Ok(width), Ok(height)) = (width.parse::<u64>(), height.parse::<u64>()) else {
+        return false;
+    };
+    width > 0
+        && height > 0
+        && width % 16 == 0
+        && height % 16 == 0
+        && width <= 3840
+        && height <= 3840
+        && width * height >= 655_360
+        && width * height <= 8_294_400
+        && width * 3 >= height
+        && height * 3 >= width
+}
+fn size<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
+    let value = match input.get("size") {
+        Some(value) => value.as_str().context("size 必须是字符串")?,
+        None => default(transport, "size")?,
+    };
+    ensure!(value != "auto", "请指定明确的 size，不要使用 auto");
+    ensure!(
+        valid_size(value),
+        "size 须为 WIDTHxHEIGHT：宽高为 16 的倍数，比例 1:3–3:1，总像素 655360–8294400"
+    );
+    Ok(value)
+}
+fn quality<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
+    let value = match input.get("quality") {
+        Some(value) => value.as_str().context("quality 必须是字符串")?,
+        None => default(transport, "quality")?,
+    };
+    ensure!(
+        value != "auto",
+        "请指定明确的 quality，不要使用 auto"
+    );
+    let values = transport["qualityValues"]
+        .as_array()
+        .context("原生请求配置缺少 qualityValues")?;
+    ensure!(
+        values.iter().any(|allowed| allowed.as_str() == Some(value)),
+        "不支持的 quality：{value}"
+    );
+    Ok(value)
+}
+
+/// Requests must carry an explicit model ID.
+pub fn model(input: &Value) -> Result<&str> {
+    let id = input["model"]
+        .as_str()
+        .context("请填写有效的 Codex 图像模型 ID")?;
     ensure!(
         id.starts_with("gpt-image-")
             && id.len() > "gpt-image-".len()
@@ -25,9 +81,7 @@ pub fn model(input: &Value) -> Result<&str> {
 pub fn validate(input: &Value) -> Result<()> {
     let object = input.as_object().context("请求必须是 JSON 对象")?;
     model(input)?;
-    let config: Value = serde_json::from_str(include_str!(
-        "../../../frontend/src/models/config/native-requests.json"
-    ))?;
+    let config = config()?;
     let transport = &config["codex-image"];
     let allowed = transport["allowedFields"]
         .as_array()
@@ -52,6 +106,8 @@ pub fn validate(input: &Value) -> Result<()> {
             "原生连接不支持指定 {key}；当前只支持 {expected}"
         );
     }
+    size(input, transport)?;
+    quality(input, transport)?;
     if let Some(n) = input.get("n") {
         ensure!(
             n.as_u64().is_some_and(|n| (1..=10).contains(&n)),
@@ -74,8 +130,12 @@ pub fn validate(input: &Value) -> Result<()> {
 /// Construct the direct wire payload without changing a single prompt character.
 pub fn payload(input: &Value) -> Result<(&'static str, Value)> {
     validate(input)?;
+    let config = config()?;
+    let transport = &config["codex-image"];
+    let size = size(input, transport)?;
+    let quality = quality(input, transport)?;
     let mut body = json!({"model":model(input)?, "prompt":input["prompt"],
-        "background":"opaque", "quality":"auto", "size":"auto"});
+        "background":"opaque", "quality":quality, "size":size});
     let endpoint = if let Some(images) = input["image"].as_array() {
         body["images"] = images
             .iter()
@@ -139,23 +199,54 @@ mod tests {
             json!({"prompt":"x"}),
             json!({"prompt":"x","model":"codex-image"}),
         ] {
-            assert_eq!(payload(&input).unwrap().1["model"], "gpt-image-2");
+            assert!(payload(&input).unwrap_err().to_string().contains("模型 ID"));
         }
     }
     #[test]
     fn direct_payload_preserves_prompt_and_every_reference() {
         let prompt = "  中文\n\"Do not rewrite\" \t";
-        let input = json!({"prompt":prompt,"image":vec!["data:image/png;base64,YQ==";12],"n":3});
+        let input = json!({"prompt":prompt,"model":"gpt-image-2.5-sunburst","image":vec!["data:image/png;base64,YQ==";12],"n":3});
         let (path, body) = payload(&input).unwrap();
         assert_eq!(path, "images/edits");
         assert_eq!(body["prompt"], prompt);
         assert_eq!(body["images"].as_array().unwrap().len(), 12);
         assert_eq!(body["images"][11]["image_url"], input["image"][11]);
         assert!(body.get("n").is_none()); // Each job sends one request per output.
+        assert_eq!(body["size"], "2048x1152");
+        assert_eq!(body["quality"], "high");
         assert_eq!(
-            payload(&json!({"prompt":"x"})).unwrap().0,
+            payload(&json!({"prompt":"x","model":"gpt-image-2"}))
+                .unwrap()
+                .0,
             "images/generations"
         );
+    }
+    #[test]
+    fn explicit_size_and_quality_are_sent_and_auto_is_rejected() {
+        let (_, body) = payload(&json!({
+            "prompt":"x",
+            "model":"gpt-image-2.5-sunburst",
+            "size":"1536x864",
+            "quality":"xhigh"
+        }))
+        .unwrap();
+        assert_eq!(body["size"], "1536x864");
+        assert_eq!(body["quality"], "xhigh");
+        for input in [
+            json!({"prompt":"x","size":"auto"}),
+            json!({"prompt":"x","quality":"auto"}),
+            json!({"prompt":"x","size":"1920x1080"}),
+            json!({"prompt":"x","size":"1000x1000"}),
+            json!({"prompt":"x","size":"4096x4096"}),
+            json!({"prompt":"x","size":"4096x1000"}),
+            json!({"prompt":"x","size":1024}),
+            json!({"prompt":"x","quality":"ultra"}),
+            json!({"prompt":"x","quality":42}),
+        ] {
+            let mut explicit = input.clone();
+            explicit["model"] = json!("gpt-image-2.5-sunburst");
+            assert!(validate(&explicit).is_err(), "{explicit}");
+        }
     }
     #[test]
     fn rejects_unsupported_controls_and_invalid_results() {
@@ -163,7 +254,6 @@ mod tests {
             json!({"prompt":"x","n":0}),
             json!({"prompt":"x","n":11}),
             json!({"prompt":"x","n":1.5}),
-            json!({"prompt":"x","size":"1024x1024"}),
             json!({"prompt":"x","model":""}),
             json!({"prompt":"x","model":null}),
             json!({"prompt":"x","model":42}),
@@ -172,8 +262,13 @@ mod tests {
             json!({"prompt":"x","model":"gpt-image-2/other"}),
             json!({"prompt":"x","model":format!("gpt-image-{}", "x".repeat(100))}),
             json!({"prompt":"x","image":[]}),
+            json!({"prompt":"x","output_format":"jpeg"}),
         ] {
-            assert!(validate(&input).is_err());
+            let mut explicit = input.clone();
+            if explicit.get("model").is_none() {
+                explicit["model"] = json!("gpt-image-2");
+            }
+            assert!(validate(&explicit).is_err());
         }
         assert!(image_result(&json!({"data":[]})).is_err());
         assert!(image_result(&json!({"data":[{"b64_json":"YQ=="}]})).is_err());

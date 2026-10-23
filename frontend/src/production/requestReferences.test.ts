@@ -27,6 +27,7 @@ function setup() {
   };
   const op = {
     op: "request_generation",
+    title: "Pack · 分镜图",
     mediaKind: "image",
     text: "Keep the bag. Closer shot.",
     canvasTaskKey: task.key,
@@ -39,6 +40,7 @@ test("reference image tasks are standalone and require explicit inputs even with
     op: "request_generation",
     mediaKind: "image",
     generationPurpose: "asset",
+    title: "Character reference",
     text: "Full character on pure white",
     references: [],
   };
@@ -72,6 +74,7 @@ test("asset generation delivers a standalone canvas card and reusable library im
     {
       mediaKind: "image",
       generationPurpose: "asset",
+      title: "Character reference",
       text: "Subject on pure white",
       references: [],
     },
@@ -113,6 +116,7 @@ test("asset generation delivers a standalone canvas card and reusable library im
     {
       mediaKind: "image",
       text: "Same person on steps",
+      title: "Character on steps",
       references: [{ assetId: image.id, purpose: "character and wardrobe" }],
     },
     { ...context, callId: "downstream" },
@@ -126,7 +130,12 @@ test("shot image references feed new tasks without changing historical inputs", 
   const { p, context } = setup();
   const shot = p.nodes.find((n) => n.shot)!;
   shot.references = [{ assetId: "a", purpose: "product identity" }];
-  const op = { id: shot.id, mediaKind: "image", text: "Make shot" };
+  const op = {
+    id: shot.id,
+    title: "Pack · 分镜图",
+    mediaKind: "image",
+    text: "Make shot",
+  };
   const first = requestTask(p, op, {
     ...context,
     turn: { ...context.turn, task: undefined },

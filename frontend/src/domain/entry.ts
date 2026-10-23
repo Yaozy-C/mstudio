@@ -9,9 +9,11 @@ import { contentChanged } from "../workspace/projectRevision";
 import { parameterContract, taskParameters } from "../production/parameters";
 import { equal, mergeValue } from "./merge";
 import { receipt } from "./receipt";
-import { prepareGeneration, reconcileJob } from "./generation";
+import { prepareGeneration } from "./generation";
 import { recoverJobs } from "./recovery";
+import { syncJobTracking } from "./generationTracking";
 import { generationOutcomes } from "../production/taskOutcome";
+import { resultTaskName } from "../production/taskResultNames";
 import type { Project } from "../model";
 import type { GenerationCommandContext } from "../production/requestTask";
 import type { MediaModel } from "../models/mediaRegistry";
@@ -32,6 +34,10 @@ type Request = {
   jobs: import("../workspace/generatedJobTracking").GeneratedJob[];
 };
 function run(input: Request) {
+  if (input.action === "job_tracking")
+    return { document: syncJobTracking(input.document, input.job) };
+  if (input.action === "result_name")
+    return { name: resultTaskName(input.document, input.job.shot!) };
   if (input.action === "recover_jobs")
     return recoverJobs(input.document, input.jobs);
   if (input.action === "prune_deleted")
@@ -53,13 +59,6 @@ function run(input: Request) {
       input.model,
       input.uploaded,
     );
-  if (input.action === "job") {
-    const document = reconcileJob(input.document, input.job);
-    document.revision =
-      (input.document.revision ?? 0) +
-      Number(contentChanged(input.document, document));
-    return { document };
-  }
   if (input.action === "inspect")
     return inspectProject(input.document, input.args);
   if (input.action === "merge") {

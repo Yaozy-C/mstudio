@@ -5,24 +5,6 @@ use rusqlite::{Connection, params};
 use sha2::{Digest, Sha256};
 use std::{io::Write, path::PathBuf};
 
-pub fn init(db: &Connection) -> Result<()> {
-    db.execute_batch(
-        "CREATE TABLE IF NOT EXISTS stored_media(digest TEXT PRIMARY KEY,bytes INTEGER NOT NULL);",
-    )?;
-    let present: bool = db.query_row(
-        "SELECT EXISTS(SELECT 1 FROM pragma_table_info('content_blobs') WHERE name='media_digest')",
-        [],
-        |r| r.get(0),
-    )?;
-    if !present {
-        db.execute_batch("ALTER TABLE content_blobs ADD COLUMN media_digest TEXT REFERENCES stored_media(digest);
-            ALTER TABLE content_blobs ADD COLUMN media_prefix TEXT;")?;
-    }
-    db.execute_batch(
-        "CREATE INDEX IF NOT EXISTS content_blobs_media ON content_blobs(media_digest);",
-    )?;
-    Ok(())
-}
 fn root(db: &Connection) -> Result<PathBuf> {
     let file: String = db.query_row(
         "SELECT file FROM pragma_database_list WHERE name='main'",

@@ -7,7 +7,17 @@ use serde_json::json;
 fn screenplay_creation_rejects_body_text_and_commits_structured_content() {
     let p = profile("writer");
     let input = json!({"id":"script","title":"Lunch",
-        "script":[{"id":"p1","title":"Opening","action":"Open bag","duration":3}]});
+        "script":[{"id":"p1","title":"Opening","action":"Open bag","dialogue":"","sound":"","duration":3}]});
+    for (name, key, value) in [
+        ("mstudio_add_screenplay", "paragraphOrder", json!(["p1"])),
+        ("mstudio_add_screenplay", "removeParagraphIds", json!([])),
+        ("mstudio_add_screenplay", "scriptMode", json!("replace")),
+        ("mstudio_update_screenplay", "scriptMode", json!("replace")),
+    ] {
+        let mut invalid = input.clone();
+        invalid[key] = value;
+        assert!(decode(&p, name, invalid).unwrap().is_err());
+    }
     let mut invalid = input.clone();
     invalid["text"] = json!("Extra explanation");
     let error = decode(&p, "mstudio_add_screenplay", invalid)
@@ -51,6 +61,37 @@ fn screenplay_creation_rejects_body_text_and_commits_structured_content() {
     .unwrap()
     .to_string();
     assert!(saved.contains("Open bag"), "{saved}");
+    let duplicate = json!({"id":"second-script","title":"Wrong second screenplay",
+        "script":[{"id":"reference","title":"Elements","action":"Notes","dialogue":"","sound":"","duration":0.01}]});
+    let args = decode(&p, "mstudio_add_screenplay", duplicate.clone())
+        .unwrap()
+        .unwrap();
+    let rejected =
+        crate::project_service::execute(&store, &p, "p", "turn", "turn:duplicate", args).unwrap();
+    assert_eq!(rejected["outcome"], "not_executed");
+    assert!(
+        rejected["error"]
+            .as_str()
+            .unwrap()
+            .contains("mstudio_update_screenplay")
+    );
+    let update = json!({"id":"script","title":"Rewritten script",
+        "script":[{"id":"p1","title":"Opening","action":"Close bag","dialogue":"","sound":"Zip","duration":3}]});
+    let args = decode(&p, "mstudio_update_screenplay", update)
+        .unwrap()
+        .unwrap();
+    let replaced =
+        crate::project_service::execute(&store, &p, "p", "turn", "turn:replace", args).unwrap();
+    assert_eq!(replaced["outcome"], "committed", "{replaced}");
+    let document = crate::project_service::load(&store.db.lock().unwrap(), "p").unwrap();
+    assert_eq!(document["nodes"].as_array().unwrap().len(), 1);
+    assert_eq!(document["nodes"][0]["id"], "script");
+    assert_eq!(document["nodes"][0]["title"], "Rewritten script");
+    assert_eq!(document["nodes"][0]["screenplay"]["script"][0]["id"], "p1");
+    assert_eq!(
+        document["nodes"][0]["screenplay"]["script"][0]["action"],
+        "Close bag"
+    );
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }

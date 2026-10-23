@@ -5,10 +5,13 @@ import { saveTask } from "../production/document";
 import type { ProductionTask } from "../production/types";
 import type { GeneratedJob } from "../workspace/generatedJobTracking";
 import { parameterContract } from "../production/parameters";
+import { inspectProject } from "../assistant/inspectProject";
+import { editTask, regenerateTask } from "../production/taskEditing";
 test("headless preflight and model capabilities share video parameter limits", () => {
   const video = model("minimax/h3/reference-to-video");
   const task: ProductionTask = {
     key: "run",
+    title: "Pack · 视频",
     kind: "video",
     mode: "multi",
     prompt: "Walk forward",
@@ -32,12 +35,61 @@ test("headless preflight and model capabilities share video parameter limits", (
     ),
   ).toThrow();
 });
+
+test("runs with missing required names fail validation before inspection or submission", () => {
+  const video = model("minimax/h3/reference-to-video");
+  const invalid: ProductionTask = {
+    key: "invalid",
+    kind: "video",
+    mode: "multi",
+    prompt: "Walk forward",
+    inputs: [],
+    modelId: video.id,
+    turnId: "turn",
+    createdAt: 1,
+    status: "COMPLETED",
+    jobId: "job",
+  };
+  const project = saveTask(fixture(), invalid);
+  expect(() => inspectProject(project, { section: "generation" })).toThrow(
+    "任务名称",
+  );
+  const retry = regenerateTask(project, invalid.key);
+  expect(() => prepareGeneration(retry, invalid.key, video, [])).toThrow(
+    "任务名称",
+  );
+  expect(project.production!.drafts![invalid.key]).toEqual(invalid);
+});
+
+test("naming an unnamed retry permits submission with the same prompt and references", () => {
+  const video = model("minimax/h3/reference-to-video");
+  const task: ProductionTask = {
+    key: "retry",
+    kind: "video",
+    mode: "multi",
+    prompt: "Walk forward",
+    inputs: [],
+    modelId: video.id,
+    status: "AWAITING_CONFIRMATION",
+  };
+  const p = editTask(saveTask(fixture(), task), task.key, {
+    title: "Pack · 视频",
+  });
+  const prepared = prepareGeneration(p, task.key, video, []);
+  expect(prepared.shot.title).toBe("Pack · 视频");
+  expect(prepared.shot.canvasGeneration.task).toEqual({
+    ...task,
+    title: "Pack · 视频",
+  });
+  expect(prepared.input.prompt).toBe(task.prompt);
+});
 test("partial outputs attach once and background errors retain received media", () => {
   const task: ProductionTask = {
     key: "run",
     kind: "image",
     mode: "multi",
     prompt: "Portrait",
+    title: "Portrait",
     inputs: [],
     modelId: "image",
     jobId: "job",
@@ -81,6 +133,7 @@ test("reconciling completed output repairs a stale receiving task without duplic
     kind: "video",
     mode: "multi",
     prompt: "Keep",
+    title: "Pack · video",
     inputs: [],
     modelId: "video",
     jobId: "job",

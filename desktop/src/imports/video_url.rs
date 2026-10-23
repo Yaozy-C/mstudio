@@ -163,8 +163,9 @@ pub(crate) async fn download_with_progress(
             .collect::<String>()
     );
     let path = std::fs::read_dir(work)?
-        .filter_map(|e| e.ok())
-        .map(|e| e.path())
+        .map(|entry| entry.map(|entry| entry.path()))
+        .collect::<std::io::Result<Vec<_>>>()?
+        .into_iter()
         .find(|p| {
             p.is_file()
                 && ["mp4", "mov", "m4v", "webm", "mkv"]
@@ -179,10 +180,13 @@ pub(crate) async fn download_with_progress(
         std::fs::metadata(&path)?.len(),
     )?;
     let title = std::fs::read_to_string(work.join("source.info.json"))
-        .ok()
-        .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok())
-        .and_then(|v| v["title"].as_str().map(str::to_owned))
-        .unwrap_or_else(|| "链接视频".into());
+        .context("无法读取下载视频的信息文件")?;
+    let info: serde_json::Value =
+        serde_json::from_str(&title).context("下载视频的信息文件格式无效")?;
+    let title = info["title"]
+        .as_str()
+        .filter(|title| !title.trim().is_empty())
+        .context("下载视频的信息缺少标题")?;
     let name = format!(
         "{}.{}",
         title

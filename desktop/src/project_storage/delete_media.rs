@@ -67,18 +67,18 @@ pub fn sanitize_job(db: &Connection, job: &mut Value) -> Result<()> {
     let Some(project) = job["projectId"].as_str() else {
         return Ok(());
     };
-    let document = crate::project_service::load(db, project)?;
-    redact_job(job, &ids(&document));
+    redact_job(job, &super::deletion_tombstones::read(db, project)?);
     Ok(())
 }
 
 pub fn commit(db: &Connection, before: &Value, after: &Value) -> Result<()> {
+    let project = after["id"].as_str().context("Missing project ID")?;
     let removed = ids(after);
     let added: HashSet<_> = removed.difference(&ids(before)).cloned().collect();
     if added.is_empty() {
         return Ok(());
     }
-    let project = after["id"].as_str().context("Missing project ID")?;
+    super::deletion_tombstones::record(db, project, &added)?;
     let database: String = db.query_row(
         "SELECT file FROM pragma_database_list WHERE name='main'",
         [],

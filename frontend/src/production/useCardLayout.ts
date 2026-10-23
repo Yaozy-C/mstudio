@@ -13,8 +13,8 @@ export function useCardLayout(raw: ProductionItem[], project: Project) {
     const arranged: ProductionItem[] = [];
     return separateShotCards(
       raw.map((item) => {
-        if (item.kind === "script")
-          return { ...item, height: heights[item.key] ?? item.height };
+        item = { ...item, height: heights[item.key] ?? item.height };
+        if (item.kind === "script") return item;
         if (
           !item.ownerId ||
           !item.key.startsWith("reference:") ||

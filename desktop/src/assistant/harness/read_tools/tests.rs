@@ -81,7 +81,7 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
     let doc = json!({"id":"p","name":"Test","revision":0,"brief":"","width":1080,"height":1920,"fps":30,"nodes":[
         {"id":"script","kind":"screenplay","title":"Script","text":"","screenplay":{"script":[{"id":"p1","title":"Opening","duration":3,"action":"Saved action"}]}},
         {"id":"s","kind":"shot","title":"Shot","text":"Saved staging","shot":{"screenplayId":"script","scriptId":"p1","order":1,"duration":3,"frames":[],"prompt":"Saved prompt","dialogue":"Hello"}}
-    ],"assets":[],"clips":[],"tracks":[],"captions":[{"id":"caption","text":"Hi","start":0,"end":1}],"production":{"drafts":{"task":{"key":"task","kind":"video","prompt":"Prompt","status":"AWAITING_CONFIRMATION","turnId":"turn","createdAt":1,"mode":"single","modelId":"model","inputs":[],"position":{"x":0,"y":0}}}}});
+    ],"assets":[],"clips":[],"tracks":[],"captions":[{"id":"caption","text":"Hi","start":0,"end":1}],"production":{"drafts":{"task":{"key":"task","title":"Read video","kind":"video","prompt":"Prompt","status":"AWAITING_CONFIRMATION","turnId":"turn","createdAt":1,"mode":"single","modelId":"model","inputs":[],"position":{"x":0,"y":0}}}}});
     for (name, args) in [
         ("mstudio_read_shots", json!({"ids":["s"]})),
         (

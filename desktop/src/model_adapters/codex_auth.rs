@@ -59,8 +59,8 @@ fn needs_refresh(token: &str, now: u64) -> bool {
         .and_then(|v| v["exp"].as_u64())
         .is_none_or(|exp| exp <= now.saturating_add(60))
 }
-pub(crate) fn available() -> bool {
-    read().is_ok()
+pub(crate) fn check_login() -> Result<()> {
+    read().map(|_| ())
 }
 pub(super) async fn credentials() -> Result<Credentials> {
     let current = read()?;

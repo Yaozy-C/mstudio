@@ -7,12 +7,7 @@ export function automaticLimits(
   if (profile.adapter === "codex") return null;
   const cached = profile.modelLimits;
   const endpoint = profile.endpoint.replace(/\/+$/, "");
-  if (
-    cached?.source === "service" &&
-    cached.endpoint === endpoint &&
-    cached.model === profile.model
-  )
-    return cached;
+  const modelId = (id: string) => id.trim().replace(/^models\//, "");
   let known: (typeof catalog)[number] | undefined;
   try {
     const url = new URL(endpoint);
@@ -21,28 +16,37 @@ export function automaticLimits(
         url.protocol === "https:" &&
         !url.port &&
         entry.host === url.hostname &&
-        entry.models.includes(profile.model.replace(/^models\//, "")),
+        entry.models.includes(modelId(profile.model)),
     );
   } catch {
-    /* An incomplete form uses the labelled fallback until it can resolve. */
+    /* Incomplete addresses have no verified capacity. */
   }
+  if (
+    cached?.source === "service" &&
+    cached.endpoint === endpoint &&
+    modelId(cached.model) === modelId(profile.model) &&
+    Number.isInteger(cached.contextWindow) &&
+    cached.contextWindow >= 8192 &&
+    cached.contextWindow <= 2000000
+  )
+    return { ...cached, defaultMaxTokens: known?.defaultMaxTokens ?? null };
+  if (!known) return null;
   return {
     endpoint,
     model: profile.model,
-    contextWindow: known?.contextWindow ?? 262144,
-    maxOutputTokens: known?.maxOutputTokens ?? null,
-    defaultMaxTokens:
-      known?.defaultMaxTokens ??
-      (profile.adapter === "anthropic-native" ? 8192 : null),
-    source: known ? "catalog" : "fallback",
-    sourceUrl: known?.source,
+    contextWindow: known.contextWindow,
+    maxOutputTokens: known.maxOutputTokens,
+    defaultMaxTokens: known.defaultMaxTokens,
+    source: "catalog",
+    sourceUrl: known.source,
   };
 }
 
 export function contextPolicy(profile: ModelConnection) {
   const limits = automaticLimits(profile);
   const automatic =
-    profile.contextWindowMode === "auto" || profile.contextWindow == null;
+    profile.contextWindowMode === "auto" ||
+    (profile.contextWindowMode !== "manual" && profile.contextWindow == null);
   const window = automatic ? limits?.contextWindow : profile.contextWindow;
   const output =
     profile.adapter === "codex"
@@ -67,6 +71,8 @@ export function contextPolicyIssue(profile: ModelConnection): string {
     contextPolicy(profile);
   if (profile.adapter === "codex" && profile.maxOutputTokens != null)
     return "Codex 的输出上限由本机服务管理";
+  if (profile.contextWindowMode === "manual" && window == null)
+    return "请填写手动上下文窗口，或切换为自动获取";
   if (
     window != null &&
     (!Number.isInteger(window) || window < 8192 || window > 2000000)
@@ -91,5 +97,9 @@ export function contextPolicyIssue(profile: ModelConnection): string {
     Math.floor((window - (output ?? 0)) * 0.16) >= threshold
   )
     return "上下文窗口不足以容纳输出预留和压缩余量，请调整这三项设置";
+  if (profile.adapter !== "codex" && window == null)
+    return "未获取到此模型的上下文容量，请刷新容量或手动填写上下文窗口";
+  if (profile.adapter === "anthropic-native" && output == null)
+    return "此 Anthropic 型号未公布默认输出上限，请手动填写输出上限";
   return "";
 }

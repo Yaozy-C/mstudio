@@ -83,6 +83,7 @@ fn remove_active(id: &str, generation: &str) {
 struct ChildHost {
     inner: ProjectHost,
     id: String,
+    parent_turn: String,
     changes: Mutex<Vec<Value>>,
     terminal_reason: Mutex<Option<String>>,
 }
@@ -93,7 +94,7 @@ impl Host for ChildHost {
     fn token(&self) -> &CancellationToken {
         &self.inner.token
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
         self.inner.definitions()
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
@@ -148,6 +149,7 @@ impl Host for ChildHost {
 mod continuation;
 mod control;
 mod execution;
+mod persistence;
 mod spawn;
 pub fn cancel_project(project: &str) {
     for run in active()
@@ -163,7 +165,7 @@ use continuation::{start_continuation, wake_pending};
 #[cfg(test)]
 use control::require_continuable;
 pub use control::{execute_control, notices};
-use execution::{drive_child, settle};
+use execution::drive_child;
 pub use spawn::execute;
 
 fn scoped(

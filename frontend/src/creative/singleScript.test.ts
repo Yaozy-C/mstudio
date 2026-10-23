@@ -20,7 +20,9 @@ test("agent cannot add a second script, including in one batch", () => {
   expect(() => applyOperations(empty, [first, second])).toThrow("已有脚本");
   expect(empty.nodes).toHaveLength(0);
   const project = applyOperations(empty, [first]);
-  expect(() => applyOperations(project, [second])).toThrow("已有脚本");
+  expect(() => applyOperations(project, [second])).toThrow(
+    "项目已有脚本，请使用 mstudio_update_screenplay 修改现有脚本并保留 ID",
+  );
   const updated = applyOperations(project, [
     { op: "update_node", id: "script", title: "修改后的脚本" },
   ]);

@@ -18,14 +18,12 @@ export function AnalysisResults({
   currentTime,
   onHistory = () => {},
   onCreate,
-  continuing,
 }: {
   result?: VideoAnalysisResult;
   seek: (time: number) => void;
   currentTime: number;
   onHistory?: () => void;
   onCreate?: () => Promise<void>;
-  continuing?: boolean;
 }) {
   const [tab, setTab] = useState<"segments" | "craft">("segments");
   if (!result) return <AnalysisReady onHistory={onHistory} />;
@@ -34,7 +32,7 @@ export function AnalysisResults({
       <header>
         <h2>{t("拆解结果")}</h2>
         <p>{result.summary}</p>
-        <AnalysisCreateAction onCreate={onCreate} continuing={continuing} />
+        <AnalysisCreateAction onCreate={onCreate} />
       </header>
       <div
         className="analysis-tabs"

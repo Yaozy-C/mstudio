@@ -7,7 +7,7 @@ fn archive_pending_tasks_without_a_model_preserves_history_and_requires_observat
         .into_iter()
         .find(|p| p.id == "coordinator")
         .unwrap();
-    let task = json!({"key":"old","kind":"video","mode":"multi","inputs":[],
+    let task = json!({"key":"old","title":"Archived video","kind":"video","mode":"multi","inputs":[],
         "prompt":"Original","parameters":{"duration":5},"modelId":"removed-model",
         "status":"AWAITING_CONFIRMATION","turnId":"old-turn","createdAt":1});
     doc["production"] = json!({"drafts":{"old":task}});
@@ -55,7 +55,7 @@ fn archive_pending_tasks_without_a_model_preserves_history_and_requires_observat
 #[test]
 fn archive_rejects_an_active_task_atomically() {
     let (store, mut doc, profile) = tests::fixture();
-    let task = |key: &str, status: &str| json!({"key":key,"kind":"video","mode":"multi","inputs":[],"prompt":"Original","modelId":"","status":status});
+    let task = |key: &str, status: &str| json!({"key":key,"title":key,"kind":"video","mode":"multi","inputs":[],"prompt":"Original","modelId":"","status":status});
     doc["production"] = json!({"drafts":{"old":task("old", "AWAITING_CONFIRMATION"),"busy":task("busy", "IN_PROGRESS")}});
     crate::projects::write_document(&store, doc, false).unwrap();
     for key in ["old", "busy"] {

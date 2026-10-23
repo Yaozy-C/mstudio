@@ -4,7 +4,7 @@ The director owns staging, camera path, events and revelation. Image production 
 
 ## Select the requested deliverable
 
-A shot storyboard request produces one 2 by 2 action board per requested Mstudio shot record, using the same rule across the project. Do not silently replace it with a single representative image, a four-angle product sheet or four alternative concepts. Explicit standalone image, reference-asset and exact first/last-frame requests remain those deliverables. Prompt edits and Skill maintenance do not authorize generation.
+A shot storyboard request produces one 2 by 2 action board per requested Mstudio shot record, using the same rule across the project. Do not silently replace it with a single representative image, a four-angle product sheet or four alternative concepts. Explicit standalone-image and exact first/last-frame requests retain their format. Prompt edits and Skill maintenance do not authorize generation.
 
 ## Replace a legacy deliverable without replaying it
 
@@ -36,10 +36,18 @@ Request one image containing four equal panels, thin plain gutters and the expli
 
 Put shared identity, environment, camera rules and light once, then separately describe the visible state in each panel. A panel is a still, not a command to perform an entire action. Keep contact, opening, support, light path and viewpoint physically compatible. Use pose and location to show progress. Keep sound, trajectory and timing explanations in the handoff.
 
+## Photographic direction and panel scale
+
+Use [photographic direction](photographic-direction.md) to state the capture, lens, camera height, motivated light, palette and finish once. Each panel then needs one distinct visible state and one light/value decision; do not repeat the same adjectives in all four cells. For faces and hands, use [skin realism](skin-realism.md) only at the scale the panel can show.
+
+At a 2 by 2 layout, a panel is one quarter of the output. If the board is 1672 by 941, each panel is about 836 by 470: enough for blocking, not for pore-level skin or precise fingers. Do not ask the board to prove detail that the panel cannot hold; state the limitation and propose an authorized full-frame look or control frame when that detail matters.
+
+Check support surfaces and footwear across panels. A seated character can slip from the sand onto the platform edge, and shoes can disappear at panel scale even when the wardrobe is otherwise correct. If the support surface or footwear is story-critical, use a layout sketch or generate the panels separately at full frame and composite; do not accept a board that seats the character on a different surface.
+
 No burned-in panel numbers, captions, arrows, dialogue bubbles, watermarks or decorative borders by default. Deliberate onscreen copy from the selected script remains part of the appropriate state. Use plain gutters only to separate cells. Match the requested photographic or drawn style; polish does not compensate for unreadable action.
 
 ## Save and hand off
 
-Save the full board prompt in shot.framePrompt and link its one actual completed image asset through shot.frames. In existing project text or handoff record shot ID, asset ID, panel-to-state mapping, continuous/cut structure, camera rule, identity evidence and unresolved defects. Do not invent panel schema fields or link imaginary crops as separate assets.
+Supply the full board prompt to the generation-task tool and link its actual completed asset with mstudio_set_shot_frames. The task owns the prompt; shot.framePrompt is not writable through this interface. In existing project text or handoff record shot ID, asset ID, panel-to-state mapping, continuous/cut structure, camera rule, identity evidence and unresolved defects. Do not invent panel schema fields or link imaginary crops as separate assets.
 
 The consuming video role receives the whole board as storyboard/shot-planning reference, not an exact starting or ending frame. The producer uses the selected endpoint's supported reference mode, limits and syntax. Do not crop or regenerate separate controls by default or switch formats silently if the endpoint cannot use a storyboard reference. A static board establishes planned states, not successful motion, timing or sound.

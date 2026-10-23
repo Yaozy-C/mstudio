@@ -30,7 +30,6 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
             if asset {
                 fixed.insert("generationPurpose".into(), json!("asset"));
             }
-            fixed.insert("draftOnly".into(), json!(false));
             add(
                 &mut out,
                 name,
@@ -38,7 +37,7 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 operation.clone(),
                 fixed,
                 None,
-                "Create one task awaiting user confirmation using the complete prompt and actual references. Never submits to the generation service. Update an existing task instead of creating a duplicate. Only the user can start generation.",
+                "Create one task awaiting user confirmation using the complete prompt and actual references. Reusable reference images are standalone: create them directly, without a placeholder asset node or target ID. Never submits to the generation service. Update an existing task instead of creating a duplicate. Only the user can start generation.",
             );
         } else if op == "add_node" {
             for kind in operation["properties"]["kind"]["enum"]
@@ -68,7 +67,10 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                     .cloned();
                 properties.remove("shot");
                 properties.remove("screenplay");
-                if let Some(fields) = fields {
+                if let Some(mut fields) = fields {
+                    if kind == "screenplay" {
+                        fields.retain(|key, _| key == "script");
+                    }
                     properties.extend(fields);
                 }
                 if kind == "shot" {
@@ -77,6 +79,11 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                         json!("order"),
                         json!("duration"),
                     ]);
+                } else if kind == "asset" {
+                    parameters["required"]
+                        .as_array_mut()
+                        .unwrap()
+                        .push(json!("assetId"));
                 }
                 add(
                     &mut out,
@@ -86,7 +93,14 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                     serde_json::Map::from_iter([("kind".into(), json!(kind))]),
                     nested,
                     &format!(
-                        "Create a {kind} node with a new id and title. All listed fields are direct parameters, including any script or shot fields. Screenplay content uses script paragraphs, with no text body. x/y, when supplied, are absolute canvas coordinates."
+                        "Create a {kind} node with a new id and title. {} All listed fields are direct parameters. x/y, when supplied, are absolute canvas coordinates.",
+                        if kind == "screenplay" {
+                            "Only one screenplay is allowed per project; update an existing one with mstudio_update_screenplay. script contains film paragraphs in order. Supplementary notes belong in the saved Agent output, handed off via outputRef."
+                        } else if kind == "asset" {
+                            "assetId must identify existing project media; this only places that media on the canvas. To generate a missing reusable asset, use mstudio_generate_reference_image directly without creating a node."
+                        } else {
+                            ""
+                        }
                     ),
                 );
             }
@@ -128,19 +142,24 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 }
             }
             if operation["properties"].get("screenplay").is_some() {
+                let mut parameters = flat(
+                    operation,
+                    "screenplay",
+                    &["script", "removeParagraphIds", "paragraphOrder"],
+                );
+                parameters["properties"]["title"] = operation["properties"]["title"].clone();
                 add(
                     &mut out,
                     "update_screenplay",
                     op,
-                    flat(operation, "screenplay", &[]),
+                    parameters,
                     serde_json::Map::from_iter([("expectedKind".into(), json!("screenplay"))]),
                     Some("screenplay"),
-                    "Update screenplay paragraphs by ID. Merge preserves omitted paragraphs; replace requires complete paragraphs. Explicit removeParagraphIds deletes paragraphs.",
+                    "Update the existing screenplay's title or paragraphs by stable IDs. Omitted paragraphs and fields are preserved. Explicit removeParagraphIds deletes paragraphs; paragraphOrder must list all remaining IDs exactly once. For a rewrite, supply the retained/new paragraphs and explicitly remove obsolete IDs in this same call. Supplementary notes belong in the saved Agent output, not timed film paragraphs.",
                 );
             }
             for (kind, name) in [
                 ("shot", "update_shot_design"),
-                ("screenplay", "update_screenplay_info"),
                 ("asset", "update_asset_node"),
                 ("note", "update_note"),
                 ("text", "update_text"),
@@ -153,9 +172,6 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                         let permitted = match kind {
                             "shot" => ["op", "id", "expectedKind", "title", "text"]
                                 .contains(&key.as_str()),
-                            "screenplay" => {
-                                ["op", "id", "expectedKind", "title"].contains(&key.as_str())
-                            }
                             "asset" => ["op", "id", "expectedKind", "title", "text", "assetId"]
                                 .contains(&key.as_str()),
                             _ => ["op", "id", "expectedKind", "title", "text"]

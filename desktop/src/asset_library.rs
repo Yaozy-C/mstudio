@@ -8,10 +8,7 @@ use tauri::State;
 pub fn init(db: &Connection) -> Result<()> {
     db.execute_batch(
         "CREATE TABLE IF NOT EXISTS global_assets(
-        asset_id TEXT PRIMARY KEY REFERENCES assets(id), added INTEGER NOT NULL);
-        UPDATE assets SET data=json_set(data,'$.generated',json('true'))
-        WHERE coalesce(json_extract(data,'$.generated'),0)=0
-        AND id IN (SELECT json_extract(data,'$.asset.id') FROM jobs);",
+        asset_id TEXT PRIMARY KEY REFERENCES assets(id), added INTEGER NOT NULL);",
     )?;
     Ok(())
 }

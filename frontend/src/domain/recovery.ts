@@ -2,19 +2,38 @@ import type { Project } from "../model";
 import type { GeneratedJob } from "../workspace/generatedJobTracking";
 import { contentChanged } from "../workspace/projectRevision";
 import { reconcileJob } from "./generation";
+import { issue } from "../errors/catalog";
+import { syncJobTracking } from "./generationTracking";
 
-// A bad historical job must not prevent the remaining jobs from recovering.
+// A failed result update must not prevent the remaining jobs from syncing.
 export function recoverJobs(document: Project, jobs: GeneratedJob[]) {
-  let failedJobs = 0;
+  const failures: { jobId: string; error: string }[] = [];
   for (const job of jobs) {
     try {
-      const next = reconcileJob(document, job);
+      // Stale local errors clear only on success. A failure must retain the
+      // original pause/backoff metadata when reporting its diagnostic.
+      const next = reconcileJob(document, {
+        ...job,
+        reconciliation: undefined,
+        sync: job.sync?.stage === "reconcile" ? undefined : job.sync,
+      });
       next.revision =
         (document.revision ?? 0) + Number(contentChanged(document, next));
       document = next;
-    } catch {
-      failedJobs++;
+    } catch (error) {
+      const diagnostic = JSON.stringify(
+        issue(
+          "PROJECT_SYNC_FAILED",
+          error instanceof Error ? error.message : String(error),
+          { stage: "reconcile", retryable: true },
+        ),
+      );
+      failures.push({ jobId: job.id, error: diagnostic });
+      document = syncJobTracking(document, {
+        ...job,
+        reconciliation: { error: diagnostic },
+      });
     }
   }
-  return { document, failedJobs };
+  return { document, failures };
 }

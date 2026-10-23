@@ -144,8 +144,8 @@ fn offloaded_media_replays_as_references_and_reopens_with_project_and_model_chec
         fn token(&self) -> &tokio_util::sync::CancellationToken {
             &self.1
         }
-        fn definitions(&self) -> Vec<rig_core::completion::ToolDefinition> {
-            vec![]
+        fn definitions(&self) -> Result<Vec<rig_core::completion::ToolDefinition>, String> {
+            Ok(vec![])
         }
         fn parallel_safe(&self, _: &rig_core::message::ToolCall) -> bool {
             false
@@ -205,12 +205,12 @@ fn offloaded_media_replays_as_references_and_reopens_with_project_and_model_chec
         } else {
             assert_eq!(
                 super::super::media_retention::read(&db, "other", id, &model)["code"],
-                "MEDIA_UNAVAILABLE"
+                "MEDIA_NOT_FOUND"
             );
             if entry["content"]["type"] != "text" {
                 assert_eq!(
                     super::super::media_retention::read(&db, "p", id, &profile())["code"],
-                    "MEDIA_UNAVAILABLE"
+                    "MEDIA_UNSUPPORTED"
                 );
             }
             super::super::media_retention::read(&db, "p", id, &model)

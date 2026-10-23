@@ -22,6 +22,7 @@ export async function preparePrompt(
       projectId,
       mediaModelId: draft.modelId,
       kind: draft.kind,
+      generationPurpose: draft.generationPurpose,
       prompt: draft.prompt,
       parameters: draft.parameters ?? {},
       contextReferences: draft.inputs

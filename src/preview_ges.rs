@@ -73,9 +73,7 @@ pub fn prepare(spec: &RenderSpec, assets: &[Asset], root: &Path, edge: u32) -> R
                 continue;
             }
             let scale = c.scale.unwrap_or(1.);
-            let fit = (width as f64 / a.width.max(1) as f64)
-                .min(height as f64 / a.height.max(1) as f64)
-                * scale;
+            let fit = (width as f64 / a.width as f64).min(height as f64 / a.height as f64) * scale;
             let w = (a.width as f64 * fit).round().max(2.) as i32;
             let h = (a.height as f64 * fit).round().max(2.) as i32;
             let filters = crate::visual::ffmpeg(c.visual.as_ref(), w as i64, h as i64)?;

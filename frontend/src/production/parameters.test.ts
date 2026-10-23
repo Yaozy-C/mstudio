@@ -10,6 +10,7 @@ import { inputFor } from "./request";
 test("Codex submits without inherited output parameters", () => {
   const m = model("codex://local/images", "image");
   m.plugin = "codex-image";
+  m.params.model = "gpt-image-2";
   const result = inputFor(
     fixture(),
     {

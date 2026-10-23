@@ -17,8 +17,7 @@ test("thinking, progress and tool operations stay interleaved after history relo
     event(5, "assistant/reasoning", { id: "b", text: "根据图片调整" }),
     event(6, "tool/call", {
       callId: "edit",
-      name: "mstudio_edit",
-      arguments: { operations: [{ op: "update_shot" }] },
+      name: "mstudio_update_shot",
     }),
   ];
   const rows = activityTimeline([...events].reverse());

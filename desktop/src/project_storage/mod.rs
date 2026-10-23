@@ -1,10 +1,10 @@
 mod cleanup;
+mod deletion_tombstones;
 pub(crate) use cleanup::managed;
 pub mod delete_media;
 #[cfg(test)]
 mod delete_media_tests;
 mod deleted_media_events;
-pub mod direct_references;
 mod plan;
 #[cfg(test)]
 mod tests;
@@ -28,6 +28,7 @@ pub fn init(db: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS pending_file_deletions(
         project_id TEXT NOT NULL,path TEXT NOT NULL,PRIMARY KEY(project_id,path));",
     )?;
+    deletion_tombstones::init(db)?;
     Ok(())
 }
 

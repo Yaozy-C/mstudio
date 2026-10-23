@@ -21,6 +21,25 @@ For shot storyboard images, apply [frame selection and continuity](frames.md): w
 
 Script, dialogue, sound and camera trajectory are context. Include only what is visible at this moment, with a sound source only when needed. Add details to resolve ambiguity, not new events, people, props or slogans. Surreal effects change the chosen relationships while retaining a compatible source and state.
 
+## Board prompt contract
+
+Write one board as one photographic setup plus four visible states. Do not write four unrelated mini-prompts or a 2,000-character continuity contract.
+
+1. **Shared look, once.** Capture, film or sensor, lens, camera height and distance, light source and ratio, palette, finish. Read [photographic direction](photographic-direction.md).
+2. **Shared world, once.** Location, platform or room, fixed landmarks, recurring people and their wardrobe. Put reference roles in purpose, not repeated in every panel.
+3. **Four states, one each.** For each panel: who is where, what changes, gaze, hands, support and the light/value relationship that makes the state readable. A fixed camera keeps its height and landmarks; a moving camera keeps world geometry.
+4. **Continuity and exclusions outside the prompt.** Keep part counts, negative constraints and acceptance checks in the task checklist or reference purposes. Repeat only a failure the model has already produced.
+
+A shared block can be two or three sentences; each panel can be one or two. If the board prompt reads like a contract with twenty unrelated clauses, the model will average them into four safe catalogue panels.
+
+Example skeleton:
+
+> A photorealistic 35mm film board, four equal 16:9 scene panels with thin plain gutters, camera at seated eye level on wet sand, 50mm at T2.8. The sun is below the horizon: a thin apricot band remains, the sky above is dusty blue-grey, the sea is dark slate. Warm sand bounce lights the faces; a cool ambient fill keeps the shadow side readable. Rust-red linen, cream trousers, grey curls, weathered planks and matte black metal each catch the light differently.
+>
+> Panel 1: the older woman sings, hands apart between claps; the singer listens at the mic. Panel 2: her hands meet in a clap; the singer's fingers have just released the microphone. Panel 3: the singer's hands meet at her chest, looking at the older woman. Panel 4: both clap in reply, neighbours beginning to join.
+
+At panel scale, do not demand pores or precise fingers the panel cannot hold; read [skin realism](skin-realism.md) and state the real limitation.
+
 ## Spatial coherence before prose
 
 Fix the camera location relative to the subject, its viewing direction, visible surfaces and occluded regions before adding style. Describe the selected instant: aperture open/closed, object support and contact, foreground/background and light source/path must agree. An interior view through an opening and an exterior product view expose different surfaces; do not combine them to display every product feature. A reference of the outside can establish identity without becoming the requested composition.
@@ -63,4 +82,6 @@ Write the visible output, selected state, composition, light and necessary refer
 
 Compare actual output with the intended state, viewpoint, support/contact, identity, components and requested text. For a sequence, also check that changing support, tension, openings and movable parts follow the depicted action rather than repeating a frozen reference state. Repair the observed mismatch. Fine detail does not by itself establish realism.
 
-For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic appearance](scene-execution.md) only when that task needs the additional detail. These examples do not set the style for other projects.
+For photographic work, also check the camera relationship, light direction and ratio, color relationships and skin/material response at panel scale. If the board reads as synthetic, use [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md) to repair the cause rather than adding more detail.
+
+For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic appearance](scene-execution.md) plus [photographic direction](photographic-direction.md). These examples do not set the style for other projects.

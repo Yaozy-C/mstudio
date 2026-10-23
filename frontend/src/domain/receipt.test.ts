@@ -8,6 +8,7 @@ import { receipt } from "./receipt";
 
 const task = (status: string): ProductionTask => ({
   key: "run:execution:0",
+  title: "Kitchen",
   kind: "image",
   mode: "single",
   inputs: [],

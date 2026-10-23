@@ -7,7 +7,7 @@ export function scriptReceipt(p: Project, operations: unknown) {
       .filter(
         (o) =>
           o.screenplay &&
-          ["script", "scriptMode", "removeParagraphIds", "paragraphOrder"].some(
+          ["script", "removeParagraphIds", "paragraphOrder"].some(
             (k) => k in o.screenplay,
           ),
       )

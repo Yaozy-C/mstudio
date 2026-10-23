@@ -241,7 +241,8 @@ fn shot_reference_is_text_and_directory_without_implicitly_reading_frames() {
 
 #[test]
 fn coordinator_still_receives_explicit_media_attachments_without_active_media_tools() {
-    let coordinator = super::profiles::defaults("");
+    let mut coordinator = super::profiles::defaults("");
+    coordinator.tool_ids.retain(|id| id != "media-read");
     assert!(!super::profiles::allows(&coordinator, "read_media"));
     let (root, store, doc) = fixture();
     let refs = [

@@ -125,8 +125,20 @@ pub fn history(
                     role: role.into(),
                     content: r.get(offset + 1)?,
                     model: r.get(offset + 2)?,
-                    payload: serde_json::from_str(&payload).unwrap_or(Value::Null),
-                    attribution: serde_json::from_str(&meta).ok(),
+                    payload: serde_json::from_str(&payload).map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            offset + 3,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?,
+                    attribution: Some(serde_json::from_str(&meta).map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            offset + 4,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?),
                 })
             };
             Ok([make(0, "user")?, make(5, "assistant")?])
@@ -153,11 +165,16 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
                 .filter(|n| ids.contains(&n["id"].as_str().unwrap_or("")))
                 .collect::<Vec<_>>()
         );
-        snapshot["relevantNodes"] = json!(ids.iter().filter_map(|id|doc["nodes"].as_array()?.iter().find(|n|n["id"]==*id)).map(|n|json!({"id":n["id"],"kind":n["kind"],"title":n["title"],"details":"Read with inspect nodeIds/fields."})).collect::<Vec<_>>());
+        snapshot["relevantNodes"] = json!(
+            ids.iter()
+                .filter_map(|id| doc["nodes"].as_array()?.iter().find(|n| n["id"] == *id))
+                .map(|n| json!({"id":n["id"],"kind":n["kind"],"title":n["title"]}))
+                .collect::<Vec<_>>()
+        );
         snapshot["tracks"] = json!([]);
     }
     snapshot["task"] = json!({"taskId":scope.task_id,"agentId":scope.agent_id,"targets":scope.targets,"view":scope.view});
-    snapshot["contextPolicy"] = json!({"history":"Fresh context includes only the latest completed exchange, without old tool traces; request earlier history as needed. Current requirements take precedence.","details":"Omission does not mean absence. inspect supports ids, nodeIds, fields and pagination. Establish current target state before editing.","sharedConstraints":"requirements/creation preview project constraints with length limits; when truncated=true, inspect section=creation for the full constraints."});
+    snapshot["contextPolicy"] = json!({"history":"Fresh context includes only the latest completed exchange, without old tool traces; request earlier history as needed. Current requirements take precedence.","details":"Omission does not mean absence. Use mstudio_read_project for the node directory, mstudio_read_screenplay for paragraphs, mstudio_read_shots for shot design and mstudio_read_nodes for text, note or asset nodes. Establish current target state before editing.","sharedConstraints":"requirements/creation preview project constraints with length limits; when truncated=true, use mstudio_read_creation for full constraints."});
     snapshot["constraintsTruncated"] = json!(
         doc["brief"].as_str().unwrap_or("").chars().count() > 2000
             || ["intent", "essential", "preserve"]

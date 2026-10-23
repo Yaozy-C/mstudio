@@ -27,11 +27,16 @@ fn config() -> Config {
         .expect("valid prompt Skill configuration")
 }
 
-pub fn quick_profile(db: &Connection, kind: &str) -> Result<AgentProfile> {
+pub fn quick_profile(db: &Connection, kind: &str, purpose: Option<&str>) -> Result<AgentProfile> {
     let config = config();
+    let route = match (kind, purpose) {
+        ("image", Some("asset")) => "asset",
+        ("image" | "video", None) => kind,
+        _ => anyhow::bail!("生成类型与用途无效"),
+    };
     let id = config
         .quick_agents
-        .get(kind)
+        .get(route)
         .ok_or_else(|| anyhow::anyhow!("没有配置此生成模式的 Agent"))?;
     let profile = super::profiles::resolve(db, Some(id))?;
     anyhow::ensure!(

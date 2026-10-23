@@ -22,6 +22,12 @@
 .task-panel-heading :is(h1, h2) {
   margin: 0;
 }
+.task-runtime-issues {
+  max-height: 30%;
+  padding: 8px 20px;
+  overflow: auto;
+  border-bottom: 1px solid var(--desk-rule);
+}
 .task-panel-list small {
   color: var(--desk-muted);
 }

@@ -28,12 +28,12 @@ impl Host for FileHost<'_> {
     fn token(&self) -> &CancellationToken {
         &self.token
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
-        vec![ToolDefinition::new(
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        Ok(vec![ToolDefinition::new(
             TOOL_NAME.try_into().unwrap(),
             editor_schema::DESCRIPTION,
             editor_schema::schema(),
-        )]
+        )])
     }
     fn parallel_safe(&self, _: &ToolCall) -> bool {
         false

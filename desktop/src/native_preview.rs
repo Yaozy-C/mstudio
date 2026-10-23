@@ -109,16 +109,19 @@ pub async fn native_preview_status(token: String) -> Result<Status, String> {
     player.snapshot()
 }
 #[tauri::command]
-pub async fn native_preview_frame(token: String, last: u32) -> tauri::ipc::Response {
-    let player = SESSION.lock().unwrap().get(&token);
-    let frame = if let Some(player) = player {
-        tauri::async_runtime::spawn_blocking(move || player.frame(last))
-            .await
-            .unwrap_or_default()
-    } else {
-        vec![]
-    };
-    tauri::ipc::Response::new(frame)
+pub async fn native_preview_frame(
+    token: String,
+    last: u32,
+) -> Result<tauri::ipc::Response, String> {
+    let player = SESSION
+        .lock()
+        .unwrap()
+        .get(&token)
+        .ok_or("预览会话已关闭或被替换")?;
+    let frame = tauri::async_runtime::spawn_blocking(move || player.frame(last))
+        .await
+        .map_err(|e| e.to_string())??;
+    Ok(tauri::ipc::Response::new(frame))
 }
 #[tauri::command]
 pub async fn native_preview_frame_info(

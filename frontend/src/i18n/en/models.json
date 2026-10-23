@@ -230,5 +230,16 @@
   "GPT Image 2.5 Sunburst · Codex": "GPT Image 2.5 Sunburst · Codex",
   "使用 Codex 登录直连生图，原样发送提示词和配置的模型 ID。默认 gpt-image-2.5-sunburst，实际可用性取决于 Codex 账号权限。": "Uses your Codex login to send the prompt and configured model ID directly. Defaults to gpt-image-2.5-sunburst; availability depends on your Codex account access.",
   "按此模型 ID 请求生成和编辑；实际可用性取决于 Codex 账号权限，失败时不会自动切换型号。": "Requests this model ID for generation and editing. Availability depends on your Codex account access; failures will not switch models automatically.",
-  "请填写有效的 Codex 图像模型 ID": "Enter a valid Codex image model ID"
+  "请填写有效的 Codex 图像模型 ID": "Enter a valid Codex image model ID",
+  "待配置模型 ID": "Model ID required",
+  "容量未知，请刷新或手动填写": "Capacity unknown. Refresh or enter it manually.",
+  "填写服务公布的容量": "Enter the provider's published capacity",
+  "上下文容量未知；刷新容量或手动填写后才能使用此模型。": "Context capacity is unknown. Refresh it or enter it manually before using this model.",
+  "未获取到此模型的上下文容量，请刷新容量或手动填写上下文窗口": "Context capacity is unavailable. Refresh it or enter the context window manually.",
+  "请填写手动上下文窗口，或切换为自动获取": "Enter a context window or switch to automatic discovery",
+  "此 Anthropic 型号未公布默认输出上限，请手动填写输出上限": "This Anthropic model has no known default output limit. Enter one manually.",
+  "对话模型缺少服务连接，请在设置中重新选择连接": "The chat model needs a service connection. Select one in Settings.",
+  "服务未提供此型号的容量，请按官方说明手动填写。": "The service did not provide this model's capacity. Enter it from the official documentation.",
+  "Codex 未声明默认型号，请在此连接下添加并选择对话模型。": "Codex did not declare a default model. Add and select a chat model for this connection.",
+  "完成连接": "Finish connecting"
 }

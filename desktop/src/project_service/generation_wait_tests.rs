@@ -8,7 +8,7 @@ fn fixture() -> Store {
     let store = Store::open(root).unwrap();
     for id in ["p", "other"] {
         write_document(&store, json!({"id":id,"name":id,"nodes":[],"assets":[],"clips":[],
-            "production":{"drafts":{"task":{"key":"task","kind":"image","modelId":"m","status":"READY"}}}}), true).unwrap();
+            "production":{"drafts":{"task":{"key":"task","title":"Current generation","kind":"image","modelId":"m","status":"READY"}}}}), true).unwrap();
     }
     store
 }

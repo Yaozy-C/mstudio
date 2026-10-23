@@ -1,9 +1,11 @@
 use super::*;
 
-pub(super) fn wake_pending(child: &ChildHost, id: &str) {
-    let Some(parent) = child.inner.tool.as_ref() else {
-        return;
-    };
+pub(super) fn wake_pending(child: &ChildHost, id: &str) -> Result<(), String> {
+    let parent = child
+        .inner
+        .tool
+        .as_ref()
+        .ok_or("Subagent project context missing")?;
     let store = parent.app.state::<Store>();
     let pending = store
         .db
@@ -14,20 +16,19 @@ pub(super) fn wake_pending(child: &ChildHost, id: &str) {
             [id],
             |r| r.get::<_, bool>(0),
         )
-        .unwrap_or(false);
+        .map_err(|error| error.to_string())?;
     if !pending {
-        return;
+        return Ok(());
     }
     let state = store.db.lock().unwrap().query_row(
         "SELECT status,profile,model_id,last_turn FROM subagent_runs WHERE id=?1 AND mode='continuable'",
         [id], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?)),
-    ).optional().ok().flatten();
-    if let Some((status, profile, model, turn)) = state
-        && status != "running"
-        && let Err(error) = start_continuation(parent, id, &profile, &model, &turn)
-    {
-        eprintln!("subagent continuation failed: {error}");
+    ).map_err(|error| error.to_string())?;
+    let (status, profile, model, turn) = state;
+    if status != "running" {
+        start_continuation(parent, id, &profile, &model, &turn)?;
     }
+    Ok(())
 }
 pub(super) fn start_continuation(
     parent: &crate::assistant::tools::ProjectTool,
@@ -39,14 +40,14 @@ pub(super) fn start_continuation(
     let store = parent.app.state::<Store>();
     let saved: profiles::AgentProfile =
         serde_json::from_str(profile_json).map_err(|e| e.to_string())?;
-    let owner: String = store
+    let (owner, parent_turn): (String, String) = store
         .db
         .lock()
         .unwrap()
         .query_row(
-            "SELECT parent_agent_id FROM subagent_runs WHERE project_id=?1 AND id=?2",
+            "SELECT parent_agent_id,parent_turn FROM subagent_runs WHERE project_id=?1 AND id=?2",
             rusqlite::params![parent.project, id],
-            |row| row.get(0),
+            |row| Ok((row.get(0)?, row.get(1)?)),
         )
         .map_err(|e| e.to_string())?;
     let profile = scoped(
@@ -76,6 +77,7 @@ pub(super) fn start_continuation(
             .ok_or("Cannot restore child session")?;
     let mut tool = parent.clone();
     tool.profile = profile;
+    tool.skill_setting = profiles::skill_setting(&tool.profile);
     tool.turn = last_turn.into();
     crate::assistant::turn_context::refresh(&mut tool, &mut messages)?;
     let previous_revision = binding["revision"].clone();
@@ -94,55 +96,21 @@ pub(super) fn start_continuation(
                 .map(str::to_owned)
         })
         .unwrap_or_default();
-    let claimed = store.db.lock().unwrap().execute(
-        "UPDATE subagent_runs SET status='running',updated=unixepoch() WHERE id=?1 AND last_turn=?2 AND status!='running'",
-        rusqlite::params![id,last_turn],
-    ).map_err(|e| e.to_string())?;
-    if claimed == 0 {
+    let new_turn = format!("{id}-{}", mstudio::media::id());
+    let started = persistence::resume(&mut store.db.lock().unwrap(), persistence::Start {
+        child: id, project: &parent.project, parent_turn: &parent.turn,
+        parent_agent: &owner, turn: &new_turn, profile: &tool.profile,
+        binding, messages: &messages, events: vec![
+            ("request/source", json!({"requestTurnId":request_turn})),
+            ("subagent/configuration", json!({
+                "childId":id,"previousRevision":previous_revision,"revision":tool.profile.revision,
+                "profile":tool.profile,"restoredFrom":last_turn,"requestTurnId":request_turn
+            })),
+        ],
+    }, last_turn).map_err(|error| error.to_string())?;
+    if !started {
         return Ok(());
     }
-    let new_turn = format!("{id}-{}", mstudio::media::id());
-    if let Err(error) =
-        super::super::session::start(&store, &parent.project, &new_turn, binding, &messages)
-    {
-        let _ = store.db.lock().unwrap().execute(
-            "UPDATE subagent_runs SET status='ready' WHERE id=?1 AND last_turn=?2",
-            rusqlite::params![id, last_turn],
-        );
-        return Err(error);
-    }
-    journal::append(
-        &store,
-        &parent.project,
-        &new_turn,
-        "request/source",
-        json!({"requestTurnId":request_turn}),
-    )
-    .map_err(|e| e.to_string())?;
-    journal::append(
-        &store,
-        &parent.project,
-        &new_turn,
-        "subagent/configuration",
-        json!({
-            "childId":id,"previousRevision":previous_revision,"revision":tool.profile.revision,
-            "profile":tool.profile,"restoredFrom":last_turn,"requestTurnId":request_turn
-        }),
-    )
-    .map_err(|e| e.to_string())?;
-    store.db.lock().unwrap().execute("UPDATE subagent_runs SET last_turn=?2,profile=?4,notified=0,updated=unixepoch() WHERE id=?1 AND last_turn=?3",rusqlite::params![id,new_turn,last_turn,serde_json::to_string(&tool.profile).map_err(|e|e.to_string())?]).map_err(|e|e.to_string())?;
-    let source: String = store.db.lock().unwrap().query_row("SELECT source FROM subagent_inbox WHERE child_id=?1 AND consumed=0 ORDER BY seq LIMIT 1",[id],|r|r.get(0)).map_err(|e|e.to_string())?;
-    let source: Value = serde_json::from_str(&source).map_err(|e| e.to_string())?;
-    crate::assistant::child_activity::start(
-        &store.db.lock().unwrap(),
-        &parent.project,
-        &new_turn,
-        id,
-        source["senderTurnId"].as_str().unwrap_or(&parent.turn),
-        source["callId"].as_str().unwrap_or(""),
-        &tool.profile.id,
-    )
-    .map_err(|e| e.to_string())?;
     tool.turn = new_turn.clone();
     let token = CancellationToken::new();
     tool.token = token.clone();
@@ -164,6 +132,7 @@ pub(super) fn start_continuation(
             delegation: None,
         },
         id: id.into(),
+        parent_turn,
         changes: Mutex::new(vec![]),
         terminal_reason: Mutex::new(None),
     };
@@ -171,9 +140,7 @@ pub(super) fn start_continuation(
     let generation = new_turn.clone();
     tokio::spawn(async move {
         let answer = drive_child(&child, &route, &key, messages, deadline).await;
-        settle(&child, &child_id, &answer, false);
-        remove_active(&child_id, &generation);
-        wake_pending(&child, &child_id);
+        execution::finish(&child, &child_id, &generation, &answer);
     });
     Ok(())
 }

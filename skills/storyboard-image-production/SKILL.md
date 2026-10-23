@@ -1,11 +1,25 @@
 ---
 name: storyboard-image-production
-description: "Produce temporal storyboard boards in Mstudio: one four-panel action board per requested shot, with readable state changes, continuous scene geometry and product identity; also execute explicitly requested stills and reference assets."
+description: "Produce temporal storyboard boards in Mstudio: one four-panel action board per requested shot, with readable state changes, continuous scene geometry and product identity; also execute explicitly requested stills and exact control frames."
 ---
 
 # Storyboard image production
 
-For a shot storyboard request, produce one temporal 2 by 2 action board per requested Mstudio shot record. This is the selected Mstudio workflow, not an industry claim that four panels always perform best. Do not substitute a single representative image or produce a second independent-frame deliverable by default. Explicit requests for a single still, reference asset or exact control frame retain their requested format. Produce the reusable references the selected work depends on. Preserve the chosen concept, the selected identity and original product geometry. Loading this Skill grants no extra tools or permissions: saving a prompt is not a generated image, and task submission is not a completed image.
+For a shot storyboard request, produce one temporal 2 by 2 action board per requested Mstudio shot record. This is the selected Mstudio workflow, not an industry claim that four panels always perform best. Do not substitute a single representative image or produce a second independent-frame deliverable by default. Explicit single-still and exact-control-frame requests retain their requested format. Use the selected reusable references; return missing shared assets through the coordinator to the assets Agent. Preserve the chosen concept, the selected identity and original product geometry. Loading this Skill grants no extra tools or permissions: saving a prompt is not a generated image, and task submission is not a completed image.
+
+Specialists execute assigned production work and return real outputs and task status. Only the coordinator conducts internal review; the user makes the final selection. Reading references is for execution, not approval. Apply assigned revisions without initiating self-review, acceptance gates or extra generation.
+
+## Shared art direction, storyboard execution
+
+Use the selected, revised character, wardrobe, location and prop assets as the visual baseline. Keep their medium, realism or stylization, era, palette relationships, material treatment and finish through the scene. The board's job is framing, staging, action states and motivated scene light; it must not resemble a neutral asset sheet just because identity references use simple backgrounds. Carry the selected identity and shared aesthetic into the actual generation inputs. Return missing or conflicting asset decisions through coordination instead of independently redesigning each shot's cast or look.
+
+## Look frame before board
+
+When the approved look is missing, or the user says the result is not attractive enough, execute an authorized full-frame look frame before the board. A look frame is one photograph with one visual idea; it establishes capture, camera, light, color and skin/material finish. It is not a board and does not replace the board deliverable.
+
+Use the selected look frame as a visual reference for the board. Do not use a board as the look reference for later shots. If no look frame is authorized, state a compact look hypothesis in the board prompt: capture, camera, light, palette and finish.
+
+The board remains the requested deliverable. Do not silently substitute the look frame for it; return both only when the task authorizes both.
 
 ## Shot-level generation versus exact task retry
 
@@ -18,11 +32,13 @@ Only an explicit retry of a particular task or an explicit request to keep its e
 | The task has to decide | Read |
 |---|---|
 | How to write a board prompt with one visible moment per panel | [Image prompt writing](references/prompt-writing.md) |
+| How to choose the photographic treatment, camera, light and color across four panels | [Photographic direction](references/photographic-direction.md) |
+| Skin, faces and hands at panel scale | [Skin realism](references/skin-realism.md) |
 | How to select four useful shot/state moments, make the design readable and preserve continuity across the board | [Storyboard frames](references/frames.md) |
-| Whether subject, location or layout references are missing, and how to design useful reference assets | [Reference assets](references/reference-assets.md) |
+| Which selected shared references the shot needs, and what is missing | [Reference assets](references/reference-assets.md) |
 | Viewpoint, contact, part count and cross-frame state constraints | [Frame rules](references/frame-checks.md) |
 | Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](references/scene-execution.md) |
-| Photographic people, skin, light and material appearance | [Photographic appearance](references/scene-execution.md) |
+| Scene-specific light and material appearance | [Photographic appearance](references/scene-execution.md) |
 
 For storyboard images or start/key/end control-frame requests, use the storyboard-frame rules when their format is needed; reuse loaded text. It realizes the supplied shot design as one four-panel board per shot; panel count does not create cuts or multiply duration. Covers and unrelated standalone pictures do not become storyboards. Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
@@ -32,7 +48,9 @@ Use [visual quality and control frames](references/visual-quality.md) for a new 
 
 An action board explains sequence; a look frame selects appearance; a production control frame supplies a supported endpoint state. Do not conflate them or silently change the requested deliverable. A board remains a board when requested; exact control frames must be independent full-frame images, never the whole grid bound as a first or last frame. Extra frames and alternative looks need existing budget authorization.
 
-When alternatives are authorized, vary a named design decision rather than merely rerolling the same prompt. Compare candidates against the chosen reference direction and hard constraints, not a made-up beauty score. Preserve the selected image through supported local edits when possible; one local defect is not a reason to reinvent the whole scene. Inspect available actual pixels and identify unverified properties. Without image access, return an unverified result, not visual approval.
+At a 2 by 2 board, each panel is one quarter of the output. If the delivered board is 1672 by 941, each panel is about 836 by 470: enough for blocking, not for pore-level skin or precise fingers. Do not demand detail the panel cannot hold. When that detail matters, propose an authorized full-frame look or control frame, or a separate panel route, instead of pretending the board can carry it.
+
+When alternatives are authorized, vary a named design decision rather than merely rerolling the same prompt. Return alternatives with their intended design differences for coordinator review and user selection. Apply assigned local edits to the selected image without reinventing the scene. Return real output IDs and execution limits to the coordinator without claiming acceptance.
 
 For an effect frame, depict one phase and its material state, protect specified identity/label regions, and keep start/end composition compatible. Do not put an entire evolving effect into a still. Keep planning notes out of unsupported tool fields; compile relevant decisions into the actual submitted image prompt and concrete reference purposes. Missing assets go back through the existing coordinator handoff, not an invented delegation tool.
 
@@ -56,4 +74,4 @@ A reference of an opened bag, a mid-action state or a detail close-up supplies o
 
 ## Boundaries
 
-Script content, shot design and video generation belong to other Skills. Fix execution deviations locally; return design conflicts with evidence. Static frames never establish motion, speed, sound or playback.
+Script content, shot design and video generation belong to other Skills. Execute assigned local revisions; return design conflicts to the coordinator. Static frames never establish motion, speed, sound or playback.

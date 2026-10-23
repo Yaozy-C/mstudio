@@ -9,6 +9,7 @@ import { ArrowUp } from "@phosphor-icons/react";
 import type { Project } from "../model";
 import type { ProductionController } from "../production/useProduction";
 import { ComposerGeneration } from "../production/ComposerGeneration";
+import { TaskTitleField } from "../production/TaskTitleField";
 import { ComposerMediaInputs } from "./ComposerMediaInputs";
 import { useComposerFiles } from "./useComposerFiles";
 import type { AttachmentDraft } from "./useAttachments";
@@ -59,7 +60,12 @@ export function MediaComposer({
     }
   }
   const blocked =
-    preparing || draft.busy || !model || !task?.prompt.trim() || !!issue;
+    preparing ||
+    draft.busy ||
+    !model ||
+    !task?.title?.trim() ||
+    !task.prompt.trim() ||
+    !!issue;
   async function send() {
     if (blocked || submitting.current) return;
     submitting.current = true;
@@ -116,6 +122,10 @@ export function MediaComposer({
             canvas={canvas}
             project={project}
             draft={draft}
+          />
+          <TaskTitleField
+            value={task?.title ?? ""}
+            change={(title) => canvas.update({ title })}
           />
           <textarea
             {...ime}

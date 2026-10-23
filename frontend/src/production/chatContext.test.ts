@@ -6,6 +6,7 @@ import type { ProductionTask } from "./types";
 
 const task: ProductionTask = {
   key: "existing-task",
+  title: "Pack · storyboard",
   turnId: "original-turn",
   createdAt: 1,
   kind: "image",

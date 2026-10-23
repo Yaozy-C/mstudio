@@ -22,7 +22,7 @@ fn fixture() -> (Store, Profile, profiles::AgentProfile) {
         .unwrap();
     let doc = json!({"id":"p","name":"Test","revision":0,"brief":"","width":1280,"height":720,"fps":30,
         "assets":[asset],"nodes":[],"clips":[],"tracks":[],"captions":[],
-        "production":{"drafts":{"task":{"key":"task","kind":"image","mode":"single","inputs":[],"prompt":"Original image","modelId":"","status":"COMPLETED","resultAssetIds":["result"],"turnId":"original","createdAt":1}}}});
+        "production":{"drafts":{"task":{"key":"task","title":"Observed image","kind":"image","mode":"single","inputs":[],"prompt":"Original image","modelId":"","status":"COMPLETED","resultAssetIds":["result"],"turnId":"original","createdAt":1}}}});
     crate::projects::write_document(&store, doc, true).unwrap();
     let profile = Profile {
         inputs: crate::assistant::config::Inputs {

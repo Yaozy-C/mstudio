@@ -59,7 +59,7 @@ pub fn refresh(tool: &mut ProjectTool, messages: &mut Vec<Message>) -> Result<()
         super::generation_context::request(&store.db.lock().unwrap(), &tool.project, &tool.turn)
             .map_err(|e| e.to_string())?
             .map(|(_, request)| request)
-            .unwrap_or(Value::Null);
+            .ok_or("当前执行缺少原始请求归属")?;
     let snapshot = snapshot(
         &tool.app,
         &tool.profile,

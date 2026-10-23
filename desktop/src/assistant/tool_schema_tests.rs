@@ -34,7 +34,7 @@ fn generation_contract_exposes_only_executable_role_variants() {
     let production = builtin("production");
     let asset_only = asset_only_profile();
     let image_role = builtin("image");
-    let image = json!({"op":"request_generation","mediaKind":"image","text":"Synthetic image"});
+    let image = json!({"op":"request_generation","title":"Synthetic task","mediaKind":"image","text":"Synthetic image"});
     assert!(issues(&image_role, image.clone()).is_empty());
     assert!(!issues(&asset_only, image.clone()).is_empty());
     let mut asset = image.clone();
@@ -100,7 +100,7 @@ fn descriptive_reference_roles_explain_the_purpose_field() {
     let errors = issues(
         &asset_only_profile(),
         json!({
-            "op":"request_generation", "mediaKind":"image", "generationPurpose":"asset",
+            "op":"request_generation","title":"Synthetic task", "mediaKind":"image", "generationPurpose":"asset",
             "text":"Synthetic image", "references":[
                 {"assetId":"ref", "purpose":"reference", "role":"product geometry, top view"}
             ]
@@ -168,7 +168,7 @@ fn production_fields_distinguish_draft_prompt_task_prompt_and_video_settings() {
         .iter()
         .any(|i| i.path == "$.operations[0].prompt")
     );
-    let valid = json!({"op":"request_generation","id":"shot","mediaKind":"video","text":"Generate this action","mode":"multi","references":[{"assetId":"image","role":"reference","purpose":"Identity"}],"parameters":{"duration":5,"resolution":"1080P","aspectRatio":"9:16"}});
+    let valid = json!({"op":"request_generation","title":"Synthetic task","id":"shot","mediaKind":"video","text":"Generate this action","mode":"multi","references":[{"assetId":"image","role":"reference","purpose":"Identity"}],"parameters":{"duration":5,"resolution":"1080P","aspectRatio":"9:16"}});
     assert!(issues(&production, valid.clone()).is_empty());
     let mut invalid = valid;
     invalid["mode"] = json!("reference");
@@ -198,8 +198,7 @@ fn image_and_video_advertise_only_their_parameter_fields() {
         ("video", vec!["width", "height"]),
     ] {
         for field in fields {
-            let mut value =
-                json!({"op":"request_generation","mediaKind":kind,"text":"Prompt","parameters":{}});
+            let mut value = json!({"op":"request_generation","title":"Synthetic task","mediaKind":kind,"text":"Prompt","parameters":{}});
             value["parameters"][field] = json!(16);
             assert!(
                 issues(
@@ -216,8 +215,8 @@ fn image_and_video_advertise_only_their_parameter_fields() {
         }
     }
     // Exact enum membership belongs to the selected model, not the generic tool.
-    let image = json!({"op":"request_generation","mediaKind":"image","text":"Prompt","parameters":{"resolution":"custom-image-size"}});
+    let image = json!({"op":"request_generation","title":"Synthetic task","mediaKind":"image","text":"Prompt","parameters":{"resolution":"custom-image-size"}});
     assert!(issues(&builtin("image"), image).is_empty());
-    let video = json!({"op":"request_generation","mediaKind":"video","text":"Prompt","parameters":{"duration":2,"resolution":"custom-video-size"}});
+    let video = json!({"op":"request_generation","title":"Synthetic task","mediaKind":"video","text":"Prompt","parameters":{"duration":2,"resolution":"custom-video-size"}});
     assert!(issues(&production, video).is_empty());
 }

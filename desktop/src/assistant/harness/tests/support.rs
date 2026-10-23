@@ -26,8 +26,8 @@ pub struct TestHost {
     pub settlement_after_step: Mutex<Option<Message>>,
 }
 impl Host for TestHost {
-    fn pending_children(&self) -> bool {
-        self.pending_children
+    fn pending_children(&self) -> Result<bool, String> {
+        Ok(self.pending_children)
     }
     fn token(&self) -> &CancellationToken {
         &self.token
@@ -44,8 +44,10 @@ impl Host for TestHost {
     fn injected(&self) -> Result<Vec<Message>, String> {
         Ok(std::mem::take(&mut *self.inbox.lock().unwrap()))
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
-        ["read", "write", "ping"].into_iter().map(|name|ToolDefinition {name:name.try_into().expect("nonempty tool name"),description:name.into(),parameters:json!({"type":"object","properties":{"delay":{"type":"integer"},"cancel":{"type":"boolean"}},"additionalProperties":false})}).collect()
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        Ok({
+            ["read", "write", "ping"].into_iter().map(|name|ToolDefinition {name:name.try_into().expect("nonempty tool name"),description:name.into(),parameters:json!({"type":"object","properties":{"delay":{"type":"integer"},"cancel":{"type":"boolean"}},"additionalProperties":false})}).collect()
+        })
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         call.function.name != "write"

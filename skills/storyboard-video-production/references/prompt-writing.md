@@ -8,7 +8,7 @@ Use for video prompts, production handoff and confused-action diagnosis. Adapt m
 
 A script section describes a dramatic change; an editorial shot describes one viewpoint; a generation group describes a model call and occupies one Mstudio production shot record. They need not map one-to-one.
 
-Each Mstudio video generation unit must be at least 5 seconds, or the selected model's higher minimum, and remain within its supported maximum. Meet that length by grouping adjacent, narratively compatible short shots into one generation task. Preserve every internal shot's complete description, exact duration, viewpoint, action and designed cut in the actual submitted prompt. Sub-second shots are valid; there is no 1-second floor. For example a 5-second unit may contain a 0.00-0.25s detail shot, a CUT to a 0.25-0.60s hand movement and a CUT to a 0.60-5.00s result: the internal durations remain 0.25s, 0.35s and 4.4s. Keep those relative time ranges in existing shot text and the unit's generation span in shot.duration. Use one task anchored to the unit, rather than a separate task for each internal shot. Preserve the selected continuous-take or cut intent; do not invent cuts to fill a group.
+Each Mstudio video generation unit must be at least 5 seconds, or the selected model's higher minimum, and remain within its supported maximum. Meet that length by grouping adjacent, narratively compatible short shots into one generation task. Preserve every internal shot's complete description, exact duration, viewpoint, action and designed cut in the actual submitted prompt. Sub-second shots are valid; there is no 1-second floor. For example a 5-second unit may contain a 0.00-0.25s detail shot, a CUT to a 0.25-0.60s hand movement and a CUT to a 0.60-5.00s result: the internal durations remain 0.25s, 0.35s and 4.4s. Read those relative time ranges and the unit span from the saved shot design; return structural grouping changes through the coordinator to direction. Use one task anchored to the unit, rather than a separate task for each internal shot. Preserve the selected continuous-take or cut intent; do not invent cuts to fill a group.
 
 Combine a short final group with a compatible neighboring unit when the model's maximum allows. If the complete requested passage is itself shorter than 5 seconds or must remain isolated, generate a source of at least 5 seconds with clearly separated editing handles outside the intended passage. Keep the internal action timings and final-film runtime unchanged; do not add story events, repeats, slow motion or prolonged internal shots to fill the source. Reference-input minimum lengths are separate service constraints, not this output-unit rule.
 
@@ -29,6 +29,21 @@ Before prose conversion, establish the initial camera location relative to the s
 Light must have a source and a plausible path into the visible scene. A dark enclosed interior revealed by an opening is different from an exterior highlighted by a moving reflection. Opening a hinged lid requires an available opening, and an entering object must fit through it before contact. Describe only product features visible from the chosen angle; never move outside merely to show more reference details unless the design calls for it.
 
 Use compatible camera and action geometry. Do not silently combine an internal viewpoint with an external dive, or a fixed camera with incompatible travel. Preserve the user's clarified intent; if essential constraints remain incompatible, report the exact decision needed rather than submitting a guessed compromise. Keep planning commentary out of the model prompt.
+
+## Motion prompt contract
+
+For a short narrative clip, write one coherent paragraph or a small set of paragraphs that covers:
+
+1. **One dominant action.** Start state, decisive change, end state, and the cause of each change.
+2. **Camera.** Start and end position, height, lens, movement type, amplitude and speed; keep it still or simple when the action is the subject.
+3. **Performance.** What the person notices, the order of gaze/blink/breath/mouth, and the reaction latency. Do not use emotion labels as a substitute for timing.
+4. **Light and material.** The motivated source, what stays fixed, and the material response at the event.
+5. **Sound and speech.** Exact line, language, speaker, delivery and the visible beat; ambient and material sounds with a cause.
+6. **Reference roles.** Which input supplies identity, product, environment, motion or a control frame, and what it does not supply.
+
+For image-to-video, the still already supplies appearance. Spend the prompt on motion, camera, performance and sound; do not re-describe the whole image or ask for a new grade. For a board, state the panel-to-state mapping and whether the result is one continuous take or the designed cuts.
+
+Read [motion realism](motion-realism.md) for the failure table and stability rules. Do not answer a morphing face with more adjectives; reduce rotation, keep the face larger, use a selected identity input and shorten the action.
 
 ## Describe changes the viewer can actually see
 
@@ -104,4 +119,4 @@ A prompt-only request ends with saving. Existing same-scope authorization remain
 
 Hand off shot/segment ID, intended change, essential event, inputs/order, actual mode, final prompt and essential constraints in existing records.
 
-For live-action reactions and dialogue, read [naturalistic performance](shot-execution.md) when needed.
+For live-action reactions and dialogue, read [naturalistic performance](shot-execution.md) when needed. For floaty, morphing or weightless results, use [motion realism](motion-realism.md) before adding more prompt detail.

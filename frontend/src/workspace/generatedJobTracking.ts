@@ -1,9 +1,15 @@
-import type { Project } from "../model";
 import type { ProductionSource, ProductionTask } from "../production/types";
 export type GeneratedJob = {
   id: string;
   backgroundManaged?: boolean;
-  sync?: { stage: string; error?: string; paused?: boolean };
+  sync?: {
+    stage: string;
+    attempt?: number;
+    nextAt?: number;
+    error?: string;
+    paused?: boolean;
+  };
+  reconciliation?: { error: string };
   status: string;
   requestId?: string;
   shot: ProductionSource;
@@ -11,41 +17,15 @@ export type GeneratedJob = {
   progress?: ProductionTask["progress"];
   asset?: { id: string };
   outputCount?: number;
-  assets?: { id: string }[];
+  assets?: ({ id: string } | null)[];
 };
-export function needsTracking(job: GeneratedJob, project: Project) {
-  if (
-    [
-      "SUBMITTING",
-      "UNKNOWN",
-      "IN_QUEUE",
-      "IN_PROGRESS",
-      "CANCEL_REQUESTED",
-    ].includes(job.status)
-  )
-    return true;
-  const task = Object.values(project.production?.drafts ?? {}).find(
-    (t) => t.jobId === job.id || t.submissionId === job.id,
-  );
-  if (terminalOutputCount(job) > 0)
-    return task
-      ? task.status !== job.status ||
-          (
-            task.resultAssetIds ??
-            (task.resultAssetId ? [task.resultAssetId] : [])
-          ).length +
-            (job.assets ?? (job.asset ? [job.asset] : [])).filter((a) =>
-              project.removedAssetIds?.includes(a.id),
-            ).length <
-            terminalOutputCount(job)
-      : (job.assets?.length ?? (job.asset ? 1 : 0)) < terminalOutputCount(job);
-  return !!task && task.status !== job.status;
-}
-
 export function terminalOutputCount(job: GeneratedJob): number {
-  // A completed response with no output must surface an import error.
-  if (job.status === "COMPLETED") return Math.max(1, job.outputCount ?? 1);
-  return ["FAILED", "CANCELLED"].includes(job.status)
-    ? (job.outputCount ?? 0)
-    : 0;
+  if (!["COMPLETED", "FAILED", "CANCELLED"].includes(job.status)) return 0;
+  if (job.outputCount === undefined && job.status !== "COMPLETED") return 0;
+  if (
+    !Number.isSafeInteger(job.outputCount) ||
+    job.outputCount! < (job.status === "COMPLETED" ? 1 : 0)
+  )
+    throw new Error("生成任务缺少有效的实际输出数量");
+  return job.outputCount!;
 }

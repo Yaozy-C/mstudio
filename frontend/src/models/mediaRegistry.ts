@@ -51,9 +51,9 @@ export function useMediaModels() {
       window.removeEventListener("media-models-changed", refresh);
     };
   }, []);
-  async function save(model: MediaModel, key?: string, clearKey = false) {
+  async function save(model: MediaModel) {
     validateMediaModel(model);
-    await bridge("save_media_model", { model, key: key || null, clearKey });
+    await bridge("save_media_model", { model });
     window.dispatchEvent(new Event("media-models-changed"));
   }
   async function remove(id: string) {

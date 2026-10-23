@@ -41,7 +41,7 @@ export const generationReferences = (roles: string[]) => ({
         purpose: {
           ...text(400),
           description:
-            "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Use at most 200 characters. Put descriptive text here, never in role.",
+            "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role.",
         },
         role: {
           ...choices(...roles),
@@ -67,12 +67,14 @@ export const generationReferences = (roles: string[]) => ({
   }),
   maxItems: undefined,
 });
+export const generationTitle = {
+  ...text(100),
+  minLength: 1,
+  description:
+    "Short name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt.",
+};
 const common = {
-  draftOnly: {
-    type: "boolean",
-    description:
-      "Save an editable generation draft without starting generation, even in automatic mode.",
-  },
+  title: generationTitle,
   op: {
     type: "string",
     const: "request_generation",
@@ -117,7 +119,7 @@ export const generationOperations = [
       parameters: imageParameters,
       references: generationReferences(["edit", "reference"]),
     },
-    ["op", "text", "mediaKind"],
+    ["op", "title", "text", "mediaKind"],
   ),
   object(
     {
@@ -142,7 +144,7 @@ export const generationOperations = [
         "video-reference",
       ]),
     },
-    ["op", "text", "mediaKind"],
+    ["op", "title", "text", "mediaKind"],
   ),
   object(
     {
@@ -162,6 +164,6 @@ export const generationOperations = [
       },
       references: generationReferences(["edit", "reference"]),
     },
-    ["op", "text", "mediaKind", "generationPurpose", "references"],
+    ["op", "title", "text", "mediaKind", "generationPurpose", "references"],
   ),
 ];

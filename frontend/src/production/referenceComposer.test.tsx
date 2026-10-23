@@ -13,6 +13,7 @@ test("reference mode renders the shared video composer without a conversation mo
     media: { models: [model("minimax/h3/reference-to-video")] },
     task: {
       key: "draft",
+      title: "商品 · 横移揭晓",
       kind: "video",
       mode: "mixed",
       modelId: "model",
@@ -31,4 +32,7 @@ test("reference mode renders the shared video composer without a conversation mo
   expect(html).toContain("视频生成参数");
   expect(html).toContain("描述要保留的动作、运镜");
   expect(html).not.toContain("正在理解素材");
+  expect(html).toContain("任务名称");
+  expect(html).toContain('value="商品 · 横移揭晓"');
+  expect(html).toContain('maxLength="100"');
 });

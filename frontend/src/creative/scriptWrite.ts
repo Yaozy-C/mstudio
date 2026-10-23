@@ -4,31 +4,6 @@ export function writeScript(
   old: ScriptParagraph[] = [],
   screenplay: Record<string, unknown>,
 ) {
-  const mode = screenplay.scriptMode ?? "merge";
-  if (mode !== "merge" && mode !== "replace")
-    throw new Error("scriptMode 必须为 merge 或 replace");
-  if (mode === "replace") {
-    if (!Array.isArray(screenplay.script))
-      throw new Error("整篇替换必须提供完整 script 数组");
-    if (
-      screenplay.removeParagraphIds !== undefined ||
-      screenplay.paragraphOrder !== undefined
-    )
-      throw new Error("整篇替换直接使用 script 顺序，不得混用删除或排序");
-    for (const item of screenplay.script) {
-      if (
-        !item ||
-        ["title", "action", "dialogue", "sound"].some(
-          (k) => typeof item[k] !== "string",
-        ) ||
-        item.duration === undefined
-      )
-        throw new Error(
-          "整篇替换的每段必须包含 id/title/action/dialogue/sound/duration",
-        );
-    }
-    return patchScript([], screenplay.script);
-  }
   let next =
     screenplay.script === undefined ? old : patchScript(old, screenplay.script);
   const ids = (value: unknown, label: string) => {

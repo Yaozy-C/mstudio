@@ -2,6 +2,7 @@ import type { Project } from "../model";
 import type { ProductionTask } from "./types";
 import { saveTask } from "./document";
 import { pendingStatuses } from "./recovery";
+import { taskTitle } from "./taskTitle";
 
 export function archiveTask(p: Project, key: string, archived: boolean) {
   const task = p.production?.drafts?.[key];
@@ -21,6 +22,7 @@ export function archivedSummary(p: Project, task: ProductionTask) {
   ];
   return {
     id: task.key,
+    title: taskTitle(task),
     kind: task.kind,
     summary: task.instruction?.slice(0, 120),
     targetNodeId: task.targetNodeId,

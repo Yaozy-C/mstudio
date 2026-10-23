@@ -2,68 +2,62 @@ use super::{connections, context};
 use crate::{assistant::config::Profile, database::Store};
 use tauri::State;
 
-pub async fn discover(profile: &Profile, key: &str) -> Option<context::Limits> {
+pub async fn discover(profile: &Profile, key: &str) -> anyhow::Result<Option<context::Limits>> {
+    use anyhow::{Context, ensure};
     let known = context::known(profile);
     if profile.adapter == "codex" {
-        return None;
+        return Ok(None);
     }
-    // Standard OpenAI /models has no capacities; its verified catalog is authoritative.
-    // Gemini models.get carries inputTokenLimit/outputTokenLimit, including new models.
+    // Gemini models.get advertises capacities; a successful response may omit them.
     let entry = if profile.adapter == "gemini-native" {
         let id = profile
             .model
             .strip_prefix("models/")
             .unwrap_or(&profile.model);
-        if !id
-            .bytes()
-            .all(|c| c.is_ascii_alphanumeric() || b"-._".contains(&c))
-            || id.is_empty()
-        {
-            return known;
-        }
+        ensure!(
+            !id.is_empty()
+                && id
+                    .bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || b"-._".contains(&c)),
+            "Gemini 模型 ID 无效"
+        );
         let client = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(15))
-            .build()
-            .ok()?;
-        let response = client
+            .build()?;
+        let mut response = client
             .get(format!(
                 "{}/v1beta/models/{id}",
                 profile.endpoint.trim_end_matches('/')
             ))
             .header("x-goog-api-key", key)
             .send()
-            .await;
-        match response {
-            Ok(response) if response.status().is_success() => {
-                // Metadata responses are small; do not accept an unbounded provider body.
-                let mut response = response;
-                let mut bytes = Vec::new();
-                while let Ok(Some(chunk)) = response.chunk().await {
-                    if bytes.len() + chunk.len() > 1_048_576 {
-                        return known;
-                    }
-                    bytes.extend_from_slice(&chunk);
-                }
-                serde_json::from_slice(&bytes).ok()
-            }
-            _ => None,
+            .await
+            .context("获取模型容量失败")?;
+        if !response.status().is_success() {
+            return Err(crate::app_error::http_error(response, "model_capacity")
+                .await
+                .into());
         }
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.context("读取模型容量失败")? {
+            ensure!(bytes.len() + chunk.len() <= 1_048_576, "模型容量响应过大");
+            bytes.extend_from_slice(&chunk);
+        }
+        Some(serde_json::from_slice(&bytes).context("模型容量响应不是有效 JSON")?)
     } else if known.is_none() {
         super::commands::fetch_models(profile, key)
             .await
-            .ok()
-            .and_then(|rows| {
-                rows.into_iter()
-                    .find(|row| super::commands::listed_model_matches(profile, row))
-            })
+            .map_err(anyhow::Error::msg)?
+            .into_iter()
+            .find(|row| super::commands::listed_model_matches(profile, row))
     } else {
         None
     };
-    entry
+    Ok(entry
         .as_ref()
         .and_then(|row| context::from_service(profile, row))
-        .or(known)
+        .or(known))
 }
 
 #[tauri::command]
@@ -86,6 +80,8 @@ pub async fn resolve_text_model_limits(
         ..Default::default()
     };
     crate::assistant::config::validate(&profile).map_err(|e| e.to_string())?;
-    profile.limits.model_limits = discover(&profile, &secret).await;
+    profile.limits.model_limits = discover(&profile, &secret)
+        .await
+        .map_err(|error| error.to_string())?;
     Ok(context::automatic(&profile))
 }

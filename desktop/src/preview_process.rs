@@ -192,22 +192,24 @@ impl PreviewProcess {
             Ok(state.status.clone())
         }
     }
-    pub fn frame(&self, last: u32) -> Vec<u8> {
+    pub fn frame(&self, last: u32) -> Result<Vec<u8>, String> {
         #[cfg(target_os = "macos")]
         if self.metal.is_some() {
             return self.metal_canvas_frame(last);
         }
         let state = self.shared.lock().unwrap();
-        if state.failure.is_some()
-            || !matches!(state.status.phase.as_str(), "paused" | "playing" | "ended")
+        if let Some(error) = &state.failure {
+            return Err(error.clone());
+        }
+        if !matches!(state.status.phase.as_str(), "paused" | "playing" | "ended")
             || state.frame.len() < 16
             || u32::from_le_bytes(state.frame[..4].try_into().unwrap()) == last
         {
-            vec![]
+            Ok(vec![])
         } else {
             let frame = state.frame.clone();
             drop(state);
-            frame.as_ref().clone()
+            Ok(frame.as_ref().clone())
         }
     }
     pub fn shutdown(&self) {

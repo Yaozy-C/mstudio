@@ -1,0 +1,22 @@
+.task-title-field {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 10px;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.task-title-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--desk-text);
+  font: inherit;
+  font-size: 13px;
+}
+.task-title-field input::placeholder {
+  color: var(--desk-muted);
+}

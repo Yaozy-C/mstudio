@@ -9,7 +9,7 @@ fn embedded_generation_maps_short_video_sources_to_one_uploaded_reference() {
         {"id":"two","kind":"video","name":"Two","duration":1.333333,"width":160,"height":120}
     ]);
     doc["production"] = json!({"drafts":{"task":{
-        "key":"task","position":{"x":0,"y":0},"kind":"video","mode":"mixed",
+        "key":"task","title":"Merged reference video","position":{"x":0,"y":0},"kind":"video","mode":"mixed",
         "prompt":"Keep the action order","status":"READY","inputs":[
             {"key":"one","assetId":"one","role":"video-reference","purpose":"Opening"},
             {"key":"two","assetId":"two","role":"video-reference","purpose":"Reveal"}

@@ -41,7 +41,7 @@ pub(crate) async fn complete_with_resume(
     let mut parent_binding = None;
     if let Some(t) = &host.tool {
         let store = t.app.state::<crate::database::Store>();
-        let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()});
+        let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()?});
         harness::session_selection::bind_task(&store, &t.project, &t.turn, resume, &mut binding)?;
         fork_history = harness::handoff::completed(&store, &t.project, &t.turn, &binding)?;
         let restored = harness::session_selection::for_message(

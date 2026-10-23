@@ -17,7 +17,7 @@ pub fn definitions(profile: &AgentProfile) -> Vec<ToolDefinition> {
     }
     vec![ToolDefinition {
         name: "mstudio_read_image".try_into().expect("nonempty tool name"),
-        description: "Read real image pixels or a video frame directly into the model. Use an assetId from a receipt or inspected project state. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Sample relevant beginnings, middles, endings and both sides of joins; samples do not prove full playback. Requires image-input support.".into(),
+        description: "Read real image pixels or a video frame directly into the model. Use an assetId from a receipt or inspected project state. For video, time is source seconds unless clipId is supplied; then it is clip-local seconds, accounting for trim/speed and current grading, excluding transitions, overlays and captions. transition:true with the incoming clipId uses seconds from transition start and returns the actual transition composite, excluding overlays, captions and audio. Read frames relevant to the assigned task; samples do not prove full playback. Requires image-input support.".into(),
         parameters: json!({"type":"object","properties":{"assetId":{"type":"string"},"clipId":{"type":"string"},"transition":{"type":"boolean"},"time":{"type":"number","minimum":0}},"required":["assetId"],"additionalProperties":false}),
     }, ToolDefinition {
         name: "mstudio_reopen_image".try_into().expect("nonempty tool name"),
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn discovery_and_execution_guard_follow_media_permission() {
         for mut profile in profiles::builtins() {
-            let allowed = profile.id != "coordinator" && profile.id != "video-analyst";
+            let allowed = profile.id != "video-analyst";
             assert_eq!(check(&profile).is_ok(), allowed);
             assert_eq!(definitions(&profile).len(), if allowed { 3 } else { 0 });
             profile.tool_ids.retain(|id| id != "media-read");

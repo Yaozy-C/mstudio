@@ -15,6 +15,7 @@ function setup() {
   p.assets.push({ ...asset("bad"), generated: true });
   const task: ProductionTask = {
     key: "original",
+    title: "Pack · storyboard",
     kind: "image",
     mode: "multi",
     modelId: "model",
@@ -98,6 +99,7 @@ test("discarded outputs cannot be selected, recollected into usability, or submi
         next,
         {
           mediaKind: kind,
+          title: "Corrected product",
           text: "next",
           references: [{ assetId: "bad", purpose: "product" }],
         },
@@ -124,7 +126,7 @@ test("discarded outputs cannot be selected, recollected into usability, or submi
   expect(() =>
     requestTask(
       next,
-      { mediaKind: "video", text: "next" },
+      { mediaKind: "video", title: "Corrected video", text: "next" },
       {
         ...context,
         callId: "inherited",

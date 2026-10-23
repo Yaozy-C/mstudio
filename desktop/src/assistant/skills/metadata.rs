@@ -21,7 +21,7 @@ pub(super) fn model_metadata(mut item: Value) -> Value {
         ),
         "image-production" => (
             "Image production",
-            "Image prompts, storyboard frames, reference assets and frame constraints",
+            "Standalone images and reusable character, wardrobe, prop and location assets",
         ),
         "product-video-production" => (
             "Video production",

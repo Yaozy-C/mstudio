@@ -56,7 +56,7 @@ export function savedValues(p: Project, operations: unknown) {
         Object.entries(o).filter(([key]) => key !== "op" && key !== "id"),
       );
       if (o.screenplay) {
-        const commands = ["scriptMode", "removeParagraphIds", "paragraphOrder"];
+        const commands = ["removeParagraphIds", "paragraphOrder"];
         fields.screenplay = Object.fromEntries(
           Object.entries(o.screenplay).filter(
             ([key]) => !commands.includes(key),

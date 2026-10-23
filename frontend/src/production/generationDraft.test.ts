@@ -4,57 +4,40 @@ import { requestTask, runsOf } from "./requestTask";
 import { editTask, canEditOriginal } from "./taskEditing";
 import { receiveProductionResult } from "./document";
 
-test("saving and revising a draft keeps prompt and inputs together, without automatic dispatch", () => {
+test("pending task edits preserve inputs and always await user confirmation", () => {
   const p = fixture();
-  p.nodes[1].shot!.framePrompt = "legacy prompt";
-  const context = {
-    callId: "save",
-    turnId: "turn",
-    turn: {
-      projectId: p.id,
-      models: { image: "model", execution: "automatic" as const },
-      instruction: "draft",
+  p.nodes[1].shot!.framePrompt = "stored shot draft";
+  const saved = requestTask(
+    p,
+    {
+      id: "shot",
+      title: "Pack · 分镜图",
+      mediaKind: "image",
+      text: "new prompt",
+      references: [{ assetId: "b", role: "reference", purpose: "product" }],
     },
-  };
-  const op = {
-    id: "shot",
-    mediaKind: "image",
-    text: "new prompt",
-    draftOnly: true,
-    references: [{ assetId: "b", role: "reference", purpose: "product" }],
-  };
-  const saved = requestTask(p, op, context);
+    {
+      callId: "create",
+      turnId: "turn",
+      turn: {
+        projectId: p.id,
+        models: { image: "model", execution: "automatic" as const },
+        instruction: "prepare image",
+      },
+    },
+  );
   const first = runsOf(saved)[0];
-  expect(first.status).toBe("DRAFT");
+  expect(first.status).toBe("AWAITING_CONFIRMATION");
   expect(canEditOriginal(first)).toBe(true);
   expect(saved.nodes).toEqual(p.nodes);
-  const generated = requestTask(
-    saved,
-    { id: "shot", mediaKind: "image", text: "new prompt" },
-    { ...context, callId: "generate-with-refs" },
-  );
-  expect(runsOf(generated)[0].key).toBe(first.key);
-  expect(runsOf(generated)[0].inputs).toEqual(first.inputs);
-  expect(runsOf(generated)[0].status).toBe("AWAITING_CONFIRMATION");
-
-  const revised = requestTask(
-    saved,
-    { ...op, text: "corrected prompt", references: [] },
-    { ...context, callId: "revise" },
-  );
+  const revised = editTask(saved, first.key, { text: "corrected prompt" });
   expect(runsOf(revised)).toHaveLength(1);
-  expect(runsOf(revised)[0].key).toBe(first.key);
-  expect(runsOf(revised)[0].inputs).toEqual([]);
-  const submitted = requestTask(
-    revised,
-    { id: "shot", mediaKind: "image", text: "corrected prompt" },
-    { ...context, callId: "generate" },
-  );
-  expect(runsOf(submitted)).toHaveLength(1);
-  expect(runsOf(submitted)[0].status).toBe("AWAITING_CONFIRMATION");
-  // Explicitly cleared inputs must not silently inherit the shot's old references.
-  expect(runsOf(submitted)[0].inputs).toEqual([]);
-  expect(submitted.nodes[1].shot!.framePrompt).toBe("legacy prompt");
+  expect(runsOf(revised)[0].inputs).toEqual(first.inputs);
+  const cleared = editTask(revised, first.key, { references: [] });
+  expect(runsOf(cleared)[0].inputs).toEqual([]);
+  expect(runsOf(cleared)[0].prompt).toBe("corrected prompt");
+  expect(runsOf(cleared)[0].status).toBe("AWAITING_CONFIRMATION");
+  expect(cleared.nodes[1].shot!.framePrompt).toBe("stored shot draft");
 });
 
 test("invalid reference changes cannot partially replace a saved prompt", () => {
@@ -66,7 +49,12 @@ test("invalid reference changes cannot partially replace a saved prompt", () => 
   };
   const saved = requestTask(
     p,
-    { id: "shot", mediaKind: "image", text: "original", draftOnly: true },
+    {
+      id: "shot",
+      title: "Pack · 分镜图",
+      mediaKind: "image",
+      text: "original",
+    },
     context,
   );
   const task = runsOf(saved)[0];
@@ -77,12 +65,17 @@ test("invalid reference changes cannot partially replace a saved prompt", () => 
     }),
   ).toThrow();
   expect(runsOf(saved)[0].prompt).toBe("original");
+  for (const purpose of ["x".repeat(401), 42])
+    expect(() =>
+      editTask(saved, task.key, { references: [{ assetId: "b", purpose }] }),
+    ).toThrow();
   const edited = editTask(saved, task.key, {
     text: "changed",
-    references: [{ assetId: "b", purpose: "product" }],
+    references: [{ assetId: "b", purpose: "x".repeat(400) }],
   });
   expect(runsOf(edited)[0].inputs.map((r) => r.assetId)).toEqual(["b"]);
-  expect(runsOf(edited)[0].status).toBe("DRAFT");
+  expect(runsOf(edited)[0].inputs[0].purpose).toHaveLength(400);
+  expect(runsOf(edited)[0].status).toBe("AWAITING_CONFIRMATION");
 });
 
 test("new result cards do not duplicate generation prompts", () => {
@@ -94,7 +87,12 @@ test("new result cards do not duplicate generation prompts", () => {
   };
   const saved = requestTask(
     p,
-    { mediaKind: "image", text: "only on task", references: [] },
+    {
+      mediaKind: "image",
+      title: "人物资产",
+      text: "only on task",
+      references: [],
+    },
     context,
   );
   const task = runsOf(saved)[0];

@@ -14,6 +14,7 @@ import { design, transitionKind, visual } from "./visualContract";
 import {
   generationOperations,
   generationReferences,
+  generationTitle,
 } from "./generationContract";
 const reference = object(
   { assetId: id, purpose: text(400), start: number(0), end: number(0) },
@@ -21,7 +22,6 @@ const reference = object(
 );
 const references = { ...array(reference), maxItems: undefined };
 const screenplay = object({
-  scriptMode: choices("merge", "replace"),
   removeParagraphIds: array(id, 200),
   paragraphOrder: array(id, 200),
   script: array(
@@ -176,6 +176,7 @@ export const operationContract = {
     op(
       "update_generation",
       {
+        title: generationTitle,
         taskKey: described(
           text(300),
           "Existing generation task key from a task receipt or inspection; not a shot ID.",
@@ -192,7 +193,7 @@ export const operationContract = {
             "last-frame",
             "video-reference",
           ]),
-          "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references. Saves only; does not regenerate. Supply text or references.",
+          "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references. Saves only; does not regenerate. Supply title, text or references.",
         ),
       },
       ["taskKey"],
@@ -200,6 +201,7 @@ export const operationContract = {
     op(
       "regenerate_generation",
       {
+        title: generationTitle,
         taskKey: text(300),
         text: described(
           { ...text(12000), minLength: 1 },

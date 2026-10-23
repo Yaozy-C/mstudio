@@ -5,7 +5,7 @@ import {
 import type { Project } from "../model";
 import { saveTask } from "./document";
 import type { ProductionTask } from "./types";
-import { normalizeTaskPrompt } from "./taskPrompt";
+import { checkedTaskTitle } from "./taskTitle";
 
 export const canEditOriginal = (task: ProductionTask) =>
   !task.jobId &&
@@ -21,13 +21,19 @@ export function editTaskPrompt(p: Project, key: string, text: string): Project {
 export function editTask(
   p: Project,
   key: string,
-  changes: { text?: string; references?: unknown },
+  changes: { title?: string; text?: string; references?: unknown },
 ): Project {
   const original = p.production?.drafts?.[key];
   if (!original) throw new Error("任务不存在，请重新查询");
-  if (changes.text === undefined && changes.references === undefined)
-    throw new Error("请提供生成描述或参考素材");
-  let task = normalizeTaskPrompt(original);
+  if (
+    changes.title === undefined &&
+    changes.text === undefined &&
+    changes.references === undefined
+  )
+    throw new Error("请提供任务名称、生成描述或参考素材");
+  let task = original;
+  if (changes.title !== undefined)
+    task = { ...task, title: checkedTaskTitle(changes.title) };
   if (changes.text !== undefined) {
     if (
       typeof changes.text !== "string" ||
@@ -57,7 +63,7 @@ export function regenerationDraft(task: ProductionTask): ProductionTask {
   if (!canRegenerate(task) && !canEditOriginal(task))
     throw new Error("请先核查原任务状态，再重新生成");
   return {
-    ...structuredClone(normalizeTaskPrompt(task)),
+    ...structuredClone(task),
     hiddenFromList: false,
     status: "AWAITING_CONFIRMATION",
     jobId: undefined,
@@ -76,6 +82,7 @@ export function regenerateTask(
   p: Project,
   key: string,
   changes: {
+    title?: string;
     text?: string;
     references?: unknown;
     keepPreviousResults?: boolean;
@@ -84,6 +91,7 @@ export function regenerateTask(
   const original = p.production?.drafts?.[key];
   if (!original) throw new Error("任务不存在");
   let task = regenerationDraft(original);
+  if (changes.title !== undefined) task.title = checkedTaskTitle(changes.title);
   if (changes.text !== undefined) {
     if (
       typeof changes.text !== "string" ||

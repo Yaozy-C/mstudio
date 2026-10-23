@@ -12,7 +12,7 @@ pub async fn execute(
     session: &mut Session,
     calls: &[ToolCall],
 ) -> Result<(), String> {
-    let definitions = host.definitions();
+    let definitions = host.definitions()?;
     let mut start = 0;
     while start < calls.len() {
         let count = if host.parallel_safe(&calls[start]) {
@@ -135,7 +135,7 @@ pub fn skip(
         host.record("tool/call",json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"arguments":call.function.arguments}))?;
         let value = json!({"error":reason,"code":code});
         let message = result_message(call, &value);
-        host.record("tool/result",json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"isError":true,"message":message}))?;
+        host.record("tool/result",json!({"callId":call.id.wire().as_ref(),"name":call.function.name,"result":value,"value":value,"isError":true,"message":message}))?;
         session.messages.push(message);
     }
     Ok(())

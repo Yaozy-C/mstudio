@@ -35,7 +35,7 @@ pub async fn run_until(
         if host.token().is_cancelled() {
             return Err(crate::app_error::cancelled());
         }
-        if tokio::time::Instant::now() >= deadline && host.pending_children() {
+        if tokio::time::Instant::now() >= deadline && host.pending_children()? {
             let answer = "本轮协调等待已到时限，子任务继续执行；完成后将接回结果。";
             session.replace_visible(host, answer)?;
             return Ok(answer.into());
@@ -44,7 +44,7 @@ pub async fn run_until(
         session.delegation_outcomes.observe_messages(&injected);
         session.messages.extend(injected);
         super::image_budget::fit(&mut session, host, profile)?;
-        if budget::over_budget(&session, profile, host) {
+        if budget::over_budget(&session, profile, host)? {
             budget::recover(model, profile, host, &mut session, false).await?;
         }
 
@@ -68,7 +68,7 @@ pub async fn run_until(
         if result.is_err()
             && !host.token().is_cancelled()
             && tokio::time::Instant::now() >= deadline
-            && host.pending_children()
+            && host.pending_children()?
         {
             let answer = "本轮协调等待已到时限，子任务继续执行；完成后将接回结果。";
             session.replace_visible(host, answer)?;
@@ -112,7 +112,7 @@ async fn step(
         request.model = None;
         request.chat_history = session.messages.clone();
         request.documents = vec![];
-        request.tools = host.definitions();
+        request.tools = host.definitions()?;
         request.temperature = None;
         request.max_tokens = crate::models::context::output_cap(profile).map(|n| n as u64);
         request.tool_choice = None;

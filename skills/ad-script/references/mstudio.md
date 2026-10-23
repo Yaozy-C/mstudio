@@ -20,7 +20,7 @@ Chat drafts stay in the chat. When the user asks for a save, use the currently a
 - sound: action sounds, ambience, music/pauses and the landing point that do work.
 - duration: seconds; the total must respect the locked length or cap, and provisional timing must be marked as such.
 
-Follow the actual schema. A partial merge keeps the other content; a full replacement is used only for an explicitly rewritten scope. Report a save only after the authoritative write receipt succeeds.
+Use stable paragraph IDs for updates; omitted content is preserved. Delete and reorder only through the declared tool fields. Supplementary character, location and prop notes stay in the saved Agent output, outside timed film paragraphs. Report a save only after the authoritative receipt succeeds.
 
 ## Handoff
 

@@ -6,13 +6,10 @@ import type { ProductionTask } from "./types";
 import { retryDelay, retryTask } from "./recovery";
 import { fixture, model } from "./fixtures.test-helper";
 import { saveTask } from "./document";
-import {
-  needsTracking,
-  type GeneratedJob,
-} from "../workspace/generatedJobTracking";
 
 const task: ProductionTask = {
   key: "original",
+  title: "Pack · video",
   turnId: "turn",
   jobId: "old-job",
   requestId: "provider-id",
@@ -83,10 +80,4 @@ test("recovery actions match terminal, uncertain, cancelling and receiving state
   expect(render("CANCEL_REQUESTED")).toContain("正在取消");
   expect(render("FAILED")).toContain("错误详情");
   expect(render("FAILED")).toContain("INVALID_INPUT");
-  expect(
-    needsTracking(
-      { id: "old-job", status: "CANCEL_REQUESTED" } as GeneratedJob,
-      fixture(),
-    ),
-  ).toBe(true);
 });

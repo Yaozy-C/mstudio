@@ -101,39 +101,15 @@ pub fn media_model_catalog(store: State<Store>) -> Result<Vec<MediaModel>, Strin
     resolved(&db).map_err(|e| e.to_string())
 }
 #[tauri::command]
-pub fn save_media_model(
-    store: State<Store>,
-    mut model: MediaModel,
-    key: Option<String>,
-    clear_key: Option<bool>,
-) -> Result<(), String> {
+pub fn save_media_model(store: State<Store>, mut model: MediaModel) -> Result<(), String> {
     model.has_key = false;
     model.name = model.name.trim().into();
     model.endpoint = model.endpoint.trim().into();
     let mut guard = store.db.lock().unwrap();
     let db = guard.transaction().map_err(|e| e.to_string())?;
     super::connections::bind_media(&db, &mut model).map_err(|e| e.to_string())?;
-    if model.connection_id.is_some()
-        && (key.as_ref().is_some_and(|k| !k.is_empty()) || clear_key.unwrap_or(false))
-    {
-        return Err("请在服务连接中修改共用密钥".into());
-    }
     validate(&model).map_err(|e| e.to_string())?;
     let mut models = read(&db).map_err(|e| e.to_string())?;
-    let credential = format!("media-key:{}", model.id);
-    let changed = models
-        .iter()
-        .find(|m| m.id == model.id)
-        .is_some_and(|m| m.endpoint != model.endpoint || m.plugin != model.plugin);
-    if let Some(key) = key.as_ref().filter(|k| !k.is_empty()) {
-        if key.len() > 4096 || key.contains(['\r', '\n']) {
-            return Err("密钥格式无效".into());
-        }
-        db.execute("INSERT INTO settings VALUES(?1,?2) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [&credential, key]).map_err(|e| e.to_string())?;
-    } else if clear_key.unwrap_or(false) || changed {
-        db.execute("DELETE FROM settings WHERE key=?1", [&credential])
-            .map_err(|e| e.to_string())?;
-    }
     if let Some(old) = models.iter_mut().find(|p| p.id == model.id) {
         *old = model;
     } else {
@@ -151,11 +127,6 @@ pub fn remove_media_model(store: State<Store>, id: String) -> Result<(), String>
     let db = guard.transaction().map_err(|e| e.to_string())?;
     let mut models = read(&db).map_err(|e| e.to_string())?;
     models.retain(|p| p.id != id);
-    db.execute(
-        "DELETE FROM settings WHERE key=?1",
-        [format!("media-key:{id}")],
-    )
-    .map_err(|e| e.to_string())?;
     write(&db, &models).map_err(|e| e.to_string())?;
     db.commit().map_err(|e| e.to_string())
 }
@@ -166,6 +137,20 @@ mod tests {
     fn disabled_removed_or_changed_model_cannot_submit() {
         let root = std::env::temp_dir().join(format!("mstudio-media-{}", mstudio::media::id()));
         let store = Store::open(root.clone()).unwrap();
+        super::super::connections::save(
+            &store.db.lock().unwrap(),
+            super::super::connections::ServiceConnection {
+                id: "fal-fixture".into(),
+                name: "Fal fixture".into(),
+                kind: "fal".into(),
+                endpoint: "https://queue.fal.run".into(),
+                has_key: false,
+                model_count: 0,
+            },
+            Some("fixture-key".into()),
+            false,
+        )
+        .unwrap();
         let mut model = MediaModel {
             id: "one".into(),
             name: "One".into(),
@@ -176,7 +161,7 @@ mod tests {
             enabled: true,
             http: None,
             capabilities: None,
-            connection_id: None,
+            connection_id: Some("fal-fixture".into()),
             has_key: false,
         };
         write(&store.db.lock().unwrap(), &[model.clone()]).unwrap();

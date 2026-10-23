@@ -73,3 +73,15 @@ fn media_read_is_read_only_and_requires_project_read() {
     assert!(allows(&profile, "read_media"));
     assert!(!allows(&profile, "edit"));
 }
+
+#[test]
+fn coordinator_can_read_media_without_production_authoring() {
+    let profile = defaults("");
+    assert!(allows(&profile, "read_media"));
+    assert!(allows(&profile, "delegate"));
+    for operation in ["request_generation", "set_frame", "append_clip"] {
+        assert!(!super::super::permissions::allows_operation(
+            &profile, operation
+        ));
+    }
+}

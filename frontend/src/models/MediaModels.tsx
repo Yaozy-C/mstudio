@@ -4,7 +4,6 @@ import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { catalogMediaModel } from "./catalogMediaModel";
 import { CodexImageForm } from "./CodexImageForm";
-import { codexImageModel } from "./codexImageModel";
 import { ModelMark } from "../ui/Identity";
 import { localEndpoint } from "./types";
 import { useState } from "react";
@@ -173,7 +172,7 @@ export function MediaModels({
               <span>{t("{kind}生成", { kind: t(mediaLabels[kind]) })}</span>
               <span>
                 {m.plugin === "codex-image"
-                  ? `Codex · ${codexImageModel(m.params)}`
+                  ? `Codex · ${typeof m.params.model === "string" ? m.params.model : t("待配置模型 ID")}`
                   : m.plugin === "fal"
                     ? t("fal · 第三方")
                     : m.plugin === "dashscope"

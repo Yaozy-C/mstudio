@@ -67,7 +67,9 @@ mod tests {
         let call = ToolCall::from_wire(
             "saved-call",
             ToolFunction::new(
-                "mstudio_edit".try_into().expect("nonempty tool name"),
+                "mstudio_update_shot_design"
+                    .try_into()
+                    .expect("nonempty tool name"),
                 json!({"revision":1}),
             ),
         );

@@ -1,32 +1,49 @@
 ---
 name: image-production
-description: Produce still images in Mstudio: write one-moment image prompts, execute designed frames, prepare reusable subject and location references and preserve the selected visual constraints.
+description: Produce standalone stills and reusable character, wardrobe, prop or location references in Mstudio while preserving the selected project art direction.
 ---
 
 # Image production
 
 Produce the requested still image and the reusable references it depends on. Preserve the chosen concept, the selected identity and original product geometry. Loading this Skill grants no extra tools or permissions: saving a prompt is not a generated image, and task submission is not a completed image.
 
+Specialists execute assigned production work and return real outputs and task status. Only the coordinator conducts internal review; the user makes the final selection. Reading references is for execution, not approval. Apply assigned revisions without initiating self-review, acceptance gates or extra generation.
+
+## Reference assets and scene images
+
+For a reusable character, wardrobe, prop or location asset, start with [reference assets](references/reference-assets.md). Make identity, silhouette, proportions, outfit, construction and material easy to inspect at the needed scale. Choose a single view or a useful consistent view sheet; do not apply storyboard panel counts, action beats, internal cuts or shot timing to an asset request. Simplified backgrounds are optional aids; for a photographic character, a real room or textured surface with directional light is usually stronger than a seamless wall. Location references retain the needed environment and layout.
+
+Select the subject method before writing an asset prompt: [character assets](references/character-assets.md) for people, including age-appropriate anatomy, skin and wardrobe; [object assets](references/object-assets.md) for props and products, including construction and material response; [scene assets](references/scene-assets.md) for environments, spatial anchors and light states. Read only the relevant branch. For a person using an object or entering an environment, combine the settled references with explicit subject purposes and check their contact and scale.
+
+Assets and storyboard images follow the same selected project art direction: medium, realism or stylization, era, palette relationships, material treatment and finish. Reference clarity does not authorize a generic catalogue look, a different character design or a lower standard of craft. Asset lighting and pose can differ from the scene; they do not override its narrative lighting, camera or action. Apply the common [visual quality method](references/visual-quality.md) with asset-specific checks.
+
+For live-action or photorealistic work, read [photographic direction](references/photographic-direction.md) before writing the prompt. Decide the capture, lens and distance, camera height, light source and ratio, color relationship and surface finish first. A character asset is an identity plate, not a catalogue cutout: head-and-shoulders or waist-up, unposed, in a real room or against a textured surface with directional light, with the selected wardrobe and skin tone readable at the intended scale. A full-body neutral-backdrop view is justified only when a consuming shot needs body scale or the complete outfit.
+
 ## Read for the task at hand
 
 | The task has to decide | Read |
 |---|---|
 | How to write one prompt for one visible moment | [Image prompt writing](references/prompt-writing.md) |
-| How to choose representative/start/key/end frames, make the shot readable and preserve continuity across a storyboard | [Storyboard frames](references/frames.md) |
+| How to choose the photographic treatment, camera, light and color without the AI look | [Photographic direction](references/photographic-direction.md) |
+| Skin, age, hands and synthetic-skin repair | [Skin realism](references/skin-realism.md) |
 | Whether subject, location or layout references are missing, and how to design useful reference assets | [Reference assets](references/reference-assets.md) |
+| Character identity, age, anatomy, skin, hair and wardrobe | [Character assets](references/character-assets.md) |
+| Writing a photographic person prompt or diagnosing synthetic skin | [Photographic people prompts](references/photographic-people.md) |
+| Object geometry, components, connections and material fidelity | [Object assets](references/object-assets.md) |
+| Environment baseline, layout, camera geography and motivated light states | [Scene assets](references/scene-assets.md) |
 | Viewpoint, contact, part count and cross-frame state constraints | [Frame rules](references/frame-checks.md) |
 | Staging, attention centre or spatial relationships that need redesigning | [Shot grammar](references/scene-execution.md) |
-| Photographic people, skin, light and material appearance | [Photographic appearance](references/scene-execution.md) |
+| Scene-specific light and material appearance | [Photographic appearance](references/scene-execution.md) |
 
-For storyboard images or start/key/end control-frame requests, use the storyboard-frame rules when their format is needed; reuse loaded text. It applies the supplied shot design without requiring a fixed number of images. Covers and unrelated standalone pictures do not become storyboards. Use [core](CORE.md) when its short rules are needed; reuse loaded text.
+Shot storyboards and video control frames belong to image production through the coordinator. This method produces the assigned standalone still or reusable asset. Use [core](CORE.md) when its short rules are needed; reuse loaded text.
 
 ## Visual execution and bounded comparison
 
 Use [visual quality and control frames](references/visual-quality.md) for a new look, a "not attractive enough" complaint, local appearance repair or an effect control frame. Apply the approved attention order, composition, light/value separation and material treatment to the actual prompt. For each reference, specify what to borrow and what not to borrow; identity does not import its background, pose or lighting. A colour filter or more style adjectives does not repair a weak composition.
 
-An action board explains sequence; a look frame selects appearance; a production control frame supplies a supported endpoint state. Do not conflate them or silently change the requested deliverable. A board remains a board when requested; exact control frames must be independent full-frame images, never the whole grid bound as a first or last frame. Extra frames and alternative looks need existing budget authorization.
+Do not ask one call to establish identity, geography, four states and the final look at once. A look frame, an identity plate, a location plate and a storyboard board are different deliverables; produce the authorized one and return a missing dependency through coordination. When the task is a look frame, one frame and one visual idea are complete work, not an incomplete storyboard.
 
-When alternatives are authorized, vary a named design decision rather than merely rerolling the same prompt. Compare candidates against the chosen reference direction and hard constraints, not a made-up beauty score. Preserve the selected image through supported local edits when possible; one local defect is not a reason to reinvent the whole scene. Inspect available actual pixels and identify unverified properties. Without image access, return an unverified result, not visual approval.
+When alternatives are authorized, vary a named design decision rather than merely rerolling the same prompt. Return alternatives with their intended design differences for coordinator review and user selection. Apply assigned local edits to the selected image without reinventing the scene. Return real output IDs and execution limits to the coordinator without claiming acceptance.
 
 For an effect frame, depict one phase and its material state, protect specified identity/label regions, and keep start/end composition compatible. Do not put an entire evolving effect into a still. Keep planning notes out of unsupported tool fields; compile relevant decisions into the actual submitted image prompt and concrete reference purposes. Missing assets go back through the existing coordinator handoff, not an invented delegation tool.
 
@@ -50,4 +67,4 @@ A reference of an opened bag, a mid-action state or a detail close-up supplies o
 
 ## Boundaries
 
-Script content, shot design and video generation belong to other Skills. Fix execution deviations locally; return design conflicts with evidence. Static frames never establish motion, speed, sound or playback.
+Script content, shot design and video generation belong to other Skills. Execute assigned local revisions; return design conflicts to the coordinator. Static frames never establish motion, speed, sound or playback.

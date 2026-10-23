@@ -193,5 +193,10 @@
   "已归档": "Archived",
   " · 已归档": " · Archived",
   "归档任务": "Archive task",
-  "请先停止生成或等待任务结束，再归档": "Stop generation or wait for it to finish before archiving"
+  "请先停止生成或等待任务结束，再归档": "Stop generation or wait for it to finish before archiving",
+  "参考资产": "Reference asset",
+  "任务名称": "Task name",
+  "例如：小满 · 人物资产、海滩 · 黄昏场景": "For example: Xiaoman · character, Beach · sunset",
+  "后台处理已停止，请处理错误后重启应用。": "Background processing has stopped. Resolve the error and restart the app.",
+  "本次启动未完成项目任务同步，请查看错误详情。": "Project task synchronization did not finish during this startup. See the error details."
 }

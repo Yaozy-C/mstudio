@@ -4,11 +4,12 @@ use super::*;
 async fn live_codex_image() {
     let root = std::env::temp_dir().join(format!("mstudio-codex-live-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
+    persist(&root, &update("IN_QUEUE", None, None).unwrap()).unwrap();
     let value = tokio::time::timeout(Duration::from_secs(600), generate(
-            &json!({"prompt":"A minimalist blue ceramic cup on a white background. No text.","model":"codex-image","n":1}),
+            &json!({"prompt":"A minimalist blue ceramic cup on a white background. No text.","model":"gpt-image-2","n":1}),
             &root, CancellationToken::new(),
         )).await.expect("timed out").expect("native image generation failed");
-    let outputs = CODEX.outputs(&value);
+    let outputs = CODEX.outputs(&value).unwrap();
     assert_eq!(outputs.len(), 1);
     let (_, bytes) = super::super::image_data::image_bytes(&outputs[0].url).unwrap();
     let path = root.join("result.png");
@@ -16,32 +17,10 @@ async fn live_codex_image() {
     println!("Native Codex image saved: {}", path.display());
 }
 #[test]
-fn codex_model_survives_service_migration_without_api_credentials() {
-    let root = std::env::temp_dir().join(format!("mstudio-codex-model-{}", mstudio::media::id()));
-    let store = crate::database::Store::open(root.clone()).unwrap();
-    let models = json!([{"id":"codex", "name":"Codex image", "kind":"image", "plugin":"codex-image", "endpoint":"codex://local/images", "params":{"model":"codex-image","n":1},"enabled":true}]);
-    store
-        .db
-        .lock()
-        .unwrap()
-        .execute(
-            "INSERT INTO settings VALUES('media-models',?1)",
-            [models.to_string()],
-        )
-        .unwrap();
-    drop(store);
-    let store = crate::database::Store::open(root.clone()).unwrap();
-    let rows = crate::models::media::resolved(&store.db.lock().unwrap()).unwrap();
-    assert_eq!(rows.len(), 1);
-    assert!(rows[0].connection_id.is_some());
-    crate::models::media::validate(&rows[0]).unwrap();
-    drop(store);
-    std::fs::remove_dir_all(root).unwrap();
-}
-#[test]
 fn observed_phases_are_persisted_without_image_payloads() {
     let root = std::env::temp_dir().join(format!("mstudio-codex-phase-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
+    persist(&root, &update("IN_QUEUE", None, None).unwrap()).unwrap();
     phase(&root, "generating", "Codex 正在生成图片").unwrap();
     let state: Value =
         serde_json::from_slice(&std::fs::read(root.join("state.json")).unwrap()).unwrap();
@@ -56,14 +35,19 @@ fn restarted_job_becomes_failed_without_resubmission() {
     let config = json!({"codexRoot":root});
     let directory = directory(&config, "test").unwrap();
     std::fs::create_dir_all(&directory).unwrap();
-    persist(&directory, &update("IN_PROGRESS", None, None)).unwrap();
+    persist(&directory, &update("IN_PROGRESS", None, None).unwrap()).unwrap();
     let job = json!({"providerConfig":config,"requestId":"test"});
     assert_eq!(read(&job).unwrap().status, "FAILED");
-    persist(&directory, &update("IN_QUEUE", None, None)).unwrap();
+    persist(&directory, &update("IN_QUEUE", None, None).unwrap()).unwrap();
     assert_eq!(read(&job).unwrap().status, "FAILED");
     persist(
         &directory,
-        &update("COMPLETED", Some(json!({"data":[]})), None),
+        &update(
+            "COMPLETED",
+            Some(json!({"data":[{"b64_json":"YQ=="}]})),
+            None,
+        )
+        .unwrap(),
     )
     .unwrap();
     assert_eq!(read(&job).unwrap().status, "COMPLETED");
@@ -79,7 +63,7 @@ fn restart_preserves_partial_direct_results() {
     let result = json!({"data":[{"b64_json":"iVBORw0KGgo="}]});
     persist(
         &directory,
-        &update("IN_PROGRESS", Some(result.clone()), None),
+        &update("IN_PROGRESS", Some(result.clone()), None).unwrap(),
     )
     .unwrap();
     phase(&directory, "generating", "已生成 1 张图片").unwrap();
@@ -115,26 +99,68 @@ async fn queued_requests_wait_for_capacity_and_can_be_cancelled() {
 async fn live_codex_direct_generation_and_edit() {
     let root = std::env::temp_dir().join(format!("mstudio-codex-direct-{}", mstudio::media::id()));
     std::fs::create_dir_all(&root).unwrap();
+    persist(&root, &update("IN_QUEUE", None, None).unwrap()).unwrap();
     let generated = generate(
-        &json!({"prompt":"白色背景上的一个蓝色陶瓷杯。"}),
+        &json!({"prompt":"白色背景上的一个蓝色陶瓷杯。","model":"gpt-image-2"}),
         &root,
         CancellationToken::new(),
     )
     .await
     .unwrap();
-    let image = CODEX.outputs(&generated).remove(0).url;
+    let image = CODEX.outputs(&generated).unwrap().remove(0).url;
     let edited = generate(
-        &json!({"prompt":"将杯子改成红色，保持白色背景。", "image":[image]}),
+        &json!({"prompt":"将杯子改成红色，保持白色背景。","model":"gpt-image-2", "image":[image]}),
         &root,
         CancellationToken::new(),
     )
     .await
     .unwrap();
     for (name, result) in [("generated", generated), ("edited", edited)] {
-        let outputs = CODEX.outputs(&result);
+        let outputs = CODEX.outputs(&result).unwrap();
         assert_eq!(outputs.len(), 1);
         let (_, bytes) = super::super::image_data::image_bytes(&outputs[0].url).unwrap();
         std::fs::write(root.join(format!("{name}.png")), bytes).unwrap();
     }
     println!("Direct generation and edit saved: {}", root.display());
+}
+
+#[test]
+fn corrupted_state_cannot_be_replaced_by_a_progress_or_partial_fallback() {
+    let root = std::env::temp_dir().join(format!("codex-broken-{}", mstudio::media::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    assert!(phase(&root, "generating", "test").is_err());
+    std::fs::write(root.join("state.json"), b"broken").unwrap();
+    assert!(phase(&root, "generating", "test").is_err());
+    assert!(finish(&root, Err(anyhow::anyhow!("request failed")), false).is_err());
+    assert!(finish(&root, Err(anyhow::anyhow!("cancelled")), true).is_err());
+    assert_eq!(std::fs::read(root.join("state.json")).unwrap(), b"broken");
+    std::fs::remove_dir_all(root).unwrap();
+}
+#[test]
+fn failure_and_cancel_preserve_canonical_partial_batch() {
+    let root = std::env::temp_dir().join(format!("codex-partial-{}", mstudio::media::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    persist(
+        &root,
+        &update(
+            "IN_PROGRESS",
+            Some(json!({"data":[{"b64_json":"YQ=="},{"b64_json":"Yg=="}]})),
+            None,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    for cancelled in [false, true] {
+        let result = finish(&root, Err(anyhow::anyhow!("request failed")), cancelled).unwrap();
+        let mut job = json!({});
+        result.apply(&mut job).unwrap();
+        assert_eq!(
+            job["status"],
+            if cancelled { "CANCELLED" } else { "FAILED" }
+        );
+        assert_eq!(job["outputCount"], 2);
+        assert_eq!(job["outputs"][1]["url"], "data:image/png;base64,Yg==");
+    }
+    assert!(update("COMPLETED", Some(json!({"data":[]})), None).is_err());
+    std::fs::remove_dir_all(root).unwrap();
 }

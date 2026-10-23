@@ -13,7 +13,7 @@ fn local_job_media_snapshots_and_original_source_code_survive_collection() {
     let texture = f.file("assets/texture-without-asset-record.png");
     let db = f.store.db.lock().unwrap();
     db.execute("INSERT INTO previs_files VALUES('p','model','model',?1)",[
-        json!({"id":"model","kind":"model","name":"model","code":format!("const texture = '{}';", texture.display()),"revision":1,"assetIds":[],"bindings":{}}).to_string()
+        json!({"id":"model","kind":"model","name":"model","description":"Shared model","code":format!("const texture = '{}';", texture.display()),"revision":1,"assetIds":[],"bindings":{},"duration":5.0,"width":720,"height":1280,"fps":24}).to_string()
     ]).unwrap();
     let mut value = json!({"status":"COMPLETED","input":{"image":"data:image/png;base64,YQ=="}});
     db.execute("INSERT INTO jobs VALUES('j','p',?1)", [value.to_string()])

@@ -32,7 +32,7 @@ pub fn pending(db: &Connection, project: &str, turn: &str) -> Result<bool> {
 
 pub fn read(store: &Store, project: &str) -> Result<Option<State>> {
     Ok(store.db.lock().unwrap().query_row(
-        "SELECT json_extract(attribution,'$.turnId'),coalesce(json_extract(attribution,'$.status'),'completed'),content,json_extract(attribution,'$.error'),coalesce((SELECT max(e.seq) FROM agent_events e WHERE e.project_id=m.project_id AND e.turn_id=json_extract(m.attribution,'$.turnId')),0) FROM agent_messages m WHERE project_id=?1 AND role='assistant' AND json_type(attribution,'$.turnId')='text' ORDER BY id DESC LIMIT 1",
+        "SELECT json_extract(attribution,'$.turnId'),json_extract(attribution,'$.status'),content,json_extract(attribution,'$.error'),coalesce((SELECT max(e.seq) FROM agent_events e WHERE e.project_id=m.project_id AND e.turn_id=json_extract(m.attribution,'$.turnId')),0) FROM agent_messages m WHERE project_id=?1 AND role='assistant' AND json_type(attribution,'$.turnId')='text' ORDER BY id DESC LIMIT 1",
         [project], |r| Ok(State { project_id: project.into(), turn_id: r.get(0)?, status: r.get(1)?, text: r.get(2)?, error: r.get(3)?, revision:r.get(4)? }),
     ).optional()?)
 }
@@ -158,9 +158,9 @@ fn finish_saved(
     result: &Result<String, String>,
     token: &tokio_util::sync::CancellationToken,
 ) -> Result<State> {
-    let partial = super::harness::session::partial(store, project, turn);
-    let mut db = store.db.lock().unwrap();
+    let mut db = store.conn()?;
     let tx = db.transaction()?;
+    let partial = super::harness::session::partial_in(&tx, project, turn)?;
     let status = if token.is_cancelled() {
         "cancelled"
     } else if result.is_err() {

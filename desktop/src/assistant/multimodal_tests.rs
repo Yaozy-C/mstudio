@@ -92,6 +92,8 @@ async fn claude_transmits_pdf_and_parses_response() {
     profile.adapter = "anthropic-native".into();
     profile.endpoint = format!("{address}/v1");
     profile.model = "test".into();
+    profile.context_window = Some(262_144);
+    profile.limits.max_output_tokens = Some(4096);
     let payload = json!(media_input::parts(&store, &asset, &profile).unwrap());
     assert!(!context::text_only(&payload).to_string().contains("base64"));
     let result = agent::complete(&profile, "test-key", super::messages(&[], payload), None).await;
@@ -99,6 +101,8 @@ async fn claude_transmits_pdf_and_parses_response() {
     assert!(request.starts_with("POST /v1/messages"));
     assert!(request.to_lowercase().contains("x-api-key: test-key"));
     assert!(request.contains("application/pdf"));
+    let body: Value = serde_json::from_str(request.split_once("\r\n\r\n").unwrap().1).unwrap();
+    assert_eq!(body["max_tokens"], 4096);
     assert_eq!(result.unwrap(), "read pdf");
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

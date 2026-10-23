@@ -8,7 +8,7 @@ Use for video prompts, production handoff and confused-action diagnosis. Adapt m
 
 A script section describes a dramatic change; an editorial shot describes one viewpoint; a generation group describes a model call and occupies one Mstudio production shot record. They need not map one-to-one.
 
-Each Mstudio video generation unit must be at least 5 seconds, or the selected model's higher minimum, and remain within its supported maximum. Meet that length by grouping adjacent, narratively compatible short shots into one generation task. Preserve every internal shot's complete description, exact duration, viewpoint, action and designed cut in the actual submitted prompt. Sub-second shots are valid; there is no 1-second floor. For example a 5-second unit may contain a 0.00-0.25s detail shot, a CUT to a 0.25-0.60s hand movement and a CUT to a 0.60-5.00s result: the internal durations remain 0.25s, 0.35s and 4.4s. Keep those relative time ranges in existing shot text and the unit's generation span in shot.duration. Use one task anchored to the unit, rather than a separate task for each internal shot. Preserve the selected continuous-take or cut intent; do not invent cuts to fill a group.
+Each Mstudio video generation unit must be at least 5 seconds, or the selected model's higher minimum, and remain within its supported maximum. Meet that length by grouping adjacent, narratively compatible short shots into one generation task. Preserve every internal shot's complete description, exact duration, viewpoint, action and designed cut in the actual submitted prompt. Sub-second shots are valid; there is no 1-second floor. For example a 5-second unit may contain a 0.00-0.25s detail shot, a CUT to a 0.25-0.60s hand movement and a CUT to a 0.60-5.00s result: the internal durations remain 0.25s, 0.35s and 4.4s. Read those relative time ranges and the unit span from the saved shot design; return structural grouping changes through the coordinator to direction. Use one task anchored to the unit, rather than a separate task for each internal shot. Preserve the selected continuous-take or cut intent; do not invent cuts to fill a group.
 
 Combine a short final group with a compatible neighboring unit when the model's maximum allows. If the complete requested passage is itself shorter than 5 seconds or must remain isolated, generate a source of at least 5 seconds with clearly separated editing handles outside the intended passage. Keep the internal action timings and final-film runtime unchanged; do not add story events, repeats, slow motion or prolonged internal shots to fill the source. Reference-input minimum lengths are separate service constraints, not this output-unit rule.
 
@@ -29,6 +29,21 @@ Before prose conversion, establish the initial camera location relative to the s
 Light must have a source and a plausible path into the visible scene. A dark enclosed interior revealed by an opening is different from an exterior highlighted by a moving reflection. Opening a hinged lid requires an available opening, and an entering object must fit through it before contact. Describe only product features visible from the chosen angle; never move outside merely to show more reference details unless the design calls for it.
 
 Use compatible camera and action geometry. Do not silently combine an internal viewpoint with an external dive, or a fixed camera with incompatible travel. Preserve the user's clarified intent; if essential constraints remain incompatible, report the exact decision needed rather than submitting a guessed compromise. Keep planning commentary out of the model prompt.
+
+## Product motion contract
+
+For a product clip, cover these in the prompt:
+
+1. **Product fact.** Which surface faces camera, what must stay readable, which parts may move, and what construction must not change.
+2. **One action.** Start, contact, force, result and end. One benefit or handling beat per short clip.
+3. **Hands.** Which hand enters, from where, what it grips, how much force, and where it leaves. Keep hands visible and the grip readable.
+4. **Camera.** Product angle, lens, height, distance, movement and speed. Separate camera movement from product movement.
+5. **Light and material.** The source that reveals the finish, reflection shape, contact shadow, and what stays fixed.
+6. **Sound and speech.** Exact line, language, speaker, delivery and the visible beat; material sounds with a cause.
+
+For an image-to-video product shot, the supplied frame already fixes geometry, label and lighting. Spend the prompt on action, hands, camera and sound; do not re-describe the product sheet or ask for a new grade.
+
+Read [product motion realism](motion-realism.md) for the failure table and staging rules. Do not answer a morphing product with more adjectives; simplify the action, bind the original product evidence and shorten the clip.
 
 ## Describe changes the viewer can actually see
 

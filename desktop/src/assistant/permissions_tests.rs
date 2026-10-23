@@ -1,9 +1,7 @@
 use super::*;
 use serde_json::json;
 
-// The shipped roster has no read-only reviewer and no dedicated asset role. Both
-// boundaries are exercised with an inline profile derived from a shipped profile so the
-// restriction stays covered instead of disappearing with the retired role.
+// The optional read-only boundary remains supported for custom roles.
 fn read_only_profile() -> AgentProfile {
     let mut p = super::super::profiles::builtins()
         .into_iter()
@@ -13,31 +11,20 @@ fn read_only_profile() -> AgentProfile {
     p
 }
 fn asset_only_profile() -> AgentProfile {
-    let mut p = super::super::profiles::builtins()
+    super::super::profiles::builtins()
         .into_iter()
-        .find(|a| a.id == "production")
-        .unwrap();
-    p.tool_ids = vec![
-        "project-read".into(),
-        "project-assets".into(),
-        "media-generation".into(),
-    ];
-    p
+        .find(|a| a.id == "assets")
+        .unwrap()
 }
 #[test]
 fn asset_specialist_can_set_direct_shot_references_but_not_shot_design() {
     let asset = asset_only_profile();
-    assert!(
-        asset_only(&asset),
-        "the inline profile exercises the asset-only restriction"
-    );
-    // No shipped profile is asset-only any more: production also holds project-frames and
-    // project-production alongside project-assets.
+    assert!(asset_only(&asset));
     assert!(
         super::super::profiles::builtins()
             .iter()
-            .all(|p| !asset_only(p)),
-        "asset_only() must not describe a shipped profile"
+            .all(|p| asset_only(p) == (p.id == "assets")),
+        "only the asset specialist has the asset-only restriction"
     );
     let doc = json!({"nodes":[{"id":"shot","kind":"shot"}]});
     assert!(

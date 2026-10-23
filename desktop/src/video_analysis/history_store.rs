@@ -145,7 +145,7 @@ pub fn stage(root: &Path, session: &Session, mut record: Record) -> Result<Recor
         record.created_at = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64;
         record.video.path = name;
         // A missing preview must never discard a completed breakdown.
-        let _ = mstudio::media::run(
+        if let Err(error) = mstudio::media::run(
             mstudio::media::command("ffmpeg")
                 .args(["-v", "error", "-y", "-i"])
                 .arg(original)
@@ -158,7 +158,9 @@ pub fn stage(root: &Path, session: &Session, mut record: Record) -> Result<Recor
                     "1",
                 ])
                 .arg(directory.join("poster.jpg")),
-        );
+        ) {
+            tracing::warn!(event = "analysis_poster_failed", record_id = %id, error = %error);
+        }
         Ok(())
     })();
     if result.is_err() {

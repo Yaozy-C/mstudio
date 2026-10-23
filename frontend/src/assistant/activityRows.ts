@@ -10,7 +10,6 @@ const actions: Record<string, string> = {
   previs_create: "创建预演文件",
   previs_str_replace: "修改预演文件",
   previs_insert: "修改预演文件",
-  inspect: "读取项目内容",
   read_project: "读取项目概况",
   read_creation: "读取创作要求",
   read_shots: "读取镜头",
@@ -21,27 +20,25 @@ const actions: Record<string, string> = {
   read_tracks: "读取轨道",
   read_captions: "读取字幕",
   read_generation: "读取生成任务",
-  edit: "更新项目",
   skills: "查找创作能力",
   read_skill: "读取创作规则",
   history: "查阅对话",
   models: "检查可用模型",
-  load_tools: "加载所需工具",
   read_image: "读取素材画面",
   reopen_image: "重新读取素材画面",
   read_result: "读取完整结果",
+  read_agent_result: "读取专业 Agent 结果",
+  reopen_media: "重新读取媒体",
   await_generation: "等待生成结果",
   delegate: "委派专业 Agent",
-  plan: "安排交付清单",
+  send_message: "向专业 Agent 发送任务",
+  interrupt_agent: "中断专业 Agent",
+  list_agents: "查看专业 Agent 状态",
 };
 const operations: Record<string, string> = {
   generate_image: "生成图片",
   generate_video: "生成视频",
   generate_reference_image: "生成参考图片",
-  save_video_generation: "保存视频生成草稿",
-  save_image_generation: "保存图片生成草稿",
-  set_video_prompt: "修改视频提示词",
-  set_image_prompt: "修改图片提示词",
   set_shot_frames: "设置分镜图片",
   update_shot: "修改镜头",
   update_shots: "批量修改镜头",
@@ -49,11 +46,9 @@ const operations: Record<string, string> = {
   upsert_references: "添加或更新参考素材",
   replace_references: "替换参考素材",
   remove_references: "移除参考素材",
-  request_generation: "安排媒体生成",
   update_generation: "修改生成任务",
   archive_generation: "归档或恢复生成任务",
   regenerate_generation: "重新生成",
-  add_node: "添加内容",
   add_shot: "添加镜头",
   add_screenplay: "添加剧本",
   add_asset: "添加素材",
@@ -66,9 +61,7 @@ const operations: Record<string, string> = {
   set_clip_grade: "调整片段调色",
   clear_clip_grade: "清除片段调色",
   clear_clip_visual: "清除片段视觉效果",
-  update_node: "修改内容",
   update_shot_design: "修改镜头设计",
-  update_screenplay_info: "修改脚本信息",
   update_asset_node: "修改素材节点",
   update_note: "修改备注",
   update_text: "修改文本",
@@ -77,20 +70,29 @@ const operations: Record<string, string> = {
   remove_asset_node: "删除素材节点",
   remove_note: "删除备注",
   remove_text: "删除文本",
-  remove_node: "删除内容",
   choose_take: "选用镜头",
   assemble_screenplay: "编排时间线",
-  set_references: "整理参考素材",
+  set_brief: "修改项目要求",
+  set_creation: "修改创作方向",
+  append_clip: "添加时间线片段",
+  move_clip: "移动时间线片段",
+  retime_clip: "调整片段速度",
+  slip_clip: "滑移片段素材",
+  set_transition: "设置转场",
+  remove_clip: "删除时间线片段",
+  add_track: "添加轨道",
+  update_track: "修改轨道",
+  add_caption: "添加字幕",
+  update_caption: "修改字幕",
+  remove_caption: "删除字幕",
 };
 export function activityRows(events: ActivityEvent[]) {
   type Payload = {
     callId?: string;
     name?: string;
     arguments?: {
-      action?: string;
       command?: string;
       agentId?: string;
-      operations?: { op: string }[];
     };
     result?: {
       agentId?: string;
@@ -111,22 +113,12 @@ export function activityRows(events: ActivityEvent[]) {
           v.kind === "tool/result" &&
           (v.payload as Payload)?.callId === p.callId,
       )?.payload as Payload | undefined;
-      const action = [
-        "str_replace_editor",
-        "str_replace_based_edit_tool",
-      ].includes(p.name ?? "")
-        ? `previs_${p.arguments?.command ?? "edit"}`
-        : (p.arguments?.action ?? p.name?.replace(/^mstudio_/, ""));
+      const action =
+        p.name === "str_replace_editor"
+          ? `previs_${p.arguments?.command ?? "edit"}`
+          : p.name?.replace(/^mstudio_/, "");
       const title =
-        action === "edit"
-          ? [
-              ...new Set(
-                p.arguments?.operations?.map(
-                  (o) => operations[o.op] ?? "修改项目",
-                ) ?? [],
-              ),
-            ].join("、") || "修改项目"
-          : (actions[action ?? ""] ?? operations[action ?? ""] ?? "执行操作");
+        actions[action ?? ""] ?? operations[action ?? ""] ?? "执行操作";
       const limited =
         action === "delegate" && result?.result?.stopReason === "step-limit";
       const completed = events.some(

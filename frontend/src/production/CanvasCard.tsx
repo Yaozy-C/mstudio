@@ -57,7 +57,7 @@ export const CanvasCard = memo(function CanvasCard({
         : FileText;
   const cardRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
-    if (compact || item.kind !== "script" || !cardRef.current) return;
+    if (compact || !cardRef.current) return;
     const element = cardRef.current;
     const report = () => canvas.measure?.(item.key, element.offsetHeight);
     const observer = new ResizeObserver(report);
@@ -88,7 +88,13 @@ export const CanvasCard = memo(function CanvasCard({
           left: item.x,
           top: item.y,
           width: item.width,
-          height: item.kind === "script" && !compact ? "auto" : item.height,
+          height:
+            !compact &&
+            (item.kind === "script" ||
+              asset?.kind === "image" ||
+              asset?.kind === "video")
+              ? "auto"
+              : item.height,
         }}
         data-card={item.key}
         draggable
@@ -235,7 +241,10 @@ export const CanvasCard = memo(function CanvasCard({
         ) : asset.missing ? (
           <MissingAsset asset={asset} />
         ) : asset.kind === "video" ? (
-          <div className="card-video">
+          <div
+            className="card-video"
+            style={{ aspectRatio: `${asset.width} / ${asset.height}` }}
+          >
             <img
               src={mediaUrl(asset.preview)}
               alt=""
@@ -257,7 +266,9 @@ export const CanvasCard = memo(function CanvasCard({
           <img
             loading="lazy"
             decoding="async"
-            src={mediaUrl(asset.preview || asset.path)}
+            src={mediaUrl(asset.path)}
+            width={asset.width}
+            height={asset.height}
             alt={item.title}
             draggable={false}
           />

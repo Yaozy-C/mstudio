@@ -96,6 +96,7 @@ test("specialists resolve independently through the project model", () => {
     "video-analyst",
     "writer",
     "director",
+    "assets",
     "image",
     "production",
     "editor",

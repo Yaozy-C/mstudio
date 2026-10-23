@@ -1,5 +1,5 @@
 //! Bounded execution history. Recovery snapshots and their referenced results are durable.
-use super::{blobs, event_retention, session_checkpoint, turn_usage};
+use super::{blobs, event_retention, session_checkpoint};
 use anyhow::Result;
 use rusqlite::{Connection, params};
 use serde_json::Value;
@@ -22,7 +22,6 @@ pub fn run(db: &Connection, now: i64) -> Result<()> {
     for (project, turn, through) in turns {
         session_checkpoint::fold(&tx, &project, &turn, through)?;
     }
-    turn_usage::migrate(&tx)?;
     tx.execute(&format!("DELETE FROM agent_events AS e WHERE kind IN (SELECT value FROM json_each(?1)) AND {ACTIVE}"),[serde_json::to_string(event_retention::TRANSIENT)?])?;
     session_checkpoint::prune_superseded(&tx)?;
     expire(&tx, now)?;
@@ -125,17 +124,8 @@ fn expire(db: &Connection, now: i64) -> Result<()> {
 }
 
 pub fn startup(db: &Connection) -> Result<()> {
-    let fresh: bool = db.query_row(
-        "SELECT NOT EXISTS(SELECT 1 FROM database_migrations WHERE version=4)",
-        [],
-        |r| r.get(0),
-    )?;
     let now = db.query_row("SELECT unixepoch()", [], |r| r.get(0))?;
     run(db, now)?;
-    if fresh {
-        db.execute("INSERT INTO database_migrations(version) VALUES(4)", [])?;
-        db.execute_batch("PRAGMA wal_checkpoint(TRUNCATE); VACUUM; PRAGMA optimize;")?;
-    }
     Ok(())
 }
 

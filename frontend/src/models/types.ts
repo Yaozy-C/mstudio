@@ -4,7 +4,7 @@ export type TextModelLimits = {
   contextWindow: number;
   maxOutputTokens: number | null;
   defaultMaxTokens: number | null;
-  source: "catalog" | "service" | "fallback";
+  source: "catalog" | "service";
   sourceUrl?: string | null;
 };
 export type ModelConnection = {

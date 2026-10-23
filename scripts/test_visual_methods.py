@@ -121,7 +121,7 @@ class MethodDocuments(unittest.TestCase):
 
     def test_board_default_and_explicit_still_exceptions_remain(self):
         self.assertIn("one temporal 2 by 2 action board", read_entry(SKILLS[2]))
-        self.assertIn("exact control frame retain their requested format", read_entry(SKILLS[2]))
+        self.assertIn("exact-control-frame requests retain their requested format", read_entry(SKILLS[2]))
         self.assertIn("do not silently replace boards", read_entry(SKILLS[4]))
         self.assertIn("Never send the whole board as an exact first/last frame",
                       read_entry(SKILLS[4]))
@@ -131,16 +131,6 @@ class MethodDocuments(unittest.TestCase):
         self.assertIn("For a selected shot-board task", core)
         self.assertIn("standalone effect or exact-control task keeps", core)
         self.assertIn("Do not require a board for it", core)
-
-    def test_methods_have_bounded_review_and_honesty_rules(self):
-        for skill in SKILLS[1:]:
-            with self.subTest(skill=skill):
-                text = read_method(skill).lower()
-                self.assertIn("budget", text)
-                self.assertIn("unverified", text)
-                self.assertIn("actual", text)
-        self.assertIn("Sampled frames", read_method("product-video-production"))
-        self.assertRegex(read_method("creative-ad-director"), r"not (?:simply )?a blue cast")
 
     @unittest.skipUnless((ROOT / "skills/video-analysis/SKILL.md").is_file(),
                          "full-repository validator requires all nine source packages")

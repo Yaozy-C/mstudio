@@ -3,24 +3,17 @@ use super::*;
 #[test]
 fn asset_tool_contract_rejects_all_errors_before_saving_and_corrected_call_commits_once() {
     let (store, before, _) = fixture();
-    // The retired asset-designer has no successor; keep exercising the asset-only
-    // boundary with an inline profile that has assets and generation but no frames.
-    let mut profile = crate::assistant::profiles::builtins()
+    let profile = crate::assistant::profiles::builtins()
         .into_iter()
-        .find(|p| p.id == "production")
+        .find(|p| p.id == "assets")
         .unwrap();
-    profile.tool_ids = vec![
-        "project-read".into(),
-        "project-assets".into(),
-        "media-generation".into(),
-    ];
     crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"execution":"confirm"},"instruction":"Generate"}}}))).unwrap();
     let bad = json!({"action":"edit","operations":[{"type":"request_generation","mediaKind":"image","text":"Synthetic reference","mode":"image","modelId":"invalid"}]});
     let result = execute(&store, &profile, "p", "turn", "bad", bad).unwrap();
     assert_eq!(result["code"], "INVALID_ARGS");
-    assert_eq!(result["issues"].as_array().unwrap().len(), 6);
+    assert_eq!(result["issues"].as_array().unwrap().len(), 7);
     assert_eq!(load(&store.db.lock().unwrap(), "p").unwrap(), before);
-    let valid = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"image","text":"Synthetic reference","generationPurpose":"asset","references":[]}]});
+    let valid = json!({"action":"edit","operations":[{"op":"request_generation","title":"Synthetic task","mediaKind":"image","text":"Synthetic reference","generationPurpose":"asset","references":[]}]});
     let receipt = execute(&store, &profile, "p", "turn", "corrected", valid.clone()).unwrap();
     assert_eq!(receipt["outcome"], "committed", "{receipt}");
     assert_eq!(
@@ -104,8 +97,9 @@ fn outbox_claim_survives_restart_but_reserved_remote_jobs_are_never_resubmitted(
 #[test]
 fn generation_duration_is_validated_against_the_selected_model_before_saving() {
     let (store, _, profile) = fixture();
+    store.conn().unwrap().execute("INSERT INTO service_connections VALUES('fal-fixture','Fixture','fal','https://queue.fal.run','fixture-key')", []).unwrap();
     store.set_setting("media-models", &json!([{
-        "id":"video","name":"Video","kind":"video","plugin":"fal",
+        "id":"video","name":"Video","kind":"video","plugin":"fal","connectionId":"fal-fixture",
         "endpoint":"minimax/h3/text-to-video","params":{"resolution":"480P"},"enabled":true,
         // Mirrors the published library declaration: capabilities are model data.
         "capabilities":{"controls":{
@@ -115,7 +109,7 @@ fn generation_duration_is_validated_against_the_selected_model_before_saving() {
         }}
     }]).to_string()).unwrap();
     crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"video":"video","execution":"automatic"},"instruction":"Generate"}}}))).unwrap();
-    let args = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":7,"resolution":"480P"}}]});
+    let args = json!({"action":"edit","operations":[{"op":"request_generation","title":"Synthetic task","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":7,"resolution":"480P"}}]});
     let receipt = execute(&store, &profile, "p", "turn", "generate", args.clone()).unwrap();
     assert_eq!(receipt["outcome"], "committed", "{receipt}");
     assert_eq!(receipt["generationTasks"][0]["parameters"]["duration"], 7);
@@ -151,7 +145,7 @@ fn generation_duration_is_validated_against_the_selected_model_before_saving() {
 fn embedded_generation_accepts_http_references_before_and_after_upload() {
     let (store, mut doc, _) = fixture();
     doc["assets"] = json!([{"id":"image","kind":"image","name":"Reference","path":"/synthetic.png","width":1024,"height":1024,"duration":0}]);
-    doc["production"] = json!({"drafts":{"task":{"key":"task","position":{"x":0,"y":0},"kind":"video","mode":"multi","prompt":"Synthetic action","inputs":[{"key":"image","assetId":"image","role":"reference","purpose":"Identity"}],"status":"READY"}}});
+    doc["production"] = json!({"drafts":{"task":{"key":"task","title":"Reference video","position":{"x":0,"y":0},"kind":"video","mode":"multi","prompt":"Synthetic action","inputs":[{"key":"image","assetId":"image","role":"reference","purpose":"Identity"}],"status":"READY"}}});
     let model = json!({
         "id":"model","name":"Video","plugin":"fal","endpoint":"minimax/h3/reference-to-video",
         "kind":"video","enabled":true,"params":{},
@@ -198,7 +192,7 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
 fn startup_repairs_receiving_status_from_imported_job_without_duplicate_assets() {
     let (store, mut doc, _) = fixture();
     let asset = json!({"id":"done","kind":"video","name":"Done","path":"/done.mp4","preview":"/done.jpg","duration":15,"width":480,"height":832,"hasAudio":true});
-    let task = json!({"key":"run","kind":"video","mode":"multi","prompt":"Keep","inputs":[],"modelId":"model","jobId":"job","submissionId":"job","turnId":"turn","status":"RECEIVING","resultAssetId":"done","resultAssetIds":["done"]});
+    let task = json!({"key":"run","title":"Done","kind":"video","mode":"multi","prompt":"Keep","inputs":[],"modelId":"model","jobId":"job","submissionId":"job","turnId":"turn","status":"RECEIVING","resultAssetId":"done","resultAssetIds":["done"]});
     doc["assets"] = json!([asset]);
     doc["nodes"].as_array_mut().unwrap().push(json!({"id":"result","kind":"asset","assetId":"done","title":"Done","text":"Keep","x":0,"y":0}));
     doc["production"] = json!({"drafts":{"run":task}});
@@ -231,11 +225,12 @@ fn startup_repairs_receiving_status_from_imported_job_without_duplicate_assets()
 #[test]
 fn custom_model_parameters_reach_model_validation_through_the_tool_contract() {
     let (store, _, profile) = fixture();
+    store.conn().unwrap().execute("INSERT INTO service_connections VALUES('fal-fixture','Fixture','fal','https://queue.fal.run','fixture-key')", []).unwrap();
     store
         .set_setting(
             "media-models",
             &json!([{
-                "id":"video","name":"Custom","kind":"video","plugin":"fal",
+                "id":"video","name":"Custom","kind":"video","plugin":"fal","connectionId":"fal-fixture",
                 "endpoint":"vendor/custom-video","params":{},"enabled":true,
                 "capabilities":{"controls":{
                     "resolution":{"path":"/settings/size","values":["720p-custom"]},
@@ -246,7 +241,7 @@ fn custom_model_parameters_reach_model_validation_through_the_tool_contract() {
         )
         .unwrap();
     crate::assistant::history::append_attributed(&store, "p", "Generate", &json!("Generate"), "", "m", Some(&json!({"turnId":"turn","request":{"production":{"projectId":"p","models":{"video":"video","execution":"automatic"},"instruction":"Generate"}}}))).unwrap();
-    let args = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":2,"resolution":"720p-custom"}}]});
+    let args = json!({"action":"edit","operations":[{"op":"request_generation","title":"Synthetic task","mediaKind":"video","text":"Synthetic scene","parameters":{"duration":2,"resolution":"720p-custom"}}]});
     let receipt = execute(&store, &profile, "p", "turn", "custom", args.clone()).unwrap();
     assert_eq!(receipt["outcome"], "committed", "{receipt}");
     assert_eq!(receipt["generationTasks"][0]["parameters"]["duration"], 2);

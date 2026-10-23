@@ -1,9 +1,10 @@
 import type { Project } from "../model";
 import { framesOf } from "./frames";
+import { mediaCardSize } from "./mediaCardSize";
 import { itemKey } from "./types";
 import { SHOT_COLUMN_WIDTH, SHOT_FRAME_OFFSET } from "./shotLayout";
 
-// Legacy shot frames describe usage. Materialize a standalone card only when
+// Shot frames describe usage. Materialize a standalone card only when
 // the image has no card yet; never collapse user-created copies.
 export function materializeFrameCards(p: Project): Project {
   let next = p;
@@ -13,22 +14,28 @@ export function materializeFrameCards(p: Project): Project {
   p.nodes
     .filter((n) => n.shot)
     .forEach((shot, i) => {
+      let rowY = 110;
+      let rowHeight = 0;
       framesOf(shot).forEach((frame, j) => {
+        if (j > 0 && j % 2 === 0) {
+          rowY += rowHeight + 45;
+          rowHeight = 0;
+        }
+        const asset = p.assets.find((a) => a.id === frame.assetId);
+        if (asset) rowHeight = Math.max(rowHeight, mediaCardSize(asset).height);
         if (
           represented.has(frame.assetId) ||
           !p.assets.some((a) => a.id === frame.assetId)
         )
           return;
         represented.add(frame.assetId);
-        const legacyKey = itemKey("frame", shot.id, frame.assetId);
         let id = `frame-card-${frame.assetId}`;
         while (next.nodes.some((n) => n.id === id)) id += "-copy";
         const key = itemKey("node", id);
-        const position = p.production?.positions?.[key] ??
-          p.production?.positions?.[legacyKey] ?? {
-            x: i * SHOT_COLUMN_WIDTH + SHOT_FRAME_OFFSET + (j % 2) * 290,
-            y: 110 + Math.floor(j / 2) * 395,
-          };
+        const position = p.production?.positions?.[key] ?? {
+          x: i * SHOT_COLUMN_WIDTH + SHOT_FRAME_OFFSET + (j % 2) * 290,
+          y: rowY,
+        };
         next = {
           ...next,
           nodes: [
@@ -45,9 +52,6 @@ export function materializeFrameCards(p: Project): Project {
           production: {
             ...next.production,
             positions: { ...next.production?.positions, [key]: position },
-            hidden: p.production?.hidden?.includes(legacyKey)
-              ? [...(next.production?.hidden ?? []), key]
-              : next.production?.hidden,
           },
         };
       });

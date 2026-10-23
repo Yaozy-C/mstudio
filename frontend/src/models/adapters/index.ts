@@ -8,6 +8,7 @@
  */
 import { parseUrl } from "../parseUrl";
 import type { MediaModel } from "../mediaRegistry";
+import { codexImageModel } from "../codexImageModel";
 import {
   copyParameters,
   pointerDelete,
@@ -112,6 +113,7 @@ function declaredLimitCheck(model: MediaModel) {
 
 function codexAdapter(model: MediaModel): ModelAdapter {
   return create("codex-image", referenceFields(model), (request) => {
+    codexImageModel(request.options ?? {});
     declaredLimitCheck(model)(request);
     const { inputs = [] } = request;
     if (inputs.some((i) => !/^data:image\/(png|jpeg|webp);base64,/.test(i.url)))

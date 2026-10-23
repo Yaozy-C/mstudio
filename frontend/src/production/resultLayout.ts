@@ -44,10 +44,10 @@ export function freeResultPosition(
   project: Project,
   task: ProductionTask,
   preferred: { x: number; y: number },
+  size = resultSize(task.kind),
 ) {
   const position = { ...preferred };
   const obstacles = resultObstacles(project, task);
-  const size = resultSize(task.kind);
   while (obstacles.some((n) => overlapsResult(position, size, n)))
     position.y += size.height + 45;
   return position;

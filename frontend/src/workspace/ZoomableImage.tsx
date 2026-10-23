@@ -237,6 +237,7 @@ export function ZoomableImage({
         )}
       </div>
       <p className="image-zoom-hint">
+        {natural.width > 0 && `${natural.width} × ${natural.height} · `}
         {annotations?.enabled
           ? t("拖动框选修改区域 · ⌘/Ctrl + 滚轮缩放")
           : t("拖动平移 · ⌘/Ctrl + 滚轮缩放 · 双击切换")}

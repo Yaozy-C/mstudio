@@ -1,4 +1,3 @@
-pub(crate) mod annotation_sources;
 mod asset_sources;
 mod dependencies;
 #[cfg(test)]
@@ -6,6 +5,7 @@ mod dependency_tests;
 pub mod generation_wait;
 pub(crate) mod observations;
 pub mod production;
+pub(crate) mod production_names;
 mod production_recovery;
 #[cfg(test)]
 mod production_recovery_tests;
@@ -32,7 +32,6 @@ pub fn load(db: &Connection, id: &str) -> Result<Value> {
         })
         .context("Project no longer exists")?;
     let mut document = serde_json::from_str(&raw)?;
-    annotation_sources::recover(db, &mut document)?;
     crate::previs::media::hydrate(db, id, &mut document)?;
     Ok(document)
 }
@@ -65,6 +64,7 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         "Project no longer exists"
     );
     crate::project_storage::remember(db, id, &after)?;
+    production_names::sync(db, before, &after)?;
     crate::project_storage::delete_media::commit(db, before, &after)?;
     Ok(())
 }

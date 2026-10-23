@@ -1,7 +1,10 @@
 //! A single local Codex account supplies text models and optional image generation.
 use super::{Model, connections, media, storage};
-use crate::{database::Store, model_adapters::codex_rpc::Rpc};
-use anyhow::{Result, ensure};
+use crate::{
+    database::Store,
+    model_adapters::codex_rpc::{Rpc, RpcError},
+};
+use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
 use std::time::Duration;
 use tauri::State;
@@ -38,29 +41,52 @@ pub async fn model_list() -> Result<Vec<Value>> {
     .await?
 }
 async fn inspect() -> Result<Value> {
-    let mut rpc = match Rpc::start().await {
-        Ok(rpc) => rpc,
-        Err(_) => Rpc::start_text().await?,
-    };
-    let result: Result<Value> = async {
-        let account = rpc
-            .call("account/read", json!({"refreshToken":false}))
-            .await?;
-        if account["account"]["type"] != "chatgpt" {
-            return Ok(json!({"status":"login_required"}));
-        }
-        let rows = models(&mut rpc).await?;
-        ensure!(!rows.is_empty(), "Codex 未返回可用对话模型");
-        // Some text-only Codex builds do not implement the image capability endpoint.
-        let caps = rpc
-            .call("modelProvider/capabilities/read", json!({}))
-            .await
-            .unwrap_or_default();
-        Ok(json!({"status":"ready","models":rows,"images":caps["imageGeneration"] == true && crate::model_adapters::codex_auth::available()}))
-    }
-    .await;
+    let mut rpc = Rpc::start_text().await?;
+    let result = inspect_rpc(&mut rpc).await;
     rpc.stop().await;
     result
+}
+
+fn image_capability(result: Result<Value>) -> Result<bool> {
+    match result {
+        Err(error)
+            if error
+                .downcast_ref::<RpcError>()
+                .is_some_and(|e| e.code == -32601) =>
+        {
+            Ok(false)
+        }
+        other => other?["imageGeneration"]
+            .as_bool()
+            .context("Codex 未返回有效的图像能力声明"),
+    }
+}
+
+async fn inspect_rpc(rpc: &mut Rpc) -> Result<Value> {
+    let account = rpc
+        .call("account/read", json!({"refreshToken":false}))
+        .await?;
+    if account["account"]["type"] != "chatgpt" {
+        return Ok(json!({"status":"login_required"}));
+    }
+    let rows = models(rpc).await?;
+    ensure!(!rows.is_empty(), "Codex 未返回可用对话模型");
+    // Some text-only Codex builds do not implement the image capability endpoint.
+    let images = image_capability(rpc.call("modelProvider/capabilities/read", json!({})).await)?;
+    Ok(discovery_report(
+        rows,
+        images,
+        if images {
+            crate::model_adapters::codex_auth::check_login()
+        } else {
+            Ok(())
+        },
+    ))
+}
+
+fn discovery_report(rows: Vec<Value>, images: bool, login: Result<()>) -> Value {
+    let image_error = login.err().map(|error| error.to_string());
+    json!({"status":"ready","models":rows,"images":images && image_error.is_none(),"imageError":image_error})
 }
 
 #[tauri::command]
@@ -68,9 +94,10 @@ pub async fn connect_codex_service(
     store: State<'_, Store>,
     connection: connections::ServiceConnection,
 ) -> Result<Value, String> {
-    if crate::model_adapters::codex_discovery::binaries()
+    if crate::model_adapters::codex_discovery::binary()
         .await
-        .is_empty()
+        .map_err(|e| e.to_string())?
+        .is_none()
     {
         return Ok(json!({"status":"missing"}));
     }
@@ -84,9 +111,16 @@ pub async fn connect_codex_service(
     let mut db = store.db.lock().unwrap();
     let tx = db.transaction().map_err(|e| e.to_string())?;
     let service = sync(&tx, connection, &report).map_err(|e| e.to_string())?;
+    let has_text_model: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM model_profiles WHERE json_extract(data, '$.connectionId')=?1)", [&service.id], |row| row.get(0)).map_err(|error| error.to_string())?;
     tx.commit().map_err(|e| e.to_string())?;
-    Ok(json!({"status":"ready","connection":service}))
+    Ok(
+        json!({"status":"ready","connection":service,"imageError":report["imageError"],"modelSelectionRequired":!has_text_model}),
+    )
 }
+
+#[cfg(test)]
+#[path = "codex_connection_tests.rs"]
+mod discovery_tests;
 
 fn sync(
     db: &rusqlite::Connection,
@@ -107,53 +141,46 @@ fn sync(
     let rows = report["models"]
         .as_array()
         .ok_or_else(|| anyhow::anyhow!("缺少 Codex 模型列表"))?;
-    let selected = rows
-        .iter()
-        .find(|m| m["isDefault"] == true)
-        .or_else(|| rows.first())
-        .ok_or_else(|| anyhow::anyhow!("没有可用模型"))?;
+    let selected = rows.iter().find(|m| m["isDefault"] == true);
     let id = format!("codex-text-{}", service.id);
     let exists: bool = db.query_row(
         "SELECT EXISTS(SELECT 1 FROM model_profiles WHERE id=?1)",
         [&id],
         |r| r.get(0),
     )?;
-    if !exists {
+    if !exists && let Some(selected) = selected {
         storage::save(
             db,
             Model {
                 id,
                 name: format!(
                     "Codex · {}",
-                    selected["displayName"].as_str().unwrap_or("Chat")
+                    selected["displayName"]
+                        .as_str()
+                        .or_else(|| selected["id"].as_str())
+                        .context("Codex 默认模型缺少型号")?
                 ),
                 connection_id: Some(service.id.clone()),
                 has_key: false,
                 profile: crate::assistant::config::Profile {
                     endpoint: service.endpoint.clone(),
                     adapter: "codex".into(),
-                    model: selected["id"].as_str().unwrap().into(),
+                    model: selected["id"]
+                        .as_str()
+                        .context("Codex 默认模型缺少型号")?
+                        .into(),
                     inputs: Default::default(),
                     context_window: None,
                     limits: Default::default(),
                 },
             },
-            None,
-            false,
         )?;
     }
     if report["images"] == true {
         let mut items = media::read(db)?;
-        let mut found = false;
-        for item in &mut items {
-            if item.plugin == "codex-image"
-                && (item.connection_id.is_none()
-                    || item.connection_id.as_deref() == Some(&service.id))
-            {
-                item.connection_id = Some(service.id.clone());
-                found = true;
-            }
-        }
+        let found = items.iter().any(|item| {
+            item.plugin == "codex-image" && item.connection_id.as_deref() == Some(&service.id)
+        });
         if !found {
             ensure!(items.len() < 100, "最多保存 100 个媒体模型");
             items.push(media::MediaModel {

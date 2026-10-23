@@ -1,5 +1,10 @@
 import { freeResultPosition } from "./resultLayout";
-import { normalizeTaskPrompt } from "./taskPrompt";
+import { mediaCardSize } from "./mediaCardSize";
+import {
+  resultTask,
+  resultTaskName,
+  withTaskResultNames,
+} from "./taskResultNames";
 import { materializeFrameCards } from "./frameCards";
 import { resultOrigin } from "./resultOrigin";
 import { uid, type Asset, type Project } from "../model";
@@ -8,13 +13,14 @@ import { framesOf } from "./frames";
 import { itemKey, type ProductionSource, type ProductionTask } from "./types";
 
 export function saveTask(p: Project, task: ProductionTask): Project {
+  p = withTaskResultNames(p, task);
   return {
     ...p,
     production: {
       ...p.production,
       drafts: {
         ...p.production?.drafts,
-        [task.key]: normalizeTaskPrompt(task),
+        [task.key]: task,
       },
     },
   };
@@ -58,8 +64,10 @@ export function receiveProductionResult(
   if (!source?.canvasGeneration)
     throw new Error("生成任务缺少制作上下文，未写入项目");
   if (p.removedAssetIds?.includes(asset.id)) return p;
+  const current = resultTask(p, source);
   asset = {
     ...asset,
+    name: resultTaskName(p, source),
     generated: true,
     inLibrary: undefined,
   };
@@ -68,7 +76,10 @@ export function receiveProductionResult(
     original.task.generationPurpose === "asset"
       ? undefined
       : resultOrigin(p, original.task).ownerId;
-  const data = { ...original, task: { ...original.task, ownerId } };
+  const data = {
+    ...original,
+    task: { ...original.task, title: current.title, ownerId },
+  };
   if (asset.kind !== data.task.kind)
     throw new Error("返回的媒体类型与生成任务不一致");
   const run = p.production?.drafts?.[data.task.key];
@@ -103,15 +114,16 @@ export function receiveProductionResult(
   const assets = p.assets.some((a) => a.id === asset.id)
     ? p.assets
     : [...p.assets, asset];
-  let key: string;
+  let key: string | undefined;
   const position = freeResultPosition(
     p,
     data.task,
     data.task.position ?? { x: data.x, y: data.y },
+    mediaCardSize(asset),
   );
   let nodes = p.nodes;
   if (node?.shot) {
-    key = itemKey(asset.kind === "image" ? "frame" : "take", node.id, asset.id);
+    if (asset.kind === "video") key = itemKey("take", node.id, asset.id);
     const shot =
       asset.kind === "image"
         ? {
@@ -154,16 +166,20 @@ export function receiveProductionResult(
       },
     ];
   }
-  return materializeFrameCards({
-    ...p,
-    assets,
-    nodes,
+  const result = materializeFrameCards({ ...p, assets, nodes });
+  if (!key) {
+    const card = result.nodes.find((n) => !n.shot && n.assetId === asset.id);
+    if (!card) throw new Error("分镜图缺少画布卡片");
+    key = itemKey("node", card.id);
+  }
+  return {
+    ...result,
     production: {
-      ...p.production,
+      ...result.production,
       positions: {
-        ...p.production?.positions,
+        ...result.production?.positions,
         [key]: position,
       },
     },
-  });
+  };
 }

@@ -22,6 +22,8 @@ pub fn record(host: &impl Host, session: &Session, profile: &Profile) -> Result<
         .filter(|m| !matches!(m, Message::System { .. }))
         .map(budget::tokens)
         .sum();
-    let tools = text_tokens(&serde_json::to_string(&host.definitions()).unwrap_or_default());
-    host.record("context/usage",json!({"estimatedSystemTokens":system,"estimatedMessageTokens":messages,"estimatedToolTokens":tools,"projectedTokens":budget::pressure(session,profile,host),"contextWindow":budget::context_window(session,profile),"reservedOutputTokens":crate::models::context::output_cap(profile).unwrap_or(0),"compactionHeadroom":profile.limits.compaction_headroom.unwrap_or(crate::models::context::DEFAULT_HEADROOM),"thresholdTokens":budget::input_budget(session,profile),"messageCount":session.messages.len(),"note":"组成是估算，媒体使用估值；费用以 request/usage 和 compaction/end 的供应商用量为准"}))
+    let tools = text_tokens(
+        &serde_json::to_string(&host.definitions()?).map_err(|error| error.to_string())?,
+    );
+    host.record("context/usage",json!({"estimatedSystemTokens":system,"estimatedMessageTokens":messages,"estimatedToolTokens":tools,"projectedTokens":budget::pressure(session,profile,host)?,"contextWindow":budget::context_window(session,profile),"reservedOutputTokens":crate::models::context::output_cap(profile).unwrap_or(0),"compactionHeadroom":profile.limits.compaction_headroom.unwrap_or(crate::models::context::DEFAULT_HEADROOM),"thresholdTokens":budget::input_budget(session,profile),"messageCount":session.messages.len(),"note":"组成是估算，媒体使用估值；费用以 request/usage 和 compaction/end 的供应商用量为准"}))
 }

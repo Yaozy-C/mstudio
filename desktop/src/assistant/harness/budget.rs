@@ -72,7 +72,7 @@ pub fn header(
 pub fn anchor(session: &mut Session, profile: &Profile, host: &impl Host, input: u64, output: u64) {
     anchor_request(
         session,
-        header(profile, &host.definitions()),
+        header(profile, &host.definitions().unwrap()),
         input.saturating_add(output),
     );
 }
@@ -147,27 +147,31 @@ pub fn context_window(session: &Session, profile: &Profile) -> Option<usize> {
 pub fn input_budget(session: &Session, profile: &Profile) -> Option<usize> {
     context_window(session, profile).and_then(|n| crate::models::context::threshold(profile, n))
 }
-pub fn over_budget(session: &Session, profile: &Profile, host: &impl Host) -> bool {
-    input_budget(session, profile).is_some_and(|limit| pressure(session, profile, host) > limit)
+pub fn over_budget(session: &Session, profile: &Profile, host: &impl Host) -> Result<bool, String> {
+    Ok(match input_budget(session, profile) {
+        Some(limit) => pressure(session, profile, host)? > limit,
+        None => false,
+    })
 }
-pub fn pressure(session: &Session, profile: &Profile, host: &impl Host) -> usize {
-    let estimated = raw_pressure(session, host);
-    match &session.usage_anchor {
-        Some(anchor) if anchor.header == header(profile, &host.definitions()) => anchor
+pub fn pressure(session: &Session, profile: &Profile, host: &impl Host) -> Result<usize, String> {
+    let estimated = raw_pressure(session, host)?;
+    let current = header(profile, &host.definitions()?);
+    Ok(match &session.usage_anchor {
+        Some(anchor) if anchor.header == current => anchor
             .baseline
             .saturating_add(estimated)
             .saturating_sub(anchor.estimated),
         _ => estimated,
-    }
+    })
 }
-pub fn raw_pressure(session: &Session, host: &impl Host) -> usize {
-    let tools = host.definitions();
-    session.messages.iter().map(tokens).sum::<usize>()
+pub fn raw_pressure(session: &Session, host: &impl Host) -> Result<usize, String> {
+    let tools = host.definitions()?;
+    Ok(session.messages.iter().map(tokens).sum::<usize>()
         + if tools.is_empty() {
             0
         } else {
             structural(&tools)
-        }
+        })
 }
 
 /// Proactive failure is diagnostic, not a provider context-window error.

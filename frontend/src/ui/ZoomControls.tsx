@@ -45,6 +45,11 @@ export function ZoomControls({
         <CornersOut />
         {t("全部适应")}
       </button>
+      {image && (
+        <button type="button" onClick={() => zoom(1 / scale)}>
+          {t("原始尺寸")}
+        </button>
+      )}
     </div>
   );
 }

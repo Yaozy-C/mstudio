@@ -23,27 +23,24 @@ fn transaction(
 }
 
 #[tauri::command]
-pub async fn save_model(
-    store: State<'_, Store>,
-    mut profile: Model,
-    key: Option<String>,
-    clear_key: bool,
-) -> Result<(), String> {
+pub async fn save_model(store: State<'_, Store>, mut profile: Model) -> Result<(), String> {
     let automatic = profile.profile.limits.context_window_mode == Some(super::context::Mode::Auto)
         || profile.profile.context_window.is_none();
-    if automatic {
+    if automatic && super::context::automatic(&profile.profile).is_none() {
         let secret = {
             let db = store.db.lock().unwrap();
             super::connections::bind_text(&db, &mut profile).map_err(|e| e.to_string())?;
-            key.clone()
-                .unwrap_or(storage::credential(&db, &profile).map_err(|e| e.to_string())?)
+            storage::credential(&db, &profile).map_err(|e| e.to_string())?
         };
         crate::assistant::config::validate(&profile.profile).map_err(|e| e.to_string())?;
-        if let Some(limits) = super::context_commands::discover(&profile.profile, &secret).await {
+        if let Some(limits) = super::context_commands::discover(&profile.profile, &secret)
+            .await
+            .map_err(|error| error.to_string())?
+        {
             profile.profile.limits.model_limits = Some(limits);
         }
     }
-    transaction(&store, |db| storage::save(db, profile, key, clear_key))
+    transaction(&store, |db| storage::save(db, profile))
 }
 
 #[tauri::command]

@@ -2,7 +2,7 @@
 use serde_json::{Value, json};
 
 pub fn schema() -> Value {
-    json!({"type":"array","maxItems":24,"description":"Declare the generation task deliverables; this is a delivery checklist, not a reason to bundle independent work. One entry per requested output task, not per shot. For a merged video use its anchor shot targetId once. Pass [] for research or prompt-only work. The host checks actual task receipts, not the specialist's prose.","items":{"type":"object","properties":{"targetId":{"type":"string","minLength":1,"maxLength":200},"kind":{"type":"string","enum":["image","video"]}},"required":["targetId","kind"],"additionalProperties":false}})
+    json!({"type":"array","maxItems":24,"description":"Declare tasks bound to existing shot targets; this is a delivery checklist, not a reason to bundle independent work. One entry per requested output task. For a merged video use its anchor shot targetId once. Pass [] for standalone reference assets, research or prompt-only work: standalone assets have no targetId and need no placeholder nodes. The host checks actual task receipts, not the specialist's prose.","items":{"type":"object","properties":{"targetId":{"type":"string","minLength":1,"maxLength":200},"kind":{"type":"string","enum":["image","video"]}},"required":["targetId","kind"],"additionalProperties":false}})
 }
 
 pub fn assess(expected: &Value, tasks: &Value) -> Value {
@@ -23,22 +23,21 @@ pub fn assess(expected: &Value, tasks: &Value) -> Value {
         "meaning":"Checks task creation only. completed/ok describe the agent run, not media completion. AWAITING_CONFIRMATION means created but not submitted to the service."})
 }
 
-pub fn for_turn(store: &crate::database::Store, project: &str, turn: &str, tasks: &Value) -> Value {
-    use rusqlite::OptionalExtension;
+pub fn for_turn(
+    store: &crate::database::Store,
+    project: &str,
+    turn: &str,
+    tasks: &Value,
+) -> Result<Value, String> {
     let expected = store.db.lock().unwrap().query_row(
         "SELECT json_extract(payload,'$.expectedGenerations') FROM agent_events WHERE project_id=?1 AND turn_id=?2 AND kind='subagent/requirements' ORDER BY seq DESC LIMIT 1",
-        rusqlite::params![project, turn], |r| r.get::<_, Option<String>>(0),
-    ).optional();
-    match expected {
-        Ok(value) => assess(
-            &value
-                .flatten()
-                .and_then(|s| serde_json::from_str::<Value>(&s).ok())
-                .unwrap_or(Value::Null),
-            tasks,
-        ),
-        Err(error) => json!({"state":"unverified","complete":false,"error":error.to_string()}),
+        rusqlite::params![project, turn], |r| r.get::<_, String>(0),
+    ).map_err(|error| error.to_string())?;
+    let expected: Value = serde_json::from_str(&expected).map_err(|error| error.to_string())?;
+    if !expected.is_array() {
+        return Err("Child generation requirements are not an array".into());
     }
+    Ok(assess(&expected, tasks))
 }
 
 #[cfg(test)]
@@ -105,14 +104,18 @@ mod tests {
         )
         .unwrap();
         crate::database::event_retention::finish(&store.db.lock().unwrap(), "p", "turn").unwrap();
-        assert_eq!(for_turn(&store, "p", "turn", &json!([]))["complete"], false);
+        assert_eq!(
+            for_turn(&store, "p", "turn", &json!([])).unwrap()["complete"],
+            false
+        );
         assert_eq!(
             for_turn(
                 &store,
                 "p",
                 "turn",
                 &json!([{"id":"run","targetId":"s3","kind":"video"}])
-            )["complete"],
+            )
+            .unwrap()["complete"],
             true
         );
         drop(store);
@@ -125,8 +128,8 @@ mod tests {
         let store = Store::open(root.clone()).unwrap();
         {
             let db = store.db.lock().unwrap();
-            db.execute_batch("INSERT INTO projects VALUES('p','p','{}',0); INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn) VALUES('child','p','parent','coordinator','production','continuable','running','{}','model','next');").unwrap();
-            let source = json!({"kind":"agent-message","expectedGenerations":[{"targetId":"s4","kind":"video"}]});
+            db.execute_batch("INSERT INTO projects VALUES('p','p','{\"id\":\"p\"}',0); INSERT INTO subagent_runs(id,project_id,parent_turn,parent_agent_id,agent_id,mode,status,profile,model_id,last_turn) VALUES('child','p','parent','coordinator','production','continuable','running','{}','model','next');").unwrap();
+            let source = json!({"kind":"agent-message","senderAgentId":"coordinator","senderTurnId":"parent","expectedGenerations":[{"targetId":"s4","kind":"video"}]});
             db.execute("INSERT INTO subagent_inbox(child_id,text,source) VALUES('child','finish remaining video',?1)", [source.to_string()]).unwrap();
         }
         let messages = super::super::mailbox::take_inbox(
@@ -144,8 +147,28 @@ mod tests {
                 .contains("Required generation task receipts")
         );
         assert_eq!(
-            for_turn(&store, "p", "next", &json!([]))["items"][0]["targetId"],
+            for_turn(&store, "p", "next", &json!([])).unwrap()["items"][0]["targetId"],
             "s4"
+        );
+        {
+            let db = store.db.lock().unwrap();
+            db.execute(
+                "UPDATE agent_events SET payload='{}' WHERE kind='subagent/requirements'",
+                [],
+            )
+            .unwrap();
+        }
+        assert!(for_turn(&store, "p", "next", &json!([])).is_err());
+        store
+            .db
+            .lock()
+            .unwrap()
+            .execute_batch("DROP TABLE agent_events")
+            .unwrap();
+        assert!(
+            for_turn(&store, "p", "next", &json!([]))
+                .unwrap_err()
+                .contains("no such table")
         );
         drop(store);
         std::fs::remove_dir_all(root).unwrap();

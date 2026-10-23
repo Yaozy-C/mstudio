@@ -35,21 +35,8 @@ pub fn read(store: &Store, project: &str) -> Result<Vec<Message>> {
         .collect::<rusqlite::Result<Vec<_>>>()?;
     rows.into_iter()
         .map(|(role, content, model, payload, attribution, id)| {
-            let mut attribution: Option<Value> =
+            let attribution: Option<Value> =
                 attribution.map(|v| serde_json::from_str(&v)).transpose()?;
-            if let Some(meta) = attribution.as_mut()
-                && meta["createdAt"].is_null()
-                && let Some(turn) = meta["turnId"].as_str()
-            {
-                let created: Option<i64> = db.query_row(
-                    "SELECT MIN(created) FROM agent_events WHERE project_id=?1 AND turn_id=?2",
-                    rusqlite::params![project, turn],
-                    |r| r.get(0),
-                )?;
-                if let Some(created) = created {
-                    meta["createdAt"] = serde_json::json!(created * 1000);
-                }
-            }
             Ok(Message {
                 id,
                 role,

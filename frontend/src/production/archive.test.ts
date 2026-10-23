@@ -16,6 +16,7 @@ test("archived tasks expose facts, retain full records for exact reads and canno
   const task = {
     ...createTask(p, [], "image"),
     key: "run:archived",
+    title: "Pack · storyboard",
     turnId: "turn",
     createdAt: 1,
     status: "AWAITING_CONFIRMATION" as const,
@@ -99,6 +100,7 @@ test("Agent archives obsolete pending tasks with a finished receipt and can rest
   const task = {
     ...createTask(fixture(), [], "video"),
     key: "obsolete",
+    title: "Pack · video",
     status: "AWAITING_CONFIRMATION",
     modelId: "removed-model",
     parameters: { duration: 5 },

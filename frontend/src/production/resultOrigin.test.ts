@@ -12,6 +12,7 @@ import { selectMediaModel } from "./frameInputs";
 import type { ProductionTask } from "./types";
 const task = (): ProductionTask => ({
   key: "run:direct:edit",
+  title: "Product · corrected lid",
   turnId: "direct:edit",
   createdAt: 1,
   kind: "image",
@@ -90,6 +91,7 @@ test("model changes retain unsupported roles and independent images work as vide
   });
   const item = productionItems(p).find((n) => n.key === "node:standalone")!;
   const draft = createTask(p, [item], "video");
+  draft.title = "Product · push in";
   draft.prompt = "推进";
   expect(draft.inputs.map((r) => r.assetId)).toEqual(["a"]);
   expect(draft.inputs[0].role).toBe("reference");
@@ -115,6 +117,7 @@ test("shot results stay beside their shot even when the viewport is far away", (
   const card = productionItems(next).find((n) => n.assetId === "new-frame")!;
   expect(card.x).toBe(position.x);
   expect(card.y).toBe(position.y);
+  expect(next.production?.positions?.[card.key]).toEqual(position);
 });
 
 test("overview generation stays near visible content instead of the remote viewport corner", () => {

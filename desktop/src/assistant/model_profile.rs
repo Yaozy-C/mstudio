@@ -31,6 +31,10 @@ fn labels(profile: &AgentProfile) -> (String, String) {
             "Image production",
             "Still prompts, reference assets, image generation and repair",
         ),
+        "assets" => (
+            "Asset specialist",
+            "Shared character, wardrobe, location and prop references before storyboard imagery",
+        ),
         "production" => (
             "Video production",
             "Video prompts, control inputs, generation and repair",

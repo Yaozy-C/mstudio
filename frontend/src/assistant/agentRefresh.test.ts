@@ -26,7 +26,7 @@ test("an open project sends with saved profile despite stale UI catalog", async 
   expect(f.catalogReads).toBe(1);
   expect(f.calls[0].args.agentRevision).toBe(20);
   expect(f.calls[0].args.agentName).toBe("已更新 20");
-  f.calls[0].result.resolve("完成");
+  f.calls[0].result.resolve({ text: "完成", status: "completed" });
   await sending;
 });
 
@@ -56,7 +56,7 @@ test("retry refreshes the profile while retaining original task and attachments"
   expect(f.calls[1].args.attachments).toEqual([f.a]);
   expect(f.draft.items).toEqual([f.b]);
   expect(f.thread.composer.text).toBe("下一条草稿");
-  f.calls[1].result.resolve("完成");
+  f.calls[1].result.resolve({ text: "完成", status: "completed" });
   await retry;
 });
 

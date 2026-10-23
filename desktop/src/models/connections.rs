@@ -50,20 +50,6 @@ pub fn key(db: &Connection, id: &str) -> Result<String> {
         |r| r.get(0),
     )?)
 }
-pub fn legacy_fal_key(db: &Connection) -> Result<String> {
-    let keys = db
-        .prepare("SELECT DISTINCT api_key FROM service_connections WHERE kind='fal'")?
-        .query_map([], |r| r.get::<_, String>(0))?
-        .collect::<rusqlite::Result<Vec<_>>>()?;
-    ensure!(
-        keys.len() <= 1,
-        "旧任务没有记录服务连接，无法确定使用哪个 fal 账号"
-    );
-    Ok(keys
-        .into_iter()
-        .next()
-        .unwrap_or(super::setting(db, "fal-key")?.unwrap_or_default()))
-}
 fn validate(service: &ServiceConnection) -> Result<()> {
     ensure!(
         !service.id.is_empty() && service.id.len() <= 100,
@@ -198,69 +184,74 @@ pub fn list(db: &Connection) -> Result<Vec<ServiceConnection>> {
         .collect()
 }
 pub fn bind_text(db: &Connection, model: &mut Model) -> Result<()> {
-    if let Some(id) = &model.connection_id {
-        let service = get(db, id)?;
-        ensure!(
-            !["dashscope", "fal", "http-json"].contains(&service.kind.as_str()),
-            "此连接不支持对话模型"
-        );
-        model.profile.endpoint = service.endpoint;
-        model.profile.adapter = service.kind;
-        model.has_key = service.has_key;
-    }
+    let id = model.connection_id.as_deref().ok_or_else(|| {
+        crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "connection",
+            "对话模型缺少服务连接，请在设置中重新选择连接",
+        )
+    })?;
+    let service = get(db, id)?;
+    ensure!(
+        !["dashscope", "fal", "http-json"].contains(&service.kind.as_str()),
+        "此连接不支持对话模型"
+    );
+    model.profile.endpoint = service.endpoint;
+    model.profile.adapter = service.kind;
+    model.has_key = service.has_key;
     Ok(())
 }
 pub fn bind_media(db: &Connection, model: &mut media::MediaModel) -> Result<()> {
-    if let Some(id) = &model.connection_id {
-        let service = get(db, id)?;
-        if service.kind == "codex" {
-            ensure!(model.plugin == "codex-image", "Codex 媒体连接仅支持生图");
-            model.endpoint = "codex://local/images".into();
-            model.has_key = false;
-            return Ok(());
-        }
-        ensure!(model.plugin == service.kind, "模型接入方式与服务连接不一致");
-        match service.kind.as_str() {
-            "gemini-native" => model.endpoint = service.endpoint,
-            "fal" => {}
-            "dashscope" => {
-                model.endpoint =
-                    crate::model_adapters::dashscope::submission_url(&service.endpoint)?;
-            }
-            "http-json" => {
-                ensure!(
-                    reqwest::Url::parse(&model.endpoint)?.origin()
-                        == reqwest::Url::parse(&service.endpoint)?.origin(),
-                    "提交接口必须与服务连接同源"
-                );
-            }
-            _ => anyhow::bail!("此连接尚不支持媒体生成"),
-        }
-        model.has_key = service.has_key;
+    let id = model.connection_id.as_deref().ok_or_else(|| {
+        crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "connection",
+            "媒体模型缺少服务连接，请在设置中重新选择连接",
+        )
+    })?;
+    let service = get(db, id)?;
+    if service.kind == "codex" {
+        ensure!(model.plugin == "codex-image", "Codex 媒体连接仅支持生图");
+        model.endpoint = "codex://local/images".into();
+        model.has_key = false;
+        return Ok(());
     }
+    ensure!(model.plugin == service.kind, "模型接入方式与服务连接不一致");
+    match service.kind.as_str() {
+        "gemini-native" => model.endpoint = service.endpoint,
+        "fal" => {}
+        "dashscope" => {
+            model.endpoint = crate::model_adapters::dashscope::submission_url(&service.endpoint)?;
+        }
+        "http-json" => {
+            ensure!(
+                reqwest::Url::parse(&model.endpoint)?.origin()
+                    == reqwest::Url::parse(&service.endpoint)?.origin(),
+                "提交接口必须与服务连接同源"
+            );
+        }
+        _ => anyhow::bail!("此连接尚不支持媒体生成"),
+    }
+    model.has_key = service.has_key;
     Ok(())
 }
 pub fn media_key(db: &Connection, model: &media::MediaModel) -> Result<String> {
     let mut bound = model.clone();
     bind_media(db, &mut bound)?;
-    if let Some(id) = &model.connection_id {
-        return key(db, id);
-    }
-    Ok(super::setting(
-        db,
-        if model.plugin == "fal" {
-            "fal-key".into()
-        } else {
-            format!("media-key:{}", model.id)
-        }
-        .as_str(),
-    )?
-    .unwrap_or_default())
+    let id = model.connection_id.as_deref().ok_or_else(|| {
+        crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "connection",
+            "媒体模型缺少服务连接，请在设置中重新选择连接",
+        )
+    })?;
+    key(db, id)
 }
 
 #[path = "connection_commands.rs"]
 mod commands;
-#[path = "connection_migration.rs"]
-mod migration;
 pub use commands::*;
-pub use migration::init;
+pub fn init(db: &Connection) -> Result<()> {
+    db.execute_batch("CREATE TABLE IF NOT EXISTS service_connections(id TEXT PRIMARY KEY,name TEXT NOT NULL,kind TEXT NOT NULL,endpoint TEXT NOT NULL,api_key TEXT NOT NULL);")?;
+    Ok(())
+}

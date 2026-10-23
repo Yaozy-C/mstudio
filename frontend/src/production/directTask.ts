@@ -1,4 +1,5 @@
 import { resultPlacement } from "./resultPlacement";
+import { checkedTaskTitle } from "./taskTitle";
 import { saveTask } from "./document";
 import { taskKey } from "./tasks";
 import type { Project } from "../model";
@@ -13,6 +14,7 @@ export function directTask(
   id: string,
 ): ProductionTask {
   const task: ProductionTask = {
+    title: checkedTaskTitle(draft.title),
     key: `run:direct:${id}`,
     turnId: `direct:${id}`,
     createdAt: Date.now(),

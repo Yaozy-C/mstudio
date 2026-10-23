@@ -24,6 +24,7 @@ mod metering;
 mod model;
 mod operation_tools;
 mod outcomes;
+mod read_failure;
 mod read_reuse;
 mod read_tools;
 mod registry;
@@ -52,8 +53,8 @@ use std::future::Future;
 use tokio_util::sync::CancellationToken;
 
 pub trait Host: Sync {
-    fn pending_children(&self) -> bool {
-        false
+    fn pending_children(&self) -> Result<bool, String> {
+        Ok(false)
     }
     fn deadline(&self) -> Option<tokio::time::Instant> {
         None
@@ -63,7 +64,7 @@ pub trait Host: Sync {
         None
     }
     fn record(&self, kind: &str, value: Value) -> Result<(), String>;
-    fn definitions(&self) -> Vec<ToolDefinition>;
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String>;
     fn tool_argument_limit(&self) -> usize {
         24_000
     }

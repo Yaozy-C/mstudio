@@ -105,31 +105,48 @@ fn update(value: Value) -> Result<ProviderUpdate> {
         "PENDING" => "IN_QUEUE",
         "RUNNING" => "IN_PROGRESS",
         "SUCCEEDED" => "COMPLETED",
-        "FAILED" | "UNKNOWN" => "FAILED",
+        "FAILED" => "FAILED",
+        "UNKNOWN" => "UNKNOWN",
         "CANCELED" => "CANCELLED",
         other => anyhow::bail!("未知百炼任务状态：{other}"),
     };
     let mut result = json!({"status":status});
     if status == "COMPLETED" {
-        let outputs = outputs(&value);
-        ensure!(!outputs.is_empty(), "生成成功但未返回视频地址");
+        let outputs = outputs(&value)?;
         result["outputs"] = serde_json::to_value(outputs)?;
-        result["result"] = value;
+        result["result"] = value.clone();
     } else if status == "FAILED" {
         result["error"] = json!(crate::app_error::provider_details(&value["output"]));
+    } else if status == "UNKNOWN" {
+        let mut error = crate::app_error::AppError::new(
+            "RESULT_UNAVAILABLE",
+            "status",
+            "百炼任务不存在或已超过查询保留期，无法确认原任务结果，请到服务商核查",
+        );
+        error.outcome = Some("unknown".into());
+        result["error"] = json!(error.to_string());
     }
-    Ok(serde_json::from_value(result)?)
+    if matches!(status, "FAILED" | "CANCELLED")
+        && value["output"]
+            .get("video_url")
+            .is_some_and(|url| !url.is_null())
+    {
+        result["outputs"] = serde_json::to_value(outputs(&value)?)?;
+        result["result"] = value;
+    }
+    let update: ProviderUpdate = serde_json::from_value(result)?;
+    update.validate()?;
+    Ok(update)
 }
-fn outputs(value: &Value) -> Vec<ModelOutput> {
-    value["output"]["video_url"]
+pub(super) fn outputs(value: &Value) -> Result<Vec<ModelOutput>> {
+    let url = value["output"]["video_url"]
         .as_str()
-        .map(|url| {
-            vec![ModelOutput {
-                kind: "video".into(),
-                url: url.into(),
-            }]
-        })
-        .unwrap_or_default()
+        .filter(|url| !url.trim().is_empty())
+        .context("百炼结果格式无效：output.video_url 须为非空字符串")?;
+    Ok(vec![ModelOutput {
+        kind: "video".into(),
+        url: url.into(),
+    }])
 }
 impl ProviderAdapter for DashScope {
     fn id(&self) -> &'static str {
@@ -215,10 +232,42 @@ impl ProviderAdapter for DashScope {
             )?)
         })
     }
-    fn outputs(&self, value: &Value) -> Vec<ModelOutput> {
-        outputs(value)
-    }
 }
 #[path = "dashscope_upload.rs"]
 mod storage;
 pub use storage::upload;
+
+#[cfg(test)]
+mod status_tests {
+    use super::*;
+    #[test]
+    fn unknown_does_not_claim_failure_or_completion() {
+        let state = update(json!({"output":{"task_status":"UNKNOWN"}})).unwrap();
+        assert_eq!(state.status, "UNKNOWN");
+        let error: crate::app_error::AppError =
+            serde_json::from_str(&state.error.unwrap()).unwrap();
+        assert_eq!(error.code, "RESULT_UNAVAILABLE");
+        assert_eq!(error.outcome.as_deref(), Some("unknown"));
+        assert!(!error.retryable);
+    }
+    #[test]
+    fn completion_and_failed_partial_video_have_actual_top_level_count() {
+        for (raw, status) in [
+            ("SUCCEEDED", "COMPLETED"),
+            ("FAILED", "FAILED"),
+            ("CANCELED", "CANCELLED"),
+        ] {
+            let mut job = json!({});
+            update(
+                json!({"output":{"task_status":raw,"video_url":"https://example.com/video.mp4"}}),
+            )
+            .unwrap()
+            .apply(&mut job)
+            .unwrap();
+            assert_eq!(job["status"], status);
+            assert_eq!(job["outputCount"], 1);
+            assert_eq!(job["outputs"][0]["kind"], "video");
+        }
+        assert!(update(json!({"output":{"task_status":"SUCCEEDED"}})).is_err());
+    }
+}

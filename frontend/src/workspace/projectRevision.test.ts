@@ -39,6 +39,7 @@ test("background image/video progress does not invalidate edits or overwrite liv
     ]);
     const task: ProductionTask = {
       key: "run",
+      title: "Subject",
       kind,
       mode: "single",
       prompt: "Keep subject",

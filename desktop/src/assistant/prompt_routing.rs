@@ -17,143 +17,6 @@ pub(super) fn signals(description: &str) -> BTreeSet<&'static str> {
     if hits(
         &text,
         &[
-            "person",
-            "people",
-            "man ",
-            "woman",
-            "coworker",
-            "colleague",
-            "actor",
-            "face",
-            "smile",
-            "laugh",
-            "glance",
-            "reaction",
-            "dialogue",
-            "says",
-            "saying",
-            "asks",
-            "speaks",
-            "voice-over",
-            "voiceover",
-            "人物",
-            "演员",
-            "同事",
-            "主角",
-            "女",
-            "男",
-            "脸",
-            "表情",
-            "微笑",
-            "对视",
-            "反应",
-            "台词",
-            "对话",
-            "口播",
-        ],
-    ) {
-        found.insert("performance");
-    }
-    if hits(
-        &text,
-        &[
-            "second",
-            "seconds",
-            "timing",
-            "pace",
-            "rhythm",
-            "cut to",
-            "hard cut",
-            "montage",
-            "shot 1",
-            "shot 2",
-            "秒",
-            "节奏",
-            "时长",
-            "切",
-            "分段",
-            "镜头一",
-            "镜头二",
-        ],
-    ) {
-        found.insert("rhythm");
-    }
-    if hits(
-        &text,
-        &[
-            "photorealistic",
-            "photo-real",
-            "realistic",
-            "realism",
-            "skin",
-            "texture",
-            "fabric",
-            "lighting",
-            "daylight",
-            "natural light",
-            "grain",
-            "真实",
-            "写实",
-            "皮肤",
-            "质感",
-            "布料",
-            "光线",
-            "自然光",
-            "光照",
-        ],
-    ) {
-        found.insert("appearance");
-    }
-    if hits(
-        &text,
-        &[
-            "hand", "grip", "grasp", "lift", "lower", "place", "open", "close", "zipper", "zip",
-            "lid", "contact", "force", "weight", "carry", "transfer", "fingers", "手", "抓", "握",
-            "拿", "放", "开", "拉链", "接触", "受力", "重量", "递", "抬",
-        ],
-    ) {
-        found.insert("action");
-    }
-    if hits(
-        &text,
-        &[
-            "camera",
-            "framing",
-            "close-up",
-            "wide shot",
-            "angle",
-            "viewpoint",
-            "composition",
-            "机位",
-            "构图",
-            "角度",
-            "景别",
-            "运镜",
-        ],
-    ) {
-        found.insert("grammar");
-    }
-    if hits(
-        &text,
-        &[
-            "consistent",
-            "consistency",
-            "same ",
-            "continuity",
-            "across shots",
-            "identity",
-            "一致",
-            "连续",
-            "同一",
-            "身份",
-            "保持",
-        ],
-    ) {
-        found.insert("continuity");
-    }
-    if hits(
-        &text,
-        &[
             "inspect",
             "check the",
             "review the",
@@ -194,6 +57,42 @@ pub(super) fn signals(description: &str) -> BTreeSet<&'static str> {
     ) {
         found.insert("frames");
     }
+    if hits(
+        &text,
+        &[
+            "person",
+            "people",
+            "portrait",
+            "face",
+            "skin",
+            "character",
+            "woman",
+            "man",
+            "child",
+            "hand",
+            "hands",
+            "actor",
+            "actress",
+            "identity",
+            "人物",
+            "人像",
+            "肖像",
+            "皮肤",
+            "脸",
+            "角色",
+            "模特",
+            "手部",
+            "手指",
+            "女孩",
+            "女人",
+            "男人",
+            "老人",
+            "小孩",
+            "演员",
+        ],
+    ) {
+        found.insert("people");
+    }
     found
 }
 
@@ -213,8 +112,17 @@ pub(super) fn routes<'a>(
     let mut routes = vec![(owner, "references/prompt-writing.md"), (owner, execution)];
     if kind == "video" {
         routes.push((owner, "references/control.md"));
+        routes.push((owner, "references/motion-realism.md"));
+    } else {
+        routes.push((owner, "references/photographic-direction.md"));
+        if found.contains("people") {
+            routes.push((owner, "references/skin-realism.md"));
+        }
     }
-    if found.contains("frames") && kind == "image" {
+    if owner == "image-production" {
+        routes.push((owner, "references/reference-assets.md"));
+    }
+    if found.contains("frames") && owner == "storyboard-image-production" {
         routes.push((owner, "references/frames.md"));
     }
     if found.contains("review") {
@@ -272,5 +180,30 @@ mod tests {
             .iter()
             .all(|(owner, _)| *owner == "storyboard-video-production")
         );
+    }
+
+    #[test]
+    fn photographic_and_motion_methods_route_by_task_and_people_signal() {
+        let portrait = routes("image", "portrait of a woman in a room", "image-production");
+        assert!(portrait.contains(&("image-production", "references/photographic-direction.md")));
+        assert!(portrait.contains(&("image-production", "references/skin-realism.md")));
+
+        let product = routes("image", "product still on a table", "image-production");
+        assert!(product.contains(&("image-production", "references/photographic-direction.md")));
+        assert!(!product.contains(&("image-production", "references/skin-realism.md")));
+
+        let video = routes("video", "a hand opens the bag", "product-video-production");
+        assert!(video.contains(&("product-video-production", "references/motion-realism.md")));
+
+        let board = routes(
+            "image",
+            "storyboard frame with a person",
+            "storyboard-image-production",
+        );
+        assert!(board.contains(&(
+            "storyboard-image-production",
+            "references/photographic-direction.md"
+        )));
+        assert!(board.contains(&("storyboard-image-production", "references/skin-realism.md")));
     }
 }

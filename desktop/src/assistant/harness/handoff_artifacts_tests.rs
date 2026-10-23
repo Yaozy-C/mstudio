@@ -6,15 +6,51 @@ fn delegation_preserves_the_persisted_user_instruction() {
     let (root, store, doc) = crate::assistant::attachment_tests::fixture();
     let model = crate::assistant::attachment_tests::multimodal();
     let role = crate::assistant::profiles::builtins().remove(0);
+    let scope = crate::assistant::task_context::Scope {
+        task_id: "task".into(),
+        agent_id: "coordinator".into(),
+        targets: vec![],
+        view: "project".into(),
+        original_instruction: "参考片的完整拆解：声音中断后，人群用手拍重新接上节奏。".into(),
+    };
+    crate::assistant::history::append_attributed(
+        &store,
+        "p",
+        "生成镜头吧",
+        &json!("生成镜头吧"),
+        "",
+        "model",
+        Some(&json!({"turnId":"parent","taskScope":scope})),
+    )
+    .unwrap();
     let source = json!({
         "senderAgentId":"coordinator", "senderTurnId":"parent",
         "originalRequest":{"production":{"instruction":"生成镜头吧"},"refs":[]},
         "artifacts":[], "refs":[], "expectedGenerations":[]
     });
-    let message = message(&store, &doc, &model, &role, "导演设计五个镜头", &source).unwrap();
-    let text = serde_json::to_string(&message).unwrap();
+    let built = message(&store, &doc, &model, &role, "导演设计五个镜头", &source).unwrap();
+    let text = serde_json::to_string(&built).unwrap();
     assert!(text.contains("Original user request (provided directly by the host): 生成镜头吧"));
     assert!(text.contains("导演设计五个镜头"));
+    assert!(text.contains(&scope.original_instruction));
+    let mut other = doc.clone();
+    other["id"] = json!("other-project");
+    let other_message = message(&store, &other, &model, &role, "不同项目", &source).unwrap();
+    assert!(
+        !serde_json::to_string(&other_message)
+            .unwrap()
+            .contains(&scope.original_instruction)
+    );
+    let mut same = source.clone();
+    same["originalRequest"]["production"]["instruction"] = json!(scope.original_instruction);
+    let same_message = message(&store, &doc, &model, &role, "继续", &same).unwrap();
+    assert_eq!(
+        serde_json::to_string(&same_message)
+            .unwrap()
+            .matches(&scope.original_instruction)
+            .count(),
+        1
+    );
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }

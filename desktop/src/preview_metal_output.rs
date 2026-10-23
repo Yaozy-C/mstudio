@@ -39,17 +39,17 @@ impl MetalOutput {
 impl PreviewProcess {
     // Only requested while a DOM overlay occludes Metal. Keep normal playback
     // on shared BGRA textures and convert to Canvas RGBA on demand.
-    pub(super) fn metal_canvas_frame(&self, last: u32) -> Vec<u8> {
-        let Ok(Some(info)) = self.frame_info(last) else {
-            return vec![];
+    pub(super) fn metal_canvas_frame(&self, last: u32) -> Result<Vec<u8>, String> {
+        let Some(info) = self.frame_info(last)? else {
+            return Ok(vec![]);
         };
         let m = self.metal.as_ref().unwrap();
         let frame = m.frames.with_frame(Some(info.sequence), canvas_rgba);
         let gate = m.gate.lock().unwrap();
         if gate.closed || gate.pending > 0 || gate.generation != info.generation {
-            return vec![];
+            return Ok(vec![]);
         }
-        frame.unwrap_or_default()
+        Ok(frame.unwrap_or_default())
     }
     pub fn surface(&self) -> Option<Arc<Surface>> {
         self.metal.as_ref().map(|m| m.surface.clone())

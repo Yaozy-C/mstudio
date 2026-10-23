@@ -180,7 +180,7 @@ fn interrupted_tools_are_recalled_only_for_same_project_role_and_task() {
         "p",
         "turn",
         "tool/result",
-        json!({"callId":"edit-1","name":"mstudio_edit","result":{"applied":true,"changed":[{"id":"shot-created"}]}}),
+        json!({"callId":"edit-1","name":"mstudio_add_shot","result":{"applied":true,"changed":[{"id":"shot-created"}]}}),
     )
     .unwrap();
     use super::task_context::{self, Scope};

@@ -8,12 +8,13 @@ pub mod codex_rpc;
 pub mod codex_setup;
 pub mod dashscope;
 mod fal;
-pub mod prompt_rules;
-pub(crate) use fal::recover_cancelled;
+mod outputs;
+use outputs::normalized_outputs;
 pub mod gemini;
 pub mod http_json;
 pub mod image_data;
-use anyhow::{Result, bail};
+pub mod prompt_rules;
+use anyhow::{Result, bail, ensure};
 #[cfg(test)]
 pub use fal::queue_url;
 use serde::{Deserialize, Serialize};
@@ -50,11 +51,50 @@ pub struct ProviderUpdate {
     pub error: Option<String>,
 }
 impl ProviderUpdate {
-    pub fn apply(self, job: &mut Value) -> Result<()> {
-        if let Some(outputs) = &self.outputs {
-            job["outputCount"] = serde_json::json!(outputs.len());
+    pub fn validate(&self) -> Result<()> {
+        if self.status == "COMPLETED" {
+            ensure!(
+                self.outputs
+                    .as_ref()
+                    .is_some_and(|outputs| !outputs.is_empty()),
+                "完成的任务必须提供非空 outputs"
+            );
         }
-        let update = serde_json::to_value(self)?;
+        if let Some(outputs) = &self.outputs {
+            for (index, output) in outputs.iter().enumerate() {
+                ensure!(
+                    matches!(output.kind.as_str(), "image" | "video" | "audio")
+                        && !output.url.trim().is_empty(),
+                    "outputs[{index}] 须提供有效媒体类型和非空 URL"
+                );
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn completed(outputs: Vec<ModelOutput>, result: Value) -> Result<Self> {
+        let update: Self = serde_json::from_value(
+            serde_json::json!({"status":"COMPLETED","outputs":outputs,"result":result}),
+        )?;
+        update.validate()?;
+        Ok(update)
+    }
+    pub(super) fn completed_job(job: &Value) -> Result<Self> {
+        let outputs = normalized_outputs(job, "已完成任务")?;
+        ensure!(
+            job["outputCount"].as_u64() == Some(outputs.len() as u64),
+            "完成任务的 outputCount 必须与 outputs 数量一致"
+        );
+        let mut update = Self::completed(outputs, Value::Null)?;
+        update.result = None;
+        Ok(update)
+    }
+    pub fn apply(self, job: &mut Value) -> Result<()> {
+        self.validate()?;
+        let count = self.outputs.as_ref().map(Vec::len);
+        let mut update = serde_json::to_value(self)?;
+        if let Some(count) = count {
+            update["outputCount"] = serde_json::json!(count);
+        }
         job.as_object_mut()
             .ok_or_else(|| anyhow::anyhow!("任务格式无效"))?
             .extend(update.as_object().unwrap().clone());
@@ -76,7 +116,6 @@ pub trait ProviderAdapter: Sync {
     ) -> ProviderFuture<'a>;
     fn refresh<'a>(&'a self, key: &'a str, job: &'a Value) -> ProviderFuture<'a>;
     fn cancel<'a>(&'a self, key: &'a str, job: &'a Value) -> ProviderFuture<'a>;
-    fn outputs(&self, result: &Value) -> Vec<ModelOutput>;
 }
 static HTTP_JSON: http_json::HttpJson = http_json::HttpJson;
 static GEMINI: gemini::Gemini = gemini::Gemini;
@@ -120,7 +159,7 @@ mod tests {
     }
     #[test]
     fn provider_outputs_keep_all_images_in_a_common_shape() {
-        let output = provider("fal").unwrap().outputs(&json!({"images":[{"url":"https://example.com/1.png"},{"url":"https://example.com/2.png"}]}));
+        let output = fal::normalize_outputs(&json!({"images":[{"url":"https://example.com/1.png"},{"url":"https://example.com/2.png"}]})).unwrap();
         assert_eq!(output.len(), 2);
         assert_eq!(
             output[1],
@@ -129,11 +168,10 @@ mod tests {
                 url: "https://example.com/2.png".into()
             }
         );
-        assert!(
-            provider("fal")
-                .unwrap()
-                .outputs(&json!({"error":"bad"}))
-                .is_empty()
-        );
+        assert!(fal::normalize_outputs(&json!({"error":"bad"})).is_err());
     }
 }
+
+#[cfg(test)]
+#[path = "output_contract_tests.rs"]
+mod output_contract_tests;

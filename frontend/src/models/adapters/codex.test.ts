@@ -26,6 +26,7 @@ test("Codex passes more than five reference images without truncation", () => {
   }));
   const result = mediaAdapter(codexModel()).encode({
     prompt: "Use every reference",
+    options: codexModel().params,
     inputs,
   });
   expect(result.image).toHaveLength(12);
@@ -37,20 +38,21 @@ test("Codex is selectable without an API service and uses Images payload fields"
   expect(
     mediaAdapter(model).encode({
       prompt: "test",
-      options: { model: "codex-image", n: 1 },
+      options: { model: "gpt-image-2.5-sunburst", n: 1 },
       inputs: [
         { kind: "image", role: "reference", url: "data:image/png;base64,YQ==" },
       ],
     }),
   ).toEqual({
     prompt: "test",
-    model: "codex-image",
+    model: "gpt-image-2.5-sunburst",
     n: 1,
     image: ["data:image/png;base64,YQ=="],
   });
   expect(() =>
     mediaAdapter(model).encode({
       prompt: "test",
+      options: model.params,
       inputs: [
         { kind: "image", role: "reference", url: "https://example.com/a.png" },
       ],
@@ -91,10 +93,11 @@ test("Codex catalog requests Sunburst and preserves selected IDs in both input m
   }
 });
 
-test("Codex accepts legacy configurations and rejects invalid model IDs on save", () => {
-  expect(codexImageModel({})).toBe("gpt-image-2");
-  expect(codexImageModel({ model: "codex-image" })).toBe("gpt-image-2");
+test("Codex requires an explicit model on save and request construction", () => {
+  expect(() => codexImageModel({})).toThrow("模型 ID");
   for (const id of [
+    undefined,
+    "codex-image",
     null,
     42,
     "",
@@ -105,6 +108,12 @@ test("Codex accepts legacy configurations and rejects invalid model IDs on save"
   ]) {
     expect(() =>
       validateMediaModel({ ...codexModel(), params: { model: id } }),
+    ).toThrow("模型 ID");
+    expect(() =>
+      mediaAdapter(codexModel()).encode({
+        prompt: "test",
+        options: { model: id },
+      }),
     ).toThrow("模型 ID");
   }
 });

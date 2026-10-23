@@ -1,5 +1,6 @@
 import type { Project } from "../model";
 import type { ProductionTask } from "./types";
+import { taskTitle } from "./taskTitle";
 
 type Continuation = {
   state: "waiting_user" | "waiting_service" | "ready" | "finished";
@@ -82,6 +83,7 @@ export function taskOutcome(task: ProductionTask) {
   ];
   return {
     id: task.key,
+    title: taskTitle(task),
     targetId: task.targetNodeId ?? task.ownerId,
     kind: task.kind,
     modelId: task.modelId,

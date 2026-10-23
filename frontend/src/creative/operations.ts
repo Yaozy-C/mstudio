@@ -23,28 +23,11 @@ export function creativeExtras(p: Project, node: BoardNode, op: Op): BoardNode {
       throw new Error("只有脚本文档能设置脚本段落");
     const v = object(op.screenplay);
     for (const key of Object.keys(v))
-      if (
-        ![
-          "script",
-          "scriptMode",
-          "removeParagraphIds",
-          "paragraphOrder",
-        ].includes(key)
-      )
+      if (!["script", "removeParagraphIds", "paragraphOrder"].includes(key))
         throw new Error(`不支持的脚本字段：${key}`);
     node = {
       ...node,
-      screenplay: {
-        ...node.screenplay,
-        ...([
-          v.script,
-          v.scriptMode,
-          v.removeParagraphIds,
-          v.paragraphOrder,
-        ].every((value) => value === undefined)
-          ? {}
-          : { script: writeScript(node.screenplay?.script, v) }),
-      },
+      screenplay: { script: writeScript(node.screenplay?.script, v) },
     };
   }
   if (op.shot !== undefined) {

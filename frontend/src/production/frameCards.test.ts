@@ -33,7 +33,7 @@ test("frame usage reuses an independent card and preserves deliberate copies", (
   expect(materializeFrameCards(next)).toBe(next);
 });
 
-test("legacy frames become stable cards and removing usage does not remove the image", () => {
+test("shot frames become stable cards and removing usage does not remove the image", () => {
   const next = materializeFrameCards(fixture());
   const card = next.nodes.find((n) => n.assetId === "a")!;
   const before = productionItems(next).find((n) => n.nodeId === card.id)!;

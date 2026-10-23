@@ -46,7 +46,7 @@ read()
             })
             .to_vec(),
     );
-    let rpc = Rpc::connect(&path, "--stdio", false).await.unwrap();
+    let rpc = Rpc::connect(&path).await.unwrap();
     let mut connection = Connection::open(rpc, "test", request.clone())
         .await
         .unwrap();

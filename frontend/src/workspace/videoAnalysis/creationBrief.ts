@@ -30,7 +30,6 @@ export function analysisCreationTask(state: AnalysisState): CreativeTask {
     state.work?.source || state.link
       ? `${t("作品来源")}：${state.work?.source || state.link}`
       : "",
-    state.recordId ? `${t("拆解记录")}：${state.recordId}` : "",
     t("以下是已完成的拆解，作为参考观察；这不代表你已观看原片。"),
     `## ${t("作品概述")}\n${result.summary}`,
     `## ${t("逐段声画")}`,
@@ -85,16 +84,4 @@ export function analysisProject(state: AnalysisState) {
     );
   }
   return project;
-}
-export function analysisProjectKey(state: AnalysisState) {
-  if (state.recordId)
-    return `mstudio-analysis-project:record:${state.recordId}`;
-  const input = `${state.video?.id ?? state.work?.id ?? ""}:${JSON.stringify(state.result)}`;
-  let hash = 14695981039346656037n;
-  for (let i = 0; i < input.length; i++)
-    hash = BigInt.asUintN(
-      64,
-      (hash ^ BigInt(input.charCodeAt(i))) * 1099511628211n,
-    );
-  return `mstudio-analysis-project:session:${hash.toString(16)}`;
 }

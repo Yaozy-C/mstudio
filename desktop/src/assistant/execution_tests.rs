@@ -197,3 +197,41 @@ fn background_recovery_failure_ends_waiting_without_erasing_saved_output() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn execution_never_infers_completed_when_status_is_missing() {
+    let (root, store, _) = fixture();
+    begin(&store);
+    store.conn().unwrap().execute("UPDATE agent_messages SET attribution=json_remove(attribution,'$.status') WHERE role='assistant'",[]).unwrap();
+    assert!(read(&store, "p").is_err());
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
+#[test]
+fn a_partial_read_error_cannot_replace_the_saved_answer_with_empty_text() {
+    let (root, store, _) = fixture();
+    begin(&store);
+    store
+        .conn()
+        .unwrap()
+        .execute(
+            "UPDATE agent_messages SET content=x'7361766564' WHERE role='assistant'",
+            [],
+        )
+        .unwrap();
+    assert!(
+        finish_saved(
+            &store,
+            "p",
+            "parent",
+            &Err("request failed".into()),
+            &CancellationToken::new()
+        )
+        .is_err()
+    );
+    let saved:(Vec<u8>,String)=store.conn().unwrap().query_row("SELECT content,json_extract(attribution,'$.status') FROM agent_messages WHERE role='assistant'",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
+    assert_eq!(saved.0, b"saved");
+    assert_eq!(saved.1, "running");
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

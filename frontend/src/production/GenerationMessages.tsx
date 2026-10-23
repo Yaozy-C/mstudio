@@ -55,16 +55,7 @@ export function GenerationMessages({ turnId }: { turnId: string }) {
         tasks
           .slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE)
           .map((task) => (
-            <TaskEntry
-              key={task.key}
-              task={task}
-              canvas={context.canvas!}
-              title={
-                context.project.nodes.find(
-                  (n) => n.id === (task.targetNodeId ?? task.ownerId),
-                )?.title
-              }
-            />
+            <TaskEntry key={task.key} task={task} canvas={context.canvas!} />
           ))}
       {tasks.length > PAGE_SIZE && (
         <nav className="generation-pagination" aria-label={t("生成任务分页")}>

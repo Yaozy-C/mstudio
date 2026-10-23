@@ -6,6 +6,7 @@ fn edits_and_removals_are_object_specific_and_reject_wrappers() {
     p.tool_ids = vec!["project-read".into(), "project-edit".into()];
     for old in [
         "mstudio_update_node",
+        "mstudio_update_screenplay_info",
         "mstudio_remove_node",
         "mstudio_update_clip",
         "mstudio_edit",
@@ -19,7 +20,7 @@ fn edits_and_removals_are_object_specific_and_reject_wrappers() {
             json!({"id":"s","text":"New staging"}),
         ),
         (
-            "mstudio_update_screenplay_info",
+            "mstudio_update_screenplay",
             "screenplay",
             json!({"id":"script","title":"New title"}),
         ),

@@ -9,6 +9,7 @@ import type { ProductionTask } from "./types";
 
 const draft: ProductionTask = {
   key: "draft",
+  title: "商品 · 横移揭晓",
   kind: "video",
   mode: "mixed",
   modelId: "model",

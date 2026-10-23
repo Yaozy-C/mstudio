@@ -25,7 +25,12 @@ test("Agent batches reserve the sent canvas coordinates and retain order when re
     },
   };
   for (let i = 0; i < 3; i++)
-    p = requestTask(p, { mediaKind: "image", text: `view ${i}` }, context, i);
+    p = requestTask(
+      p,
+      { mediaKind: "image", title: `View ${i}`, text: `view ${i}` },
+      context,
+      i,
+    );
   const runs = runsOf(p);
   expect(runs[0].position).toEqual({ x: 3664, y: 1160 });
   expect(new Set(runs.map((run) => JSON.stringify(run.position))).size).toBe(3);
@@ -85,6 +90,7 @@ test("video placement avoids overlap at the extra ten pixels of card width", () 
   ];
   const task: ProductionTask = {
     key: "video",
+    title: "Video result",
     kind: "video",
     mode: "multi",
     inputs: [],
@@ -117,7 +123,7 @@ test("headless generation reserves a default position when no viewport was saved
   Reflect.deleteProperty(p, "viewport");
   const next = requestTask(
     p,
-    { mediaKind: "image", text: "new image" },
+    { mediaKind: "image", title: "New image", text: "new image" },
     {
       callId: "headless",
       turnId: "turn",
@@ -150,7 +156,7 @@ test("a user card occupying a reserved slot moves only the incoming result", () 
   let p = newProject("occupied");
   const next = requestTask(
     p,
-    { mediaKind: "image", text: "new image" },
+    { mediaKind: "image", title: "New image", text: "new image" },
     {
       callId: "reserved",
       turnId: "turn",

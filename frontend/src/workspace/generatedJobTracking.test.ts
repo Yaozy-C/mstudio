@@ -1,39 +1,13 @@
 import { expect, test } from "bun:test";
-import type { Project } from "../model";
-import { fixture } from "../production/fixtures.test-helper";
 import type { ProductionTask } from "../production/types";
-import { needsTracking, type GeneratedJob } from "./generatedJobTracking";
+import { terminalOutputCount, type GeneratedJob } from "./generatedJobTracking";
 import { runProgress } from "../production/runProgress";
 const task = {
   key: "run",
   jobId: "job",
   status: "IN_PROGRESS",
 } as ProductionTask;
-const project = (t = task) =>
-  ({ ...fixture(), production: { drafts: { run: t } } }) as Project;
 const job = { id: "job", status: "IN_PROGRESS" } as GeneratedJob;
-test("durable jobs recover tracking without a localStorage or submit event", () => {
-  expect(needsTracking(job, project())).toBe(true);
-  expect(
-    needsTracking(
-      { ...job, status: "COMPLETED", asset: { id: "image" } },
-      project(),
-    ),
-  ).toBe(true);
-  expect(
-    needsTracking(
-      { ...job, status: "COMPLETED", asset: { id: "image" } },
-      project({ ...task, status: "COMPLETED", resultAssetId: "image" }),
-    ),
-  ).toBe(false);
-  expect(needsTracking({ ...job, status: "FAILED" }, project())).toBe(true);
-  expect(
-    needsTracking(
-      { ...job, status: "FAILED" },
-      project({ ...task, status: "FAILED" }),
-    ),
-  ).toBe(false);
-});
 test("stage presentation uses observed provider progress and prioritizes result import", () => {
   expect(
     runProgress({
@@ -49,4 +23,24 @@ test("stage presentation uses observed provider progress and prioritizes result 
     }),
   ).toContain("导入");
   expect(runProgress(task)).toContain("等待返回结果");
+});
+
+test("completed output count is required and never guessed from a single asset", () => {
+  for (const outputCount of [undefined, 0, -1, 1.5])
+    expect(() =>
+      terminalOutputCount({
+        ...job,
+        status: "COMPLETED",
+        outputCount,
+        asset: { id: "one" },
+      }),
+    ).toThrow("实际输出数量");
+  expect(
+    terminalOutputCount({
+      ...job,
+      status: "COMPLETED",
+      outputCount: 2,
+      assets: [{ id: "one" }, null],
+    }),
+  ).toBe(2);
 });

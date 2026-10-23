@@ -9,6 +9,7 @@ import { UnknownRunRecovery } from "./UnknownRunRecovery";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { runProgress } from "./runProgress";
+import { checkedTaskTitle, taskTitle } from "./taskTitle";
 import {
   Image,
   VideoCamera,
@@ -55,10 +56,14 @@ export function GenerationRun({
   const editable = !pending && (canEditOriginal(task) || canRegenerate(task));
   const models = canvas.media.models.filter((m) => m.kind === task.kind);
   const model = models.find((m) => m.id === task.modelId);
-  const node = project.nodes.find((n) => n.id === task.ownerId);
+  const node = project.nodes.find(
+    (n) => n.id === (task.targetNodeId ?? task.ownerId),
+  );
+  const title = taskTitle(task);
   let issue = "";
   if (editable)
     try {
+      checkedTaskTitle(task.title);
       canvasSnapshot(project, task, { x: 0, y: 0 });
       if (model) inputFor(project, task, model);
     } catch (error) {
@@ -75,14 +80,13 @@ export function GenerationRun({
       <div className="run-content">
         <header>
           <Icon size={17} />
-          <strong>
-            {t("生成")}
-            {task.kind === "image" ? t("图片") : t("视频")}
-          </strong>
+          <strong>{title}</strong>
           <RunStatus task={task} />
           {headerAction}
         </header>
-        {node && <small className="run-owner">{node.title}</small>}
+        {node && node.title !== title && (
+          <small className="run-owner">{node.title}</small>
+        )}
         <p className="run-instruction">{task.instruction || task.prompt}</p>
         {!editable && (
           <div className="run-metadata">

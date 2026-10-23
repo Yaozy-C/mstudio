@@ -4,7 +4,7 @@ pub fn description(op: &str) -> &'static str {
             "Archive an obsolete generation task by taskKey, or restore it with archived=false. Awaiting-confirmation drafts can be archived directly. Preserves the full history and all media; removes archived tasks from current work and batch submission. Running or uncertain tasks must be stopped first. Does not cancel a service job, delete media or start generation. Use for cleaning up superseded tasks after regrouping shots."
         }
         "update_generation" => {
-            "Save a replacement prompt and/or complete references list on the existing taskKey. Omitted fields are preserved; references=[] clears media inputs. Supply prompt or references. Does not regenerate or change the shot draft."
+            "Save a task title, replacement prompt and/or complete references list on the existing taskKey. Omitted fields are preserved; references=[] clears media inputs. Supply title, prompt or references. A title-only update preserves generation state and does not regenerate or change the shot draft."
         }
         "regenerate_generation" => {
             "Prepare regeneration of the existing taskKey without creating a separate task. Always waits for user confirmation; never starts generation. Optionally replace prompt and the complete references list in this call; otherwise preserve them. Retain model and parameters. By default discard replaced results: keep them as history but prohibit their use as generation inputs. Set keepPreviousResults=true only for an explicitly requested usable variant or edit of the previous output. For corrections to an existing task, use this tool even when changing references, rather than generate_image/video. Requires an explicit regeneration request."

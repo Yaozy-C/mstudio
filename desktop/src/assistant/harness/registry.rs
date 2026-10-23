@@ -74,10 +74,12 @@ impl ProjectHost {
     }
 }
 impl ProjectHost {
-    pub(super) fn available_definitions(&self) -> Vec<ToolDefinition> {
-        let Some(t) = &self.tool else { return vec![] };
+    pub(super) fn available_definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        let Some(t) = &self.tool else {
+            return Ok(vec![]);
+        };
         if t.profile.id == "video-analyst" {
-            return vec![];
+            return Ok(vec![]);
         }
         let schema = tool_schema::for_profile(&t.profile);
         let mut definitions = Vec::new();
@@ -116,24 +118,34 @@ impl ProjectHost {
         }
         definitions.extend(super::media_tools::definitions(&t.profile));
         if profiles::allows(&t.profile, "delegate") {
-            let catalog =
-                profiles::read(&t.app.state::<crate::database::Store>().db.lock().unwrap())
-                    .unwrap_or_default();
-            definitions.push(super::delegation::for_profiles(&t.profile.id, &catalog));
+            definitions.push(delegation_definition(
+                &t.app.state::<Store>().db.lock().unwrap(),
+                &t.profile.id,
+            )?);
             definitions.extend(super::delegation::control_definitions());
         }
-        definitions
+        Ok(definitions)
     }
 }
+fn delegation_definition(
+    db: &rusqlite::Connection,
+    parent: &str,
+) -> Result<ToolDefinition, String> {
+    let catalog =
+        profiles::read(db).map_err(|error| format!("Cannot read Agent catalog: {error}"))?;
+    Ok(super::delegation::for_profiles(parent, &catalog))
+}
 impl Host for ProjectHost {
-    fn pending_children(&self) -> bool {
-        let Some(tool) = &self.tool else { return false };
+    fn pending_children(&self) -> Result<bool, String> {
+        let Some(tool) = &self.tool else {
+            return Ok(false);
+        };
         crate::assistant::execution::pending(
             &tool.app.state::<Store>().db.lock().unwrap(),
             &tool.project,
             &tool.turn,
         )
-        .unwrap_or(false)
+        .map_err(|error| error.to_string())
     }
 
     fn deadline(&self) -> Option<tokio::time::Instant> {
@@ -151,7 +163,7 @@ impl Host for ProjectHost {
             None => Ok(()),
         }
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
         self.available_definitions()
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {

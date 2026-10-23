@@ -106,8 +106,10 @@ fn supplied_snapshot_observations_and_lost_tool_acknowledgement_survive_replay()
     let call = ToolCall::from_wire(
         "write",
         ToolFunction::new(
-            "mstudio_edit".try_into().expect("nonempty tool name"),
-            args.clone(),
+            "mstudio_update_note"
+                .try_into()
+                .expect("nonempty tool name"),
+            json!({"id":"a","text":"saved once"}),
         ),
     );
     let messages = vec![

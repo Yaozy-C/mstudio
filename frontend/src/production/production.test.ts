@@ -101,6 +101,7 @@ test("result uses the frozen task; importing twice is idempotent and preserves o
         .slice(0, 1),
     ),
     ownerId: "shot",
+    title: "Pack · storyboard",
     prompt: "Closer",
     modelId: "m",
     jobId: "job",
@@ -150,6 +151,7 @@ test("video results retain exact media roles and undo never rewinds paid job sta
       "ends",
     ),
     ownerId: "shot",
+    title: "Pack · video",
     prompt: "Close",
     turnId: "turn",
     createdAt: 1,
@@ -208,7 +210,7 @@ test("results target an empty shot and a generated image can immediately become 
     ...shot,
     canvasGeneration: canvasSnapshot(
       p,
-      { ...createTask(p, []), ownerId: shot.id },
+      { ...createTask(p, []), title: "Pack · storyboard", ownerId: shot.id },
       { x: 0, y: 0 },
     ),
   };
@@ -221,7 +223,11 @@ test("results target an empty shot and a generated image can immediately become 
     ...result.nodes[1],
     canvasGeneration: canvasSnapshot(
       result,
-      { ...createTask(result, selected, "video"), ownerId: shot.id },
+      {
+        ...createTask(result, selected, "video"),
+        title: "Pack · video",
+        ownerId: shot.id,
+      },
       { x: 0, y: 0 },
     ),
   };

@@ -53,7 +53,9 @@ pub(super) fn replace(store: &Store, project: &str, mut export: Export) -> Resul
     super::media::retire(&tx, project, &retired, &after)?;
     super::export_cleanup::retire(&tx, store, project, &old, &export)?;
     tx.commit()?;
-    let _ = project_storage::resume_cleanup(&db, &store.media_root());
+    if let Err(error) = project_storage::resume_cleanup(&db, &store.media_root()) {
+        tracing::warn!(event = "previs_cleanup_failed", project_id = project, error = %error);
+    }
     drop(db);
     store.project_changed(project);
     Ok(export)

@@ -2,21 +2,7 @@ use super::{
     messages,
     tests::{cleanup, setup},
 };
-use rusqlite::Connection;
 use serde_json::json;
-
-#[test]
-fn old_history_migrates_without_losing_text_and_new_columns_are_idempotent() {
-    let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE previs_messages(id INTEGER PRIMARY KEY,project_id TEXT,file_id TEXT,role TEXT,text TEXT);
-        INSERT INTO previs_messages VALUES(1,'p','shot','user','Old request');").unwrap();
-    messages::init(&db).unwrap();
-    messages::init(&db).unwrap();
-    let history = messages::list(&db, "p").unwrap();
-    assert_eq!(history[0]["text"], "Old request");
-    assert_eq!(history[0]["images"], json!([]));
-    assert!(history[0]["requestId"].is_null());
-}
 
 #[test]
 fn accepted_request_keeps_images_even_without_a_successful_model_reply() {

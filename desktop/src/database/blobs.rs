@@ -27,10 +27,6 @@ pub fn pack(db: &Connection, owner: Owner<'_>, value: &mut Value) -> Result<()> 
     db.execute(&format!("DELETE FROM {table} WHERE owner=?1"), [&key])?;
     extract(db, table, &key, "", value)
 }
-pub fn extend(db: &Connection, owner: Owner<'_>, value: &mut Value) -> Result<()> {
-    let (table, key) = owner.key();
-    extract(db, table, &key, "", value)
-}
 fn extract(
     db: &Connection,
     table: &str,

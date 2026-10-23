@@ -24,6 +24,7 @@ for (const kind of ["image", "video"] as const) {
       };
       const op = {
         op: "request_generation",
+        title: "Product reference",
         mediaKind: kind,
         generationPurpose: purpose,
         text: "Original prompt",

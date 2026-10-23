@@ -26,8 +26,8 @@ struct BackgroundChildren {
     finished: mpsc::UnboundedSender<String>,
 }
 impl Host for BackgroundChildren {
-    fn pending_children(&self) -> bool {
-        self.outstanding.load(Ordering::SeqCst) > 0
+    fn pending_children(&self) -> Result<bool, String> {
+        Ok(self.outstanding.load(Ordering::SeqCst) > 0)
     }
     fn token(&self) -> &tokio_util::sync::CancellationToken {
         &self.inner.token
@@ -35,10 +35,10 @@ impl Host for BackgroundChildren {
     fn record(&self, kind: &str, value: Value) -> Result<(), String> {
         self.inner.record(kind, value)
     }
-    fn definitions(&self) -> Vec<ToolDefinition> {
-        let mut tools = self.inner.definitions();
+    fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+        let mut tools = self.inner.definitions()?;
         tools.push(delegation::definition());
-        tools
+        Ok(tools)
     }
     fn parallel_safe(&self, call: &ToolCall) -> bool {
         self.policy.parallel_safe(call)
@@ -53,7 +53,7 @@ impl Host for BackgroundChildren {
                 .lock()
                 .unwrap()
                 .push("independent work".into());
-            assert!(self.pending_children());
+            assert!(self.pending_children().unwrap());
             return json!({"ok":true});
         }
         let id = call.id.wire().to_string();
@@ -154,7 +154,7 @@ async fn background_roundtrip() {
     .await
     .unwrap();
     assert!(answer.contains("等待子任务通知"));
-    assert!(host.pending_children());
+    assert!(host.pending_children().unwrap());
     assert_eq!(*host.inner.trace.lock().unwrap(), ["independent work"]);
     assert_eq!(model.requests.lock().unwrap().len(), 3);
     let mut first = Vec::new();
@@ -174,7 +174,7 @@ async fn background_roundtrip() {
     for _ in 0..4 {
         finishes.recv().await.unwrap();
     }
-    assert!(!host.pending_children());
+    assert!(!host.pending_children().unwrap());
     assert_eq!(host.inner.peak.load(Ordering::SeqCst), 4);
     assert_eq!(host.inner.active.load(Ordering::SeqCst), 0);
     let mut history = model

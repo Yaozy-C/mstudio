@@ -36,23 +36,10 @@ pub(super) fn credential(store: &Store, job: &Value) -> Result<String> {
         );
         return crate::models::connections::key(&db, id);
     }
-    if provider.id() == "codex-image" {
-        return Ok(String::new());
-    }
-    if provider.id() == "fal" {
-        return crate::models::connections::legacy_fal_key(&*store.conn()?);
-    }
-    let id = job["mediaModelId"].as_str().context("任务缺少模型 ID")?;
-    let models = crate::models::media::read(&*store.conn()?)?;
-    let model = models
-        .iter()
-        .find(|m| m.id == id)
-        .context("模型已移除，无法继续查询该任务")?;
-    ensure!(
-        model.endpoint == job["endpoint"] && model.plugin == job["providerId"],
-        "服务地址已变更，不向旧地址发送新凭据"
-    );
-    crate::models::connections::media_key(&*store.conn()?, model)
+    Err(
+        crate::app_error::AppError::new("VALIDATION_FAILED", "connection", "生成任务缺少服务连接")
+            .into(),
+    )
 }
 
 pub fn save(store: &Store, job: &Value) -> Result<()> {
@@ -79,18 +66,25 @@ fn write(store: &Store, job: &Value, reserve: bool) -> Result<usize> {
             rusqlite::params![value.to_string(), id],
         )?;
         crate::database::blobs::collect(&tx)?;
-        // Provider facts remain durable even if project rendering fails. Startup
-        // recovery and subsequent job updates retry document reconciliation.
-        if let Err(_error) = crate::project_service::production::sync_job(&tx, &value) {
-            tracing::warn!(event = "job_reconciliation_failed");
-        }
     }
+    // The outbox already owns SUBMITTING before reserve. A reservation must not
+    // depend on rendering a project; only later provider updates reconcile it.
+    let reconciliation = if inserted == 1 && !reserve {
+        let error = super::reconciliation::apply(&tx, &mut value)?;
+        super::reconciliation::record(&tx, id, error.as_ref().map(|e| e.to_string()).as_deref())?;
+        error
+    } else {
+        None
+    };
     tx.commit()?;
     if let Some(project) = job["projectId"].as_str() {
         store.project_changed(project);
     }
     if let Err(error) = crate::project_storage::resume_cleanup(&db, &store.media_root()) {
         eprintln!("{error}");
+    }
+    if let Some(error) = reconciliation {
+        return Err(error.into());
     }
     Ok(inserted)
 }

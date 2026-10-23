@@ -35,12 +35,14 @@ async fn final_answer_discloses_child_failure_even_when_model_claims_success() {
         fn record(&self, kind: &str, value: Value) -> Result<(), String> {
             self.0.record(kind, value)
         }
-        fn definitions(&self) -> Vec<ToolDefinition> {
-            vec![ToolDefinition {
-                name: "mstudio_delegate".try_into().expect("nonempty tool name"),
-                description: "delegate".into(),
-                parameters: json!({"type":"object"}),
-            }]
+        fn definitions(&self) -> Result<Vec<ToolDefinition>, String> {
+            Ok({
+                vec![ToolDefinition {
+                    name: "mstudio_delegate".try_into().expect("nonempty tool name"),
+                    description: "delegate".into(),
+                    parameters: json!({"type":"object"}),
+                }]
+            })
         }
         fn parallel_safe(&self, _: &ToolCall) -> bool {
             false

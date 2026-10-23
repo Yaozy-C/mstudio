@@ -1,6 +1,15 @@
 //! Discover native executables without asking users for installation paths.
 use std::path::{Path, PathBuf};
 
+pub async fn binary() -> anyhow::Result<Option<PathBuf>> {
+    if let Some(path) = std::env::var_os("MSTUDIO_CODEX_BIN") {
+        let path = PathBuf::from(path);
+        anyhow::ensure!(path.is_file(), "MSTUDIO_CODEX_BIN 指向的 Codex 程序不存在");
+        return Ok(Some(path));
+    }
+    Ok(binaries().await.into_iter().next())
+}
+
 fn add(paths: &mut Vec<PathBuf>, path: PathBuf) {
     if path.is_file() && !paths.contains(&path) {
         paths.push(path);
@@ -23,11 +32,8 @@ fn npm_binaries(paths: &mut Vec<PathBuf>, root: &Path) {
     }
 }
 
-pub async fn binaries() -> Vec<PathBuf> {
+async fn binaries() -> Vec<PathBuf> {
     let mut paths = Vec::new();
-    if let Some(path) = std::env::var_os("MSTUDIO_CODEX_BIN") {
-        add(&mut paths, path.into());
-    }
     #[cfg(target_os = "macos")]
     {
         let mut roots = vec![PathBuf::from("/Applications")];

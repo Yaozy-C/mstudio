@@ -10,7 +10,7 @@ use std::{
     collections::HashMap,
     sync::{Arc, LazyLock, Mutex},
 };
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Phase {
@@ -80,18 +80,40 @@ pub fn close_all() {
     }
 }
 
+pub(crate) fn fail(app: &tauri::AppHandle, project: &str, turn: &str, error: &str) {
+    if let Some(root) = ROOTS.lock().unwrap().get(project)
+        && root
+            .host
+            .tool
+            .as_ref()
+            .is_some_and(|tool| tool.turn == turn)
+    {
+        root.delivery.lock().unwrap().phase = Phase::Closing;
+        root.host.token.cancel();
+    }
+    if let Err(save_error) = super::execution::fail_delivery(app, project, turn, error) {
+        let error = format!("{error}; cannot persist execution failure: {save_error}");
+        let _ = app.emit(
+            "agent-progress",
+            json!({"projectId":project,"turnId":turn,
+            "kind":"turn/end","payload":{"status":"failed","error":error}}),
+        );
+    }
+}
+
 /// Called only after the settlement notification transaction has committed.
-pub fn notify(project: &str) {
+pub fn notify(project: &str) -> Result<(), String> {
     let root = ROOTS.lock().unwrap().get(project).cloned();
     if let Some(root) = root {
-        if !undelivered(&root).unwrap_or(false) {
-            return;
+        if !undelivered(&root)? {
+            return Ok(());
         }
         let wake = root.delivery.lock().unwrap().notify();
         if wake {
             spawn_followup(root);
         }
     }
+    Ok(())
 }
 
 fn undelivered(root: &Activation) -> Result<bool, String> {
@@ -106,29 +128,33 @@ fn undelivered(root: &Activation) -> Result<bool, String> {
 
 /// The caller releases PendingTurn first, so followup can acquire execution.
 /// Recheck the durable inbox under the delivery lock to close the final-step race.
-pub fn settled(project: &str, turn: &str, completed: bool) {
+pub fn settled(project: &str, turn: &str, completed: bool) -> Result<(), String> {
     let root = ROOTS.lock().unwrap().get(project).cloned();
     if let Some(root) = root {
         if root.host.tool.as_ref().unwrap().turn != turn {
-            return;
+            return Ok(());
         }
-        let wake = {
+        let wake = (|| -> Result<bool, String> {
             let mut delivery = root.delivery.lock().unwrap();
             if !completed {
                 delivery.phase = Phase::Closing;
+                return Ok(false);
             }
-            match undelivered(&root) {
-                Ok(pending) => delivery.idle(pending),
-                Err(error) => {
-                    eprintln!("parent inbox read failed: {error}");
-                    false
-                }
+            Ok(delivery.idle(undelivered(&root)?))
+        })();
+        let wake = match wake {
+            Ok(wake) => wake,
+            Err(error) => {
+                let tool = root.host.tool.as_ref().unwrap();
+                fail(&tool.app, project, turn, &error);
+                return Err(error);
             }
         };
         if wake {
             spawn_followup(root);
         }
     }
+    Ok(())
 }
 
 // Boxing breaks the recursive spawn/settlement future type. There is one
@@ -137,14 +163,8 @@ fn spawn_followup(root: Arc<Activation>) {
     let future: std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> =
         Box::pin(async move {
             if let Err(error) = followup(&root).await {
-                root.delivery.lock().unwrap().phase = Phase::Closing;
                 let tool = root.host.tool.as_ref().unwrap();
-                if let Err(save_error) =
-                    super::execution::fail_delivery(&tool.app, &tool.project, &tool.turn, &error)
-                {
-                    eprintln!("parent failure persistence failed: {save_error}");
-                }
-                eprintln!("parent followup failed: {error}");
+                fail(&tool.app, &tool.project, &tool.turn, &error);
             }
         });
     tauri::async_runtime::spawn(future);
@@ -196,7 +216,7 @@ async fn followup(root: &Arc<Activation>) -> Result<(), String> {
     super::execution::finish(&app, &project, &turn, &result, &pending.token)
         .map_err(|e| e.to_string())?;
     drop(pending);
-    settled(&project, &turn, result.is_ok());
+    settled(&project, &turn, result.is_ok())?;
     Ok(())
 }
 
@@ -212,65 +232,5 @@ pub(super) fn reopen_response(store: &Store, project: &str, turn: &str) -> Resul
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::assistant::history;
-    #[test]
-    fn idle_completion_wakes_once_and_running_completion_is_steered() {
-        let mut d = Delivery { phase: Phase::Idle };
-        assert!(d.notify());
-        assert!(!d.notify());
-        assert_eq!(d.phase, Phase::Running);
-        // Already consumed by the running parent's next step: no extra turn.
-        assert!(!d.idle(false));
-        assert_eq!(d.phase, Phase::Idle);
-    }
-    #[test]
-    fn completion_during_finalization_is_not_lost() {
-        let mut d = Delivery {
-            phase: Phase::Running,
-        };
-        assert!(!d.notify());
-        assert!(d.idle(true));
-        assert_eq!(d.phase, Phase::Running);
-    }
-    #[test]
-    fn closing_parent_retains_notice_without_waking() {
-        let mut d = Delivery {
-            phase: Phase::Closing,
-        };
-        assert!(!d.notify());
-        assert!(!d.idle(true));
-        assert_eq!(d.phase, Phase::Closing);
-    }
-    #[test]
-    fn idle_followup_reuses_saved_request_and_never_reopens_cancelled_response() {
-        let (root, store, _) = super::super::attachment_tests::fixture();
-        let request =
-            json!({"refs":[],"production":{"projectId":"p","instruction":"Create a 15s ad"}});
-        let meta = json!({"agentId":"coordinator","turnId":"parent","request":request});
-        history::begin(&store, "p", "parent", &request, "model", &meta).unwrap();
-        history::finish(
-            &store,
-            "p",
-            "parent",
-            "Creative task running",
-            "waiting",
-            None,
-        )
-        .unwrap();
-        reopen_response(&store, "p", "parent").unwrap();
-        assert!(reopen_response(&store, "p", "parent").is_err());
-        history::finish(&store, "p", "parent", "Script saved", "completed", None).unwrap();
-        let history = history::read(&store, "p").unwrap();
-        assert_eq!(history.len(), 2);
-        assert_eq!(history[0].content, "Create a 15s ad");
-        assert_eq!(history[1].content, "Script saved");
-        assert_eq!(history[0].attribution.as_ref().unwrap()["request"], request);
-        reopen_response(&store, "p", "parent").unwrap();
-        history::finish(&store, "p", "parent", "Stopped", "cancelled", None).unwrap();
-        assert!(reopen_response(&store, "p", "parent").is_err());
-        drop(store);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-}
+#[path = "parent_activation_tests.rs"]
+mod tests;

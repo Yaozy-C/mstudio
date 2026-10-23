@@ -7,6 +7,8 @@ import { modelLibrary } from "./catalogSpecs";
 
 test("Codex configuration exposes the selected model and a save action", () => {
   for (const id of [
+    undefined,
+    "gpt-image-2",
     "gpt-image-2.5-sunburst",
     "gpt-image-2.5-flare",
     "codex-image",
@@ -26,9 +28,7 @@ test("Codex configuration exposes the selected model and a save action", () => {
         />
       </Theme>,
     );
-    expect(html).toContain(
-      `value="${id === "codex-image" ? "gpt-image-2" : id}"`,
-    );
+    expect(html).toContain(`value="${id ?? ""}"`);
     expect(html).toContain('type="submit"');
     expect(html).toContain("模型 ID");
   }

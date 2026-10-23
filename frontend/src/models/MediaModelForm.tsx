@@ -24,7 +24,7 @@ export function MediaModelForm({
   cancel,
 }: {
   initial: MediaModel;
-  save: (model: MediaModel, key?: string, clearKey?: boolean) => Promise<void>;
+  save: (model: MediaModel) => Promise<void>;
   cancel: () => void;
 }) {
   useLanguage();
@@ -51,24 +51,18 @@ export function MediaModelForm({
         setError("");
         void (async () => {
           try {
-            await save(
-              {
-                ...model,
-                name: model.name.trim(),
-                endpoint: model.endpoint.trim(),
-                params:
-                  model.plugin === "gemini-native"
-                    ? { ...JSON.parse(params), model: nativeModel }
-                    : JSON.parse(params),
-                http:
-                  model.plugin === "http-json"
-                    ? JSON.parse(mapping)
-                    : undefined,
-                capabilities: parseCapabilities(capabilities),
-              },
-              undefined,
-              false,
-            );
+            await save({
+              ...model,
+              name: model.name.trim(),
+              endpoint: model.endpoint.trim(),
+              params:
+                model.plugin === "gemini-native"
+                  ? { ...JSON.parse(params), model: nativeModel }
+                  : JSON.parse(params),
+              http:
+                model.plugin === "http-json" ? JSON.parse(mapping) : undefined,
+              capabilities: parseCapabilities(capabilities),
+            });
             cancel();
           } catch (e) {
             setError(String(e));

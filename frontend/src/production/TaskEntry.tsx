@@ -3,14 +3,13 @@ import { t, useLanguage } from "../i18n";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 import { RunStatus } from "./RunStatus";
+import { taskTitle } from "./taskTitle";
 import "./task-panel.css";
 export function TaskEntry({
   task,
   canvas,
-  title,
 }: {
   task: ProductionTask;
-  title?: string;
   canvas: ProductionController;
 }) {
   useLanguage();
@@ -23,9 +22,7 @@ export function TaskEntry({
     >
       <Icon size={20} aria-hidden="true" />
       <span className="task-entry-copy">
-        <strong>
-          {title || (task.kind === "image" ? t("图片生成") : t("视频生成"))}
-        </strong>
+        <strong>{taskTitle(task)}</strong>
         <span className="task-entry-prompt">{task.prompt}</span>
         <span className="task-entry-status" data-status={task.status}>
           <RunStatus task={task} />

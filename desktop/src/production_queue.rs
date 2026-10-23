@@ -72,81 +72,134 @@ async fn submit(app: &tauri::AppHandle, project: &str, key: &str, task: &Value) 
 }
 pub fn start(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
-        let recovery = app.clone();
-        match tauri::async_runtime::spawn_blocking(move || {
-            production::recover(&recovery.state::<Store>())
-        })
-        .await
-        {
-            Ok(Ok(changed)) => {
-                for project in changed {
-                    project_service::notify(&app, &project);
-                }
-            }
-            _ => {
-                tracing::error!(event = "production_recovery_failed");
-                return;
-            }
+        let mut running = FuturesUnordered::new();
+        if let Err(error) = run(&app, &mut running).await {
+            crate::jobs::runtime_health::report(&app, "queue", None, true, &error);
         }
-        let mut active = HashSet::new();
-        let mut running: FuturesUnordered<BoxFuture<'static, (String, String)>> =
-            FuturesUnordered::new();
-        let mut tick = tokio::time::interval(std::time::Duration::from_secs(1));
-        loop {
-            tokio::select! {
-                _ = tick.tick() => {},
-                Some(id) = running.next(), if !running.is_empty() => { active.remove(&id); },
-            }
-            let candidates = production::candidates(&app.state::<Store>().db.lock().unwrap());
-            let Ok(candidates) = candidates else {
-                continue;
-            };
-            for (project, key) in candidates {
-                if active.len() >= 2 {
-                    break;
-                }
-                if active.contains(&(project.clone(), key.clone())) {
-                    continue;
-                }
-                let task = match production::claim(&app.state::<Store>(), &project, &key) {
-                    Ok(Some(task)) => task,
-                    _ => continue,
-                };
-                active.insert((project.clone(), key.clone()));
-                project_service::notify(&app, &project);
-                let worker = app.clone();
-                running.push(Box::pin(async move {
-                    if let Err(error) = submit(&worker, &project, &key, &task).await {
-                        let store = worker.state::<Store>();
-                        let submission = task["submissionId"].as_str().unwrap_or("");
-                        // A reserved job is authoritative about a potentially paid effect.
-                        // Never replace it with a local "failed, retry" interpretation.
-                        if let Ok(job) = crate::jobs::get(&store, submission) {
-                            if let Err(_error) =
-                                production::sync_job(&store.db.lock().unwrap(), &job)
-                            {
-                                tracing::warn!(event = "task_reconciliation_failed");
-                            }
-                        } else {
-                            let issue = crate::app_error::AppError::from_error(
-                                &error,
-                                "VALIDATION_FAILED",
-                                "prepare",
-                            );
-                            let _ = production::patch(
-                                &store,
-                                &project,
-                                &key,
-                                submission,
-                                &["UPLOADING", "SUBMITTING"],
-                                json!({"status":"FAILED","error":issue.to_string()}),
-                            );
-                        }
-                    }
-                    project_service::notify(&worker, &project);
-                    (project, key)
-                }));
+        // Provider submissions already in flight must retain their response facts.
+        while let Some(result) = running.next().await {
+            if let Err(error) = result {
+                crate::jobs::runtime_health::report(&app, "queue", None, true, &error);
             }
         }
     });
 }
+async fn run(
+    app: &tauri::AppHandle,
+    running: &mut FuturesUnordered<BoxFuture<'static, Result<(String, String)>>>,
+) -> Result<()> {
+    let recovery = app.clone();
+    let report = tauri::async_runtime::spawn_blocking(move || {
+        production::recover(&recovery.state::<Store>())
+    })
+    .await??;
+    for project in report.changed {
+        project_service::notify(app, &project);
+    }
+    for failure in report.deferred {
+        if failure.job_id.is_some() {
+            // Per-job diagnostics are already committed on the task and job.
+            project_service::notify(app, &failure.project_id);
+        } else {
+            let error: crate::app_error::AppError = serde_json::from_str(&failure.error)?;
+            crate::jobs::runtime_health::report(
+                app,
+                "startup",
+                Some(&failure.project_id),
+                false,
+                &error.into(),
+            );
+        }
+    }
+    let mut active = HashSet::new();
+    let mut tick = tokio::time::interval(std::time::Duration::from_secs(1));
+    loop {
+        tokio::select! {
+            _ = tick.tick() => {},
+            Some(result) = running.next(), if !running.is_empty() => { active.remove(&result?); },
+        }
+        let candidates = production::candidates(&*app.state::<Store>().conn()?)?;
+        for (project, key) in candidates {
+            if active.len() >= 2 {
+                break;
+            }
+            if active.contains(&(project.clone(), key.clone())) {
+                continue;
+            }
+            let Some(task) = production::claim(&app.state::<Store>(), &project, &key)? else {
+                continue;
+            };
+            active.insert((project.clone(), key.clone()));
+            project_service::notify(app, &project);
+            let worker = app.clone();
+            running.push(Box::pin(async move {
+                if let Err(submission_error) = submit(&worker, &project, &key, &task).await {
+                    let submission = task["submissionId"]
+                        .as_str()
+                        .context("Missing submission identity")?;
+                    let _lock = crate::job_locks::acquire(submission).await;
+                    if let Some(issue) = submission_failed(
+                        &worker.state::<Store>(),
+                        &project,
+                        &key,
+                        submission,
+                        submission_error,
+                    )? {
+                        tracing::warn!(event="reserved_project_pending", project_id=%project, job_id=submission, code=%issue.code, stage=%issue.stage);
+                    }
+                }
+                project_service::notify(&worker, &project);
+                Ok((project, key))
+            }));
+        }
+    }
+}
+fn submission_failed(
+    store: &Store,
+    project: &str,
+    key: &str,
+    submission: &str,
+    error: anyhow::Error,
+) -> Result<Option<crate::app_error::AppError>> {
+    // A reserved job owns a potentially paid effect. Only local preflight failures
+    // without a reservation may become retryable FAILED tasks.
+    match crate::jobs::metadata(store, submission) {
+        Ok(_) => match crate::jobs::reconcile(store, submission) {
+            Ok(()) => Ok(None),
+            Err(error) => match error.downcast_ref::<crate::app_error::AppError>() {
+                // This error is returned only after the marker commits. Keep the
+                // paid job isolated; the tracking worker owns its local recovery.
+                Some(issue) if issue.code == "PROJECT_SYNC_FAILED" => Ok(Some(issue.clone())),
+                _ => Err(error),
+            },
+        },
+        Err(lookup_error)
+            if matches!(
+                lookup_error.downcast_ref::<rusqlite::Error>(),
+                Some(rusqlite::Error::QueryReturnedNoRows)
+            ) =>
+        {
+            let issue =
+                crate::app_error::AppError::from_error(&error, "VALIDATION_FAILED", "prepare");
+            production::patch(
+                store,
+                project,
+                key,
+                submission,
+                &["UPLOADING", "SUBMITTING"],
+                json!({"status":"FAILED","error":issue.to_string()}),
+            )
+            .map(|_| None)
+            .map_err(|write_error| {
+                anyhow::anyhow!("失败状态未保存：{write_error}；原提交错误：{issue}")
+            })
+        }
+        Err(lookup_error) => Err(lookup_error.context(format!(
+            "无法读取提交记录 {submission}；原提交错误：{error}"
+        ))),
+    }
+}
+
+#[cfg(test)]
+#[path = "production_queue_tests.rs"]
+mod tests;

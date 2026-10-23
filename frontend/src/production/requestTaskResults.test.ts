@@ -30,6 +30,7 @@ function setup() {
   };
   const op = {
     op: "request_generation",
+    title: "Pack · 分镜图",
     mediaKind: "image",
     text: "Keep the bag. Closer shot.",
     canvasTaskKey: task.key,
@@ -154,6 +155,7 @@ test("advertised prompt paths save the shot draft and generation prompt separate
       { op: "update_node", id: shot.id, shot: { prompt: "Saved video draft" } },
       {
         op: "request_generation",
+        title: "Pack · 视频",
         id: shot.id,
         mediaKind: "video",
         text: "Actual generation prompt",

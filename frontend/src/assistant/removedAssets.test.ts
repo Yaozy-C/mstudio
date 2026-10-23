@@ -65,7 +65,12 @@ test("agent generation rejects both explicit and inherited removed references", 
       instruction: "Generate",
     },
   };
-  const op = { mediaKind: "image", id: "shot", text: "Generate a frame" };
+  const op = {
+    mediaKind: "image",
+    title: "Pack · storyboard",
+    id: "shot",
+    text: "Generate a frame",
+  };
   expect(() => requestTask(p, op, context)).toThrow("移除");
   expect(() =>
     requestTask(

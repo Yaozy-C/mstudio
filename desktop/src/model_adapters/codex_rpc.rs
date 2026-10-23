@@ -1,5 +1,6 @@
 //! Local Codex JSON-RPC transport. Authentication remains owned by Codex.
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
+use serde::Deserialize;
 use serde_json::{Value, json};
 use std::process::Stdio;
 use tokio::{
@@ -14,43 +15,33 @@ pub struct Rpc {
     sequence: u64,
     pending: std::collections::VecDeque<Value>,
 }
+#[derive(Debug, Deserialize)]
+pub struct RpcError {
+    pub code: i64,
+    pub message: String,
+}
+impl std::fmt::Display for RpcError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Codex RPC {}: {}", self.code, self.message)
+    }
+}
+impl std::error::Error for RpcError {}
 impl Rpc {
-    pub async fn start() -> Result<Self> {
-        Self::start_mode(true).await
-    }
     pub async fn start_text() -> Result<Self> {
-        Self::start_mode(false).await
+        let binary = super::codex_discovery::binary()
+            .await?
+            .context("未找到 Codex")?;
+        tracing::info!(event = "codex_rpc_start", transport = "stdio");
+        tokio::time::timeout(std::time::Duration::from_secs(4), Self::connect(&binary))
+            .await
+            .context("连接 Codex 超时（stdio，4 秒）")?
+            .with_context(|| format!("连接本机 Codex 失败（{}，stdio）", binary.display()))
     }
-    async fn start_mode(images: bool) -> Result<Self> {
-        let mut last = anyhow::anyhow!("未找到 Codex");
-        for binary in super::codex_discovery::binaries().await {
-            for transport in ["--stdio", "--listen"] {
-                match tokio::time::timeout(
-                    std::time::Duration::from_secs(4),
-                    Self::connect(&binary, transport, images),
-                )
-                .await
-                {
-                    Ok(Ok(rpc)) => return Ok(rpc),
-                    Ok(Err(error)) => last = error,
-                    Err(_) => last = anyhow::anyhow!("连接 Codex 超时"),
-                }
-            }
-        }
-        Err(last)
-    }
-    pub(crate) async fn connect(
-        binary: &std::path::Path,
-        transport: &str,
-        images: bool,
-    ) -> Result<Self> {
+    pub(crate) async fn connect(binary: &std::path::Path) -> Result<Self> {
         let mut command = tokio::process::Command::new(binary);
         #[cfg(windows)]
         command.creation_flags(0x08000000);
-        command.args(["app-server", transport]);
-        if transport == "--listen" {
-            command.arg("stdio://");
-        }
+        command.args(["app-server", "--listen", "stdio://"]);
         // A fresh process must use HTTP immediately, rather than retrying broken
         // WebSockets before falling back. Built-in provider IDs are reserved.
         for config in [
@@ -61,9 +52,6 @@ impl Rpc {
             "model_providers.mstudio_openai_http.wire_api=\"responses\"",
         ] {
             command.args(["-c", config]);
-        }
-        if images {
-            command.args(["--enable", "image_generation"]);
         }
         let mut child = command
             .stdin(Stdio::piped())
@@ -125,7 +113,9 @@ impl Rpc {
             let event = self.read_wire().await?;
             if event.get("method").is_none() && event["id"] == id {
                 if let Some(error) = event.get("error") {
-                    bail!("Codex: {}", error["message"]);
+                    return Err(serde_json::from_value::<RpcError>(error.clone())
+                        .context("Codex 返回了无效的 RPC 错误")?
+                        .into());
                 }
                 return Ok(event["result"].clone());
             }
@@ -169,7 +159,7 @@ printf '%s\n' '{"id":2,"result":{"turn":{"id":"t"}}}'
 read -r response
 "#).unwrap();
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
-        let mut rpc = Rpc::connect(&path, "--stdio", false).await.unwrap();
+        let mut rpc = Rpc::connect(&path).await.unwrap();
         let result = rpc.call("turn/start", json!({})).await.unwrap();
         assert_eq!(result["turn"]["id"], "t");
         let event = rpc.next().await.unwrap();
@@ -179,13 +169,12 @@ read -r response
         std::fs::remove_file(path).unwrap();
     }
     #[tokio::test]
-    async fn supports_listen_transport_when_legacy_flag_is_rejected() {
+    async fn uses_one_explicit_stdio_transport() {
         use std::os::unix::fs::PermissionsExt;
         let path = std::env::temp_dir().join(format!("codex-rpc-{}", mstudio::media::id()));
         std::fs::write(
             &path,
             r#"#!/bin/sh
-if [ "$2" = "--stdio" ]; then exit 2; fi
 if [ "$2" != "--listen" ] || [ "$3" != "stdio://" ]; then exit 3; fi
 read -r request
 printf '%s\n' '{"id":1,"result":{}}'
@@ -194,8 +183,7 @@ read -r initialized
         )
         .unwrap();
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
-        assert!(Rpc::connect(&path, "--stdio", false).await.is_err());
-        let mut rpc = Rpc::connect(&path, "--listen", false).await.unwrap();
+        let mut rpc = Rpc::connect(&path).await.unwrap();
         rpc.stop().await;
         std::fs::remove_file(path).unwrap();
     }

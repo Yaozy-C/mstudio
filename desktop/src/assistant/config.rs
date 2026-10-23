@@ -13,7 +13,7 @@ pub struct Profile {
     pub inputs: Inputs,
 }
 pub fn validate(profile: &Profile) -> Result<()> {
-    crate::models::context_migration::validate_policy(profile)?;
+    crate::models::context_policy::validate_policy(profile)?;
     ensure!(
         !profile.endpoint.trim().is_empty(),
         "请先在模型中心连接 Agent 服务"

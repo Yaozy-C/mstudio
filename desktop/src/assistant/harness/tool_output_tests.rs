@@ -24,7 +24,7 @@ fn request_local_and_skill_reads_do_not_require_result_pagination() {
 fn model_results_hide_counters_but_keep_saved_content_and_conflicts() {
     let call = ToolCall::from_wire(
         "edit",
-        ToolFunction::new("mstudio_edit".try_into().unwrap(), json!({})),
+        ToolFunction::new("mstudio_update_shot_design".try_into().unwrap(), json!({})),
     );
     let value = json!({"applied":true,"revision":101,"storageVersion":205,
             "changes":[{"result":{"revision":102,"projectRevision":101,
@@ -52,8 +52,8 @@ fn bounded_clip_page_is_delivered_without_a_second_model_read() {
     let call = ToolCall::from_wire(
         "clips",
         ToolFunction::new(
-            "mstudio_inspect".try_into().expect("nonempty tool name"),
-            json!({"section":"clips"}),
+            "mstudio_read_clips".try_into().expect("nonempty tool name"),
+            json!({}),
         ),
     );
     let value = json!({"items":[{"visual":"x".repeat(8000)}],"nextOffset":null});
@@ -86,7 +86,9 @@ fn large_success_and_errors_keep_identity_and_can_be_read_back() {
     let call = ToolCall::from_wire(
         "c",
         ToolFunction::new(
-            "mstudio_edit".try_into().expect("nonempty tool name"),
+            "mstudio_update_shot_design"
+                .try_into()
+                .expect("nonempty tool name"),
             json!({}),
         ),
     );
