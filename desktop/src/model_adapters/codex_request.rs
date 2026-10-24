@@ -47,10 +47,7 @@ fn quality<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
         Some(value) => value.as_str().context("quality 必须是字符串")?,
         None => default(transport, "quality")?,
     };
-    ensure!(
-        value != "auto",
-        "请指定明确的 quality，不要使用 auto"
-    );
+    ensure!(value != "auto", "请指定明确的 quality，不要使用 auto");
     let values = transport["qualityValues"]
         .as_array()
         .context("原生请求配置缺少 qualityValues")?;

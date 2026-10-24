@@ -149,9 +149,10 @@ fn quick_prompt_preparation_receives_the_current_database_bodies() {
     assert!(!image_guidance.contains("CURRENT_SPATIAL_RULE"));
     assert!(image_guidance.contains("storyboard-image-production/references/scene-execution.md"));
     assert!(image_guidance.contains("### storyboard-image-production/references/frames.md"));
-    assert!(image_guidance.contains(
-        "### storyboard-image-production/references/photographic-direction.md"
-    ));
+    assert!(
+        image_guidance
+            .contains("### storyboard-image-production/references/photographic-direction.md")
+    );
     assert!(!image_guidance.contains("### storyboard-image-production/references/skin-realism.md"));
     let portrait = for_quick(
         &db,

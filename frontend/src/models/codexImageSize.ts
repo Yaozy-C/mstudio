@@ -16,7 +16,12 @@ const MIN_PIXELS = 655_360;
 const DEFAULT_SIZE = "2048x1152";
 
 export function codexImageSize(width: number, height: number): string {
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0)
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0
+  )
     return DEFAULT_SIZE;
   const ratio = width / height;
   if (ratio < 1 / 3 || ratio > 3) return DEFAULT_SIZE;
