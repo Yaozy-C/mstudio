@@ -1,0 +1,17 @@
+[
+  {
+    "file": "seedvr2_distill_6L_1.4B_sharp_fp16_comfyui.safetensors",
+    "url": "https://huggingface.co/lvladikov/SeedVR2-1.4B/resolve/7694e0f361dde8521668e9f8e1d242a1ee90035a/comfyui/seedvr2_distill_6L_1.4B_sharp_fp16_comfyui.safetensors",
+    "sha256": "bdce240cdbfcfa90ec8ad8b535667b93507cbaa0fb96b2970cc10b1389cc1080"
+  },
+  {
+    "file": "seedvr2_ema_vae_fp16.safetensors",
+    "url": "https://huggingface.co/lvladikov/SeedVR2-1.4B/resolve/7694e0f361dde8521668e9f8e1d242a1ee90035a/ema_vae_fp16.safetensors",
+    "sha256": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1"
+  },
+  {
+    "file": "depth_anything_v2_vits.safetensors",
+    "url": "https://huggingface.co/depth-anything/Depth-Anything-V2-Small-hf/resolve/main/model.safetensors",
+    "sha256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70"
+  }
+]

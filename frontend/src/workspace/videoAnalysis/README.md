@@ -6,7 +6,7 @@
 - 临时视频会话保存在应用缓存 `video-analysis/<UUID>` 中，由 `video_analysis::Runtime` 管理，与项目、素材库及项目聊天隔离。
 - 同一应用会话内，切换浏览、项目空间或设置后保留当前参考、问题与结果。每次成功拆解会新增一条持久记录：保存原视频、结果、来源、关注点、模型与时间；重启后可从页头“拆解记录”搜索并恢复，不重新下载或调用模型。此前未保存的临时结果不会被自动补录。
 - 记录元数据保存在 SQLite 的 `video_analysis_records`，原视频与封面位于当前文件存储目录 `video-analysis-history/<UUID>`。记录与项目隔离，迁移存储时随媒体一起移动，缓存清理会保留它们。同卷优先硬链接未修改的原片，跨卷复制；保存失败仍返回已完成结果并显示提示。原视频离线时仍可阅读结果。
-- 完成结果（包括从记录恢复的结果）提供“去创作”：自动按参考片标题与画幅创建项目，完整序列化概述、逐段声画、创作方法、来源、关注点和访问局限，写入项目聊天草稿并通过 `initialTask` 交给项目统筹 Agent，等延迟加载的聊天框挂载后自动填入并聚焦；不自动发送或调用模型。同条记录再次进入会复用已有项目，保留编辑后的草稿。创建失败可重试；请求响应丢失时先核对项目列表，避免重复建项目。项目关联与聊天草稿沿用当前应用的 localStorage 持久化。
+- 完成结果（包括从记录恢复的结果）提供“去创作”：自动按参考片标题与画幅创建项目，完整序列化概述、逐段声画、创作方法、来源、关注点和访问局限，写入项目聊天草稿并通过 `initialTask` 交给项目统筹 Agent，等延迟加载的聊天框挂载后自动填入并聚焦；不自动发送或调用模型。每次点击创建独立项目，仅合并尚未完成的重复点击；创建失败可重试，响应丢失时按本次项目 ID 核对。聊天草稿使用 localStorage 持久化。
 - 文件选择使用原生文件选择器；链接复用已有视频下载器。拒绝没有视频轨道、无有效时长或超过十分钟的输入。
 - 原片用于播放；模型输入超过 12 MiB 或格式不兼容时，生成保留全长和音轨的压缩 MP4。压缩输出先写临时文件，成功后才用于模型输入。
 - 复用已保存的 `video-analyst` 角色指令、`video-analysis` Skill 和模型适配器，不授予工具权限、不向 Agent 提供项目上下文。
@@ -23,10 +23,9 @@
 cargo clippy --manifest-path desktop/Cargo.toml --locked --all-targets -- -D warnings
 cargo test --manifest-path desktop/Cargo.toml --locked video_analysis
 cargo test --manifest-path desktop/Cargo.toml --locked standalone_analysis
-python3 scripts/check_source_size.py
 ```
 
-交互回归页 `frontend/tests/video-analysis.html` 使用合成模型响应，不访问模型、不上传视频、不创建项目。先生成临时样片，再启动开发服务并打开该页：
+交互回归页 `frontend/tests/video-analysis.html` 使用合成模型响应，不访问模型、不上传视频；“去创作”仅创建浏览器预览项目。先生成临时样片，再启动开发服务并打开该页：
 
 ```sh
 ffmpeg -v error -f lavfi -i testsrc2=size=320x240:rate=24:duration=3 \

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")/.."
-export MACOSX_DEPLOYMENT_TARGET=26.0
+export MACOSX_DEPLOYMENT_TARGET=26.2
 python3 scripts/bundle-ges.py
 (cd frontend && bun run build)
 (cd desktop && ../frontend/node_modules/.bin/tauri build --bundles app)

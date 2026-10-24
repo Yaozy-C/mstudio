@@ -139,7 +139,7 @@ export function TaskPanel({
               const owner = project.nodes.find(
                 (node) => node.id === (task.targetNodeId ?? task.ownerId),
               );
-              const title = taskTitle(task);
+              const title = taskTitle(task, t("未命名"));
               const date =
                 task.createdAt && Number.isFinite(task.createdAt)
                   ? new Date(task.createdAt)

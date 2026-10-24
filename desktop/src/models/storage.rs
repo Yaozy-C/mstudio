@@ -32,6 +32,20 @@ pub(super) fn credential(db: &Connection, model: &Model) -> Result<String> {
     super::connections::key(db, id)
 }
 
+fn selected(db: &Connection, project: Option<&str>) -> Result<Option<String>> {
+    let Some(project) = project else {
+        return Ok(None);
+    };
+    Ok(db
+        .query_row(
+            "SELECT model_id FROM agent_model_preferences WHERE project_id=?1",
+            [project],
+            |r| r.get::<_, Option<String>>(0),
+        )
+        .optional()?
+        .flatten())
+}
+
 pub fn catalog(db: &Connection, project: Option<&str>) -> Result<Catalog> {
     let ids = db
         .prepare("SELECT id FROM model_profiles ORDER BY rowid")?
@@ -43,21 +57,10 @@ pub fn catalog(db: &Connection, project: Option<&str>) -> Result<Catalog> {
         .collect::<Result<Vec<_>>>()?;
     let default_id =
         setting(db, "default-agent-model")?.filter(|id| profiles.iter().any(|p| &p.id == id));
-    let selected_id = if let Some(project) = project {
-        db.query_row(
-            "SELECT model_id FROM agent_model_preferences WHERE project_id=?1",
-            [project],
-            |r| r.get::<_, Option<String>>(0),
-        )
-        .optional()?
-        .flatten()
-    } else {
-        None
-    };
     Ok(Catalog {
         profiles,
         default_id,
-        selected_id,
+        selected_id: selected(db, project)?,
     })
 }
 
@@ -66,17 +69,17 @@ pub fn resolve(
     project: Option<&str>,
     id: Option<&str>,
 ) -> Result<(Model, String)> {
-    let c = catalog(db, project)?;
-    let id = id
-        .or(c.selected_id.as_deref())
-        .or(c.default_id.as_deref())
-        .ok_or_else(|| {
-            anyhow::Error::from(crate::app_error::AppError::new(
-                "MODEL_UNAVAILABLE",
-                "model_selection",
-                "Select an Agent model",
-            ))
-        })?;
+    let id = match id {
+        Some(id) => Some(id.to_owned()),
+        None => selected(db, project)?.or(setting(db, "default-agent-model")?),
+    };
+    let id = id.as_deref().ok_or_else(|| {
+        anyhow::Error::from(crate::app_error::AppError::new(
+            "MODEL_UNAVAILABLE",
+            "model_selection",
+            "Select an Agent model",
+        ))
+    })?;
     let model = get(db, id)?;
     config::validate(&model.profile)?;
     super::context_policy::validate_execution(&model.profile)?;

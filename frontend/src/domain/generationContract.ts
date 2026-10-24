@@ -68,10 +68,9 @@ export const generationReferences = (roles: string[]) => ({
   maxItems: undefined,
 });
 export const generationTitle = {
-  ...text(100),
-  minLength: 1,
+  type: "string",
   description:
-    "Short name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt.",
+    "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt.",
 };
 const common = {
   title: generationTitle,
@@ -119,7 +118,7 @@ export const generationOperations = [
       parameters: imageParameters,
       references: generationReferences(["edit", "reference"]),
     },
-    ["op", "title", "text", "mediaKind"],
+    ["op", "text", "mediaKind"],
   ),
   object(
     {
@@ -144,7 +143,7 @@ export const generationOperations = [
         "video-reference",
       ]),
     },
-    ["op", "title", "text", "mediaKind"],
+    ["op", "text", "mediaKind"],
   ),
   object(
     {
@@ -164,6 +163,6 @@ export const generationOperations = [
       },
       references: generationReferences(["edit", "reference"]),
     },
-    ["op", "title", "text", "mediaKind", "generationPurpose", "references"],
+    ["op", "text", "mediaKind", "generationPurpose", "references"],
   ),
 ];

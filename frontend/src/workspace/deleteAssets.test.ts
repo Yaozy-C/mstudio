@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { fixture } from "../production/fixtures.test-helper";
-import { deleteAssets, deleteLegacyHiddenAssets } from "./deleteAssets";
+import { deleteAssets } from "./deleteAssets";
 import { productionItems } from "../production/items";
 import { createTask } from "../production/tasks";
 import { inspectProject } from "../assistant/inspectProject";
@@ -78,24 +78,6 @@ test("permanent deletion clears every live use and agent discovery, without chan
     JSON.stringify(inspectProject(next, { section: "assets", ids: ["a"] })),
   ).not.toContain('"id":"a"');
   expect(restoreProject(p, next).assets).toEqual(next.assets);
-});
-
-test("legacy hidden cards become deletions while visible accepted versions survive", () => {
-  const p = fixture();
-  p.nodes.push({
-    id: "wrong",
-    kind: "asset",
-    assetId: "a",
-    title: "wrong",
-    text: "",
-    x: 0,
-    y: 0,
-  });
-  p.production = { hidden: ["node:wrong", "take:shot:v"] };
-  const next = deleteLegacyHiddenAssets(p);
-  expect(next.assets.map((a) => a.id)).toEqual(["b", "reference"]);
-  expect(next.removedAssetIds).toEqual(["a", "v"]);
-  expect(deleteLegacyHiddenAssets(next)).toBe(next);
 });
 
 test("late job reconciliation does not resurrect a deleted output or keep tracking it", () => {

@@ -22,12 +22,6 @@
 .creative-next-step > button {
   flex-shrink: 0;
 }
-.creative-next-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
-}
 .creative-next-step select {
   max-width: 100%;
 }
@@ -64,9 +58,5 @@
   .creative-next-step {
     align-items: flex-start;
     flex-direction: column;
-  }
-  .creative-next-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
   }
 }

@@ -22,7 +22,7 @@ export function TaskEntry({
     >
       <Icon size={20} aria-hidden="true" />
       <span className="task-entry-copy">
-        <strong>{taskTitle(task)}</strong>
+        <strong>{taskTitle(task, t("未命名"))}</strong>
         <span className="task-entry-prompt">{task.prompt}</span>
         <span className="task-entry-status" data-status={task.status}>
           <RunStatus task={task} />

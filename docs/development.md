@@ -63,7 +63,7 @@ cargo test --manifest-path desktop/Cargo.toml --locked
 
 双击视频片段，在右侧「调色与特效」选择效果或调整亮度、对比度、饱和度、色温。「创作 → 字幕 / 配音」可选择字幕字体、颜色、字号和底色；拖动位置示意框中的文字调整成片位置。字幕样式随项目保存，并烘焙到导出视频；SRT 仅保存文字与时间。
 
-所有维护的源码、测试、规则和配置文件不得超过 300 行，检查不再提供历史豁免。前端按组件与交互职责拆分，后端按业务职责拆分；依赖锁文件和第三方生成文件由工具管理。
+文件按职责组织，避免为行数限制增加包装和模块。Skill 文档按资产、分镜等职责分别维护，不要求全文一致；`scripts/check_skills.py` 校验元数据、链接和目录隔离，画面效果通过实际素材验证。
 
 聊天历史内存回归：TanStack Virtual 按实际高度只挂载可见消息和缓冲区，消息运行时与持久化历史保持完整；工具参数、结果及子任务的折叠内容展开后才序列化和挂载，收起时释放。离屏后保留展开状态和生成任务页码，键盘焦点所在消息保持挂载。新回答开始时跳到末尾，阅读旧历史时后续输出不抢滚动。运行 `(cd frontend && bun run dev)`，打开 `/tests/virtual-conversation.html` 点击「运行回归」，检查 200 条历史、详情、子任务、焦点、补入历史、动态高度和侧栏宽度变化；再打开 `/tests/conversation-streaming.html` 点击「运行集成回归」，检查实际消息组件的流式文本节点、滚动、任务卡片与分页。两页使用合成数据，不连接模型服务或写入本机项目。
 
@@ -81,7 +81,7 @@ cargo fmt --manifest-path desktop/Cargo.toml
 sh scripts/bundle.sh
 ```
 
-生成仅支持 Apple Silicon、macOS 26.0 及以上的 `Mstudio.app`。包内携带 FFmpeg、ffprobe、GES 及其传递动态库，用户无需安装 Homebrew。安装版只从 `Contents/Resources/gstreamer/bin` 启动媒体工具；源码开发仍使用本机工具。打包会检查 arm64、动态库闭包、临时签名，并在中文空格路径及无 Homebrew PATH 的环境执行编码、探测、抽帧、应用素材导入和真实 GES 寻帧解码。可单独运行 `python3 scripts/check-macos-bundle.py Mstudio.app`。此验证不替代另一台干净 Mac 上的界面、声音和完整项目验收。
+生成仅支持 Apple Silicon、macOS 26.2 及以上的 `Mstudio.app`。包内携带 FFmpeg、ffprobe、GES 及其传递动态库，用户无需安装 Homebrew。安装版只从 `Contents/Resources/gstreamer/bin` 启动媒体工具；源码开发仍使用本机工具。打包会检查 arm64、动态库闭包、临时签名，并在中文空格路径及无 Homebrew PATH 的环境执行编码、探测、抽帧、应用素材导入和真实 GES 寻帧解码。可单独运行 `python3 scripts/check-macos-bundle.py Mstudio.app`。此验证不替代另一台干净 Mac 上的界面、声音和完整项目验收。
 
 此脚本更新本地生成的应用包，不发布 GitHub Release。仓库的专有许可声明及历史 MIT 许可不替代 FFmpeg、GES 及其传递依赖的许可；发布二进制前需核对实际依赖构建配置、保留其完整许可和所需材料。当前 bundler 复制 SDK 中可用的许可文件，不代表已经收集所有第三方分发材料。
 
@@ -111,7 +111,7 @@ Windows 系统配音使用已安装的 System.Speech 声音，语速映射为系
 
 inspect 的 clips/assets/tracks/captions 每页最多12项，按12KB内容预算提前分页，单项超限仍由原结果卸载机制处理；生成任务保持5项分页。小组编辑可一批读取，fields 用于省略无关字段。edit 在保存成功后返回 savedClips，列出实际变化（包括顺移邻居、失效转场和删除），最多12项，complete=false 时按需补读。它是参数回执，不代表画面或声音验收；调色/转场仍要抽帧复查。工具输出层允许这些受限页面/回执直接返回，避免刚合并又被卸载为额外读取。
 
-上下文回收以最近一次 assistant 响应为消费边界，这只是可回收范围，不是自动卸载触发器。图片在后续请求中继续携带；通用 uploader 在 DeepSeek 与 OpenAI 官方服务上传并缓存图片 file ID，平台实现分别按 200 MiB/600 个和 512 MiB/1,500 个出现位置检查；其他服务内联图片超过 16 MiB（现有 18 MiB 附件请求额度中预留 2 MiB 给文字与结构）时，按请求顺序仅卸载足够数量的最旧图片出现位置。上下文压力超过模型输入预算时，按顺序回收旧媒体，达到预算即停止，仍不足才摘要历史。最新一批工具结果及附件在至少一次模型请求前，不能被图片卸载、长结果裁剪或历史压缩提前移除；单批新图超预算会明确报错。批量读取和 reopen_image 共用此规则。媒体恢复引用由内容哈希生成，重开后再次卸载保持同一标识，仅接受当前内容哈希格式；已删除旧随机引用与 image/offload 事件兼容分支。原文件和持久化内容不会因上下文卸载而删除。实现来源与适配边界见[媒体预算说明](architecture.md#媒体预算与历史卸载)。
+上下文回收以最近一次 assistant 响应为消费边界，这只是可回收范围，不是自动卸载触发器。图片在后续请求中继续携带；通用 uploader 在 DeepSeek 与 OpenAI 官方服务上传并缓存图片 file ID，平台实现分别按 200 MiB/600 个和 512 MiB/1,500 个出现位置检查；其他服务内联图片超过 16 MiB（现有 18 MiB 附件请求额度中预留 2 MiB 给文字与结构）时，按请求顺序仅卸载足够数量的最旧图片出现位置。上下文压力超过模型输入预算时，按顺序回收旧媒体，达到预算即停止，仍不足才摘要历史。最新一批工具结果及附件在至少一次模型请求前，不能被图片卸载、长结果裁剪或历史压缩提前移除；单批新图超预算会明确报错。批量读取和 reopen_image 共用此规则。媒体恢复引用由内容哈希生成，重开后再次卸载保持同一标识，仅接受当前内容哈希格式；已删除旧随机引用与 image/offload 事件兼容分支。原文件和持久化内容不会因上下文卸载而删除。实现来源与适配边界见[媒体预算说明](architecture.md#历史内容与上传)。
 
 委派返回必须区分 applied（保存了修改）与 ok/stopReason（任务是否完整完成）；本轮存在未完整完成的子任务时，最终答复由执行器追加状态说明，防止模型只报保存成功。
 
@@ -175,116 +175,43 @@ GES 集成测试使用合成素材，验证透明字幕、准确定位、暂停�
 
 应用启动后在 Tauri 的 app_log_dir 中写入按小时轮转的 JSONL 日志，保留最近 24 个文件。日志记录固定事件名及超过 50ms 的数据库锁等待、持锁和 QuickJS 初始化/执行耗时，不记录提示词、素材路径、密钥或服务响应正文。现有数据库 Agent 事件记录继续负责调用回放。
 
-## Creative rule authoring provenance
+## Skill reference sources
 
-The following notes are historical authoring records, not runtime Skill instructions or newly verified source claims. Creative and screenwriting Skills contain the resulting decision rules; project samples remain project evidence.
+Historical authoring references recorded in September–October 2026. Runtime Skill instructions are maintained in `skills/`.
 
-# Historical research basis
-
-Date checked during external authoring: 2026-10-07. Mstudio does not go online at runtime; the URLs below are source records only, not instructions to call a tool. What follows are brief paraphrases and design inferences; no original tutorial was copied. The Skill's specific process and editing exercises are a synthesised design, not an institutionally certified method. Research-company results carry sample and commercial-context limitations.
-
-### Research before script
-
-1. [TikTok - Introducing Symphony Agent, 2026-06-22](https://ads.tiktok.com/business/en-US/blog/symphony-agent)
-   The official description puts ad, trend and reference-video analysis into the creation process, including product brief, insights, storyboard and video. It supports the design of bringing in content evidence; it does not prove the tool's quality, nor does it mean Mstudio already has its platform signals.
-2. [TikTok - Top Ads official description](https://ads.tiktok.com/business/library/NA_Creative_Center_Top_Ads_One_Pager.pdf)
-   The sample has performance thresholds and advertiser authorisation and can be filtered by region, industry and objective; the per-second curve is a normalised value. Used to record metric boundaries; being selected is not equated with evidence of sales.
-3. [Chris Kocek / Contagious - How to spot a true, transformative insight, 2023-09-26](https://www.contagious.com/en/article/news-and-views/how-to-recognise-a-true-transformative-insight-3520ca55e0804cc58e2bd440666f5697)
-   Distinguishes a single observation from an insight that allows the problem to be understood anew. Adopting an observation requires the judgement of interpretation and connection; a fixed word count or checklist score is not used to certify an insight. This is a practitioner's view, not an experimental conclusion.
-
-### Content and product stand together
-
-4. [TikTok - Spark Ads Creative Playbook, 2024-03-04](https://ads.tiktok.com/business/creativecenter/quicktok/online/Spark-Ads-Creative-Playbook/pc/en)
-   Covers natural expression, character-product interaction, entertainment and evergreen forms, and argues against a forced hook. Supports a range of viewing payoffs and does not force a plot onto a short piece. The cited research does not guarantee the result of a single piece, nor does it cover all organic-traffic videos.
-5. [TED - Andrew Stanton at TED2012](https://blog.ted.com/my-life-in-story-backwards-andrew-stanton-at-ted2012/amp/)
-   Emphasises making the audience care, building a promise worth continuing for, and involving the audience in understanding. Transferred as an editing tool for the order of information and experience; feature-film experience does not translate directly into a law of short-video traffic.
-6. [The Webby Awards - Harmon Brothers creator interview](https://www.webbyawards.com/harmon-brothers-creators-of-viral-squatty-potty-ad/)
-   Explains how the unicorn concept answers the problem that the product topic is hard to talk about, and the relationship between sales goals and entertainment. Adopts the approach of developing the expression from the communication difficulty; it does not apply long-form ad strategy and free runtime to a piece locked to 15 seconds.
-7. [Harmon Brothers - Writers Room](https://harmonbrothers.com/writing/)
-   The service covers message testing, different selling propositions and formal script development. Adopts the idea of separating the choice of claim from copy polishing; a service provider's own account is not independent proof of sales.
-8. [Kantar - Beyond viewability](https://www.kantar.com/inspiration/agile-market-research/the-role-of-attention-in-creative-effectiveness)
-   The Apple Pay case shows that a humorous scene and the product-reveal stage can have different attention performance. Used to check appeal and product association separately; it does not imply that the product must appear at a fixed second.
-9. [Thinkbox / Neuro-Insight - Creative Drivers of Effectiveness, 2023-06-21](https://www.thinkbox.tv/research/thinkbox-research/creative-drivers-of-effectiveness)
-   TV advertising research discusses the product alongside narrative, people, sound and brand cues. A reminder that sound and the product carry content roles; it does not extrapolate TV data into a TikTok threshold, nor force people into a piece with no characters.
-10. [System1 / WPP Media / TikTok - The Creator Effectiveness Playbook](https://system1group.com/the-creator-effectiveness-playbook)
-    The public webpage's method and summary of conclusions were read; the full report behind the form was not obtained. The page distinguishes creative quality, creator familiarity and brand fit, and stresses that engagement and brand-memory metrics differ. Adopts the method of evaluating separately; brand memory is not the same as immediate purchase. No universal limit was written for the number or timing of brand cues.
-
-### Divergence and evaluation
-
-11. [Doshi & Hauser - Generative AI enhances individual creativity but reduces the collective diversity of novel content, Science Advances, 2024](https://discovery.ucl.ac.uk/10195027/1/Generative%20AI%20enhances%20individual%20creativity%20but%20reduces%20the%20collective%20diversity%20of%20novel%20content.pdf)
-    The micro-story experiment found that AI assistance coincided with higher individual creativity ratings and greater similarity between works. Supports comparing differences at the content level and avoiding first-draft anchoring; it did not validate this Skill, automatic ad Agents or sales results.
-
-### Claims that did not become rules
-
-No thresholds are set such as: every piece must have a reversal; the first three seconds must shock; a person must appear on camera; only multiple cuts can hold viewers; a fixed number of candidates; or publication once a model's self-assessment passes. No dialogue, no plot, a slow pace and a common subject can all suit a brief; the judgement rests on the actual content and the target audience's feedback.
-
-These sources establish the methodological background; they do not represent a real video sample library for any product category, nor do they prove the new Skill is better than the old one; the two need separate validation.
-
-## Historical shot, animation and finishing source records
-
-These are retained authoring records, outside the packaged Skills. They are not newly checked sources, runtime reading requirements or evidence that an advertising method will perform. Operational methods remain in the owning roles.
-
-### creative-ad-director/references/animation-principles.md
-
-## Sources
-
-The classic framework is Frank Thomas and Ollie Johnston's The Illusion of Life. The Higgsfield tutorial around 18:30–18:50 translates principles into in-shot behavior; around 25:00–27:20 it illustrates the gap between obtaining an action result and achieving the performance. This document adapts the method rather than reproducing the team's internal skill.
-
-## Further reading
-
-- [Source 1](https://www.disneyanimation.com/process/animation/)
-- [Source 2](https://www.adobe.com/creativecloud/animation/discover/principles-of-animation.html)
-- [Source 3](https://xhslink.cn/o/rLnNxFkjbL)
-
-For live-action acting and interaction, read [naturalistic performance](naturalistic-performance.md) when needed.
-
-### creative-ad-director/references/cinematography.md
-
-## Sources and limits
-
-The Higgsfield tutorial around 17:10–19:10 demonstrates shot purpose, shot structure, constraints, animation principles and a shared skill. This is an adaptation for this workflow, not its full internal skill. The tutorial's vehicles, fixed durations, no-music choice and animation on twos are project decisions, not universal laws. Exact frames and perfect consistency in prompts express intent, not model guarantees.
-
-## Further reading
-
-- [Source 1](https://www.khanacademy.org/humanities/hass-storytelling/storytelling-pixar-in-a-box/ah-piab-film-grammar/v/film-grammar-overview)
-- [Source 2](https://www.khanacademy.org/v/dynamicshots)
-- [Source 3](https://filmglossary.ccnmtl.columbia.edu/term/180-degree-rule/)
-- [Source 4](https://www.columbia.edu/itc/film/engel/3001/continuity.html)
-- [Source 5](https://www.studiobinder.com/blog/30-degree-rule/)
-- [Source 6](https://xhslink.cn/o/rLnNxFkjbL)
-
-### creative-ad-director/references/concepts.md
-
-Sources: [TikTok structure and stimulation](https://ads.tiktok.com/business/en-US/creative-codes), [hook and continuation](https://github.com/coreyhaines31/marketingskills/blob/main/skills/ad-creative/references/hook-system.md), [Krea cut architecture](https://github.com/krea-ai/skills/blob/main/krea-motion/references/cut-architecture.md), [Higgsfield shot-list skill](https://higgsfield.ai/academy/courses/ai-ad-3-step/the-shot-list-and-the-skill).
-
-### video-editing/references/color-tools.md
-
-## Reference status
-
-The retained official training and implementation sources were recorded as checked on 2026-09-27. They explain grading, monitoring and implementation concepts; their advanced features are not claims about Mstudio capability. This rewrite does not refresh that historical verification date.
-
-## Further reading
-
-- [Source 1](https://www.blackmagicdesign.com/products/davinciresolve/training)
-- [Source 2](https://www.blackmagicdesign.com/products/davinciresolve/color)
-- [Source 3](https://ffmpeg.org/ffmpeg-filters.html)
-- [Source 4](https://github.com/mltframework/shotcut/blob/master/src/qml/filters/brightness/ui.qml)
-
-### video-editing/references/transition-tools.md
-
-## Reference status
-
-Official help, training and implementation links below were recorded as checked on 2026-09-27. They support design concepts and implementation details, not a guarantee that every tutorial capability exists in this application. This rewrite does not claim a new web verification.
-
-## Further reading
-
-- [Source 1](https://www.capcut.com/help/transitions-in-capcut)
-- [Source 2](https://www.capcut.com/resource/dissolve-transition-in-video)
-- [Source 3](https://www.blackmagicdesign.com/products/davinciresolve/training)
-- [Source 4](https://ffmpeg.org/ffmpeg-filters.html#xfade)
-- [Source 5](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_xfade.c)
-- [Source 6](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_perspective.c)
-- [Source 7](https://www.shotcut.org/howtos/keyboard-shortcuts/)
+- [TikTok - Introducing Symphony Agent, 2026-06-22](https://ads.tiktok.com/business/en-US/blog/symphony-agent)
+- [TikTok - Top Ads official description](https://ads.tiktok.com/business/library/NA_Creative_Center_Top_Ads_One_Pager.pdf)
+- [Chris Kocek / Contagious - How to spot a true, transformative insight, 2023-09-26](https://www.contagious.com/en/article/news-and-views/how-to-recognise-a-true-transformative-insight-3520ca55e0804cc58e2bd440666f5697)
+- [TikTok - Spark Ads Creative Playbook, 2024-03-04](https://ads.tiktok.com/business/creativecenter/quicktok/online/Spark-Ads-Creative-Playbook/pc/en)
+- [TED - Andrew Stanton at TED2012](https://blog.ted.com/my-life-in-story-backwards-andrew-stanton-at-ted2012/amp/)
+- [The Webby Awards - Harmon Brothers creator interview](https://www.webbyawards.com/harmon-brothers-creators-of-viral-squatty-potty-ad/)
+- [Harmon Brothers - Writers Room](https://harmonbrothers.com/writing/)
+- [Kantar - Beyond viewability](https://www.kantar.com/inspiration/agile-market-research/the-role-of-attention-in-creative-effectiveness)
+- [Thinkbox / Neuro-Insight - Creative Drivers of Effectiveness, 2023-06-21](https://www.thinkbox.tv/research/thinkbox-research/creative-drivers-of-effectiveness)
+- [System1 / WPP Media / TikTok - The Creator Effectiveness Playbook](https://system1group.com/the-creator-effectiveness-playbook)
+- [Doshi & Hauser - Generative AI enhances individual creativity but reduces the collective diversity of novel content, Science Advances, 2024](https://discovery.ucl.ac.uk/10195027/1/Generative%20AI%20enhances%20individual%20creativity%20but%20reduces%20the%20collective%20diversity%20of%20novel%20content.pdf)
+- [www.disneyanimation.com/process/animation/](https://www.disneyanimation.com/process/animation/)
+- [www.adobe.com/creativecloud/animation/discover/principles-of-animation.html](https://www.adobe.com/creativecloud/animation/discover/principles-of-animation.html)
+- [xhslink.cn/o/rLnNxFkjbL](https://xhslink.cn/o/rLnNxFkjbL)
+- [www.khanacademy.org/humanities/hass-storytelling/storytelling-pixar-in-a-box/ah-piab-film-grammar/v/film-grammar-overview](https://www.khanacademy.org/humanities/hass-storytelling/storytelling-pixar-in-a-box/ah-piab-film-grammar/v/film-grammar-overview)
+- [www.khanacademy.org/v/dynamicshots](https://www.khanacademy.org/v/dynamicshots)
+- [filmglossary.ccnmtl.columbia.edu/term/180-degree-rule/](https://filmglossary.ccnmtl.columbia.edu/term/180-degree-rule/)
+- [www.columbia.edu/itc/film/engel/3001/continuity.html](https://www.columbia.edu/itc/film/engel/3001/continuity.html)
+- [www.studiobinder.com/blog/30-degree-rule/](https://www.studiobinder.com/blog/30-degree-rule/)
+- [TikTok structure and stimulation](https://ads.tiktok.com/business/en-US/creative-codes)
+- [hook and continuation](https://github.com/coreyhaines31/marketingskills/blob/main/skills/ad-creative/references/hook-system.md)
+- [Krea cut architecture](https://github.com/krea-ai/skills/blob/main/krea-motion/references/cut-architecture.md)
+- [Higgsfield shot-list skill](https://higgsfield.ai/academy/courses/ai-ad-3-step/the-shot-list-and-the-skill)
+- [www.blackmagicdesign.com/products/davinciresolve/training](https://www.blackmagicdesign.com/products/davinciresolve/training)
+- [www.blackmagicdesign.com/products/davinciresolve/color](https://www.blackmagicdesign.com/products/davinciresolve/color)
+- [ffmpeg.org/ffmpeg-filters.html](https://ffmpeg.org/ffmpeg-filters.html)
+- [github.com/mltframework/shotcut/blob/master/src/qml/filters/brightness/ui.qml](https://github.com/mltframework/shotcut/blob/master/src/qml/filters/brightness/ui.qml)
+- [www.capcut.com/help/transitions-in-capcut](https://www.capcut.com/help/transitions-in-capcut)
+- [www.capcut.com/resource/dissolve-transition-in-video](https://www.capcut.com/resource/dissolve-transition-in-video)
+- [ffmpeg.org/ffmpeg-filters.html#xfade](https://ffmpeg.org/ffmpeg-filters.html#xfade)
+- [github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_xfade.c](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_xfade.c)
+- [github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_perspective.c](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_perspective.c)
+- [www.shotcut.org/howtos/keyboard-shortcuts/](https://www.shotcut.org/howtos/keyboard-shortcuts/)
 
 ## Image and storyboard case review (2026-10-09)
 

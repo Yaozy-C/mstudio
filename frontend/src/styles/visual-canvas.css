@@ -34,12 +34,6 @@
   line-height: 18px;
   color: var(--desk-muted);
 }
-.production-workspace .shot-card-meta {
-  padding: 10px 0;
-  border-color: var(--ui-rule);
-  font-size: var(--ui-caption);
-  color: var(--desk-muted);
-}
 .production-workspace .shot-card-duration {
   padding: 2px 8px;
   border-radius: 4px;

@@ -20,36 +20,6 @@
   box-shadow: none;
   color: var(--desk-accent);
 }
-.color-request {
-  display: grid;
-  gap: 12px;
-  padding: 18px 0;
-}
-.color-request h3 {
-  margin: 0;
-  font-size: 16px;
-}
-.color-request p,
-.color-request small {
-  margin: 0;
-  color: var(--desk-muted);
-  line-height: 1.6;
-}
-.color-request textarea {
-  width: 100%;
-  resize: none;
-  min-height: 90px;
-  padding: 10px;
-  font: inherit;
-}
-.radix-themes .color-request .color-request-submit {
-  background: var(--desk-text);
-  color: var(--desk-bg);
-  min-height: 38px;
-}
-.color-request button[aria-pressed="true"] {
-  outline: 2px solid var(--desk-text);
-}
 .agent-clip-context {
   display: flex;
   align-items: center;

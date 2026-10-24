@@ -83,26 +83,6 @@
 .timeline-clip[data-muted="true"] .audio-waveform {
   opacity: 0.25;
 }
-.track-heading .track-identity {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.radix-themes .track-identity input {
-  width: 100%;
-  flex: auto;
-  font-size: 12px;
-}
-.track-labels .track-state {
-  margin: 0;
-  font-size: 11px;
-  line-height: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .track-label-viewport,
 .track-labels {
   width: 128px;

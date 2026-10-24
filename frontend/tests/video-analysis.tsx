@@ -16,7 +16,6 @@ import {
   createAnalysisLauncher,
   type CreationHandoff,
 } from "../src/workspace/videoAnalysis/creationHandoff";
-import { analysisProjectKey } from "../src/workspace/videoAnalysis/creationBrief";
 import "./studio-fixture.css";
 import { setLanguage } from "../src/i18n";
 import { VideoAnalysis } from "../src/workspace/videoAnalysis/VideoAnalysis";
@@ -158,7 +157,7 @@ const controller = createAnalysisController(
   (receive) => receive,
 );
 const launcher = createAnalysisLauncher(bridge, localStorage);
-const testProjects = new Map<string, string>();
+const testProjects = new Set<string>();
 function Test() {
   const [handoff, setHandoff] = useState<CreationHandoff | null>(null);
   const state = useSyncExternalStore(
@@ -186,11 +185,9 @@ function Test() {
         <strong>交互回归 · 合成数据</strong>{" "}
         <button
           onClick={async () => {
-            for (const [id, key] of testProjects) {
+            for (const id of testProjects) {
               await bridge("delete_project", { id });
               localStorage.removeItem(`mstudio-chat-draft:${id}`);
-              if (localStorage.getItem(key) === id)
-                localStorage.removeItem(key);
             }
             testProjects.clear();
           }}
@@ -238,13 +235,9 @@ function Test() {
         <VideoAnalysis
           state={state}
           controller={controller}
-          continuing={launcher.hasProject(state)}
           onCreate={async () => {
             const next = await launcher.create(controller.getSnapshot());
-            testProjects.set(
-              next.project.id,
-              analysisProjectKey(controller.getSnapshot()),
-            );
+            testProjects.add(next.project.id);
             setHandoff(next);
           }}
           onBrowse={() => {}}

@@ -32,7 +32,3 @@ pub fn system(snapshot: &Value) -> String {
         snapshot["promptGuidance"].as_str().unwrap_or("")
     )
 }
-
-#[cfg(test)]
-#[path = "prompt_tests.rs"]
-mod tests;

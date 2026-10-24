@@ -7,7 +7,7 @@ import {
   mediaReferences,
 } from "../production/request";
 import { resultPlacement } from "../production/resultPlacement";
-import { checkedTaskTitle, taskTitle } from "../production/taskTitle";
+import { taskTitle } from "../production/taskTitle";
 import { receiveProductionResult, jobStatus } from "../production/document";
 import { jobIssue, syncJobTracking } from "./generationTracking";
 import type { GeneratedJob } from "../workspace/generatedJobTracking";
@@ -21,7 +21,6 @@ export function prepareGeneration(
   const task = p.production?.drafts?.[taskKey];
   if (!task) throw new Error("Generation task no longer exists");
   if (task.hiddenFromList) throw new Error("请先恢复已归档任务，再开始生成");
-  checkedTaskTitle(task.title);
   const position = task.position ?? resultPlacement(p, task);
   const snapshot = canvasSnapshot(p, task, position);
   const source = p.nodes.find((n) => n.id === task.ownerId);

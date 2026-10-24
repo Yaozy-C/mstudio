@@ -1,7 +1,6 @@
 import { removeNodes } from "../canvas/removeNodes";
 import type { Project } from "../model";
 import type { ProductionTask } from "../production/types";
-import { itemKey } from "../production/types";
 
 // Tombstones contain IDs only. They prevent stale saves, undo and job recovery
 // from resurrecting files that have been permanently deleted.
@@ -96,25 +95,6 @@ export function deleteAssets(p: Project, ids: string[]): Project {
         }
       : undefined,
   };
-}
-
-// Older versions called this action Delete but only hid the card. Complete
-// those deletions when opening the project; task-list visibility is unrelated.
-export function deleteLegacyHiddenAssets(p: Project): Project {
-  const hidden = new Set(p.production?.hidden ?? []);
-  const ids = p.nodes
-    .filter((n) => n.assetId && hidden.has(itemKey("node", n.id)))
-    .map((n) => n.assetId!);
-  for (const node of p.nodes) {
-    for (const [kind, media] of [
-      ["frame", node.shot?.frames],
-      ["take", node.shot?.takes],
-    ] as const)
-      for (const item of media ?? [])
-        if (hidden.has(itemKey(kind, node.id, item.assetId)))
-          ids.push(item.assetId);
-  }
-  return ids.length ? deleteAssets(p, ids) : p;
 }
 
 export function deleteCanvasNodes(p: Project, ids: string[]): Project {

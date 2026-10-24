@@ -17,6 +17,7 @@ initial.assets = ["商品外观", "人物服装"].map((name, i) => ({
   name,
   kind: "image",
   path: `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="${i ? "#9b7" : "#579"}"/></svg>`)}`,
+  preview: "",
   duration: 0,
   width: 100,
   height: 100,

@@ -12,7 +12,8 @@ import tempfile
 
 app = Path(sys.argv[1]).resolve()
 with (app / 'Contents/Info.plist').open('rb') as stream:
-    assert plistlib.load(stream)['LSMinimumSystemVersion'] == '26.0'
+    assert plistlib.load(stream)['LSMinimumSystemVersion'] == '26.2'
+assert (app / 'Contents/Resources/mlx/mlx.metallib').is_file()
 exe_dir = app / 'Contents/MacOS'
 count = 0
 for path in app.rglob('*'):
@@ -26,7 +27,7 @@ for path in app.rglob('*'):
     commands = subprocess.check_output(['otool', '-l', str(path)], text=True)
     for version in re.findall(r'\bminos\s+([\d.]+)', commands):
         parts = tuple(map(int, version.split('.')))
-        assert (parts + (0, 0))[:3] <= (26, 0, 0), (path, version)
+        assert (parts + (0, 0))[:3] <= (26, 2, 0), (path, version)
     rpaths = re.findall(r'cmd LC_RPATH\n.*?\n\s+path (.*?) \(offset', commands)
 
     def expand(value):

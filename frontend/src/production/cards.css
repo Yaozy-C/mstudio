@@ -132,16 +132,6 @@
   font-weight: 600;
   padding-bottom: 16px;
 }
-.shot-card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
-  border-block: 1px solid #ded9ce;
-  font-size: 13px;
-  color: #746e62;
-}
 .shot-card-duration {
   color: #a63825;
   background: #eee3d9;

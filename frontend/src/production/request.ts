@@ -9,7 +9,6 @@ import { pointerDelete, referenceLimits } from "../models/capabilities";
 import { codexImageSize } from "../models/codexImageSize";
 import {
   registeredInput,
-  requestPrompt,
   type UploadedReference,
 } from "../creation/generationInput";
 import { framesOf } from "./frames";
@@ -50,9 +49,6 @@ export function generationPrompt(_p: Project, task: ProductionTask) {
   return task.prompt.trim();
 }
 
-export function submittedPrompt(p: Project, task: ProductionTask) {
-  return requestPrompt(p, generationPrompt(p, task), mediaReferences(task));
-}
 export function inputFor(
   p: Project,
   task: ProductionTask,

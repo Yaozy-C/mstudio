@@ -33,18 +33,6 @@
   position: absolute;
   transform-origin: 0 0;
 }
-.relations {
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-}
-.relations path {
-  fill: none;
-  stroke: #b4a496;
-  stroke-width: 1.5;
-  stroke-dasharray: 5 5;
-}
 .pending {
   position: absolute;
   inset: 50px 10px;

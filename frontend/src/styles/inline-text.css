@@ -72,16 +72,3 @@
 .creative-inline-hint.visible {
   visibility: visible;
 }
-.shot-dialogue .creative-inline-input > textarea {
-  color: var(--desk-text);
-}
-.shot-detail-copy .creative-inline-input > span,
-.shot-detail-copy .creative-inline-input > textarea {
-  font-size: 13px;
-}
-.shot-detail-copy .shot-dialogue {
-  margin: 8px 0 24px;
-  padding: 12px 15px 4px;
-  background: var(--desk-bg);
-  border-radius: 0 7px 7px 0;
-}

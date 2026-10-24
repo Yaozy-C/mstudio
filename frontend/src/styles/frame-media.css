@@ -24,13 +24,6 @@
   color: var(--desk-accent);
   font-weight: 600;
 }
-.media-scope-hint {
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--desk-muted);
-  margin: 0 0 12px;
-  flex-shrink: 0;
-}
 .dock-media .media-list {
   flex: 1;
   min-height: 0;
@@ -69,9 +62,6 @@
   color: var(--desk-accent);
   font-weight: 600;
 }
-.dock-media .media-foot {
-  flex-shrink: 0;
-}
 .dock-agent .agent-welcome-mark {
   display: none;
 }
@@ -104,10 +94,6 @@
   }
   .radix-themes .media-categories button {
     padding-block: 6px;
-  }
-  .dock-media .media-foot {
-    padding-top: 8px;
-    font-size: 10px;
   }
   .dock-media .import-box {
     margin-bottom: 12px;

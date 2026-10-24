@@ -10,6 +10,7 @@
 /desktop/native/runtime/
 /desktop/native/bundle/
 /desktop/native/ges-bundle/
+/desktop/native/mlx/
 /desktop/native/ges-dev-plugins/
 /desktop/native/windows-resources.json
 
@@ -27,10 +28,6 @@
 !/docs/visual-system.md
 !/docs/image-storyboard-cases.md
 !/docs/creative-concept-development.md
-!/docs/testing/
-/docs/testing/*
-!/docs/testing/visual-methods.md
-!/docs/testing/visual-method-cases.json
 
 # Local credentials, settings, project data and logs
 .env

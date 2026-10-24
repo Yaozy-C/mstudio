@@ -3,7 +3,6 @@ import { NewTaskButton } from "./NewTaskButton";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { MediaComposer } from "./MediaComposer";
 import { ConversationTimeline } from "./ConversationTimeline";
-import { defaultAgent } from "./workContext";
 import type { WorkContext } from "./workContext";
 import { listen } from "@tauri-apps/api/event";
 import type { AgentProgress } from "./streamReply";
@@ -67,7 +66,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
   const [error, setError] = useState("");
   const agents = useAgents();
   const [agentId, setAgentId] = useState<string | null>(null);
-  const effectiveAgent = agentId ?? defaultAgent(props.work);
+  const effectiveAgent = agentId ?? "coordinator";
   const chosen = agents.agents.find((a) => a.id === effectiveAgent);
   const agentRef = useRef(agentId);
   agentRef.current = agentId;

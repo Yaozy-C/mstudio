@@ -51,16 +51,3 @@ export function clipIndex(clips: Clip[]) {
   });
 }
 export type IndexedClip = ReturnType<typeof clipIndex>[number];
-export function visibleClips(index: IndexedClip[], from: number, to: number) {
-  let lo = 0,
-    hi = index.length;
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1;
-    if (index[mid].end < from) lo = mid + 1;
-    else hi = mid;
-  }
-  const result: IndexedClip[] = [];
-  for (let i = lo; i < index.length && index[i].start <= to; i++)
-    result.push(index[i]);
-  return result;
-}

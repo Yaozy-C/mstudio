@@ -17,8 +17,6 @@
   "引用用途": "Reference purpose",
   "解除引用": "Unlink",
   "添加参考素材": "Add reference asset",
-  "从项目素材添加参考": "Add a reference from project media",
-  "需要新元素时，先导入或生成素材，再添加到此镜头。解除引用不会删除素材。": "Import or generate new assets, then link them to this shot. Unlinking does not delete media.",
   "完成选择": "Done",
   "搜索参考素材": "Search reference assets",
   "搜索项目素材…": "Search project media…",

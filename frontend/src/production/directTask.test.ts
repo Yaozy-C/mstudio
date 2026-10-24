@@ -66,9 +66,9 @@ test("image execution uses selected media model without an Agent model", () => {
   };
   expect(directTask(fixture(), task, m, "image").modelId).toBe(m.id);
   for (const title of [undefined, " ", "x".repeat(101)])
-    expect(() =>
-      directTask(fixture(), { ...task, title }, m, "unnamed"),
-    ).toThrow("任务名称");
+    expect(directTask(fixture(), { ...task, title }, m, "unnamed").title).toBe(
+      title?.trim() || "未命名",
+    );
   expect(() =>
     directTask(fixture(), { ...task, prompt: "" }, m, "invalid"),
   ).toThrow();

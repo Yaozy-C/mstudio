@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { asset, fixture, model } from "./fixtures.test-helper";
-import { inputFor, submittedPrompt } from "./request";
+import { inputFor } from "./request";
 import { createTask } from "./tasks";
 import type { ProductionTask } from "./types";
 
@@ -47,7 +47,6 @@ test("short video references merge into one URL before submission with segment p
   ]);
   expect(result.reference_video_urls).toEqual(["https://test/merged.mp4"]);
   expect(result.reference_image_urls).toEqual(["https://test/product.png"]);
-  expect(result.prompt).toBe(submittedPrompt(project, task));
   expect(result.prompt).toContain("Video 1 (0.000–1.333s): 动作参考 · 动作 1");
   expect(result.prompt).toContain("Video 1 (1.333–2.667s): 动作参考 · 动作 2");
   expect(result.prompt).not.toContain("Video 2");

@@ -50,14 +50,6 @@
 .composer-media-thumb:focus-within .composer-media-remove {
   opacity: 1;
 }
-.composer-media-badge {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  color: white;
-  line-height: 0;
-  filter: drop-shadow(0 1px 2px #000);
-}
 @media (hover: none) {
   .composer-media-remove {
     opacity: 1;

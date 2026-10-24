@@ -1,11 +1,6 @@
 import { expect, test } from "bun:test";
 import { fixture, model } from "./fixtures.test-helper";
-import {
-  generationPrompt,
-  inputFor,
-  mediaReferences,
-  submittedPrompt,
-} from "./request";
+import { generationPrompt, inputFor, mediaReferences } from "./request";
 import type { ProductionTask } from "./types";
 
 test("submitted image and video prompts exclude script notes and future actions", () => {
@@ -61,7 +56,6 @@ test("displayed submission preserves explicit typography and reference order wit
   m.endpoint = "https://generativelanguage.googleapis.com";
   m.params = { model: "gemini-3.1-flash-image" };
   const first = inputFor(p, task, m);
-  expect(first.prompt).toBe(submittedPrompt(p, task));
   expect(first.prompt).toContain("标题为“夏日”");
   expect(first.prompt).toContain("Image 1: 内容参考 · 构图");
   expect(first.prompt).toContain("Image 2: 内容参考 · 产品身份");

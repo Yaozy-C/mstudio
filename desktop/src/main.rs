@@ -10,6 +10,7 @@ mod diagnostics;
 mod ges_engine;
 mod ges_output;
 mod ges_runtime;
+mod image_processing;
 mod imports;
 mod job_download;
 mod job_locks;
@@ -60,6 +61,15 @@ fn main() {
     }
     tauri::Builder::default()
         .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                let library = if cfg!(debug_assertions) {
+                    mstudio_image_runtime::built_metallib().to_path_buf()
+                } else {
+                    app.path().resource_dir()?.join("mlx/mlx.metallib")
+                };
+                mstudio_image_runtime::initialize(&library)?;
+            }
             match app
                 .path()
                 .app_log_dir()
@@ -93,6 +103,9 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             finish_exit,
+            image_processing::image_processing_runtime,
+            image_processing::configure_image_processing,
+            image_processing::process_image,
             video_analysis::history::list_video_analysis_records,
             video_analysis::history::open_video_analysis_record,
             video_analysis::prepare_video_analysis,

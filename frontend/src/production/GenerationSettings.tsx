@@ -1,6 +1,6 @@
 import { GenerationDuration } from "./GenerationDuration";
 import { TaskTitleField } from "./TaskTitleField";
-import { checkedTaskTitle } from "./taskTitle";
+import { normalizeTaskTitle } from "./taskTitle";
 import { t, useLanguage } from "../i18n";
 import { failure } from "../errors/failure";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -89,7 +89,7 @@ export function GenerationSettings({
         );
       const saved = { ...draft, error: undefined };
       if (draft.title !== task.title)
-        saved.title = checkedTaskTitle(draft.title);
+        saved.title = normalizeTaskTitle(draft.title);
       save(saved, start);
       close();
     } catch (e) {

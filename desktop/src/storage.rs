@@ -30,6 +30,7 @@ pub const FOLDERS: &[&str] = &[
     "reference-media",
     "downloads",
     "imports",
+    "image-processing",
     "video-analysis-history",
 ];
 

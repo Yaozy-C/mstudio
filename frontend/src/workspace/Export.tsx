@@ -11,7 +11,6 @@ import { formatTime } from "../model";
 import { endTime } from "../timeline/document";
 import { prepareProjectCaptions } from "../creation/prepareProjectCaptions";
 import { bridge, mediaUrl, native } from "../bridge";
-import { runtime } from "../plugins/runtime";
 import { ExportResult } from "./ExportResult";
 export function ExportDialog({
   project,
@@ -57,7 +56,7 @@ export function ExportDialog({
     try {
       const captions = await prepareProjectCaptions(project);
       rendering.current = true;
-      const result = await runtime.execute<{ path: string }>("render_video", {
+      const result = await bridge<{ path: string }>("render_video", {
         projectId: project.id,
         spec: {
           tracks: project.tracks,

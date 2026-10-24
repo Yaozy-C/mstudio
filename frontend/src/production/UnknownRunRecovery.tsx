@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { ArrowLeft, SlidersHorizontal } from "@phosphor-icons/react";
 import { ActionButton } from "../ui/ActionButton";
-import { runtime } from "../plugins/runtime";
+import { bridge } from "../bridge";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
@@ -70,7 +70,7 @@ export function UnknownRunRecovery({
               void (async () => {
                 try {
                   if (task.jobId)
-                    await runtime.execute("resolve_unknown_job", {
+                    await bridge("resolve_unknown_job", {
                       id: task.jobId,
                       confirmed,
                     });

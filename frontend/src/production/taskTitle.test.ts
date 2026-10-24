@@ -48,48 +48,33 @@ test("one generic user request creates independently named asset, storyboard and
   const read = inspectProject(p, { section: "generation", fields: ["title"] });
   expect(JSON.stringify(read)).toContain("小满 · 人物资产");
   for (const operation of generationOperations)
-    expect(operation.required).toContain("title");
+    expect(operation.required).not.toContain("title");
 });
 
-test("unnamed tasks never infer names from shots, instructions, prompts or result filenames", () => {
-  const p = fixture();
-  const task = {
-    ...createTask(p, []),
-    targetNodeId: "shot",
-    instruction: "生成资产图吧",
-    prompt: "Long production prompt",
-    resultAssetId: "a",
-  };
-  expect(() => taskTitle(task)).toThrow("任务名称");
-  expect(taskTitle({ ...task, title: "小满 · 人物资产" })).toBe(
-    "小满 · 人物资产",
-  );
-});
-
-test("every Agent generation branch requires a bounded explicit name, including inherited drafts", () => {
+test("unnamed Agent tasks use the default name instead of an unrelated draft title", () => {
   const p = fixture();
   for (const spec of [
     { mediaKind: "image", id: "shot" },
     { mediaKind: "video", id: "shot" },
     { mediaKind: "image", generationPurpose: "asset" },
-  ])
-    for (const title of [undefined, " ", 42, "x".repeat(101)])
-      expect(() =>
-        requestTask(
-          p,
-          { ...spec, text: "Prompt", references: [], title },
-          {
-            ...context(p.id),
-            turn: {
-              ...context(p.id).turn,
-              task: { ...createTask(p, []), title: "Old draft name" },
-            },
-          },
-        ),
-      ).toThrow("任务名称");
+  ]) {
+    const c = context(p.id);
+    const next = requestTask(
+      p,
+      { ...spec, text: "Prompt", references: [] },
+      {
+        ...c,
+        turn: {
+          ...c.turn,
+          task: { ...createTask(p, []), title: "Old draft name" },
+        },
+      },
+    );
+    expect(runsOf(next)[0].title).toBe("未命名");
+  }
 });
 
-test("asset names are required, bounded, and become result display names without renaming files", () => {
+test("asset names default when absent and become result display names without renaming files", () => {
   const p = fixture();
   const op = {
     mediaKind: "image",
@@ -97,10 +82,6 @@ test("asset names are required, bounded, and become result display names without
     text: "Person",
     references: [],
   };
-  for (const title of [undefined, " ", 42, "x".repeat(101)])
-    expect(() => requestTask(p, { ...op, title }, context(p.id))).toThrow(
-      "任务名称",
-    );
   let next = requestTask(
     p,
     { ...op, title: " 小满 · 人物资产 " },
@@ -188,7 +169,7 @@ test("renaming a task updates its result display names and preserves physical me
   expect(next.assets[1]).toBe(p.assets[1]);
 });
 
-test("result naming uses the current task identity and rejects a missing required name", () => {
+test("result naming uses the current task identity and defaults missing names", () => {
   const p = fixture();
   const snapshot = { ...createTask(p, []), title: "Name at submission" };
   const source = {
@@ -199,5 +180,5 @@ test("result naming uses the current task identity and rejects a missing require
   const renamed = saveTask(p, { ...snapshot, title: "Current name" });
   expect(resultTaskName(renamed, source)).toBe("Current name");
   const unnamed = saveTask(p, { ...snapshot, title: undefined });
-  expect(() => resultTaskName(unnamed, source)).toThrow("任务名称");
+  expect(resultTaskName(unnamed, source)).toBe("未命名");
 });

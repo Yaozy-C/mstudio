@@ -18,7 +18,6 @@ forbidden_extensions = {'.mp4', '.mov', '.wav', '.mp3', '.dylib', '.dll', '.so',
 published_docs = {
     'docs/architecture.md', 'docs/development.md', 'docs/image-storyboard-cases.md',
     'docs/visual-system.md', 'docs/creative-concept-development.md',
-    'docs/testing/visual-methods.md', 'docs/testing/visual-method-cases.json',
 }
 patterns = [
     re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
@@ -55,6 +54,8 @@ for preview_root in ['frontend/public/effects', 'frontend/public/transition-prev
 size = 0
 for name in files:
     path = root / name
+    if not path.exists() and not path.is_symlink():
+        continue
     parts = Path(name).parts
     if (forbidden_parts.intersection(parts)
         or any(p.endswith('.app') for p in parts)

@@ -96,13 +96,6 @@
   padding: 4px;
   cursor: pointer;
 }
-.transition-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--desk-rule);
-}
 .radix-themes .preview-speed .studio-select-trigger {
   height: 28px;
   padding: 0 8px;

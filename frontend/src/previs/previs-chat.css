@@ -155,7 +155,6 @@
   width: 16px;
   height: 16px;
 }
-.previs-progress,
 .previs-error {
   font-size: var(--ui-caption);
   line-height: 20px;
@@ -168,10 +167,6 @@
   color: var(--desk-accent);
   max-height: 120px;
   overflow: auto;
-}
-.previs-stale {
-  color: var(--desk-accent);
-  font-size: var(--ui-caption);
 }
 
 .previs-composer[aria-busy="true"] {

@@ -96,22 +96,6 @@
   line-height: 1.7;
   font-size: 13px;
 }
-.script-source {
-  margin: 8px 0;
-  padding: 12px;
-  border-left: 2px solid var(--desk-accent);
-  background: var(--desk-surface);
-  font-size: 12px;
-}
-.script-source p {
-  margin: 8px 0;
-  white-space: pre-wrap;
-  line-height: 1.7;
-}
-.script-source button {
-  font-size: 12px;
-  margin-right: 8px;
-}
 .radix-themes .script-workspace .script-title {
   font-size: 28px;
   font-weight: 500;

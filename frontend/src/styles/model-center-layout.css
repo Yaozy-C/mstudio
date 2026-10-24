@@ -1,5 +1,4 @@
 .settings-heading,
-.settings-tabs,
 .model-section-heading,
 .model-default,
 .model-row,
@@ -17,21 +16,6 @@
 .settings-heading h1 {
   margin: 0;
   font-size: 24px;
-}
-.settings-tabs {
-  margin: 22px 0 24px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--desk-rule);
-}
-.settings-tabs button {
-  background: transparent;
-  border-color: transparent;
-  color: var(--desk-muted);
-}
-.settings-tabs button[aria-pressed="true"] {
-  background: transparent;
-  color: var(--desk-accent);
-  font-weight: 600;
 }
 .model-default {
   padding: 16px 18px;

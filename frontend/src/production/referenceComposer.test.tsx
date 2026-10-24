@@ -34,5 +34,6 @@ test("reference mode renders the shared video composer without a conversation mo
   expect(html).not.toContain("正在理解素材");
   expect(html).toContain("任务名称");
   expect(html).toContain('value="商品 · 横移揭晓"');
-  expect(html).toContain('maxLength="100"');
+  expect(html).not.toContain('maxLength="100"');
+  expect(html).not.toMatch(/<input[^>]*\brequired/);
 });

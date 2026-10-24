@@ -1,7 +1,7 @@
 import { errorText, issue } from "../errors/catalog";
 import { pendingStatuses } from "./recovery";
 import { useState } from "react";
-import { runtime } from "../plugins/runtime";
+import { bridge } from "../bridge";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 
@@ -44,7 +44,7 @@ export function useRunActions(
         error?: string;
         progress?: ProductionTask["progress"];
       };
-      const jobs = await runtime.execute<Job[]>("list_jobs", { projectId });
+      const jobs = await bridge<Job[]>("list_jobs", { projectId });
       let job = jobs.find((j) => j.id === task.jobId);
       if (!job) throw new Error(JSON.stringify(issue("JOB_NOT_FOUND")));
       if (
@@ -52,10 +52,9 @@ export function useRunActions(
         job.requestId ||
         ["COMPLETED", "FAILED", "CANCELLED"].includes(job.status)
       )
-        job = await runtime.execute<Job>(
-          cancel ? "cancel_job" : "refresh_job",
-          { id: job.id },
-        );
+        job = await bridge<Job>(cancel ? "cancel_job" : "refresh_job", {
+          id: job.id,
+        });
       // refresh_job/cancel_job reconcile the project and emit project-changed.
       // Never overwrite that result with the task captured before the await:
       // an import may have completed while this request was in flight.

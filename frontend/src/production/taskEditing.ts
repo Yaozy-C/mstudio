@@ -5,7 +5,7 @@ import {
 import type { Project } from "../model";
 import { saveTask } from "./document";
 import type { ProductionTask } from "./types";
-import { checkedTaskTitle } from "./taskTitle";
+import { normalizeTaskTitle } from "./taskTitle";
 
 export const canEditOriginal = (task: ProductionTask) =>
   !task.jobId &&
@@ -33,7 +33,7 @@ export function editTask(
     throw new Error("请提供任务名称、生成描述或参考素材");
   let task = original;
   if (changes.title !== undefined)
-    task = { ...task, title: checkedTaskTitle(changes.title) };
+    task = { ...task, title: normalizeTaskTitle(changes.title) };
   if (changes.text !== undefined) {
     if (
       typeof changes.text !== "string" ||
@@ -91,7 +91,8 @@ export function regenerateTask(
   const original = p.production?.drafts?.[key];
   if (!original) throw new Error("任务不存在");
   let task = regenerationDraft(original);
-  if (changes.title !== undefined) task.title = checkedTaskTitle(changes.title);
+  if (changes.title !== undefined)
+    task.title = normalizeTaskTitle(changes.title);
   if (changes.text !== undefined) {
     if (
       typeof changes.text !== "string" ||

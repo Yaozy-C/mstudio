@@ -96,25 +96,6 @@
   letter-spacing: 1px;
   color: var(--desk-muted);
 }
-.cover-frames {
-  display: flex;
-  gap: 12px;
-  transform: rotate(-9deg);
-  align-items: center;
-  justify-content: center;
-}
-.cover-frames span {
-  display: block;
-  width: 60px;
-  height: 96px;
-  background: #e7e4dc60;
-  border: 1px solid #d5d1c765;
-  border-radius: 5px;
-}
-.cover-frames span:nth-child(2) {
-  background: #e7e4dc50;
-  height: 114px;
-}
 .project-meta {
   display: flex;
   justify-content: space-between;

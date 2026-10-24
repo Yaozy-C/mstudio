@@ -183,46 +183,12 @@
   color: var(--desk-muted);
   white-space: nowrap;
 }
-.clip-grip {
-  position: absolute;
-  top: 17px;
-  width: 2px;
-  height: 14px;
-  background: var(--desk-sidebar);
-  border-radius: 3px;
-  opacity: 0;
-}
-.timeline-clip.selected .clip-grip {
-  opacity: 1;
-}
-.clip-grip.left {
-  left: 1px;
-}
-.clip-grip.right {
-  right: 1px;
-}
 .track-empty {
   position: absolute;
   left: 20px;
   top: 24px;
   font-size: 10px;
   color: var(--desk-muted);
-}
-.audio-clip {
-  position: absolute;
-  left: 0;
-  top: 10px;
-  height: 43px;
-  background: var(--desk-sidebar);
-  border-color: var(--desk-rule);
-  color: var(--desk-text);
-  font-size: 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  justify-content: flex-start;
-}
-.audio-clip.selected {
-  border-color: var(--desk-rule);
 }
 .waveform {
   letter-spacing: 3px;

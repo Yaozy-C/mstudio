@@ -1,0 +1,22 @@
+[package]
+name = "mstudio-image-runtime"
+version = "0.1.0"
+edition = "2024"
+license-file = "../../LICENSE"
+links = "mstudio_image"
+
+[build-dependencies]
+cc = "1"
+
+[dependencies]
+anyhow = "1"
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+mlx-sys = { package = "pmetal-mlx-sys", git = "https://github.com/michaeltrefry/mlx-rs", rev = "fe22998bf73e5e785d7659beb2f24d624b785bda" }
+mlx-rs = { package = "pmetal-mlx-rs", git = "https://github.com/michaeltrefry/mlx-rs", rev = "fe22998bf73e5e785d7659beb2f24d624b785bda" }
+mlx-gen = { git = "https://github.com/SceneWorks/inference", rev = "da7534d5ea663ee42234422cf717bf5f62f922c1" }
+mlx-gen-seedvr2 = { git = "https://github.com/SceneWorks/inference", rev = "da7534d5ea663ee42234422cf717bf5f62f922c1" }
+mlx-gen-depth = { git = "https://github.com/SceneWorks/inference", rev = "da7534d5ea663ee42234422cf717bf5f62f922c1" }

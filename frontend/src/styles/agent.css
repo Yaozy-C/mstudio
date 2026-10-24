@@ -130,24 +130,7 @@
   display: block;
   overflow: auto;
 }
-.agent-settings input[type="checkbox"] {
-  width: auto;
-}
-.agent-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--desk-rule);
-}
-.agent-settings label {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 12px;
-}
-.agent-settings label input:not([type="checkbox"]),
-.agent-settings select {
+.agent-settings label input:not([type="checkbox"]) {
   flex: 1;
   min-width: 0;
 }

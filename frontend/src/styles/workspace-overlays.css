@@ -39,32 +39,6 @@
   box-shadow: 0 6px 24px #0004;
   padding: 12px 24px;
 }
-.canvas-text-editor {
-  position: absolute;
-  z-index: 40;
-  border: 1px solid var(--desk-rule);
-  border-radius: 12px;
-  background: var(--desk-bg);
-  box-shadow: 0 16px 50px #0008;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.canvas-text-editor textarea {
-  height: 240px;
-  resize: none;
-  line-height: 1.7;
-}
-.canvas-text-editor footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.canvas-text-editor footer small {
-  flex: 1;
-  color: var(--desk-muted);
-}
 .modal {
   max-height: 85vh;
   overflow: auto;

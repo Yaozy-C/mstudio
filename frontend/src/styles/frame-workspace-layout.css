@@ -112,11 +112,3 @@
 .radix-themes .board {
   background: var(--desk-bg);
 }
-.radix-themes .studio-stage .board-controls {
-  top: auto;
-  box-shadow: none;
-  border-radius: 4px;
-  bottom: 16px;
-  left: 20px;
-  right: auto;
-}

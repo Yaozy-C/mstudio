@@ -37,6 +37,31 @@ fn native_kernel_executes_without_ui_and_receipt_retry_is_idempotent() {
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn unnamed_legacy_tasks_can_be_read_and_saved_without_ui_dependencies() {
+    let (store, mut doc, profile) = fixture();
+    let task = json!({"key":"legacy","kind":"image","mode":"single","inputs":[],
+        "prompt":"Original prompt","modelId":"","status":"COMPLETED",
+        "turnId":"old-turn","createdAt":1});
+    doc["production"] = json!({"drafts":{"legacy":task}});
+    crate::projects::write_document(&store, doc.clone(), false).unwrap();
+    let read = call(
+        &store,
+        &profile,
+        "read-legacy",
+        json!({"action":"inspect","section":"generation"}),
+    );
+    assert_eq!(read["items"][0]["title"], "未命名", "{read}");
+    let mut changed = doc.clone();
+    changed["nodes"][0]["text"] = json!("Edited note");
+    let saved = crate::projects::save_merged(&store, changed, doc).unwrap();
+    assert_eq!(saved["nodes"][0]["text"], "Edited note");
+    assert_eq!(saved["production"]["drafts"]["legacy"], task);
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}
 #[test]
 fn all_argument_errors_are_reported_before_any_effect() {
     let (store, doc, profile) = fixture();

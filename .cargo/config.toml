@@ -1,0 +1,3 @@
+[env]
+# The native MLX Metal kernels require the macOS 26.2 deployment target.
+MACOSX_DEPLOYMENT_TARGET = "26.2"

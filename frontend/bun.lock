@@ -11,7 +11,6 @@
         "@radix-ui/themes": "3.3.0",
         "@tanstack/react-virtual": "3.14.21",
         "@tauri-apps/api": "2.11.1",
-        "cordis": "4.0.0-rc.10",
         "react": "19.2.8",
         "react-dom": "19.2.8",
         "react-markdown": "10.1.0",
@@ -299,10 +298,6 @@
     "classnames": ["classnames@2.5.1", "", {}, "sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow=="],
 
     "comma-separated-tokens": ["comma-separated-tokens@2.0.3", "", {}, "sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg=="],
-
-    "cordis": ["cordis@4.0.0-rc.10", "", { "dependencies": { "@standard-schema/spec": "^1.1.0", "cosmokit": "^1.8.1" }, "peerDependencies": { "@cordisjs/plugin-include": "^1.1.0", "@cordisjs/plugin-loader": "^1.0.0-rc.7" }, "optionalPeers": ["@cordisjs/plugin-include", "@cordisjs/plugin-loader"], "bin": "bin.js" }, "sha512-xG90nPNQxR272cC4lR/m5LHevegIJvdddQBlKdEAdGz3n+zgH5lsgkg8o9fc2P3T/f+pO5D7FN1HZvkNBiABnw=="],
-
-    "cosmokit": ["cosmokit@1.8.1", "", {}, "sha512-PDBv4l90xZKrUsZ0vtoycgZpO/j4iFsqJXrAxsyBDsnQRI7ZMJXIjgDJsKNjd5L8jnVnnlrDCdhkFbTncgCVjQ=="],
 
     "csstype": ["csstype@3.2.3", "", {}, "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="],
 

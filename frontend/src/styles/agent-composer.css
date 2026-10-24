@@ -49,21 +49,6 @@
   min-width: 0;
   padding-top: 4px;
 }
-.agent-compose-actions > .attachment-picker {
-  flex: 0 0 30px;
-}
-.agent-compose-actions > .attachment-picker > button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border-radius: 50%;
-  color: var(--desk-text);
-}
-.agent-compose-actions > .attachment-picker > button:hover {
-  background: transparent;
-}
 .agent-compose-actions .composer-model {
   display: flex;
   align-items: center;
@@ -109,18 +94,6 @@
   background: var(--desk-text);
   color: var(--desk-surface);
   cursor: not-allowed;
-}
-.composer-footer {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 12px;
-  padding-top: 7px;
-  font-size: 10px;
-  color: var(--desk-muted);
-}
-.agent-composer .attachment-popover {
-  bottom: 46px;
 }
 
 .conversation-model {
@@ -179,9 +152,6 @@
 .composer-tools > .composer-model {
   flex: 0 1 auto;
   padding-inline: 3px;
-}
-.composer-tools > .execution-mode {
-  flex-shrink: 0;
 }
 .media-composer-fields {
   border: 0;

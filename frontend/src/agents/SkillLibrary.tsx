@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { bridge, native } from "../bridge";
 import { skills, useAgents } from "./catalog";
 import { SkillRules } from "./SkillRules";
-import type { CreativeSkill } from "../plugins/skills";
+type CreativeSkill = { id: string; available: boolean };
 export function SkillLibrary({ openAgents }: { openAgents: () => void }) {
   useLanguage();
   const hub = useAgents();

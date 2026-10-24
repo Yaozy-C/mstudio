@@ -9,7 +9,7 @@ import { UnknownRunRecovery } from "./UnknownRunRecovery";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { runProgress } from "./runProgress";
-import { checkedTaskTitle, taskTitle } from "./taskTitle";
+import { taskTitle } from "./taskTitle";
 import {
   Image,
   VideoCamera,
@@ -59,11 +59,10 @@ export function GenerationRun({
   const node = project.nodes.find(
     (n) => n.id === (task.targetNodeId ?? task.ownerId),
   );
-  const title = taskTitle(task);
+  const title = taskTitle(task, t("未命名"));
   let issue = "";
   if (editable)
     try {
-      checkedTaskTitle(task.title);
       canvasSnapshot(project, task, { x: 0, y: 0 });
       if (model) inputFor(project, task, model);
     } catch (error) {

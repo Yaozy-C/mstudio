@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GenerationRun } from "./GenerationRun";
 import type { ProductionController } from "./useProduction";
 import type { ProductionTask } from "./types";
-import { retryDelay, retryTask } from "./recovery";
+import { retryTask } from "./recovery";
 import { fixture, model } from "./fixtures.test-helper";
 import { saveTask } from "./document";
 
@@ -45,9 +45,6 @@ test("retry preserves task identity and settings but renews job identities", () 
     "RECEIVING",
   ])
     expect(() => retryTask({ ...task, status })).toThrow();
-});
-test("temporary polling errors back off and eventually pause", () => {
-  expect([1, 2, 3, 4].map(retryDelay)).toEqual([8000, 16000, 30000, undefined]);
 });
 const canvas = {
   media: { models: [model("minimax/h3/reference-to-video")] },

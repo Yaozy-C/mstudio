@@ -36,19 +36,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.save-state {
-  font-size: 10px;
-  color: var(--desk-muted);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.save-state.failed {
-  color: #a63727;
-  max-width: 96px;
-  overflow: hidden;
-}
 .studio-top .chrome-action {
   background: transparent;
   border-color: transparent;
@@ -98,12 +85,6 @@
 .studio-menu .rt-DropdownMenuItem > svg {
   width: 17px;
   height: 17px;
-}
-.studio-body {
-  display: flex;
-  flex: 1;
-  min-height: 280px;
-  overflow: hidden;
 }
 .media-panel {
   width: 204px;
@@ -202,12 +183,6 @@
   border: 0;
   background: none;
   margin-left: auto;
-}
-.media-foot {
-  padding: 12px 15px;
-  color: var(--desk-muted);
-  font-size: 9px;
-  border-top: 1px solid var(--desk-rule);
 }
 @media (max-width: 1350px) {
   .studio-top {

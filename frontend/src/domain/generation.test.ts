@@ -36,7 +36,7 @@ test("headless preflight and model capabilities share video parameter limits", (
   ).toThrow();
 });
 
-test("runs with missing required names fail validation before inspection or submission", () => {
+test("unnamed runs can be inspected and submitted using the default display name", () => {
   const video = model("minimax/h3/reference-to-video");
   const invalid: ProductionTask = {
     key: "invalid",
@@ -51,12 +51,12 @@ test("runs with missing required names fail validation before inspection or subm
     jobId: "job",
   };
   const project = saveTask(fixture(), invalid);
-  expect(() => inspectProject(project, { section: "generation" })).toThrow(
-    "任务名称",
-  );
+  expect(
+    inspectProject(project, { section: "generation" }).items,
+  ).toMatchObject([{ id: invalid.key, kind: "video", status: "COMPLETED" }]);
   const retry = regenerateTask(project, invalid.key);
-  expect(() => prepareGeneration(retry, invalid.key, video, [])).toThrow(
-    "任务名称",
+  expect(prepareGeneration(retry, invalid.key, video, []).shot.title).toBe(
+    "未命名",
   );
   expect(project.production!.drafts![invalid.key]).toEqual(invalid);
 });

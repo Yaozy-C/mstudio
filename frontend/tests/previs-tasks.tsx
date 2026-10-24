@@ -206,6 +206,10 @@ function App() {
     <Theme>
       <PrevisProvider
         project={project}
+        change={(update) => {
+          Object.assign(project, update(project));
+          notify();
+        }}
         flush={async () => {
           calls.fixture_save = (calls.fixture_save || 0) + 1;
         }}

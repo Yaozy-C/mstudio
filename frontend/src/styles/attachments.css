@@ -66,98 +66,6 @@
   max-height: none;
   overflow: visible;
 }
-.attachment-picker {
-  position: static;
-}
-.attachment-picker > button {
-  background: transparent;
-  border: 0;
-  color: var(--desk-text);
-}
-.attachment-popover {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 44px;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--desk-rule);
-  border-radius: 12px;
-  background: var(--desk-bg);
-  box-shadow: 0 10px 30px #0008;
-  max-height: min(410px, 60vh);
-  overflow: auto;
-}
-.attachment-popover header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.attachment-popover header strong {
-  flex: 1;
-  font-size: 12px;
-}
-.attachment-popover header button {
-  background: transparent;
-  border: 0;
-  padding: 4px;
-}
-.attachment-popover input {
-  font-size: 12px;
-  padding: 8px;
-}
-.attachment-upload {
-  justify-content: flex-start;
-  text-align: left;
-}
-.attachment-tabs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.attachment-tabs button {
-  border: 0;
-  background: transparent;
-}
-.attachment-tabs button[aria-pressed="true"] {
-  background: transparent;
-  color: var(--desk-accent);
-  font-weight: 600;
-}
-.attachment-tabs small {
-  margin-left: auto;
-  color: var(--desk-muted);
-}
-.attachment-options {
-  min-height: 40px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-.attachment-options button {
-  width: 100%;
-  justify-content: space-between;
-  border: 0;
-  background: transparent;
-  padding: 9px 4px;
-}
-.attachment-options button span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-}
-.attachment-options button[aria-pressed="true"] {
-  color: var(--desk-text);
-}
-.attachment-options p,
-.attachment-popover > small {
-  font-size: 11px;
-  color: var(--desk-muted);
-  line-height: 1.6;
-}
 .agent-attachment-hint {
   display: block;
   color: var(--desk-muted);
@@ -173,11 +81,6 @@
   padding: 0 3px;
   font-size: inherit;
   text-decoration: underline;
-}
-.agent-error {
-  margin: 4px 10px;
-  max-height: 100px;
-  overflow: auto;
 }
 .agent-empty small {
   display: block;

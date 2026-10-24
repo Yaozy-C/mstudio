@@ -52,7 +52,7 @@
     ],
     "category": "Video",
     "macOS": {
-      "minimumSystemVersion": "26.0"
+      "minimumSystemVersion": "26.2"
     },
     "shortDescription": "本地画布视频工作室",
     "icon": [
@@ -63,6 +63,8 @@
       "icons/icon.ico"
     ],
     "resources": {
+      "native/mlx/": "mlx/",
+      "image-runtime/licenses/": "mlx/licenses/",
       "../skills/": "skills/",
       "native/ges-bundle/": "gstreamer/"
     }

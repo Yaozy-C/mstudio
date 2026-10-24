@@ -205,10 +205,6 @@
   padding-top: 24px;
   border-color: var(--ui-rule);
 }
-.settings-page .agent-profile h3 {
-  font-size: var(--ui-heading);
-  font-weight: 600;
-}
 .settings-page .agent-detail-navigation {
   padding-block: 12px;
   margin-bottom: 24px;

@@ -70,6 +70,13 @@ fn profiles_defaults_and_project_choice_persist_without_exposing_credentials() {
         assert_eq!(captured.0.id, "two");
         assert_eq!(captured.1, "private-two");
         assert!(resolve(&db, Some("a"), Some("missing")).is_err());
+        db.execute(
+            "UPDATE model_profiles SET data='invalid' WHERE id='two'",
+            [],
+        )
+        .unwrap();
+        assert_eq!(resolve(&db, Some("a"), None).unwrap().0.id, "one");
+        assert_eq!(resolve(&db, None, Some("one")).unwrap().0.id, "one");
     }
     drop(store);
     let store = Store::open(root.clone()).unwrap();

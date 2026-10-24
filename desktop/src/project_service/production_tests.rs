@@ -11,11 +11,12 @@ fn asset_tool_contract_rejects_all_errors_before_saving_and_corrected_call_commi
     let bad = json!({"action":"edit","operations":[{"type":"request_generation","mediaKind":"image","text":"Synthetic reference","mode":"image","modelId":"invalid"}]});
     let result = execute(&store, &profile, "p", "turn", "bad", bad).unwrap();
     assert_eq!(result["code"], "INVALID_ARGS");
-    assert_eq!(result["issues"].as_array().unwrap().len(), 7);
+    assert_eq!(result["issues"].as_array().unwrap().len(), 6);
     assert_eq!(load(&store.db.lock().unwrap(), "p").unwrap(), before);
-    let valid = json!({"action":"edit","operations":[{"op":"request_generation","title":"Synthetic task","mediaKind":"image","text":"Synthetic reference","generationPurpose":"asset","references":[]}]});
+    let valid = json!({"action":"edit","operations":[{"op":"request_generation","mediaKind":"image","text":"Synthetic reference","generationPurpose":"asset","references":[]}]});
     let receipt = execute(&store, &profile, "p", "turn", "corrected", valid.clone()).unwrap();
     assert_eq!(receipt["outcome"], "committed", "{receipt}");
+    assert_eq!(receipt["generationTasks"][0]["title"], "未命名");
     assert_eq!(
         receipt["generationTasks"][0]["status"],
         "AWAITING_CONFIRMATION"

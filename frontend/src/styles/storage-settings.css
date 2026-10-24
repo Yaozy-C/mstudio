@@ -47,16 +47,6 @@
   margin-top: 28px;
   padding-top: 28px;
 }
-.general-info-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  font-size: 13px;
-}
-.general-info-row strong {
-  font-weight: 500;
-}
-.general-info-row span,
 .general-description {
   color: var(--desk-muted);
 }

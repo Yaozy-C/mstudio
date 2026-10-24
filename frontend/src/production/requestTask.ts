@@ -4,7 +4,7 @@ import {
 } from "./taskReferences";
 import { existingShotRun } from "./existingShotRun";
 import { resultPlacement } from "./resultPlacement";
-import { checkedTaskTitle } from "./taskTitle";
+import { normalizeTaskTitle } from "./taskTitle";
 import { failure } from "../errors/failure";
 import type { Project } from "../model";
 import { saveTask } from "./document";
@@ -37,7 +37,7 @@ export function requestTask(
   if (op.generationPurpose !== undefined && op.generationPurpose !== "asset")
     throw failure("VALIDATION_FAILED", "生成用途无效");
   const assetTask = op.generationPurpose === "asset";
-  const title = checkedTaskTitle(op.title);
+  const title = normalizeTaskTitle(op.title);
   if (
     assetTask &&
     (op.mediaKind !== "image" ||

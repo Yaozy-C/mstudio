@@ -1,6 +1,6 @@
 import { canvasViewport } from "../canvas/viewportMemory";
 import type { ProductionTurn } from "../production/turnContext";
-import { defaultAgent, type WorkContext } from "./workContext";
+import type { WorkContext } from "./workContext";
 import { streamReply, type SubscribeProgress } from "./streamReply";
 import type { ChatModelAdapter } from "@assistant-ui/react";
 import type { AgentProfile } from "../agents/catalog";
@@ -78,7 +78,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
             );
           const focus = saved
             ? { target: saved.targetNodeId, agent: saved.agentId }
-            : { target: p.draft.targetNodeId, agent: defaultAgent(work) };
+            : { target: p.draft.targetNodeId, agent: "coordinator" };
           const bounds =
             typeof document !== "undefined"
               ? document

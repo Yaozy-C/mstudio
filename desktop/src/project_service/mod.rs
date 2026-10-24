@@ -213,5 +213,3 @@ mod archive_tests;
 mod production_reference_merge_tests;
 #[cfg(test)]
 mod production_tests;
-#[cfg(test)]
-mod startup_benchmark_tests;

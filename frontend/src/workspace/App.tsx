@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { bridge } from "../bridge";
 import { type Project, type ProjectSummary } from "../model";
 import { NewProjectDialog } from "./NewProjectDialog";
-import { initPlugins } from "../plugins/runtime";
 import { Studio } from "./Studio";
 import { Settings } from "./Settings";
 import { PublicAssets } from "./PublicAssets";
@@ -82,7 +81,6 @@ export function App() {
   };
   useEffect(() => {
     void refresh();
-    void initPlugins().catch((e) => setError(String(e)));
   }, []);
   if (settings)
     return (

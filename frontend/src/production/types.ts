@@ -20,7 +20,7 @@ export type ProductionInput = Reference & {
   role: InputRole;
 };
 export type ProductionTask = {
-  /** Required for generation runs; composer drafts may omit it until submission. */
+  /** Optional display name; empty names use 未命名. */
   title?: string;
   generationPurpose?: "asset";
   key: string;

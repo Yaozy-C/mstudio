@@ -4,8 +4,16 @@ import { useRef, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { bridge } from "../bridge";
-import type { SkillPage } from "../plugins/skills";
 import "../styles/skill-document.css";
+
+type SkillPage = {
+  skill: string;
+  path: string;
+  text: string;
+  nextOffset: number | null;
+  revision: number;
+  resources: string[];
+};
 
 export function SkillRules({
   id,

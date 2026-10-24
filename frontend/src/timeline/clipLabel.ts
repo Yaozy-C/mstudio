@@ -13,5 +13,5 @@ export function clipLabel(project: Project, clip: Clip, asset?: Asset): string {
       task.resultAssetId === asset.id ||
       task.resultAssetIds?.includes(asset.id),
   );
-  return task ? taskTitle(task) : asset.name;
+  return task ? taskTitle(task, t("未命名")) : asset.name;
 }

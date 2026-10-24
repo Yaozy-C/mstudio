@@ -177,11 +177,6 @@
   flex-direction: column;
   gap: 8px;
 }
-.reference-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 .reference-card summary {
   font-size: 11px;
   overflow-wrap: anywhere;
@@ -264,15 +259,7 @@
   font-size: 13px;
   color: var(--desk-text);
 }
-.radix-themes .dock-inspector .detach-audio {
-  width: 100%;
-  padding: 9px 12px;
-  border-radius: 6px;
-}
 
 .dock-inspector label > input[type="range"] {
   margin-top: 0;
-}
-.dock-inspector .detach-audio {
-  margin-bottom: 16px;
 }

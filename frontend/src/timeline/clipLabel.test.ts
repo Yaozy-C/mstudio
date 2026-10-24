@@ -41,8 +41,7 @@ test("generated clips use their named task or explicitly assigned shot, never us
   expect(clipLabel(project, { ...clip, shotId: "shared" }, asset)).toBe(
     "Another shot",
   );
-  expect(() => saveTask(project, { ...task, title: undefined })).toThrow(
-    "任务名称",
-  );
+  const unnamed = saveTask(project, { ...task, title: undefined });
+  expect(clipLabel(unnamed, clip, unnamed.assets[3])).toBe("未命名");
   expect(asset.name).toBe("生成结果-123.mp4");
 });

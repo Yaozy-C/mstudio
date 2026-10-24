@@ -75,21 +75,10 @@
   font-size: 11px;
   line-height: 1.6;
 }
-.model-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.model-check input {
-  width: auto;
-}
 .model-form .model-context-auto {
   flex-direction: row;
   align-items: center;
   margin: 8px 0;
-}
-.model-vision {
-  justify-content: center;
 }
 .model-form footer {
   display: flex;
@@ -129,25 +118,6 @@
 }
 .model-inputs > strong {
   font-size: 13px;
-}
-.model-input-evidence {
-  margin: 12px 0;
-  padding: 12px;
-  background: var(--desk-bg);
-  border: 1px solid var(--desk-rule);
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.7;
-}
-.model-input-evidence p {
-  margin: 0 0 8px;
-}
-.model-input-evidence button {
-  margin-left: 10px;
-  font-size: 12px;
-}
-.model-input-group {
-  margin: 14px 0;
 }
 .model-input-options {
   display: flex;
