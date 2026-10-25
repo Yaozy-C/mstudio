@@ -38,6 +38,8 @@ pub fn initialize(metallib: &Path) -> Result<()> {
         unsafe {
             mstudio_mlx_shader_path(path.as_ptr());
         }
+        // MLX otherwise lets reusable buffers grow to almost all physical memory.
+        mlx_rs::memory::set_cache_limit(256 * 1024 * 1024);
     }
     #[cfg(not(target_os = "macos"))]
     let _ = metallib;
@@ -92,10 +94,9 @@ pub fn restore(
     #[cfg(target_os = "macos")]
     {
         select_device(device);
-        let result = restoration::run(source, directory, device, scale, seed, vae_tile, output);
-        // Each job owns its models. Release cached buffers after their tensors have dropped.
-        mlx_rs::memory::clear_cache();
-        result
+        tensor::run_inference(|| {
+            restoration::run(source, directory, device, scale, seed, vae_tile, output)
+        })
     }
     #[cfg(not(target_os = "macos"))]
     {
@@ -114,9 +115,7 @@ pub fn depth(
     #[cfg(target_os = "macos")]
     {
         select_device(device);
-        let result = depth::run(source, directory, size, output);
-        mlx_rs::memory::clear_cache();
-        result
+        tensor::run_inference(|| depth::run(source, directory, size, output))
     }
     #[cfg(not(target_os = "macos"))]
     {

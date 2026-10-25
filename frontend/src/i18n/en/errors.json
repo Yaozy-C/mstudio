@@ -70,5 +70,7 @@
   "点击重新加载预览，恢复播放器。": "Click Reload preview to restart the player.",
   "已完成的文件修改已保留。请查看当前预演后继续。": "Completed file edits have been saved. Review the current previs and continue.",
   "服务商无法再查询原任务": "The provider can no longer look up this task",
-  "请先到服务商核查任务与结果，再决定如何处理。": "Check the original task and results with the provider before deciding how to proceed."
+  "请先到服务商核查任务与结果，再决定如何处理。": "Check the original task and results with the provider before deciding how to proceed.",
+  "视频拆解未完成": "Video analysis did not finish",
+  "参考视频与拆解设置已保留，可以重试或更换模型。": "Your reference video and analysis settings are preserved. Retry or choose another model."
 }

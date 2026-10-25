@@ -1,5 +1,6 @@
-import { errorText, type ErrorCode } from "./catalog";
+import { normalizeError, type ErrorCode } from "./catalog";
 const commandCodes: Record<string, ErrorCode> = {
+  analyze_reference_video: "VIDEO_ANALYSIS_FAILED",
   previs_chat: "PREVIS_CHAT_FAILED",
   save_previs_file: "SAVE_FAILED",
   previs_workspace: "STORAGE_READ_FAILED",
@@ -43,5 +44,11 @@ const commandCodes: Record<string, ErrorCode> = {
   choose_storage_directory: "STORAGE_FAILED",
 };
 export function commandError(command: string, value: unknown): string {
-  return errorText(value, commandCodes[command] ?? "OPERATION_FAILED");
+  const item = normalizeError(
+    value,
+    commandCodes[command] ?? "OPERATION_FAILED",
+  );
+  if (command === "analyze_reference_video" && item.code === "CHAT_FAILED")
+    item.code = "VIDEO_ANALYSIS_FAILED";
+  return JSON.stringify(item);
 }

@@ -32,7 +32,7 @@ impl Operation {
                 seed,
                 vae_tile,
             } => {
-                ensure!([2, 4].contains(scale), "修复超分支持 2× 或 4×");
+                ensure!([1, 2, 4].contains(scale), "图像修复支持原尺寸、2× 或 4×");
                 ensure!(*seed <= 9_007_199_254_740_991, "随机种子超出安全整数范围");
                 ensure!(
                     (128..=2048).contains(vae_tile) && vae_tile % 64 == 0,

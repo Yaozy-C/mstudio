@@ -2,6 +2,27 @@ import { expect, test } from "bun:test";
 import { errorText, issue, normalizeError, redactDetails } from "./catalog";
 import { commandError } from "./commands";
 
+test("video analysis preserves quota errors and labels generic failures for analysis", () => {
+  const quota = normalizeError(
+    commandError("analyze_reference_video", {
+      code: "QUOTA_EXCEEDED",
+      httpStatus: 402,
+      stage: "chat",
+      details: "Credits depleted",
+    }),
+  );
+  expect(quota.code).toBe("QUOTA_EXCEEDED");
+  expect(quota.httpStatus).toBe(402);
+  const generic = normalizeError(
+    commandError(
+      "analyze_reference_video",
+      issue("CHAT_FAILED", "Invalid response"),
+    ),
+  );
+  expect(generic.message).toBe("视频拆解未完成");
+  expect(generic.recovery).not.toContain("原消息");
+});
+
 test("assistant-ui error envelopes preserve readable details and issue metadata", () => {
   const inner = issue("CHAT_FAILED", "Codex: 连接超时", { stage: "chat" });
   const result = normalizeError(

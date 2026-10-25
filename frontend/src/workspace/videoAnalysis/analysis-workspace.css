@@ -120,6 +120,17 @@
 .analysis-source .error-notice {
   margin-top: 20px;
 }
+.analysis-output {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.analysis-output > .error-notice {
+  margin: 0;
+  padding: 24px;
+  border-color: var(--ui-rule);
+  background: var(--desk-surface);
+}
 @media (max-width: 1200px) {
   .analysis-workspace {
     gap: 32px;

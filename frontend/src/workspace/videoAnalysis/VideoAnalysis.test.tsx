@@ -8,11 +8,38 @@ import { createAnalysisController } from "./controller";
 import { StudioSidebar } from "../StudioSidebar";
 import { Browse } from "../Browse";
 import { browseWorks } from "../browseWorks";
+import { commandError } from "../../errors/commands";
 const render = (content: ReactNode) =>
   renderToStaticMarkup(<Theme>{content}</Theme>);
 afterEach(() => setLanguage("zh-CN"));
 const controller = () =>
   createAnalysisController(async <T,>() => undefined as T);
+
+test("analysis quota failure replaces the ready card in the result column", () => {
+  const service = controller();
+  service.selectWork(browseWorks[0]);
+  const html = render(
+    <VideoAnalysis
+      state={{
+        ...service.getSnapshot(),
+        error: commandError("analyze_reference_video", {
+          code: "QUOTA_EXCEEDED",
+          httpStatus: 402,
+          details: "Credits depleted",
+        }),
+      }}
+      controller={service}
+      onBrowse={() => {}}
+      onSettings={() => {}}
+    />,
+  );
+  const output = html.slice(html.indexOf('class="analysis-output"'));
+  expect(output).toContain('role="alert"');
+  expect(output).toContain("服务额度不足");
+  expect(output).not.toContain("准备就绪");
+  expect(html).not.toContain("回答未完成");
+  expect(html).toContain(browseWorks[0].embed);
+});
 
 test("standalone page offers video sources in both languages without a project form", () => {
   for (const language of ["zh-CN", "en"] as const) {

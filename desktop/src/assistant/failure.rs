@@ -5,6 +5,7 @@ pub fn describe(error: &ProviderError, key: &str) -> String {
     let status = error.provider_response_status().map(|s| s.as_u16());
     let code = match status {
         Some(401) => "AUTH_REQUIRED",
+        Some(402) => "QUOTA_EXCEEDED",
         Some(403) => "ACCESS_DENIED",
         Some(404) => "MODEL_UNAVAILABLE",
         Some(429) => "RATE_LIMITED",
@@ -42,6 +43,7 @@ fn describe_details(error: &ProviderError, key: &str) -> String {
     }
     let summary = match status {
         Some(401 | 403) => "模型服务拒绝认证，请检查 API Key 和权限",
+        Some(402) => "模型服务额度不足，请到服务商检查余额",
         Some(404) => "模型或接口不存在，请核对模型 ID 和服务地址",
         Some(429) => "模型服务限流或额度不足，请检查额度后重试",
         Some(400 | 422) => "模型服务拒绝了请求",
@@ -157,6 +159,7 @@ mod tests {
         assert!(!message.contains("private prompt"));
         for (status, expected) in [
             (401, "认证"),
+            (402, "额度不足"),
             (404, "不存在"),
             (429, "额度"),
             (503, "暂时异常"),
@@ -166,14 +169,16 @@ mod tests {
     }
     #[test]
     fn authentication_classification_uses_status_not_provider_wording() {
-        for text in ["arbitrary wording", "请选择模型", "no localized keywords"] {
-            let value: Value = serde_json::from_str(&describe(
-                &failure(401, json!({"error":{"message":text}})),
-                "",
-            ))
-            .unwrap();
-            assert_eq!(value["code"], "AUTH_REQUIRED");
-            assert_eq!(value["httpStatus"], 401);
+        for (status, expected) in [(401, "AUTH_REQUIRED"), (402, "QUOTA_EXCEEDED")] {
+            for text in ["arbitrary wording", "请选择模型", "no localized keywords"] {
+                let value: Value = serde_json::from_str(&describe(
+                    &failure(status, json!({"error":{"message":text}})),
+                    "",
+                ))
+                .unwrap();
+                assert_eq!(value["code"], expected);
+                assert_eq!(value["httpStatus"], status);
+            }
         }
     }
     #[test]

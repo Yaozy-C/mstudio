@@ -1,9 +1,8 @@
 import { DiscardedAssetBadge } from "./DiscardedAssetBadge";
-import { ZoomableImage } from "../workspace/ZoomableImage";
+import { MediaPreview } from "../workspace/MediaPreview";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
-import { Dialog } from "@radix-ui/themes";
-import { X, At, Crosshair } from "@phosphor-icons/react";
+import { At, Crosshair } from "@phosphor-icons/react";
 import { mediaUrl } from "../bridge";
 import { MissingAsset } from "../workspace/MissingAsset";
 import type { Project } from "../model";
@@ -83,32 +82,10 @@ export function GenerationResult({
           preload="metadata"
         />
       )}
-      <Dialog.Root open={preview} onOpenChange={setPreview}>
-        <Dialog.Content
-          className={`media-preview-dialog${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
-          aria-describedby={undefined}
-        >
-          <header>
-            <Dialog.Title>{asset.name}</Dialog.Title>
-            <Dialog.Close>
-              <button aria-label={t("关闭结果预览")}>
-                <X />
-              </button>
-            </Dialog.Close>
-          </header>
-          <div className="media-preview-stage">
-            {asset.kind === "image" ? (
-              <ZoomableImage
-                key={asset.id}
-                src={mediaUrl(asset.path)}
-                alt={asset.name}
-              />
-            ) : (
-              <video src={mediaUrl(asset.path)} controls autoPlay />
-            )}
-          </div>
-        </Dialog.Content>
-      </Dialog.Root>
+      <MediaPreview
+        asset={preview ? asset : undefined}
+        close={() => setPreview(false)}
+      />
     </div>
   );
 }

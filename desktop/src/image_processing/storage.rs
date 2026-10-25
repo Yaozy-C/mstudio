@@ -48,7 +48,9 @@ pub fn save(store: &Store, project: &str, name: &str, outputs: &[PathBuf]) -> Re
                 "INSERT INTO assets VALUES(?1,?2)",
                 params![asset.id, serde_json::to_string(asset)?],
             )?;
-            library.push(json!(asset));
+            let mut value = json!(asset);
+            value["inLibrary"] = json!(true);
+            library.push(value);
         }
         project_service::persist(&tx, &before, &after)?;
         tx.commit()?;

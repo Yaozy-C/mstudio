@@ -230,6 +230,7 @@ export function VideoAnalysis({
               }
               onSettings={onSettings}
             />
+            <ErrorNotice error={modelError} fallback="MODEL_UNAVAILABLE" />
             <ErrorNotice error={playbackError} />
           </section>
           {state.busy && state.progress ? (
@@ -238,15 +239,35 @@ export function VideoAnalysis({
               cancel={controller.cancel}
             />
           ) : (
-            <AnalysisResults
-              key={state.recordId ?? state.video?.id}
-              onHistory={() => history.setOpen(true)}
-              onCreate={onCreate}
-
-              result={state.result}
-              seek={seek}
-              currentTime={currentTime}
-            />
+            <div className="analysis-output">
+              <ErrorNotice
+                error={state.error}
+                fallback="VIDEO_ANALYSIS_FAILED"
+              />
+              {(state.result || !state.error) && (
+                <AnalysisResults
+                  key={state.recordId ?? state.video?.id}
+                  onHistory={() => history.setOpen(true)}
+                  onCreate={onCreate}
+                  result={state.result}
+                  seek={seek}
+                  currentTime={currentTime}
+                />
+              )}
+              {state.recordId && (
+                <p className="analysis-record-saved">
+                  <CheckCircle size={15} aria-hidden="true" />
+                  {t("已保存到拆解记录")}
+                </p>
+              )}
+              {state.recordError && (
+                <p role="status">
+                  {t("拆解已完成，但记录未保存：{error}", {
+                    error: state.recordError,
+                  })}
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -257,21 +278,7 @@ export function VideoAnalysis({
           standalone
         />
       )}
-      {state.recordId && (
-        <p className="analysis-record-saved">
-          <CheckCircle size={15} aria-hidden="true" />
-          {t("已保存到拆解记录")}
-        </p>
-      )}
-      <ErrorNotice
-        error={
-          state.recordError
-            ? t("拆解已完成，但记录未保存：{error}", {
-                error: state.recordError,
-              })
-            : state.error || modelError
-        }
-      />
+      {!hasSource && <ErrorNotice error={state.error || modelError} />}
       <AnalysisHistory
         history={history}
         controller={controller}

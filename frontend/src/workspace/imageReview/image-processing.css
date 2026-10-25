@@ -1,0 +1,92 @@
+.image-processing-preview {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.image-processing-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--desk-rule);
+  background: var(--desk-surface);
+}
+.image-processing-compare {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.image-processing-toolbar button[aria-pressed="true"] {
+  color: var(--desk-accent);
+  border-color: var(--desk-accent);
+}
+.image-processing-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.image-processing-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.image-processing-preview .dock-image-processing {
+  position: static;
+  width: 270px;
+  flex-shrink: 0;
+  padding: 12px 16px 20px;
+  border-left: 1px solid var(--desk-rule);
+  background: var(--desk-surface);
+  overflow: auto;
+}
+.dock-image-processing .dock-heading {
+  min-height: 36px;
+  padding: 0 0 12px;
+}
+.dock-image-processing .dock-heading h2 {
+  font-size: 14px;
+}
+.dock-image-processing .dock-content {
+  flex: none;
+  gap: 18px;
+  overflow: visible;
+}
+.dock-image-processing :is(p, label) {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.dock-image-processing label,
+.image-processing-models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.dock-image-processing input[type="file"] {
+  width: 100%;
+  font-size: 11px;
+}
+.dock-image-processing input[type="range"] {
+  width: 100%;
+  accent-color: var(--desk-accent);
+}
+.image-processing-models small {
+  overflow-wrap: anywhere;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+@media (max-width: 760px) {
+  .image-processing-body {
+    flex-direction: column;
+  }
+  .image-processing-preview .dock-image-processing {
+    width: 100%;
+    max-height: 45%;
+    border-left: 0;
+    border-top: 1px solid var(--desk-rule);
+  }
+}

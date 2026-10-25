@@ -111,6 +111,14 @@ fn lut_strength_controls_pixels_and_preserves_the_source() {
         )
         .unwrap();
         assert_eq!(receipt.assets[0].name, "未命名");
+        let project = crate::project_service::load(&store.db.lock().unwrap(), "p").unwrap();
+        assert!(
+            project["assets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|a| a["id"] == receipt.assets[0].id && a["inLibrary"] == true)
+        );
         outputs.push(receipt.assets[0].path.clone());
         let actual = pixels(Path::new(&receipt.assets[0].path));
         for (value, input) in actual.iter().zip(&original) {
@@ -137,6 +145,11 @@ fn local_models_process_depth_and_seedvr2_restoration() {
     let (store, id) = fixture();
     for operation in [
         Operation::Depth { size: 56 },
+        Operation::Restore {
+            scale: 1,
+            seed: 42,
+            vae_tile: 512,
+        },
         Operation::Restore {
             scale: 2,
             seed: 42,

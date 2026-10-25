@@ -51,10 +51,30 @@ pub fn image_processing_runtime(store: tauri::State<Store>) -> Result<Option<Run
 }
 
 #[tauri::command]
-pub fn configure_image_processing(
-    store: tauri::State<Store>,
-    runtime: Runtime,
-) -> Result<(), String> {
+pub async fn configure_image_processing(
+    store: tauri::State<'_, Store>,
+    runtime: Option<Runtime>,
+) -> Result<Option<Runtime>, String> {
+    let runtime = match runtime {
+        Some(runtime) => runtime,
+        None => {
+            let Some(folder) = rfd::AsyncFileDialog::new()
+                .set_title("选择图像处理模型目录")
+                .pick_folder()
+                .await
+            else {
+                return Ok(None);
+            };
+            Runtime {
+                directory: folder.path().into(),
+                device: if cfg!(target_os = "macos") {
+                    spec::Device::Metal
+                } else {
+                    spec::Device::Cpu
+                },
+            }
+        }
+    };
     if !runtime.directory.is_absolute() || !runtime.directory.is_dir() {
         return Err("请选择有效的模型目录".into());
     }
@@ -62,7 +82,7 @@ pub fn configure_image_processing(
         "INSERT INTO settings VALUES('image-processing-runtime',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
         [serde_json::to_string(&runtime).map_err(|e| e.to_string())?]
     ).map_err(|e| e.to_string())?;
-    Ok(())
+    Ok(Some(runtime))
 }
 
 #[tauri::command]

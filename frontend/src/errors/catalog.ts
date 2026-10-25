@@ -65,6 +65,10 @@ export const errorCatalog = {
   ],
   CHAT_STOPPED: ["已停止回答", "已完成的修改已保留；需要继续时可以重试。"],
   CHAT_FAILED: ["回答未完成", "原消息和附件已保留，可以重试。"],
+  VIDEO_ANALYSIS_FAILED: [
+    "视频拆解未完成",
+    "参考视频与拆解设置已保留，可以重试或更换模型。",
+  ],
   PREVIS_CHAT_FAILED: [
     "预演生成未完成",
     "已完成的文件修改已保留。请查看当前预演后继续。",

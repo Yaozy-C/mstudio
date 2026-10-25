@@ -1,5 +1,6 @@
 import { ChatText as MenuChatText } from "@phosphor-icons/react";
-import { ImageReview } from "./imageReview/ImageReview";
+import { ImageProcessingPreview } from "./imageReview/ImageProcessingPreview";
+import { useState, type ReactNode } from "react";
 import { t, useLanguage } from "../i18n";
 import { DocumentPreview } from "./DocumentPreview";
 import { ObjectActions } from "../ui/ObjectActions";
@@ -9,19 +10,30 @@ import type { Asset } from "../model";
 import { mediaUrl } from "../bridge";
 import { MissingAsset } from "./MissingAsset";
 export function MediaPreview({
-  asset,
-  close,
+  asset: source,
+  close: onClose,
   place,
   add,
   reference,
+  actions,
 }: {
   asset?: Asset;
   close: () => void;
   place?: (a: Asset) => void;
   add?: (a: Asset) => void;
   reference?: (a: Asset) => void;
+  actions?: (a: Asset) => ReactNode;
 }) {
   useLanguage();
+  const [selection, setSelection] = useState<{
+    sourceId: string;
+    asset: Asset;
+  }>();
+  const asset = selection?.sourceId === source?.id ? selection?.asset : source;
+  const close = () => {
+    setSelection(undefined);
+    onClose();
+  };
   return (
     <Dialog.Root
       open={!!asset}
@@ -63,14 +75,21 @@ export function MediaPreview({
               ) : asset.kind === "text" || asset.kind === "document" ? (
                 <DocumentPreview asset={asset} />
               ) : asset.kind === "image" ? (
-                <ImageReview key={asset.id} asset={asset} close={close} />
+                <ImageProcessingPreview
+                  key={source!.id}
+                  asset={source!}
+                  close={close}
+                  onAssetChange={(asset) =>
+                    setSelection({ sourceId: source!.id, asset })
+                  }
+                />
               ) : asset.kind === "video" ? (
                 <video src={mediaUrl(asset.path)} controls />
               ) : (
                 <audio src={mediaUrl(asset.path)} controls />
               )}
             </div>
-            {!asset.missing && (place || add) && (
+            {!asset.missing && (place || add || actions) && (
               <footer>
                 {place && (
                   <button
@@ -95,6 +114,7 @@ export function MediaPreview({
                     {t("加入时间线")}
                   </button>
                 )}
+                {actions?.(asset)}
               </footer>
             )}
           </>

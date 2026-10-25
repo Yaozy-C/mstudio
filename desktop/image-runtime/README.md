@@ -38,7 +38,7 @@ files remain intact. Omitted or blank names use 未命名.
 ```
 
 - Depth Anything V2 Small: aspect-preserving inference, 8/16-bit PNG. Depth is relative inverse depth, white near, normalized per image.
-- SeedVR2 restoration and 2×/4× upscaling: original FP16 weights on Metal, one
+- SeedVR2 same-size restoration/denoising (`scale: 1`) and 2×/4× upscaling: original FP16 weights on Metal, one
   Euler/simple step, CFG 1, timestep 1000, color correction disabled. The still
   VAE collapses temporal convolution kernels at load, runs 2D convolutions, and
   blends fixed tiles with the same cosine ramps and quarter-tile overlap. Spatially
@@ -51,8 +51,10 @@ this backend but does not imply pixel identity with the previous PyTorch output.
 CPU inference uses float32. No quality classification, retries, regeneration,
 color grading, face repair or additional sharpening is performed.
 
-The desktop commands expose individual processing operations through the existing
-bridge. Generation workflow and Agent tool integration are handled separately.
+Project image previews expose denoising, upscaling, and LUT controls. Outputs are
+collected as new project assets; the preview can compare them with its original.
+`configure_image_processing` with `runtime: null` opens a model-folder picker.
+Explicit runtime configuration remains supported. LUT uses no model weights.
 Depth is an ordinary image reference unless the selected generation endpoint
 supports depth conditioning.
 

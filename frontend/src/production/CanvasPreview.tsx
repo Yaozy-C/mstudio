@@ -2,16 +2,13 @@ import { ShotReferences } from "./ShotReferences";
 import { editReferences, mergeReferenceDraft } from "./editReferences";
 import "./shot-editor.css";
 import { ActionButton } from "../ui/ActionButton";
-import { ImageReview } from "../workspace/imageReview/ImageReview";
+import { MediaPreview } from "../workspace/MediaPreview";
 import { t, useLanguage } from "../i18n";
 import { actionText, editShotText } from "../creative/shotText";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { X, FloppyDisk, FilmSlate } from "@phosphor-icons/react";
-import { mediaUrl } from "../bridge";
 import { collectAsset, isLibraryAsset } from "../workspace/assetLibrary";
-import { MissingAsset } from "../workspace/MissingAsset";
-import { DocumentPreview } from "../workspace/DocumentPreview";
 import type { Asset, Project } from "../model";
 import type { ChangeProject, ProductionItem } from "./types";
 export function CanvasPreview({
@@ -62,6 +59,24 @@ export function CanvasPreview({
             nodes: p.nodes.map((n) => (n.id === node?.id ? { ...n, text } : n)),
           },
     );
+  if (asset)
+    return (
+      <MediaPreview
+        asset={asset}
+        close={close}
+        add={onAdd}
+        actions={(current) => (
+          <button
+            disabled={isLibraryAsset(current)}
+            onClick={() => change((p) => collectAsset(p, current))}
+          >
+            {isLibraryAsset(current)
+              ? t("已在项目素材中")
+              : t("保存为项目素材")}
+          </button>
+        )}
+      />
+    );
   return (
     <Dialog.Root
       open
@@ -70,12 +85,12 @@ export function CanvasPreview({
       }}
     >
       <Dialog.Content
-        className={`media-preview-dialog canvas-preview${!asset ? " shot-editor-dialog" : ""}${asset && ["image", "video"].includes(asset.kind) && !asset.missing ? " visual-preview-dialog" : ""}`}
+        className="media-preview-dialog canvas-preview shot-editor-dialog"
         aria-describedby={undefined}
       >
         <header>
           <Dialog.Title>
-            {!asset && <FilmSlate size={22} />}
+            <FilmSlate size={22} />
             {item.title}
           </Dialog.Title>
           <Dialog.Close>
@@ -84,97 +99,58 @@ export function CanvasPreview({
             </button>
           </Dialog.Close>
         </header>
-        {asset ? (
-          <div className="media-preview-stage">
-            {asset.missing ? (
-              <MissingAsset asset={asset} />
-            ) : asset.kind === "image" ? (
-              <ImageReview key={asset.id} asset={asset} close={close} />
-            ) : asset.kind === "video" ? (
-              <video src={mediaUrl(asset.path)} controls autoPlay />
-            ) : (
-              <DocumentPreview asset={asset} />
-            )}
-          </div>
-        ) : (
-          <form
-            className="shot-editor-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              try {
-                save();
-                close();
-              } catch (error) {
-                setError(String(error));
-              }
-            }}
-          >
-            <div className="shot-editor-fields">
+        <form
+          className="shot-editor-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            try {
+              save();
+              close();
+            } catch (error) {
+              setError(String(error));
+            }
+          }}
+        >
+          <div className="shot-editor-fields">
+            <label>
+              {t("镜头画面与动作")}
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={6}
+              />
+            </label>
+            {node?.shot && (
               <label>
-                {t("镜头画面与动作")}
+                {t("台词 / 旁白")}
                 <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  rows={6}
+                  value={dialogue}
+                  onChange={(e) => setDialogue(e.target.value)}
+                  rows={3}
                 />
               </label>
-              {node?.shot && (
-                <label>
-                  {t("台词 / 旁白")}
-                  <textarea
-                    value={dialogue}
-                    onChange={(e) => setDialogue(e.target.value)}
-                    rows={3}
-                  />
-                </label>
-              )}
-              {node?.shot && (
-                <ShotReferences
-                  project={project}
-                  references={references}
-                  onChange={(value) =>
-                    setReferenceDraft({ base: initialReferences, value })
-                  }
-                />
-              )}
-            </div>
-            {error && <p role="alert">{error}</p>}
-            <footer className="shot-editor-actions">
-              <ActionButton icon={X} onClick={close}>
-                {t("取消")}
-              </ActionButton>
-              <button className="primary" type="submit">
-                <FloppyDisk size={18} />
-                {t("保存镜头内容")}
-              </button>
-            </footer>
-          </form>
-        )}
-        {asset && (
-          <footer>
-            {(asset.kind === "image" ||
-              asset.kind === "video" ||
-              asset.kind === "audio") && (
-              <button
-                disabled={!!asset.missing}
-                onClick={() => {
-                  onAdd(asset);
-                  close();
-                }}
-              >
-                {t("加入时间线")}
-              </button>
             )}
-            <button
-              disabled={isLibraryAsset(asset)}
-              onClick={() => change((p) => collectAsset(p, asset))}
-            >
-              {isLibraryAsset(asset)
-                ? t("已在项目素材中")
-                : t("保存为项目素材")}
+            {node?.shot && (
+              <ShotReferences
+                project={project}
+                references={references}
+                onChange={(value) =>
+                  setReferenceDraft({ base: initialReferences, value })
+                }
+              />
+            )}
+          </div>
+          {error && <p role="alert">{error}</p>}
+          <footer className="shot-editor-actions">
+            <ActionButton icon={X} onClick={close}>
+              {t("取消")}
+            </ActionButton>
+            <button className="primary" type="submit">
+              <FloppyDisk size={18} />
+              {t("保存镜头内容")}
             </button>
           </footer>
-        )}
+        </form>
       </Dialog.Content>
     </Dialog.Root>
   );
