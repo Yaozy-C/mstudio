@@ -28,8 +28,7 @@ export function PrevisExports({ state }: { state: PrevisEditorState }) {
           (asset) =>
             asset.id === video.savedAssetId &&
             asset.inLibrary === true &&
-            !asset.missing &&
-            !asset.discarded,
+            !asset.missing,
         );
         return (
           <article key={video.id}>

@@ -1,3 +1,4 @@
+import { isLibraryAsset } from "../workspace/assetLibrary";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
@@ -31,7 +32,8 @@ export function GenerationReferencePicker({
   );
   const assets = project.assets.filter(
     (a) =>
-      (selected.has(a.id) || supportsReference(a, model)) &&
+      (selected.has(a.id) ||
+        (isLibraryAsset(a) && supportsReference(a, model))) &&
       a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
   return (

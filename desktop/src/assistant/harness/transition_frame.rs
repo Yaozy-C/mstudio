@@ -41,7 +41,7 @@ pub fn parts(
         .find(|c| c.id == transition.from_clip_id)
         .context("Outgoing clip not found")?;
     let ids = [left.asset_id.clone(), right.asset_id.clone()];
-    let mut assets = store.assets()?;
+    let mut assets = crate::previs::media::resolved(store, doc)?;
     let root = store.media_root().join("assets").canonicalize()?;
     for id in &ids {
         ensure!(

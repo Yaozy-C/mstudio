@@ -50,6 +50,13 @@ pub fn resolved(store: &crate::database::Store, document: &Value) -> Result<Vec<
             .as_array()
             .is_some_and(|items| items.iter().any(|a| a["id"] == asset.id))
     });
+    // Saved project records pin concrete files. No reference/version aliasing.
+    for asset in &mut assets {
+        if let Some(value) = find(document, &asset.id) {
+            *asset = serde_json::from_value(value.clone())?;
+            asset.missing = !std::path::Path::new(&asset.path).is_file();
+        }
+    }
     for value in document["previsAssets"].as_array().into_iter().flatten() {
         assets.push(serde_json::from_value(value.clone())?);
     }

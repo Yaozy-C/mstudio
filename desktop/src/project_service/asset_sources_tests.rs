@@ -99,7 +99,7 @@ fn batched_sources_obey_page_budget_and_report_ambiguous_provenance() {
             "p",
             "turn",
             "read",
-            json!({"action":"inspect","section":"assets","fields":["source"],"offset":offset}),
+            json!({"action":"inspect","section":"assets","usage":"all","fields":["source"],"offset":offset}),
         )
         .unwrap();
         assert!(page.to_string().len() < 12500);

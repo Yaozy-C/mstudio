@@ -131,10 +131,7 @@ export function TaskPanel({
               ]);
               const thumbnail = project.assets.find(
                 (asset) =>
-                  resultIds.has(asset.id) &&
-                  !asset.missing &&
-                  !asset.discarded &&
-                  !!asset.preview,
+                  resultIds.has(asset.id) && !asset.missing && !!asset.preview,
               );
               const owner = project.nodes.find(
                 (node) => node.id === (task.targetNodeId ?? task.ownerId),

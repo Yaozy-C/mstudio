@@ -78,7 +78,7 @@ const common = {
     type: "string",
     const: "request_generation",
     description:
-      "Create a new generation task. Supply the complete prompt in text, output kind in mediaKind, and only that kind’s parameter fields. Omitted settings inherit the referenced task or selected model settings.",
+      "Create a new generation task. Supply the complete prompt in text, output kind in mediaKind, and only that kind’s parameter fields. Default to reviewed story assets for shots; ordinary material requires explicit references. Omitted settings inherit the referenced task or selected model settings.",
   },
   mediaModelId: {
     ...id,

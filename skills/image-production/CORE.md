@@ -2,7 +2,7 @@
 
 Reusable assets establish identity, wardrobe, geometry, material or location layout. Keep the selected project art direction while choosing framing and light for readable reference use. Neither temporal panels nor a fixed view pack is required.
 
-For live-action, decide the photographic treatment before the subject: capture, lens, camera height, motivated light, color relationships and surface finish. A character asset is an identity plate, not a catalogue cutout; when appearance matters, read [photographic direction](references/photographic-direction.md) and [skin realism](references/skin-realism.md).
+For photographic people, prioritize a credible face, coordinated expression, head/neck/body relationships and coherent scene light. Match detail to framing: a full-body asset establishes identity, proportions, silhouette and clothing; pores, fine hairs, cracks and fabric fibers are not default requirements. Static, frontal, centered and formal poses are valid when they serve the asset. Specify required hand positions and contact before surface detail. Occupation does not justify extra aging, grime or wear. Natural shadows may hide secondary detail; do not add fill to expose every surface. Use [character assets](references/character-assets.md) for identity dependencies and [photographic direction](references/photographic-direction.md) for the selected look.
 
 Preserve the selected identity, outfit and original product construction. Pose, support, contact, occlusion and projection follow the requested view and physical state. Use concrete surfaces and lighting instead of generic polish. A changed viewpoint does not change subject identity.
 

@@ -27,7 +27,7 @@ Choose the premise for that attraction and its advertising meaning before expand
 
 Develop the interesting connection while keeping a legible reason to care about the offer. Product relevance can come from a supported benefit, meaningful design or established brand identity; it does not require every action to be physically caused by a feature. Match the idea to the recognition and production resources the actual advertiser has.
 
-When useful for inspiration, consult the [case notes](references/diagnosis.md). Their creative relationships are possibilities, not templates, universal rules or evidence that a new execution will perform well.
+When useful for inspiration, consult the [creative relationships](references/diagnosis.md). Apply them to the current product and audience; they are possibilities, not templates, universal rules or evidence that a new execution will perform well.
 
 ## Deliver the creative decision
 

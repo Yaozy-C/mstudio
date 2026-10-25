@@ -38,7 +38,7 @@ export function ShotCardHeader({
           <button
             type="button"
             className="previs-shot-button"
-            disabled={!!video.asset.missing || !!video.asset.discarded}
+            disabled={!!video.asset.missing}
             onClick={(e) => {
               e.stopPropagation();
               previs.showVideos(item.nodeId, true);

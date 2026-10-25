@@ -1,3 +1,4 @@
+import { isLibraryAsset } from "../workspace/assetLibrary";
 import type { AgentProfile } from "../agents/catalog";
 import type { Project } from "../model";
 import { describeAttachment, type AttachmentRef } from "./attachments";
@@ -37,7 +38,7 @@ export function mentionOptions(
               ? "画布素材"
               : "笔记",
     })),
-    ...project.assets.map((a) => ({
+    ...project.assets.filter(isLibraryAsset).map((a) => ({
       ref: { kind: "asset" as const, id: a.id },
       type: "素材",
     })),

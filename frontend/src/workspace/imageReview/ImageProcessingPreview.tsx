@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowsOut, Broom, FolderOpen, Palette } from "@phosphor-icons/react";
 import { bridge, native } from "../../bridge";
+import { isLibraryAsset } from "../assetLibrary";
 import type { Asset } from "../../model";
 import { t, useLanguage } from "../../i18n";
 import { ActionButton } from "../../ui/ActionButton";
@@ -8,12 +9,21 @@ import { AsyncButton } from "../../ui/AsyncState";
 import { DockPanel } from "../../ui/DockPanel";
 import { StudioSelect } from "../../ui/StudioSelect";
 import { ErrorNotice } from "../../errors/ErrorNotice";
-import { ImageReviewContext, type ImageOperation } from "./ImageReviewContext";
+import {
+  ImageReviewContext,
+  type ImageOperation,
+  type ImageVersion,
+} from "./ImageReviewContext";
 import { ImageReview } from "./ImageReview";
 import "./image-processing.css";
+import {
+  type ColorCorrection,
+  readProcessingOptions,
+  saveProcessingOptions,
+} from "./processingOptions";
 
 const tools = {
-  denoise: { label: "降噪", icon: Broom },
+  restore: { label: "AI 修复", icon: Broom },
   upscale: { label: "超分辨率", icon: ArrowsOut },
   lut: { label: "LUT", icon: Palette },
 };
@@ -23,11 +33,11 @@ type Runtime = { directory: string; device: "metal" | "cpu" };
 export function ImageProcessingPreview({
   asset,
   close,
-  onAssetChange,
+  onPendingVersion,
 }: {
   asset: Asset;
   close: () => void;
-  onAssetChange?: (asset: Asset) => void;
+  onPendingVersion?: (pending: boolean) => void;
 }) {
   useLanguage();
   const context = useContext(ImageReviewContext);
@@ -35,14 +45,66 @@ export function ImageProcessingPreview({
   const lutInput = useRef<HTMLInputElement>(null);
   const [tool, setTool] = useState<Tool | null>(null);
   const [scale, setScale] = useState<2 | 4>(2);
+  const [esrganTile, setEsrganTile] = useState<128 | 256 | 512>(256);
+  const [options, setOptions] = useState(readProcessingOptions);
+  useEffect(() => saveProcessingOptions(options), [options]);
   const [lut, setLut] = useState<{ name: string; cube: string }>();
   const [strength, setStrength] = useState(100);
   const [runtime, setRuntime] = useState<Runtime | null>(null);
-  const [busy, setBusy] = useState<"process" | "models" | null>(null);
+  const [busy, setBusy] = useState<"process" | "models" | "reference" | null>(
+    null,
+  );
   const [error, setError] = useState<unknown>();
-  const [result, setResult] = useState<Asset>();
-  const [original, setOriginal] = useState(false);
-  const current = result && !original ? result : asset;
+  const [versions, setVersions] = useState<ImageVersion[]>([]);
+  const [previewVersionId, setPreviewVersionId] = useState<string>();
+  const restoreInput = useRef<string | undefined>(undefined);
+  const imageId = asset.imageId ?? asset.id;
+  const referenceId = asset.imageVersionId ?? `original:${imageId}`;
+  const currentVersion =
+    versions.find((v) => v.id === (previewVersionId ?? referenceId)) ??
+    versions[0];
+  const current = currentVersion
+    ? {
+        ...currentVersion.image,
+        id: asset.id,
+        name: asset.name,
+        inLibrary: asset.inLibrary,
+        imageId,
+        imageVersionId: currentVersion.id,
+      }
+    : asset;
+  const original = versions[0];
+  const pending = !!currentVersion && currentVersion.id !== referenceId;
+  const isReference = !pending && isLibraryAsset(asset);
+  useEffect(() => {
+    onPendingVersion?.(pending);
+  }, [pending, onPendingVersion]);
+  const versionLabel = (v: ImageVersion, index: number) =>
+    [
+      v.operation
+        ? `V${index} · ${t(v.operation.kind === "restore" ? "AI 修复" : v.operation.kind === "upscale" ? "超分辨率" : "LUT")}${v.operation.kind === "restore" && v.operation.denoise !== undefined ? ` · ${v.operation.denoise.toFixed(2)}` : ""}`
+        : t("原图"),
+      v.id === referenceId && isLibraryAsset(asset) ? t("当前参考") : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  useEffect(() => {
+    if (!native || !context?.hasAsset(asset.id)) return;
+    let active = true;
+    void context.versions(imageId).then(
+      (items) => {
+        if (!active) return;
+        setVersions(items);
+        restoreInput.current ??= referenceId;
+      },
+      (error) => {
+        if (active) setError(error);
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [context?.projectId, imageId, asset.imageVersionCount, referenceId]);
   useEffect(
     () => () => {
       mounted.current = false;
@@ -90,21 +152,26 @@ export function ImageProcessingPreview({
       const operation: ImageOperation =
         tool === "lut"
           ? { kind: "lut", cube: lut!.cube, strength: strength / 100 }
-          : {
-              kind: "restore",
-              scale: tool === "denoise" ? 1 : scale,
-              seed: 42,
-              vaeTile: 512,
-            };
+          : tool === "upscale"
+            ? { kind: "upscale", scale, tileSize: esrganTile }
+            : {
+                kind: "restore",
+                scale: 1,
+                seed: 42,
+                denoise: options.denoise,
+                vaeTile: options.vaeTile,
+                quantize8: options.quantize8,
+                colorCorrection: options.colorCorrection,
+              };
       const next = await context.process(
-        current,
+        asset,
         operation,
-        `${current.name} · ${t(tools[tool].label)}`,
+        `${asset.name} · ${t(tools[tool].label)}`,
+        tool === "restore" ? restoreInput.current : currentVersion?.id,
       );
       if (!mounted.current) return;
-      setResult(next);
-      setOriginal(false);
-      onAssetChange?.(next);
+      setVersions(await context.versions(imageId));
+      setPreviewVersionId(next.id);
     } catch (error) {
       setError(error);
       setTool(tool);
@@ -112,9 +179,19 @@ export function ImageProcessingPreview({
       setBusy(null);
     }
   }
-  function showOriginal(value: boolean) {
-    setOriginal(value);
-    onAssetChange?.(value ? asset : result!);
+  async function selectReference() {
+    if (!context || !currentVersion || busy) return;
+    setBusy("reference");
+    setError(undefined);
+    try {
+      await context.selectReference(asset.id, currentVersion.id);
+      if (!mounted.current) return;
+      setVersions(await context.versions(imageId));
+    } catch (error) {
+      setError(error);
+    } finally {
+      setBusy(null);
+    }
   }
   return (
     <div className="image-processing-preview" aria-busy={!!busy}>
@@ -138,32 +215,49 @@ export function ImageProcessingPreview({
           </ActionButton>
         ))}
         {busy === "process" && <span role="status">{t("处理中…")}</span>}
-        {result && (
-          <div
-            className="image-processing-compare"
-            role="group"
-            aria-label={t("对比图片")}
-          >
-            <button
-              aria-pressed={original}
-              disabled={!!busy}
-              onClick={() => showOriginal(true)}
+        {currentVersion && (
+          <div className="image-version-controls">
+            {versions.length > 1 && (
+              <StudioSelect
+                value={currentVersion?.id ?? ""}
+                label={t("图片版本")}
+                disabled={!!busy}
+                options={versions.map((v, i) => ({
+                  value: v.id,
+                  label: versionLabel(v, i),
+                }))}
+                onValueChange={(id) => {
+                  setPreviewVersionId(id);
+                  restoreInput.current = id;
+                  setError(undefined);
+                }}
+              />
+            )}
+            <AsyncButton
+              busy={busy === "reference"}
+              disabled={!!busy || isReference}
+              onClick={() => void selectReference()}
             >
-              {t("原图")}
-            </button>
-            <button
-              aria-pressed={!original}
-              disabled={!!busy}
-              onClick={() => showOriginal(false)}
-            >
-              {t("处理结果")}
-            </button>
+              {isReference ? t("当前参考") : t("设为参考")}
+            </AsyncButton>
           </div>
         )}
       </div>
+      {currentVersion && !isReference && (
+        <div className="image-version-notice" role="status">
+          {t("设为参考会让此资产采用选定版本，资产 ID 保持不变。")}
+        </div>
+      )}
+      {!tool && error != null && <ErrorNotice error={error} />}
       <div className="image-processing-body">
         <div className="image-processing-stage">
-          <ImageReview key={current.id} asset={current} close={close} />
+          <ImageReview
+            key={`${current.id}:${current.imageVersionId}:${current.path}`}
+            asset={current}
+            comparison={currentVersion?.operation ? original?.image : undefined}
+            readOnly={pending}
+            close={close}
+          />
         </div>
         {tool && (
           <DockPanel
@@ -171,25 +265,69 @@ export function ImageProcessingPreview({
             title={t(tools[tool].label)}
             onClose={() => setTool(null)}
           >
-            {tool === "denoise" ? (
-              <p>{t("使用修复模型降噪，保持原始尺寸。")}</p>
+            {currentVersion && (
+              <small>
+                {t("处理输入")}：
+                {versionLabel(
+                  versions.find(
+                    (v) =>
+                      v.id ===
+                      (tool === "restore"
+                        ? restoreInput.current
+                        : currentVersion.id),
+                  ) ?? currentVersion,
+                  versions.findIndex(
+                    (v) =>
+                      v.id ===
+                      (tool === "restore"
+                        ? restoreInput.current
+                        : currentVersion.id),
+                  ),
+                )}
+              </small>
+            )}
+            {tool === "restore" ? (
+              <p>{t("使用 SeedVR2 3B 重建细节，保持原始尺寸。")}</p>
             ) : tool === "upscale" ? (
-              <label>
-                {t("放大倍数")}
-                <StudioSelect
-                  value={String(scale)}
-                  label={t("放大倍数")}
-                  disabled={!!busy}
-                  options={[
-                    { value: "2", label: "2×" },
-                    { value: "4", label: "4×" },
-                  ]}
-                  onValueChange={(value) => setScale(Number(value) as 2 | 4)}
-                />
-                <small>
-                  {current.width * scale} × {current.height * scale}
-                </small>
-              </label>
+              <>
+                <p>
+                  {t(
+                    "使用 Real-ESRGAN 原生 2× / 4× 模型进行超分辨率，不经过 SeedVR2。",
+                  )}
+                </p>
+                <label>
+                  {t("放大倍数")}
+                  <StudioSelect
+                    value={String(scale)}
+                    label={t("放大倍数")}
+                    disabled={!!busy}
+                    options={[
+                      { value: "2", label: "2×" },
+                      { value: "4", label: "4×" },
+                    ]}
+                    onValueChange={(value) => setScale(Number(value) as 2 | 4)}
+                  />
+                  <small>
+                    {current.width * scale} × {current.height * scale}
+                  </small>
+                </label>
+                <label>
+                  {t("ESRGAN 分块大小")}
+                  <StudioSelect
+                    value={String(esrganTile)}
+                    label={t("ESRGAN 分块大小")}
+                    disabled={!!busy}
+                    options={[128, 256, 512].map((n) => ({
+                      value: String(n),
+                      label: String(n),
+                    }))}
+                    onValueChange={(value) =>
+                      setEsrganTile(Number(value) as 128 | 256 | 512)
+                    }
+                  />
+                </label>
+                <p>{t("超分会重建图像细节；不会额外执行降噪或 AI 修复。")}</p>
+              </>
             ) : (
               <>
                 <label>
@@ -232,6 +370,112 @@ export function ImageProcessingPreview({
                 </label>
               </>
             )}
+            {tool === "restore" && (
+              <>
+                <p>
+                  {t("AI 修复可能改变脸部、纹理和边缘细节，不等同于纯降噪。")}
+                </p>
+                <label>
+                  {t("Denoise（重绘强度）")} · {options.denoise.toFixed(2)}
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={options.denoise}
+                    disabled={!!busy}
+                    aria-label={t("Denoise（重绘强度）")}
+                    onChange={(event) =>
+                      setOptions((old) => ({
+                        ...old,
+                        denoise: Number(event.target.value),
+                      }))
+                    }
+                  />
+                  <small>
+                    {t("0 保留原图；较低值减少重绘，1 为完整重建。")}{" "}
+                    {t("当前为单步采样，部分数值效果相同，例如 0.6 与 1.0。")}
+                  </small>
+                  {versions.length > 1 && (
+                    <small>
+                      {t("调整修复参数后，将从选定的输入版本重新处理。")}
+                    </small>
+                  )}
+                </label>
+                <label>
+                  {t("校色方式")}
+                  <StudioSelect
+                    value={options.colorCorrection}
+                    label={t("校色方式")}
+                    disabled={!!busy}
+                    options={[
+                      { value: "wavelet", label: "Wavelet" },
+                      { value: "lab", label: "LAB" },
+                      { value: "none", label: t("关闭校色") },
+                    ]}
+                    onValueChange={(value) =>
+                      setOptions((old) => ({
+                        ...old,
+                        colorCorrection: value as ColorCorrection,
+                      }))
+                    }
+                  />
+                  <small>
+                    {t(
+                      "使处理结果的颜色和明暗接近原图；不会还原模型改变的五官或细节。",
+                    )}
+                  </small>
+                </label>
+                <label>
+                  {t("VAE 分块大小")}
+                  <StudioSelect
+                    value={String(options.vaeTile)}
+                    label={t("VAE 分块大小")}
+                    disabled={!!busy}
+                    options={[256, 384, 512].map((n) => ({
+                      value: String(n),
+                      label: String(n),
+                    }))}
+                    onValueChange={(value) =>
+                      setOptions((old) => ({
+                        ...old,
+                        vaeTile: Number(value) as 256 | 384 | 512,
+                      }))
+                    }
+                  />
+                  <small>
+                    {t(
+                      "较小分块可降低编解码内存，处理更慢；不会缩小整图推理。",
+                    )}
+                  </small>
+                </label>
+                <label>
+                  {t("DiT 权重量化")}
+                  <StudioSelect
+                    value={options.quantize8 ? "q8" : "original"}
+                    label={t("DiT 权重量化")}
+                    disabled={!!busy}
+                    options={[
+                      { value: "original", label: t("原精度") },
+                      { value: "q8", label: t("Q8（实验）") },
+                    ]}
+                    onValueChange={(value) =>
+                      setOptions((old) => ({
+                        ...old,
+                        quantize8: value === "q8",
+                      }))
+                    }
+                  />
+                  {options.quantize8 && (
+                    <small>
+                      {t(
+                        "Q8 可减少部分权重内存，但可能改变画质；量化时仍需加载原权重。",
+                      )}
+                    </small>
+                  )}
+                </label>
+              </>
+            )}
             {tool !== "lut" && (
               <div className="image-processing-models">
                 <ActionButton
@@ -256,13 +500,13 @@ export function ImageProcessingPreview({
             >
               {tool === "lut"
                 ? t("应用 LUT")
-                : tool === "denoise"
-                  ? t("开始降噪")
+                : tool === "restore"
+                  ? t("开始 AI 修复")
                   : t("开始超分辨率")}
             </AsyncButton>
             <p className="subtle">
               {native
-                ? t("处理结果自动保存为新素材，原图保留。")
+                ? t("处理结果只保存为图片版本，不会新增资产。")
                 : t("请在桌面应用中处理图片。")}
             </p>
             <ErrorNotice error={error} />

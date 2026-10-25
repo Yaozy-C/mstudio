@@ -24,13 +24,9 @@ pub fn read(store: &Store, project: &str, turn: &str, profile: &Profile, args: &
             "Image input is disabled for this chat model. Select an image-capable chat model in settings; no image sent."
         );
         let doc = crate::project_service::load(&store.db.lock().unwrap(), project)?;
-        let record = crate::previs::media::find(&doc, id).context(
+        crate::previs::media::find(&doc, id).context(
             "Asset is outside this project; obtain a current-project assetId from inspect",
         )?;
-        ensure!(
-            record["discarded"] != true,
-            "Discarded result cannot be read or reused by Agent"
-        );
         let assets = crate::previs::media::resolved(store, &doc)?;
         let asset = assets
             .iter()

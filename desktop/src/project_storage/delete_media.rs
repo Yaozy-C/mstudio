@@ -88,7 +88,24 @@ pub fn commit(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         .parent()
         .context("Missing database directory")?;
     let root = crate::storage::load(db, fallback)?.directory;
-    let plan = super::plan::build_selected(db, &root, project, Some(&added))?;
+    let mut selected = added.clone();
+    let mut images = HashSet::new();
+    for asset in before["assets"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|a| a["kind"] == "image" && a["id"].as_str().is_some_and(|id| added.contains(id)))
+    {
+        let image = crate::image_versions::image_id(asset)?;
+        if !after["assets"].as_array().into_iter().flatten().any(|a| {
+            crate::image_versions::image_id(a).ok() == Some(image)
+                && a["id"].as_str().is_some_and(|id| !removed.contains(id))
+        }) {
+            images.insert(image.to_owned());
+            selected.insert(image.to_owned());
+        }
+    }
+    let plan = super::plan::build_selected(db, &root, project, Some(&selected))?;
     for path in plan.files {
         db.execute(
             "INSERT OR IGNORE INTO pending_file_deletions VALUES(?1,?2)",
@@ -97,6 +114,12 @@ pub fn commit(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         db.execute(
             "DELETE FROM project_files WHERE project_id=?1 AND path=?2",
             params![project, path.to_string_lossy()],
+        )?;
+    }
+    for image in images {
+        db.execute(
+            "DELETE FROM image_versions WHERE project_id=?1 AND image_id=?2",
+            params![project, image],
         )?;
     }
     for id in &added {

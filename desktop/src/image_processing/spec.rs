@@ -15,7 +15,17 @@ pub enum Operation {
     Restore {
         scale: u32,
         seed: u64,
+        #[serde(default = "mstudio_image_runtime::default_denoise")]
+        denoise: f64,
         vae_tile: u32,
+        #[serde(default)]
+        quantize8: bool,
+        #[serde(default)]
+        color_correction: mstudio_image_runtime::ColorCorrection,
+    },
+    Upscale {
+        scale: u32,
+        tile_size: u32,
     },
     Lut {
         cube: String,
@@ -30,13 +40,29 @@ impl Operation {
             Self::Restore {
                 scale,
                 seed,
+                denoise,
                 vae_tile,
+                ..
             } => {
-                ensure!([1, 2, 4].contains(scale), "图像修复支持原尺寸、2× 或 4×");
+                ensure!(
+                    *scale == 1,
+                    "AI 修复保持原尺寸；放大请使用 Real-ESRGAN 超分辨率"
+                );
                 ensure!(*seed <= 9_007_199_254_740_991, "随机种子超出安全整数范围");
+                ensure!(
+                    denoise.is_finite() && (0.0..=1.0).contains(denoise),
+                    "Denoise 须为 0–1"
+                );
                 ensure!(
                     (128..=2048).contains(vae_tile) && vae_tile % 64 == 0,
                     "VAE 分块须为 128–2048 的 64 倍数"
+                );
+            }
+            Self::Upscale { scale, tile_size } => {
+                ensure!([2, 4].contains(scale), "Real-ESRGAN 支持 2× 或 4× 超分辨率");
+                ensure!(
+                    [128, 256, 512].contains(tile_size),
+                    "ESRGAN 分块须为 128、256 或 512"
                 );
             }
             Self::Lut { cube, strength } => {

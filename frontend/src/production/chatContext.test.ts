@@ -29,14 +29,13 @@ test("chat references send results and settings without old generation text", ()
   expect(context).toContain(task.key);
   expect(context).toContain("selected-model");
   const p = fixture();
-  p.assets.find((a) => a.id === "b")!.discarded = true;
   const refs = taskAttachments(
     p,
     undefined,
     [{ kind: "asset", id: "a" }],
     task,
   );
-  expect(refs.map((r) => r.id)).toEqual(["a"]);
+  expect(refs.map((r) => r.id)).toEqual(["a", "b"]);
 });
 
 test("task metadata omits prompt until explicitly selected for editing or investigation", () => {

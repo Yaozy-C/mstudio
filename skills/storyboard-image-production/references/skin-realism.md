@@ -1,39 +1,28 @@
-# Skin realism at panel scale
+# Photographic people at panel scale
 
-Use for photographic people in storyboard panels and for authorized identity or look frames. At board scale, identity and silhouette carry more than pore detail; at a close panel, skin becomes part of the performance.
+Use for photographic people in storyboard panels and authorized close frames. Identity, facial expression, silhouette and contact must read at the delivered size; microscopic texture cannot compensate for a small or unconvincing face.
 
 ## At a board panel
 
-- Choose a recognizable face structure, hair shape and wardrobe color that survive at roughly 800×450. Do not rely on pore-level detail to distinguish a person.
-- Keep one clearly readable gaze and mouth shape per panel. A generic "emotional" face at small scale turns into a mannequin.
-- Keep hands occupied or clearly supported. A hand with unclear fingers at panel scale reads as a synthetic tell even when the face is good.
-- Use skin tone and shadow-side modeling to separate the face from the background. Do not brighten dark skin to make the panel readable; use background separation and bounce.
-- Do not demand "visible pores" in a wide panel. Describe skin at the scale the panel can actually show.
+Preserve the selected face, hair, body proportions, wardrobe and scene state. Realize the designed gaze, mouth and hand positions without manufacturing a new action or emotion to distinguish panels. Hands may be relaxed, empty or still; required contacts must be readable.
+
+Keep facial volume and head/neck/body continuity coherent. Match light direction, perspective and support with the scene. Do not brighten every shadow to expose skin texture or make dark complexions lighter. State when panel size cannot resolve an essential identity or gesture rather than demanding visible pores and fine fingers.
 
 ## At a close panel or look frame
 
-- Use [photographic direction](photographic-direction.md) for camera and light.
-- Establish bone structure, slight asymmetry, eyelids, nasolabial folds, neck and ears before surface detail.
-- Let forehead, cheeks, nose, perioral area and neck differ in warmth at low amplitude.
-- Put pores on the nose, inner cheeks and forehead at portrait distance; soften them on the outer face and neck.
-- Give the skin a light-driven sheen, not a uniform gloss. Dry lips and a faint under-eye shadow are ordinary.
-- Age lives in eyelids, cheek volume, mouth corners, neck and hands before it lives in "wrinkles".
+Use [photographic direction](photographic-direction.md) for the selected setup. Describe only the person-specific volume, expression, tonal or surface relationship needed at that scale. Do not add asymmetry, wrinkles, dry lips, vellus hair or pores as a stock cure for artificial skin. Preserve smoothness, makeup and age features when supported by the selected person.
 
-## Avoid
+## Repair the observed property
 
-"Flawless", "perfect", "beauty", "retouched", "airbrushed", "porcelain", "glowing", "studio softbox", "even light" on a face, and global "8K / HDR / ultra detailed". These pull toward a cosmetic catalogue face and hide the specific person.
-
-## Repair
-
-Change only the diagnosed property: facial volume, color, specular coverage, uniform microtexture or sharpening. Keep identity, age, pose, framing, light direction and unrelated regions. Do not answer "shiny" with blur or "waxy" with coarse grit.
+From actual pixels and assigned feedback, distinguish anatomy, expression, integration, reflection, artificial texture and sharpening. Change the diagnosed property while retaining identity, age, pose, crop and lighting intent. Neither added grit nor global blur establishes realism. Return the result without initiating further generations.
 
 ## Check
 
-- Can I recognize this person from the panel without reading the text?
-- Is the skin's detail appropriate to the panel size?
-- Are the neck, ears, hairline and hands consistent with the face's age?
-- Did I avoid beauty words and global sharpening?
+- Can the selected person and designed expression be recognized at actual panel size?
+- Are head, neck, body and hand contact coherent with the same scene?
+- Is detail proportionate to framing, without invented damage or mandatory fill?
+
 
 ## Sources and limits
 
-[OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) recommends prompting as if a real photo is being captured and explicitly asking for pores, wrinkles, fabric wear and imperfections while avoiding studio-polish language. This is a prompt method, not a guarantee of identity or anatomy.
+[OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) illustrates concrete photographic appearance cues. Apply only those needed by the actual subject and framing; it is not a universal texture or imperfection checklist. This is a prompt method, not a guarantee of identity or anatomy.

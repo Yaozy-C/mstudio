@@ -12,7 +12,7 @@ Retain the facts that make this one place: ground or floor, boundaries, openings
 
 Use a scene image for its declared environment and spatial evidence. A selected look image supplies palette, rendering medium and material treatment. A composition sketch or layout reference supplies arrangement, viewpoint or gaze/placement guidance. One image can serve several roles when they agree, but state those roles explicitly rather than treating a style reference as exact geometry.
 
-Track source positions and time/state changes separately from fixed structure. Daylight direction, practical lights and local bounce should explain shadows, reflections and subject integration. A later sunset or blue-hour state can change exposure and color without moving the coast, doorway, chair arrangement or building. Preserve intentional story-driven lighting changes; do not force the baseline's exposure onto every scene.
+Track source positions and time/state changes separately from fixed structure. Daylight direction, practical lights and local bounce should explain shadows, reflections and subject integration. A designed change in time of day or illumination can change exposure and color while the location's fixed landmarks and layout remain stable. Preserve intentional story-driven lighting changes; do not force the baseline's exposure onto every scene.
 
 ## Derive camera views from one place
 

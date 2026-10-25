@@ -7,10 +7,12 @@ use layers::{Conv, Mid, Norm, Residual, silu};
 use mlx_gen::weights::Weights;
 use mlx_rs::{Array, ops};
 
+#[cfg(test)]
 pub struct Vae {
     pub encoder: Encoder,
     pub decoder: Decoder,
 }
+#[cfg(test)]
 impl Vae {
     pub fn load(w: &Weights) -> Result<Self> {
         Ok(Self {
@@ -63,7 +65,7 @@ pub struct Encoder {
     out: Conv,
 }
 impl Encoder {
-    fn load(w: &Weights) -> Result<Self> {
+    pub(crate) fn load(w: &Weights) -> Result<Self> {
         Ok(Self {
             input: Conv::load(w, "encoder.conv_in", 1, 1)?,
             down: (0..4).map(|i| Down::load(w, i)).collect::<Result<_>>()?,
@@ -141,7 +143,7 @@ pub struct Decoder {
     out: Conv,
 }
 impl Decoder {
-    fn load(w: &Weights) -> Result<Self> {
+    pub(crate) fn load(w: &Weights) -> Result<Self> {
         Ok(Self {
             input: Conv::load(w, "decoder.conv_in", 1, 1)?,
             mid: Mid::load(w, "decoder.mid_block")?,

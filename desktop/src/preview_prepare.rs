@@ -13,7 +13,10 @@ pub async fn prepare(
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
         let store = app.state::<Store>();
-        let mut assets = store.assets().map_err(|e| e.to_string())?;
+        let document = crate::project_service::load(&store.db.lock().unwrap(), &project_id)
+            .map_err(|e| e.to_string())?;
+        let mut assets =
+            crate::previs::media::resolved(&store, &document).map_err(|e| e.to_string())?;
         let root = store.media_root().join("proxies");
         let mut spec = spec;
         mstudio::preview_validate::validate(&spec, &assets, edge).map_err(|e| e.to_string())?;

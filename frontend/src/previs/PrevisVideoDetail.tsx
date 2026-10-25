@@ -25,9 +25,7 @@ export function PrevisVideoDetail({
   } = usePrevis();
   const [pending, setPending] = useState<"reference" | "save" | null>(null);
   const [error, setError] = useState("");
-  const [unavailable, setUnavailable] = useState(
-    !!video.asset.missing || !!video.asset.discarded,
-  );
+  const [unavailable, setUnavailable] = useState(!!video.asset.missing);
   const saving = useRef(false);
   const target = project.nodes.find(
     (node) => node.id === video.fileId && node.shot,
@@ -38,10 +36,7 @@ export function PrevisVideoDetail({
   );
   const collected = project.assets.some(
     (asset) =>
-      asset.id === video.savedAssetId &&
-      asset.inLibrary &&
-      !asset.missing &&
-      !asset.discarded,
+      asset.id === video.savedAssetId && asset.inLibrary && !asset.missing,
   );
   const rendering = tasks.some(
     (task) => task.fileId === video.fileId && task.running,

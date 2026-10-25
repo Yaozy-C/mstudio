@@ -142,7 +142,25 @@ pub fn statuses(store: &Store, ids: &[String]) -> Result<HashMap<String, bool>> 
 pub async fn asset_file_status(
     store: State<'_, Store>,
     ids: Vec<String>,
+    project_id: Option<String>,
 ) -> Result<HashMap<String, bool>, String> {
     let _guard = store.files.clone().read_owned().await;
+    if let Some(project) = project_id {
+        let db = store.db.lock().unwrap();
+        let document = crate::project_service::load(&db, &project).map_err(|e| e.to_string())?;
+        return Ok(ids
+            .into_iter()
+            .filter_map(|id| {
+                crate::previs::media::find(&document, &id).map(|asset| {
+                    (
+                        id,
+                        !asset["path"]
+                            .as_str()
+                            .is_some_and(|p| Path::new(p).is_file()),
+                    )
+                })
+            })
+            .collect());
+    }
     statuses(&store, &ids).map_err(|e| e.to_string())
 }

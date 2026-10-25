@@ -54,56 +54,14 @@ fn regenerate(store: &Store, agent: &profiles::AgentProfile) -> Value {
     let args = super::super::operation_tools::decode(
         agent,
         "mstudio_regenerate_generation",
-        json!({"taskKey":"task","keepPreviousResults":false}),
+        json!({"taskKey":"task"}),
     )
     .unwrap();
     project_service::execute(store, agent, "p", "image-child", "regenerate", args).unwrap()
 }
 
 #[test]
-fn image_agent_can_replace_a_visually_read_result_without_a_second_metadata_read() {
-    let (store, profile, agent) = fixture();
-    let conflict = regenerate(&store, &agent);
-    assert_eq!(conflict["conflicts"][0]["code"], "TARGET_NOT_OBSERVED");
-    assert_eq!(conflict["conflicts"][0]["target"], "asset:result");
-    assert_eq!(
-        read(
-            &store,
-            "p",
-            "image-child",
-            &profile,
-            &json!({"assetId":"result"})
-        )["ok"],
-        true
-    );
-    let doc = project_service::load(&store.db.lock().unwrap(), "p").unwrap();
-    let keys = std::collections::BTreeSet::from(["asset:result".to_owned()]);
-    let other_turn = project_service::observations::check(
-        &store.db.lock().unwrap(),
-        "p",
-        "another-child",
-        &keys,
-        &doc,
-    )
-    .unwrap()
-    .unwrap();
-    assert_eq!(other_turn["conflicts"][0]["code"], "TARGET_NOT_OBSERVED");
-    let receipt = regenerate(&store, &agent);
-    assert_eq!(receipt["applied"], true, "{receipt}");
-    let saved = project_service::load(&store.db.lock().unwrap(), "p").unwrap();
-    assert_eq!(saved["assets"][0]["discarded"], true);
-    assert_eq!(
-        saved["production"]["drafts"]["task"]["status"],
-        "AWAITING_CONFIRMATION"
-    );
-    assert_eq!(regenerate(&store, &agent), receipt);
-    let root = store.root.clone();
-    drop(store);
-    std::fs::remove_dir_all(root).unwrap();
-}
-
-#[test]
-fn image_agent_cannot_replace_a_result_changed_after_its_visual_read() {
+fn regeneration_preserves_human_edits_to_existing_results_without_requiring_another_asset_read() {
     let (store, profile, agent) = fixture();
     assert_eq!(
         read(
@@ -119,28 +77,16 @@ fn image_agent_cannot_replace_a_result_changed_after_its_visual_read() {
     let mut changed = before.clone();
     changed["assets"][0]["name"] = json!("Human renamed result");
     crate::projects::save_merged(&store, changed, before).unwrap();
+    let before = project_service::load(&store.db.lock().unwrap(), "p").unwrap();
+    let receipt = regenerate(&store, &agent);
+    assert_eq!(receipt["applied"], true, "{receipt}");
     let saved = project_service::load(&store.db.lock().unwrap(), "p").unwrap();
-    let conflict = regenerate(&store, &agent);
+    assert_eq!(saved["assets"], before["assets"]);
     assert_eq!(
-        conflict["conflicts"][0]["code"], "TARGET_CHANGED",
-        "{conflict}"
+        saved["production"]["drafts"]["task"]["status"],
+        "AWAITING_CONFIRMATION"
     );
-    assert_eq!(conflict["outcome"], "not_executed");
-    assert_eq!(
-        project_service::load(&store.db.lock().unwrap(), "p").unwrap(),
-        saved
-    );
-    assert_eq!(
-        read(
-            &store,
-            "p",
-            "image-child",
-            &profile,
-            &json!({"assetId":"result"})
-        )["ok"],
-        true
-    );
-    assert_eq!(regenerate(&store, &agent)["applied"], true);
+    assert_eq!(regenerate(&store, &agent), receipt);
     let root = store.root.clone();
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

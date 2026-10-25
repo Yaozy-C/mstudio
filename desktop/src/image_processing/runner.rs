@@ -40,6 +40,14 @@ pub fn run(
     } else {
         let runtime = runtime.context("请先配置本地图像处理运行环境")?;
         match operation {
+            Operation::Upscale { scale, tile_size } => mstudio_image_runtime::upscale(
+                source,
+                &runtime.directory,
+                runtime.device,
+                *scale,
+                *tile_size,
+                work,
+            ),
             Operation::Depth { size } => mstudio_image_runtime::depth(
                 source,
                 &runtime.directory,
@@ -50,14 +58,22 @@ pub fn run(
             Operation::Restore {
                 scale,
                 seed,
+                denoise,
                 vae_tile,
-            } => mstudio_image_runtime::restore(
+                quantize8,
+                color_correction,
+            } => mstudio_image_runtime::restore_with_options(
                 source,
                 &runtime.directory,
                 runtime.device,
-                *scale,
-                *seed,
-                *vae_tile,
+                mstudio_image_runtime::RestoreOptions {
+                    scale: *scale,
+                    seed: *seed,
+                    denoise: *denoise,
+                    vae_tile: *vae_tile,
+                    quantize8: *quantize8,
+                    color_correction: *color_correction,
+                },
                 work,
             ),
             Operation::Lut { .. } => unreachable!("LUT is executed by FFmpeg above"),

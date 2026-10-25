@@ -24,6 +24,11 @@ export function imageReviewController(
         (a) => a.id === asset.id && a.kind === "image" && !a.missing,
       );
       if (!original) throw new Error(t("原图已移除，请重新打开图片"));
+      if (
+        original.path !== asset.path ||
+        original.imageVersionId !== asset.imageVersionId
+      )
+        throw new Error(t("参考版本已变更，请重新打开图片后提交批注"));
       const keys = new Set([
         ...draft.items.map(attachmentKey),
         `asset:${asset.id}`,
@@ -40,6 +45,15 @@ export function imageReviewController(
         !get().assets.some((a) => a.id === original.id)
       )
         throw new Error(t("原图已移除，请重新打开图片"));
+      if (
+        !get().assets.some(
+          (a) =>
+            a.id === original.id &&
+            a.path === original.path &&
+            a.imageVersionId === original.imageVersionId,
+        )
+      )
+        throw new Error(t("参考版本已变更，请重新打开图片后提交批注"));
       change((p) => ({
         ...p,
         assets: p.assets.some((a) => a.id === marked.id)

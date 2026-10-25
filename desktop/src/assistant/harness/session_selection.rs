@@ -41,9 +41,6 @@ pub fn bind_task(
     if archive["archived"]
         .as_array()
         .is_some_and(|v| !v.is_empty())
-        || archive["discarded"]
-            .as_array()
-            .is_some_and(|v| !v.is_empty())
     {
         binding["archiveContext"] = archive;
     }

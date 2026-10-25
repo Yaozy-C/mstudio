@@ -1,10 +1,6 @@
 import { freeResultPosition } from "./resultLayout";
 import { mediaCardSize } from "./mediaCardSize";
-import {
-  resultTask,
-  resultTaskName,
-  withTaskResultNames,
-} from "./taskResultNames";
+import { resultTask, resultTaskName } from "./taskResultNames";
 import { materializeFrameCards } from "./frameCards";
 import { resultOrigin } from "./resultOrigin";
 import { uid, type Asset, type Project } from "../model";
@@ -13,7 +9,6 @@ import { framesOf } from "./frames";
 import { itemKey, type ProductionSource, type ProductionTask } from "./types";
 
 export function saveTask(p: Project, task: ProductionTask): Project {
-  p = withTaskResultNames(p, task);
   return {
     ...p,
     production: {
@@ -69,6 +64,7 @@ export function receiveProductionResult(
     ...asset,
     name: resultTaskName(p, source),
     generated: true,
+    usage: current.generationPurpose === "asset" ? "asset" : "material",
     inLibrary: undefined,
   };
   const original = source.canvasGeneration;

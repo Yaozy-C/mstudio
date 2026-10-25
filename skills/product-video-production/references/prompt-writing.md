@@ -2,7 +2,7 @@
 
 Establish the shot in model-independent terms first, then adapt supported reference syntax and capabilities. Provider rewrite-output schemas are not automatically required submission formats. For difficult weight, contact or timing problems, consult [animation principles](shot-execution.md); apply only principles relevant to this event.
 
-Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Examples are design illustrations, not tested generation evidence.
+Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Describe the current shot; method guidance does not establish a tested generation result.
 
 ## Three different units
 

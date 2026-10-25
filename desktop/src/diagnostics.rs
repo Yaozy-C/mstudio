@@ -37,7 +37,8 @@ fn subscriber(
             .json()
             .with_filter(
                 tracing_subscriber::filter::Targets::new()
-                    .with_target("mstudio_desktop", tracing::Level::INFO),
+                    .with_target("mstudio_desktop", tracing::Level::INFO)
+                    .with_target("mstudio_image_runtime", tracing::Level::INFO),
             ),
     );
     Ok((subscriber, guard))

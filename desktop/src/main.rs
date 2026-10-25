@@ -11,6 +11,7 @@ mod ges_engine;
 mod ges_output;
 mod ges_runtime;
 mod image_processing;
+mod image_versions;
 mod imports;
 mod job_download;
 mod job_locks;
@@ -106,6 +107,8 @@ fn main() {
             image_processing::image_processing_runtime,
             image_processing::configure_image_processing,
             image_processing::process_image,
+            image_versions::list_image_versions,
+            image_versions::select_image_reference,
             video_analysis::history::list_video_analysis_records,
             video_analysis::history::open_video_analysis_record,
             video_analysis::prepare_video_analysis,

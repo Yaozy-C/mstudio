@@ -4,7 +4,11 @@ import { batchSummary } from "../production/batch";
 import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
 import type { Project } from "../model";
-import { isSelectableAsset } from "../workspace/assetLibrary";
+import {
+  assetUsage,
+  isLibraryAsset,
+  isSelectableAsset,
+} from "../workspace/assetLibrary";
 import { promptStale } from "../creative/prompt";
 import { tracksOf } from "../timeline/document";
 import { framesOf } from "../production/frames";
@@ -40,16 +44,44 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     text: value.slice(textOffset, textOffset + max),
     nextTextOffset: value.length > textOffset + max ? textOffset + max : null,
   });
-  const assets = (Array.isArray(args.ids) ? referenceAssets(p) : p.assets)
-    .filter(isSelectableAsset)
-    .map(({ id, name, kind, duration, width, height }) => ({
-      id,
-      name: name.slice(0, 100),
-      kind,
-      duration,
-      width,
-      height,
-    }));
+  const usage = args.usage ?? "asset";
+  if (!["asset", "material", "all"].includes(String(usage)))
+    throw new Error("素材用途筛选无效");
+  const direct = Array.isArray(args.ids) && args.ids.length > 0;
+  const assets = (direct ? referenceAssets(p) : p.assets)
+    .filter(
+      (a) =>
+        isSelectableAsset(a) &&
+        (direct || isLibraryAsset(a)) &&
+        ((direct && args.usage === undefined) ||
+          usage === "all" ||
+          assetUsage(a) === usage),
+    )
+    .map(
+      ({
+        id,
+        name,
+        kind,
+        duration,
+        width,
+        height,
+        usage,
+        imageId,
+        imageVersionId,
+        imageVersionCount,
+      }) => ({
+        id,
+        name: name.slice(0, 100),
+        usage: usage ?? "material",
+        kind,
+        duration,
+        width,
+        height,
+        imageId,
+        imageVersionId,
+        imageVersionCount,
+      }),
+    );
   const creation = p.creation;
   const captions = (p.captions ?? []).map((c) => ({
     ...c,
@@ -277,7 +309,7 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
             : null,
       })),
     assets: ids.length ? [] : assets.slice(offset, offset + 10),
-    assetCount: p.assets.length,
+    assetCount: assets.length,
     clips: ids.length ? [] : p.clips.slice(offset, offset + 10),
     clipCount: p.clips.length,
     tracks: ids.length ? [] : tracksOf(p).slice(0, 10),

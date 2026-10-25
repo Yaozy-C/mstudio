@@ -1,6 +1,6 @@
 mod runner;
 mod spec;
-mod storage;
+pub(crate) mod storage;
 #[cfg(test)]
 mod tests;
 
@@ -19,6 +19,8 @@ static SLOT: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> =
 pub struct Request {
     input_asset_id: String,
     #[serde(default)]
+    input_version_id: Option<String>,
+    #[serde(default)]
     name: String,
     operation: Operation,
 }
@@ -28,6 +30,7 @@ pub struct Request {
 pub struct Receipt {
     input_asset_id: String,
     assets: Vec<mstudio::model::Asset>,
+    versions: Vec<crate::image_versions::ImageVersion>,
 }
 
 fn runtime(store: &Store) -> Result<Option<Runtime>> {
@@ -126,14 +129,60 @@ fn process(
     request.operation.validate()?;
     let name = request.name.trim();
     let name = if name.is_empty() { "未命名" } else { name };
-    let source = storage::input(store, project, &request.input_asset_id)?;
+    let (source, parent_version) = if matches!(request.operation, Operation::Depth { .. }) {
+        (
+            storage::input(store, project, &request.input_asset_id)?,
+            None,
+        )
+    } else {
+        let (asset, version) = crate::image_versions::input(
+            store,
+            project,
+            &request.input_asset_id,
+            request.input_version_id.as_deref(),
+        )?;
+        (std::path::PathBuf::from(asset.path), Some(version))
+    };
     let id = mstudio::media::id();
     let work = store.media_root().join("image-processing").join(&id);
     crate::project_storage::track_file(store, project, &work)?;
     let outputs = runner::run(&source, &request.operation, runtime, &work)?;
-    let assets = storage::save(store, project, name, &outputs)?;
+    let engine = match request.operation {
+        Operation::Restore { .. } => "seedvr2-3b",
+        Operation::Upscale { scale: 2, .. } => "realesrgan-x2plus",
+        Operation::Upscale { .. } => "realesrgan-x4plus",
+        Operation::Depth { .. } => "depth-anything-v2-vits",
+        Operation::Lut { .. } => "ffmpeg-lut3d-tetrahedral",
+    };
+    let provenance = serde_json::json!({
+        "inputAssetId": request.input_asset_id,
+        "inputVersionId": parent_version,
+        "operation": request.operation,
+        "engine": engine,
+        "applicationVersion": env!("CARGO_PKG_VERSION"),
+        "runtime": if matches!(request.operation, Operation::Lut { .. }) { None } else { runtime },
+    });
+    let (assets, versions) = if parent_version.is_some() {
+        (
+            vec![],
+            crate::image_versions::save(
+                store,
+                project,
+                &request.input_asset_id,
+                name,
+                &outputs,
+                &provenance,
+            )?,
+        )
+    } else {
+        (
+            storage::save(store, project, name, &outputs, Some(&provenance))?,
+            vec![],
+        )
+    };
     Ok(Receipt {
         input_asset_id: request.input_asset_id,
         assets,
+        versions,
     })
 }

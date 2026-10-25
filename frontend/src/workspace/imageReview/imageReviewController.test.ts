@@ -14,6 +14,35 @@ const comments = [
 ];
 const file = new File(["test"], "comments.png", { type: "image/png" });
 
+test("changing the selected file behind a stable asset ID rejects stale annotations", async () => {
+  const source = { ...original, path: "/original.png" };
+  let project = { id: "p", assets: [source] } as Project;
+  let submitted = false;
+  const controller = imageReviewController(
+    () => project,
+    (fn) => {
+      project = fn(project);
+    },
+    { items: [] },
+    {
+      importFile: async () => {
+        project = {
+          ...project,
+          assets: [{ ...source, path: "/v1.png" }],
+        };
+        return marked;
+      },
+      request: () => {
+        submitted = true;
+      },
+    },
+  );
+  await expect(controller.submit(source, file, comments)).rejects.toThrow(
+    "参考版本已变更",
+  );
+  expect(submitted).toBe(false);
+});
+
 test("submitting a review attaches only the source and keeps the guide internal", async () => {
   let project = { id: "p", assets: [original] } as Project;
   let request: CreativeTask | undefined;

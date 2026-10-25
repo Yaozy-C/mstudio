@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ZoomControls } from "../ui/ZoomControls";
 import { t, useLanguage } from "../i18n";
+import { ImageComparison } from "./imageReview/ImageComparison";
 
 import {
   AnnotationOverlay,
@@ -17,10 +18,12 @@ export function ZoomableImage({
   src,
   alt,
   annotations,
+  comparison,
 }: {
   src: string;
   alt: string;
   annotations?: AnnotationControls;
+  comparison?: { src: string; alt: string };
 }) {
   useLanguage();
   const viewport = useRef<HTMLDivElement>(null);
@@ -225,6 +228,16 @@ export function ZoomableImage({
             transform,
           }}
         />
+        {comparison && natural.width > 0 && (
+          <ImageComparison
+            key={comparison.src}
+            original={comparison}
+            natural={natural}
+            viewport={size}
+            view={view}
+            transform={transform}
+          />
+        )}
         {annotations && natural.width > 0 && (
           <AnnotationOverlay
             annotations={annotations}

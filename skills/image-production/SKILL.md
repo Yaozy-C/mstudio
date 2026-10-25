@@ -11,13 +11,13 @@ Specialists execute assigned production work and return real outputs and task st
 
 ## Reference assets and scene images
 
-For a reusable character, wardrobe, prop or location asset, start with [reference assets](references/reference-assets.md). Make identity, silhouette, proportions, outfit, construction and material easy to inspect at the needed scale. Choose a single view or a useful consistent view sheet; do not apply storyboard panel counts, action beats, internal cuts or shot timing to an asset request. Simplified backgrounds are optional aids; for a photographic character, a real room or textured surface with directional light is usually stronger than a seamless wall. Location references retain the needed environment and layout.
+For a reusable character, wardrobe, prop or location asset, start with [reference assets](references/reference-assets.md). Make identity, silhouette, proportions, outfit, construction and material easy to inspect at the needed scale. Choose a single view or a useful consistent view sheet; do not apply storyboard panel counts, action beats, internal cuts or shot timing to an asset request. Choose background and pose for the reference use; a simple backdrop, static stance or frontal view can be appropriate. Location references retain the needed environment and layout.
 
 Select the subject method before writing an asset prompt: [character assets](references/character-assets.md) for people, including age-appropriate anatomy, skin and wardrobe; [object assets](references/object-assets.md) for props and products, including construction and material response; [scene assets](references/scene-assets.md) for environments, spatial anchors and light states. Read only the relevant branch. For a person using an object or entering an environment, combine the settled references with explicit subject purposes and check their contact and scale.
 
 Assets and storyboard images follow the same selected project art direction: medium, realism or stylization, era, palette relationships, material treatment and finish. Reference clarity does not authorize a generic catalogue look, a different character design or a lower standard of craft. Asset lighting and pose can differ from the scene; they do not override its narrative lighting, camera or action. Apply the common [visual quality method](references/visual-quality.md) with asset-specific checks.
 
-For live-action or photorealistic work, read [photographic direction](references/photographic-direction.md) before writing the prompt. Decide the capture, lens and distance, camera height, light source and ratio, color relationship and surface finish first. A character asset is an identity plate, not a catalogue cutout: head-and-shoulders or waist-up, unposed, in a real room or against a textured surface with directional light, with the selected wardrobe and skin tone readable at the intended scale. A full-body neutral-backdrop view is justified only when a consuming shot needs body scale or the complete outfit.
+For photographic people, apply [core](CORE.md) and [character assets](references/character-assets.md) before expanding the prompt. Establish a credible face, expression and head/body relationship at the requested scale. Full-body costume references are valid; do not add close-up skin or fiber inventories, compulsory gestures, aging, dirt or shadow fill to make them look real. Read [photographic direction](references/photographic-direction.md) for camera and light decisions. When a new recurring identity cannot be judged in the requested wide frame, arrange a useful closer reference through coordination within the authorized scope, then derive dependent views from the selected actual image. Reuse suitable originals and preserve an explicit one-image deliverable.
 
 ## Read for the task at hand
 
@@ -55,7 +55,7 @@ Keep cross-frame continuity through stable identity and construction, while pose
 
 ## Bind every input to a concrete purpose
 
-Each supplied image is one of: edit target, identity or wardrobe reference, product geometry and material evidence, composition or state reference, or motion reference. Name that use plus the subject it supplies in `references[].purpose` — for example "the lead's face and hair identity", "the opened main compartment as state reference", "customer's own product front panel for geometry" — never a bare label such as "content reference". `role` selects the technical input mode and `purpose` describes the visual use; they are separate fields and both must be correct.
+Each supplied image is one of: edit target, identity or wardrobe reference, product geometry and material evidence, composition or state reference, or motion reference. Name that use plus the subject it supplies in `references[].purpose` — for example "selected character: face and hair identity", "selected product: visible geometry", "selected object: action-state reference" — never a bare label such as "content reference". `role` selects the technical input mode and `purpose` describes the visual use; they are separate fields and both must be correct.
 
 Purposes carry identity assignments. When a scene has more than one recurring person or object, bind each input to the named subject, and keep that binding consistent through the prompt text and any later segment. An image simply labelled "reference" cannot hold a character's identity.
 
@@ -63,7 +63,7 @@ Purposes carry identity assignments. When a scene has more than one recurring pe
 
 An identity asset fixes who the subject is. It does not fix pose, camera, background or lighting for a scene frame: do not inherit its standing pose or studio light into a scene, and do not restate them as if they were requested.
 
-A reference of an opened bag, a mid-action state or a detail close-up supplies only its declared properties. Its state does not automatically bind a new composition. It is not an actual video first-frame control; when used as a control/edit base, its existing state must be compatible with the requested change.
+A reference depicting a particular object state, action phase or detail supplies only its declared properties. Its state does not automatically bind a new composition. It is not an actual video first-frame control; when used as a control/edit base, its existing state must be compatible with the requested change.
 
 ## Boundaries
 

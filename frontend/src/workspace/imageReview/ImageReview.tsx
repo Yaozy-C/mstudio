@@ -18,14 +18,21 @@ import "./image-review.css";
 
 export function ImageReview({
   asset,
+  comparison,
   close,
+  readOnly = false,
 }: {
   asset: Asset;
+  comparison?: Asset;
   close: () => void;
+  readOnly?: boolean;
 }) {
   useLanguage();
   const context = useContext(ImageReviewContext);
-  const key = commentDraftKey(context?.projectId ?? "", asset.id);
+  const key = commentDraftKey(
+    context?.projectId ?? "",
+    asset.imageVersionId ?? asset.id,
+  );
   const [comments, setComments] = useState(() => readCommentDraft(key));
   const [open, setOpen] = useState(comments.length > 0);
   const [marking, setMarking] = useState(true);
@@ -38,8 +45,11 @@ export function ImageReview({
     saveCommentDraft(key, comments);
   }, [key, comments]);
   const src = mediaUrl(asset.path);
-  if (!context || !context.hasAsset(asset.id))
-    return <ZoomableImage src={src} alt={asset.name} />;
+  const compare = comparison
+    ? { src: mediaUrl(comparison.path), alt: comparison.name }
+    : undefined;
+  if (readOnly || !context || !context.hasAsset(asset.id))
+    return <ZoomableImage src={src} alt={asset.name} comparison={compare} />;
   const valid = comments.length > 0 && comments.every((c) => c.text.trim());
   function finish() {
     setSelected(null);
@@ -72,6 +82,7 @@ export function ImageReview({
         <ZoomableImage
           src={src}
           alt={asset.name}
+          comparison={open ? undefined : compare}
           annotations={
             open
               ? {

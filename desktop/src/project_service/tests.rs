@@ -166,3 +166,52 @@ fn supplied_snapshot_observations_and_lost_tool_acknowledgement_survive_replay()
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn asset_reader_defaults_to_reviewed_story_assets_and_legacy_classification_respects_user_choice() {
+    let (store, mut doc, profile) = fixture();
+    doc["assets"] = json!([
+        {"id":"story","name":"Person","kind":"image","inLibrary":true},
+        {"id":"material","name":"Character asset moodboard.png","kind":"image","inLibrary":true},
+        {"id":"override","name":"Explicit material","kind":"image","inLibrary":true,"usage":"material"},
+        {"id":"draft","name":"Unreviewed character","kind":"image","generated":true}
+    ]);
+    crate::projects::write_document(&store, doc, false).unwrap();
+    store.db.lock().unwrap().execute("INSERT INTO jobs VALUES('asset-job','p',?1)",[json!({"asset":{"id":"story"},"assets":[{"id":"story"},{"id":"override"},{"id":"draft"}],"shot":{"canvasGeneration":{"task":{"generationPurpose":"asset"}}}}).to_string()]).unwrap();
+    let read = |args: Value| call(&store, &profile, "read-usage", args);
+    let default = read(json!({"action":"inspect","section":"assets"}));
+    assert_eq!(default["items"].as_array().unwrap().len(), 1, "{default}");
+    assert_eq!(default["items"][0]["id"], "story");
+    assert_eq!(default["items"][0]["usage"], "asset");
+    let ordinary = read(json!({"action":"inspect","section":"assets","usage":"material"}));
+    assert_eq!(ordinary["items"].as_array().unwrap().len(), 2);
+    let exact = read(json!({"action":"inspect","section":"assets","ids":["material","draft"]}));
+    assert_eq!(exact["items"].as_array().unwrap().len(), 2);
+    let mut changed = load(&store.db.lock().unwrap(), "p").unwrap();
+    let original = changed.clone();
+    changed["assets"][0]["usage"] = json!("material");
+    crate::projects::write_document(&store, changed, false).unwrap();
+    let saved = load(&store.db.lock().unwrap(), "p").unwrap();
+    assert_eq!(saved["assets"][0]["usage"], "material");
+    assert_eq!(
+        saved["assets"][0]["imageVersionId"],
+        original["assets"][0]["imageVersionId"]
+    );
+    assert_eq!(saved["nodes"], original["nodes"]);
+    assert!(
+        read(json!({"action":"inspect","section":"assets"}))["items"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        read(json!({"action":"inspect","section":"assets","usage":"all"}))["items"]
+            .as_array()
+            .unwrap()
+            .len(),
+        3
+    );
+    let root = store.root.clone();
+    drop(store);
+    std::fs::remove_dir_all(root).unwrap();
+}

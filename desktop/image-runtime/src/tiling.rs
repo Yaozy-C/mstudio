@@ -2,14 +2,60 @@
 use anyhow::{Result, ensure};
 use mlx_rs::Array;
 
+pub struct HostImage {
+    pub height: usize,
+    pub width: usize,
+    pub channels: usize,
+    pub values: Vec<f32>,
+}
+
+impl HostImage {
+    pub fn rgb8(&self, width: u32, height: u32) -> Result<image::RgbImage> {
+        ensure!(
+            self.channels == 3 && width as usize <= self.width && height as usize <= self.height,
+            "Invalid decoded image crop"
+        );
+        Ok(image::RgbImage::from_fn(width, height, |x, y| {
+            image::Rgb(std::array::from_fn(|c| {
+                ((self.values[(y as usize * self.width + x as usize) * 3 + c] + 1.) * 127.5)
+                    .round()
+                    .clamp(0., 255.) as u8
+            }))
+        }))
+    }
+}
+
 pub fn run(
     input: &Array,
     tile: i32,
     overlap: i32,
     scale: f32,
     channels: i32,
-    mut apply: impl FnMut(&Array) -> Result<Array>,
+    apply: impl FnMut(&Array) -> Result<Array>,
 ) -> Result<Array> {
+    let output = run_host(input, tile, overlap, scale, channels, apply)?;
+    let array = Array::from_slice(
+        &output.values,
+        &[1, output.height as i32, output.width as i32, channels],
+    )
+    .as_dtype(input.dtype())?;
+    array.eval()?;
+    Ok(array)
+}
+
+/// Keep decoded pixels in the existing CPU blend buffer; do not upload/cast a full frame.
+pub fn run_host(
+    input: &Array,
+    tile: i32,
+    overlap: i32,
+    scale: f32,
+    channels: i32,
+    mut apply: impl FnMut(&Array) -> Result<Array>,
+) -> Result<HostImage> {
+    ensure!(
+        tile > overlap && overlap >= 0 && channels > 0 && scale.is_finite() && scale > 0.,
+        "Invalid VAE tiling parameters"
+    );
     let shape = input.shape();
     let (height, width) = (shape[1], shape[2]);
     let (out_h, out_w) = (
@@ -62,10 +108,12 @@ pub fn run(
             *v /= weight.max(1e-6);
         }
     }
-    Ok(
-        Array::from_slice(&result, &[1, out_h as i32, out_w as i32, channels])
-            .as_dtype(input.dtype())?,
-    )
+    Ok(HostImage {
+        height: out_h,
+        width: out_w,
+        channels: channels as usize,
+        values: result,
+    })
 }
 
 fn axis_weights(size: usize, overlap: usize, leading: bool, trailing: bool) -> Vec<f32> {
@@ -105,5 +153,23 @@ mod tests {
                 "pixel {index}: actual={a}, expected={b}"
             );
         }
+    }
+
+    #[test]
+    fn host_output_preserves_float32_detail_and_crops_without_uploading() {
+        crate::initialize(crate::built_metallib()).unwrap();
+        let input = Array::zeros::<f32>(&[1, 4, 4, 3])
+            .unwrap()
+            .as_dtype(mlx_rs::Dtype::Float16)
+            .unwrap();
+        let output = run_host(&input, 4, 0, 1., 3, |_| {
+            Ok(Array::from_slice(&[0.123456f32; 48], &[1, 4, 4, 3]))
+        })
+        .unwrap();
+        assert_eq!(output.values, vec![0.123456; 48]);
+        let rgb = output.rgb8(3, 2).unwrap();
+        assert_eq!(rgb.dimensions(), (3, 2));
+        assert!(rgb.pixels().all(|p| p.0 == [143; 3]));
+        assert!(output.rgb8(5, 2).is_err());
     }
 }

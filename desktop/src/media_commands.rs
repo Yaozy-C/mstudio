@@ -59,7 +59,8 @@ pub async fn render_video(
         let output = exports.join(format!("mstudio-{id}.mp4"));
         crate::project_storage::track_file(&store, &project_id, &work).map_err(|e| e.to_string())?;
         crate::project_storage::track_file(&store, &project_id, &output).map_err(|e| e.to_string())?;
-        let assets = store.assets().map_err(|e| e.to_string())?;
+        let document = crate::project_service::load(&store.db.lock().unwrap(),&project_id).map_err(|e| e.to_string())?;
+        let assets = crate::previs::media::resolved(&store,&document).map_err(|e| e.to_string())?;
         if let Some(asset) = assets.iter().find(|a| a.missing && spec.clips.iter().any(|c| c.asset_id == a.id)) {
             return Err(format!("文件缺失：{}。请恢复文件后再导出。", asset.name));
         }

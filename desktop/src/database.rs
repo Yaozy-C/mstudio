@@ -63,6 +63,7 @@ impl Store {
         crate::project_service::init(&db)?;
         crate::asset_library::init(&db)?;
         schema::init(&db)?;
+        crate::image_versions::init(&db)?;
         crate::video_analysis::history_store::init(&db)?;
         crate::job_recovery::recover_interrupted_submissions(&db)?;
         history_cleanup::startup(&db)?;

@@ -1,13 +1,9 @@
 import { expect, test } from "bun:test";
-import { asset, fixture, model } from "./fixtures.test-helper";
+import { asset, fixture } from "./fixtures.test-helper";
 import { saveTask } from "./document";
 import { applyOperations, inspectProject } from "../assistant/projectCommands";
-import { requestTask } from "./requestTask";
-import { inputFor } from "./request";
 import { supportsReference } from "./referenceSelection";
-import { setFrameInput } from "./frameInputs";
-import { collectAsset } from "../workspace/assetLibrary";
-import { receipt } from "../domain/receipt";
+import { collectAsset, setAssetUsage } from "../workspace/assetLibrary";
 import type { ProductionTask } from "./types";
 
 function setup() {
@@ -42,128 +38,78 @@ function setup() {
   return { project, task, context };
 }
 
-test("correction replaces prompt and references on one task and revokes old results", () => {
+test("regeneration edits one task and preserves all existing media uses", () => {
   const { project, task, context } = setup();
+  project.assets[0].inLibrary = true;
   const ops = [
     {
       op: "regenerate_generation",
       taskKey: task.key,
       text: "corrected",
-      references: ["a", "b", "reference"].map((assetId) => ({
-        assetId,
-        purpose: "product",
-      })),
+      references: [{ assetId: "a", purpose: "product" }],
     },
   ];
   const next = applyOperations(project, ops, context);
   expect(Object.keys(next.production!.drafts!)).toEqual([task.key]);
   expect(next.production!.drafts![task.key]).toMatchObject({
-    key: task.key,
     prompt: "corrected",
     status: "AWAITING_CONFIRMATION",
     modelId: task.modelId,
     parameters: task.parameters,
   });
-  expect(
-    next.production!.drafts![task.key].inputs.map((i) => i.assetId),
-  ).toEqual(["a", "b", "reference"]);
   expect(next.production!.drafts![task.key].resultAssetIds).toBeUndefined();
-  expect(next.assets.find((a) => a.id === "bad")?.discarded).toBe(true);
-  expect(project.assets.find((a) => a.id === "bad")?.discarded).toBeUndefined();
+  expect(next.assets).toEqual(project.assets);
+  expect(next.nodes).toEqual(project.nodes);
+  expect(next.clips).toEqual(project.clips);
   expect(applyOperations(next, ops, context)).toEqual(next);
-  expect(receipt(project, next, ops, "fix").discardedAssetIds).toEqual(["bad"]);
 });
 
-test("discarded outputs cannot be selected, recollected into usability, or submitted to video", () => {
+test("previous drafts remain explicitly reusable; collection and story usage control default discovery", () => {
   const { project, task, context } = setup();
   const next = applyOperations(
     project,
-    [{ op: "regenerate_generation", taskKey: task.key }],
-    context,
-  );
-  const bad = next.assets.find((a) => a.id === "bad")!;
-  expect(supportsReference(bad)).toBe(false);
-  expect(
-    supportsReference(
-      collectAsset(next, bad).assets.find((a) => a.id === bad.id)!,
-    ),
-  ).toBe(false);
-  expect(
-    (
-      inspectProject(next, { section: "assets" }).items as { id: string }[]
-    ).some((a) => a.id === bad.id),
-  ).toBe(false);
-  for (const kind of ["image", "video"] as const) {
-    expect(() =>
-      requestTask(
-        next,
-        {
-          mediaKind: kind,
-          title: "Corrected product",
-          text: "next",
-          references: [{ assetId: "bad", purpose: "product" }],
-        },
-        { ...context, callId: kind },
-      ),
-    ).toThrow("已废弃");
-  }
-  const video: ProductionTask = {
-    ...task,
-    kind: "video",
-    mode: "single",
-    prompt: "animate",
-    inputs: [
-      { key: "bad", assetId: "bad", role: "first-frame", purpose: "product" },
-    ],
-  };
-  expect(() =>
-    setFrameInput(video, next, "first-frame", video.inputs[0]),
-  ).toThrow("可用");
-  // A previously saved video draft must also fail at the actual submission boundary.
-  expect(() =>
-    inputFor(next, video, model("minimax/h3/image-to-video")),
-  ).toThrow("已废弃");
-  expect(() =>
-    requestTask(
-      next,
-      { mediaKind: "video", title: "Corrected video", text: "next" },
+    [
       {
-        ...context,
-        callId: "inherited",
-        turn: { ...context.turn, task: video },
+        op: "regenerate_generation",
+        taskKey: task.key,
+        references: [{ assetId: "bad", role: "edit", purpose: "edit output" }],
       },
-    ),
-  ).toThrow("已废弃");
-});
-
-test("invalid corrections are atomic and result reuse requires an explicit keep flag", () => {
-  const { project, task, context } = setup();
-  const op = {
-    op: "regenerate_generation",
-    taskKey: task.key,
-    references: [{ assetId: "bad", role: "edit", purpose: "edit output" }],
-  };
-  expect(() => applyOperations(project, [op], context)).toThrow("已废弃");
-  expect(project.production!.drafts![task.key].status).toBe("COMPLETED");
-  expect(project.assets.find((a) => a.id === "bad")?.discarded).toBeUndefined();
-  const next = applyOperations(
-    project,
-    [{ ...op, keepPreviousResults: true }],
+    ],
     context,
   );
-  expect(next.assets.find((a) => a.id === "bad")?.discarded).toBeUndefined();
   expect(next.production!.drafts![task.key].inputs[0].assetId).toBe("bad");
+  expect(supportsReference(next.assets.find((a) => a.id === "bad")!)).toBe(
+    true,
+  );
+  const read = (p: typeof project, ids?: string[]) =>
+    (
+      inspectProject(p, { section: "assets", ids }).items as { id: string }[]
+    ).map((a) => a.id);
+  expect(read(next)).not.toContain("bad");
+  expect(read(next, ["bad"])).toEqual(["bad"]);
+  const collected = collectAsset(
+    next,
+    next.assets.find((a) => a.id === "bad")!,
+  );
+  expect(read(collected)).not.toContain("bad");
+  expect(read(setAssetUsage(collected, "bad", "asset"))).toContain("bad");
+});
+
+test("invalid corrections leave completed tasks and media unchanged", () => {
+  const { project, task, context } = setup();
+  const before = structuredClone(project);
   expect(() =>
     applyOperations(
       project,
-      [{ ...op, references: [{ assetId: "v", role: "first-frame" }] }],
+      [
+        {
+          op: "regenerate_generation",
+          taskKey: task.key,
+          references: [{ assetId: "missing", purpose: "product" }],
+        },
+      ],
       context,
     ),
-  ).toThrow("用途");
-  const cleared = applyOperations(
-    project,
-    [{ ...op, references: [] }],
-    context,
-  );
-  expect(cleared.production!.drafts![task.key].inputs).toEqual([]);
+  ).toThrow();
+  expect(project).toEqual(before);
 });

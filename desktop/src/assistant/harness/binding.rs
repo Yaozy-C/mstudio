@@ -62,7 +62,7 @@ mod tests {
                 .is_none()
         );
         let mut archived = current.clone();
-        archived["archiveContext"] = json!({"archived":["old-task"],"discarded":[]});
+        archived["archiveContext"] = json!({"archived":["old-task"]});
         assert!(
             session::restore(&store, "p", "turn", &archived)
                 .unwrap()

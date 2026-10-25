@@ -1,6 +1,6 @@
 use super::{cleanup::managed, references};
 use anyhow::Result;
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 use serde_json::Value;
 use std::{
     collections::{HashMap, HashSet},
@@ -171,6 +171,51 @@ pub fn build_selected(
                 candidates.insert(path);
             } else if owner != id {
                 protected.insert(path);
+            }
+        }
+    }
+    let raw: Option<String> = db
+        .query_row("SELECT document FROM projects WHERE id=?1", [id], |r| {
+            r.get(0)
+        })
+        .optional()?;
+    let document: Value = raw
+        .map(|s| serde_json::from_str(&s))
+        .transpose()?
+        .unwrap_or_default();
+    // Version files are project-owned even when the logical original asset is
+    // shared. Protect actual shared paths, not every file behind that asset ID.
+    let rows = db
+        .prepare("SELECT project_id,image_id,data FROM image_versions")?
+        .query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+            ))
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    for (owner, asset, raw) in rows {
+        let value: Value = serde_json::from_str(&raw)?;
+        for key in ["path", "preview"] {
+            if let Some(path) = value[key].as_str().filter(|s| !s.is_empty())
+                && let Some(path) = managed(root, Path::new(path))?
+            {
+                let shared_image = selected.is_some_and(|ids| {
+                    document["assets"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .any(|a| {
+                            crate::image_versions::image_id(a).ok() == Some(asset.as_str())
+                                && a["id"].as_str().is_some_and(|id| !ids.contains(id))
+                        })
+                });
+                if owner == id && selected.is_none_or(|ids| ids.contains(&asset)) && !shared_image {
+                    candidates.insert(path);
+                } else {
+                    protected.insert(path);
+                }
             }
         }
     }

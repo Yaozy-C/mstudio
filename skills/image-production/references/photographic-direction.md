@@ -14,24 +14,19 @@ Use for live-action or photorealistic character assets, scene stills and control
 ## Write the photograph
 
 - Open with the photographic fact when realism is requested: "A real photograph of..." or "A photorealistic...".
-- Name the moment and the camera relationship. "Camera at seated eye level, 50mm, three metres from the platform" is more useful than "cinematic shot".
-- Describe light as a physical setup: a window camera-left, a 3:1 falloff, a pale wall bounce, a low sun behind the subject.
-- Say what the light does on each material: a soft sheen on the forehead, dry lips, linen folds catching a highlight, matte metal with a narrow reflection.
-- Put the subject in a real place with depth and small, specific objects. A generic background makes the subject look pasted in.
+- Name the moment and the camera relationship. "Camera at the subject's eye level, 50mm, three metres from the subject" is more useful than "cinematic shot".
+- Describe light as a physical setup: source position, direction and apparent size, plus fill only when the chosen setup needs it.
+- Describe only material responses that matter at the selected scale; a full-body portrait does not need a close-up skin or fiber inventory.
+- Use the background required by the deliverable. A simple reference backdrop is valid; for scene integration, make perspective, contact and light agree rather than adding decorative objects.
 - Keep one visual idea per frame. A second idea belongs in another frame, not in more adjectives.
 
-## Breaking the AI look
+## Diagnose photographic credibility
 
-| Symptom | Usual prompt cause | Positive replacement |
-|---|---|---|
-| Waxy, uniform skin | "smooth skin", "flawless", "beauty", "retouched" | Pores at the actual scale, regional sheen, fine lines, vellus hair, uneven tone, shadow-side detail |
-| Catalogue pose | "full body, standing, neutral expression, plain background" | Mid-action, weight on one leg, hands occupied, gaze off-camera, a real room |
-| Flat light | "soft even lighting", "studio light" | Directional window light, 3:1 ratio, shadow-side bounce, motivated practicals |
-| Plastic fabric | "clean, crisp, premium" | Folds caused by the pose, seams, weave, slight wear, fabric weight |
-| Orange or teal wash | "cinematic, warm sunset, teal and orange" | Name sky, sea, skin and neutral values separately; keep one warm source |
-| Over-sharpened detail | "8K, ultra detailed, HDR, sharp focus everywhere" | Natural optical sharpness, shallow depth of field where appropriate, grain, gentle highlight roll-off |
-| Generic face | "beautiful, symmetrical, perfect features" | Specific bone structure, slight asymmetry, a distinctive nose or chin, an unposed expression |
-| Empty backdrop | "simple background", "minimal" | A lived-in room, wall texture, depth falloff, one or two ordinary objects |
+For people, judge facial volume, coordinated expression, head/neck/body continuity, required hand contact and integration into one lighting environment. For surfaces, judge material response at the visible scale. Work from an actual observed mismatch; a list of adjectives or imperfections is not evidence of improvement.
+
+Static, frontal, centered and formal poses can suit reference assets. Do not automatically add side gaze, tilted heads, uneven weight or occupied hands. Preserve the requested action and specify its contact clearly. Smooth skin, approximate symmetry and a simple backdrop may be correct; do not replace them with compulsory pores, crooked features, grime or set dressing.
+
+Match sharpness, surface detail and exposure to the framing and photographic intent. Natural shadows, soft transitions and unresolved secondary detail can remain. Correct the specific cause rather than forcing every material and shadow into a display image.
 
 ## Camera and optics
 
@@ -50,27 +45,17 @@ State height and distance together with the lens. A lens label alone does not es
 ## Light and color
 
 - A large source close to the subject is soft; a small or distant source is hard. Name the size rather than saying "soft light".
-- Direction creates form: front light flattens, 45-degree side light models, back light separates. Say which side and what fills the shadow.
+- Direction creates form: front light flattens, 45-degree side light models, back light separates. State the source direction and any motivated fill; do not add fill merely to expose secondary texture.
 - A 2:1 ratio is gentle; 3:1 is a clear portrait ratio; 4:1 or more is dramatic. Use a ratio only when it describes the intended look.
-- Let the environment supply color: warm sand bounce against a cool dusk sky, a tungsten room against daylight through a window. Do not put a global orange or teal grade on every surface.
+- Let the actual environment and motivated light sources supply color; distinguish direct light, ambient fill and reflected light. Do not put a global orange or teal grade on every surface.
 - Protect skin and product colors. A warm scene does not make a brown complexion orange, and a cool scene does not make it gray.
-- Keep highlights from clipping and shadows from crushing. A real photograph can have either, but the choice should be intentional.
+- Choose highlight and shadow visibility deliberately. Natural shadow or optical falloff need not reveal every skin and cloth detail.
 
 ## Asset versus scene light
 
-An identity or construction asset uses readable light so the subject can be inspected: a directional window or a large source with a gentle falloff is enough. It does not need a seamless studio backdrop. A scene still uses motivated story light, which may be harder, darker or more colored; preserve identity and construction while changing the light.
+An identity or construction asset uses light that makes its required properties readable. Choose source, background and pose for that purpose; no particular window, bounce, contrast ratio or candid presentation is required. A scene still uses motivated story light, which may be harder, darker or more colored; preserve identity and construction while changing the light.
 
 Do not carry an asset plate's backdrop, exposure or pose into a scene. Do not carry a scene's dramatic grade into an identity plate, where it would hide skin or product color.
-
-## Worked example: identity plate
-
-> A real photograph of a fictional woman in her mid-thirties, head and shoulders, 85mm at f/2.8, camera at eye level. She stands in a lived-in room beside a window; the window is a large soft source from camera left, with a gentle falloff to the shadow side and a pale wall bounce. She wears a worn indigo cotton shirt, collar open, one cuff folded unevenly. Her warm brown skin shows pores across the nose and cheeks at this distance, fine lines at the eyes, a slight sheen on the forehead and natural uneven tone; the shadow cheek stays readable. Dark hair is tied back with loose strands at the temple. She is caught between actions, looking just past the lens, mouth relaxed, one shoulder lower. The room falls into soft depth behind her. Natural color, gentle contrast, fine 35mm grain, no retouching.
-
-The prompt gives a place, a light setup, a specific person, a wardrobe state and an unposed moment. It does not ask for "beautiful", "perfect" or "studio".
-
-## Worked example: scene still
-
-> A photorealistic 35mm film still, camera at seated eye level on wet sand, 50mm at T2.8. A woman singer stands on a low timber platform at dusk, hand just released from a microphone, looking down-left with a small dawning smile. In the lower left foreground an older woman sits cross-legged, hands meeting in a clap. The sun is below the horizon: a thin apricot band remains, the sky above is dusty blue-grey, the sea is dark slate. Warm sand bounce lights the faces; a cool ambient fill keeps the shadow side readable. Rust-red linen, cream trousers, grey curls, weathered planks and matte black metal each catch the light differently. Fine grain, soft highlight roll-off, open shadows, muted natural color.
 
 ## Check before submitting
 
@@ -78,9 +63,9 @@ The prompt gives a place, a light setup, a specific person, a wardrobe state and
 - Does every major light have a source, direction and falloff?
 - Is there one clear attention centre and a readable foreground/background relationship?
 - Are skin, hair, cloth and metal described through different responses?
-- Did I use a positive, visible replacement for every "not" I removed?
+- Did I address the observed problem without adding a standard texture, pose or wear formula?
 - Did I avoid promising a resolution or control the endpoint does not expose?
 
 ## Sources and limits
 
-[OpenAI's image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting) recommends describing visible details, requesting "photorealistic" explicitly, using photography language and treating camera specifications as cues. [OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) recommends prompting as if a real photo is being captured in the moment and explicitly asking for pores, wrinkles, fabric wear and imperfections. These are method references; they do not guarantee that a given endpoint reproduces a physical camera.
+[OpenAI's image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting) recommends describing visible details, requesting "photorealistic" explicitly, using photography language and treating camera specifications as cues. [OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) illustrates photographic descriptions with concrete appearance cues. Choose cues at the actual scale rather than copying texture and imperfection lists. These are method references; they do not guarantee that a given endpoint reproduces a physical camera.

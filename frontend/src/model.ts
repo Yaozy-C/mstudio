@@ -1,11 +1,14 @@
 import type { ScriptDocument, PlannedShot } from "./creative/types";
 export type Asset = {
+  usage?: "asset" | "material";
   annotationSourceId?: string;
   attachmentOnly?: boolean;
   generated?: boolean;
-  discarded?: boolean;
   missing?: boolean;
   inLibrary?: boolean;
+  imageId?: string;
+  imageVersionId?: string;
+  imageVersionCount?: number;
   id: string;
   name: string;
   kind: "video" | "image" | "audio" | "text" | "document";

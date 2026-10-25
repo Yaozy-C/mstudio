@@ -29,12 +29,7 @@ export function archivedSummary(p: Project, task: ProductionTask) {
     status: task.status,
     archived: true,
     hiddenFromList: true,
-    resultAssetIds: ids.filter((id) =>
-      p.assets.some((a) => a.id === id && !a.discarded),
-    ),
-    discardedResultCount: ids.filter((id) =>
-      p.assets.some((a) => a.id === id && a.discarded),
-    ).length,
+    resultAssetIds: ids.filter((id) => p.assets.some((a) => a.id === id)),
     continuation: {
       state: "finished",
       action: "read_details_on_request",

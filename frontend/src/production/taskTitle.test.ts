@@ -144,7 +144,7 @@ test("title-only edits preserve active job identity, prompt, references and gene
     }
 });
 
-test("renaming a task updates its result display names and preserves physical media paths", () => {
+test("renaming a task preserves independent material names and canvas cards", () => {
   const p = fixture();
   const task = {
     ...createTask(p, []),
@@ -163,8 +163,8 @@ test("renaming a task updates its result display names and preserves physical me
   const next = applyOperations(saveTask(p, task), [
     { op: "update_generation", taskKey: task.key, title: "Renamed" },
   ]);
-  expect(next.assets[0]).toEqual({ ...p.assets[0], name: "Renamed" });
-  expect(next.nodes.find((node) => node.id === "card")?.title).toBe("Renamed");
+  expect(next.assets).toBe(p.assets);
+  expect(next.nodes).toBe(p.nodes);
   expect(next.nodes[1]).toBe(p.nodes[1]);
   expect(next.assets[1]).toBe(p.assets[1]);
 });

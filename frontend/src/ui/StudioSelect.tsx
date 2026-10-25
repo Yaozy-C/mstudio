@@ -27,7 +27,10 @@ export function StudioSelect({
     <Select.Root
       open={open}
       onOpenChange={(next) => {
-        if (next) setContainer(trigger.current?.closest("dialog") ?? null);
+        if (next)
+          setContainer(
+            trigger.current?.closest<HTMLElement>("dialog, [role='dialog']") ?? null,
+          );
         setOpen(next);
       }}
       value={selected ? `option:${value}` : ""}

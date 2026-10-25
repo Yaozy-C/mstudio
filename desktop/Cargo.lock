@@ -3363,6 +3363,8 @@ dependencies = [
  "pmetal-mlx-sys",
  "serde",
  "serde_json",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

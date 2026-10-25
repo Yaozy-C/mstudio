@@ -1,7 +1,6 @@
 import { CheckCircle } from "@phosphor-icons/react";
 import { t } from "../i18n";
 import type { Asset } from "../model";
-import { DiscardedAssetBadge } from "./DiscardedAssetBadge";
 
 export function CanvasAssetStatus({
   asset,
@@ -13,7 +12,6 @@ export function CanvasAssetStatus({
   if (!asset) return null;
   return (
     <>
-      {asset.discarded && <DiscardedAssetBadge />}
       {inTimeline && (
         <span
           className="card-timeline-usage"

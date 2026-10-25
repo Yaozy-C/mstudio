@@ -5,7 +5,6 @@ import { createTask } from "./tasks";
 import { archiveTask } from "./archive";
 import { inspectProject } from "../assistant/inspectProject";
 import { changeBatch } from "./batch";
-import { describeAttachment } from "../assistant/attachments";
 import { applyOperations } from "../assistant/projectCommands";
 import { receipt } from "../domain/receipt";
 import { prepareGeneration } from "../domain/generation";
@@ -66,34 +65,6 @@ test("archived tasks expose facts, retain full records for exact reads and canno
       true,
     ),
   ).toThrow();
-});
-
-test("discarded results cannot reenter Agent attachments, canvas or generation references", () => {
-  const p = fixture();
-  p.assets[0].discarded = true;
-  expect(
-    describeAttachment(p, { kind: "asset", id: p.assets[0].id }),
-  ).toBeNull();
-  expect(() =>
-    applyOperations(p, [
-      {
-        op: "add_node",
-        id: "reused",
-        kind: "asset",
-        assetId: p.assets[0].id,
-        title: "bad",
-      },
-    ]),
-  ).toThrow("废弃");
-  expect(() =>
-    applyOperations(p, [
-      {
-        op: "request_generation",
-        text: "x",
-        references: [{ assetId: p.assets[0].id, role: "reference" }],
-      },
-    ]),
-  ).toThrow("废弃");
 });
 
 test("Agent archives obsolete pending tasks with a finished receipt and can restore them", () => {

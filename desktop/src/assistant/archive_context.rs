@@ -23,7 +23,7 @@ pub fn summary(doc: &Value, task: &Value) -> Value {
         .filter(|id| {
             doc["assets"]
                 .as_array()
-                .is_some_and(|a| a.iter().any(|a| a["id"] == **id && a["discarded"] != true))
+                .is_some_and(|a| a.iter().any(|a| a["id"] == **id))
         })
         .collect();
     json!({"id":task["key"],"kind":task["kind"],"summary":task["instruction"].as_str().unwrap_or("").chars().take(120).collect::<String>(),"targetNodeId":task["targetNodeId"],"status":task["status"],"archived":true,"resultAssetIds":usable,"unavailableResultCount":ids.len()-usable.len(),"readWith":{"tool":"mstudio_read_generation","taskKey":task["key"]}})
@@ -36,7 +36,7 @@ pub fn snapshot(doc: &Value) -> Value {
 // Resume and fork checkpoints containing old tool transcripts must not reintroduce
 // newly archived work. New turns use bounded chat history plus fresh summaries.
 pub fn revision(doc: &Value) -> Value {
-    json!({"archived":tasks(doc).iter().map(|t|t["key"].clone()).collect::<Vec<_>>(),"discarded":doc["assets"].as_array().into_iter().flatten().filter(|a|a["discarded"]==true).map(|a|a["id"].clone()).collect::<Vec<_>>()})
+    json!({"archived":tasks(doc).iter().map(|t|t["key"].clone()).collect::<Vec<_>>()})
 }
 pub fn archived_turns(doc: &Value) -> Vec<String> {
     let all: Vec<_> = doc["production"]["drafts"]
@@ -96,7 +96,7 @@ mod tests {
     use super::*;
     #[test]
     fn history_has_only_facts_and_mixed_turns_remain_available() {
-        let doc = json!({"assets":[{"id":"good"},{"id":"bad","discarded":true}],"production":{"drafts":{
+        let doc = json!({"assets":[{"id":"good"}],"production":{"drafts":{
             "old":{"key":"old","hiddenFromList":true,"turnId":"old-turn","prompt":"secret old prompt","inputs":[{"purpose":"long purpose"}],"parameters":{"width":1024},"resultAssetIds":["good","bad"]},
             "mixed":{"key":"mixed","hiddenFromList":true,"turnId":"mixed"},
             "active":{"key":"active","turnId":"mixed"}}}});

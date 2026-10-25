@@ -217,10 +217,6 @@ export const operationContract = {
           ]),
           "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references.",
         ),
-        keepPreviousResults: described(
-          boolean,
-          "Defaults to false: discard replaced results so they cannot be used by later generation. Set true only when explicitly producing an additional usable variant or editing the previous result.",
-        ),
       },
       ["taskKey"],
     ),

@@ -6,7 +6,9 @@ import { requestTask } from "../production/requestTask";
 import { createTask } from "../production/tasks";
 
 test("removed media is absent from agent discovery, including explicit ID lookup", () => {
-  const p = uncollectAsset(fixture(), "a");
+  const source = fixture();
+  source.assets[0].usage = "asset";
+  const p = uncollectAsset(source, "a");
   for (const args of [
     { section: "assets" },
     { section: "assets", ids: ["a"] },
@@ -54,7 +56,7 @@ test("stale IDs cannot add references or timeline uses, but existing references 
   expect(edited.assets).toBe(oldReference.assets);
 });
 
-test("agent generation rejects both explicit and inherited removed references", () => {
+test("agent generation rejects explicit task references to removed media", () => {
   const p = uncollectAsset(fixture(), "reference");
   const context = {
     callId: "removed",
@@ -71,7 +73,9 @@ test("agent generation rejects both explicit and inherited removed references", 
     id: "shot",
     text: "Generate a frame",
   };
-  expect(() => requestTask(p, op, context)).toThrow("移除");
+  expect(
+    requestTask(p, op, context).production!.drafts!["run:removed:0"].inputs,
+  ).toEqual([]);
   expect(() =>
     requestTask(
       p,

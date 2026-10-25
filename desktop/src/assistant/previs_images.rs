@@ -76,9 +76,6 @@ mod tests {
         assert!(message(&store, &doc, "Edit", &ids, &profile).is_err());
         assert!(message(&store, &doc, "Text only", &[], &profile).is_ok());
         profile.inputs.image = true;
-        let mut discarded = doc.clone();
-        discarded["assets"][0]["discarded"] = json!(true);
-        assert!(message(&store, &discarded, "Edit", &ids, &profile).is_err());
         std::fs::remove_file(root.join("assets/image.jpg")).unwrap();
         assert!(message(&store, &doc, "Edit", &ids, &profile).is_err());
         drop(store);

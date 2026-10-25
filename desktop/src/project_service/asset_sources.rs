@@ -1,6 +1,6 @@
 //! Asset provenance comes from committed job outputs, never filenames or chat text.
 use anyhow::Result;
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
 pub fn enrich(db: &Connection, project: &str, args: &Value, result: &mut Value) -> Result<()> {
@@ -50,6 +50,34 @@ fn source(
     offset: usize,
     limit: usize,
 ) -> Result<Value> {
+    let processing: Option<(String,i64)>=db.query_row(
+        "SELECT v.provenance,v.created FROM projects p JOIN json_each(p.document,'$.assets') a
+         JOIN image_versions v ON v.project_id=p.id AND v.id=json_extract(a.value,'$.imageVersionId')
+         AND v.image_id=coalesce(json_extract(a.value,'$.imageId'),json_extract(a.value,'$.id'))
+         WHERE p.id=?1 AND json_extract(a.value,'$.id')=?2 AND v.provenance IS NOT NULL
+         UNION ALL SELECT data,created FROM image_processing_results WHERE project_id=?1 AND asset_id=?2 LIMIT 1",
+        params![project,asset],|r|Ok((r.get(0)?,r.get(1)?)),
+    ).optional()?;
+    if let Some((raw, created)) = processing {
+        let data: Value = serde_json::from_str(&raw)?;
+        let mut result = json!({"status":"available","kind":"imageProcessing",
+                "inputAssetId":data["inputAssetId"],"inputVersionId":data["inputVersionId"],"engine":data["engine"],"created":created});
+        if detailed {
+            let mut operation = data["operation"].clone();
+            // Keep full LUT text in the durable record, not in model context.
+            if let Some(cube) = operation.as_object_mut().and_then(|o| o.remove("cube")) {
+                use sha2::{Digest, Sha256};
+                if let Some(cube) = cube.as_str() {
+                    operation["cubeSha256"] =
+                        json!(format!("{:x}", Sha256::digest(cube.as_bytes())));
+                }
+            }
+            result["operation"] = operation;
+            result["device"] = data["runtime"]["device"].clone();
+            result["applicationVersion"] = data["applicationVersion"].clone();
+        }
+        return Ok(result);
+    }
     let mut stmt = db.prepare("SELECT id,data FROM jobs WHERE project_id=?1 AND (json_extract(data,'$.asset.id')=?2 OR EXISTS(SELECT 1 FROM json_each(data,'$.assets') a WHERE json_extract(a.value,'$.id')=?2)) ORDER BY id")?;
     let jobs = stmt
         .query_map(params![project, asset], |r| {

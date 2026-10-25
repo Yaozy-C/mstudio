@@ -7,13 +7,11 @@ use std::path::PathBuf;
 
 pub fn input(store: &Store, project: &str, id: &str) -> Result<PathBuf> {
     let document = project_service::load(&store.db.lock().unwrap(), project)?;
-    let value = document["assets"]
+    document["assets"]
         .as_array()
         .and_then(|assets| assets.iter().find(|a| a["id"] == id))
         .context("图片不属于当前项目")?;
-    ensure!(value["discarded"] != true, "图片已弃用");
-    let asset = store
-        .assets()?
+    let asset = crate::previs::media::resolved(store, &document)?
         .into_iter()
         .find(|a| a.id == id)
         .context("图片不存在")?;
@@ -24,7 +22,13 @@ pub fn input(store: &Store, project: &str, id: &str) -> Result<PathBuf> {
     crate::previs::media::managed_path(store, &asset)
 }
 
-pub fn save(store: &Store, project: &str, name: &str, outputs: &[PathBuf]) -> Result<Vec<Asset>> {
+pub fn save(
+    store: &Store,
+    project: &str,
+    name: &str,
+    outputs: &[PathBuf],
+    source: Option<&serde_json::Value>,
+) -> Result<Vec<Asset>> {
     let mut assets = Vec::new();
     let result = (|| -> Result<()> {
         for (index, output) in outputs.iter().enumerate() {
@@ -48,6 +52,12 @@ pub fn save(store: &Store, project: &str, name: &str, outputs: &[PathBuf]) -> Re
                 "INSERT INTO assets VALUES(?1,?2)",
                 params![asset.id, serde_json::to_string(asset)?],
             )?;
+            if let Some(source) = source {
+                tx.execute(
+                    "INSERT INTO image_processing_results(asset_id,project_id,input_asset_id,data) VALUES(?1,?2,?3,?4)",
+                    params![asset.id, project, source["inputAssetId"].as_str().context("处理来源缺少输入素材")?, source.to_string()],
+                )?;
+            }
             let mut value = json!(asset);
             value["inLibrary"] = json!(true);
             library.push(value);

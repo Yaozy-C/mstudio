@@ -1,75 +1,41 @@
-# Skin realism
+# Skin realism at the visible scale
 
-Use for photographic people at medium close-up or closer, and for repairing synthetic skin. Skin is not a texture layer added after the face: it is anatomy, regional color and light response seen at a specific distance. Texture alone cannot make a face photographically credible.
+Use for a visible close-up property or an assigned appearance repair. Begin with credible facial volume, expression and the connection of head, neck and body. Surface texture alone cannot establish a photographic person.
 
-## Read the face before the texture
+## Determine the actual problem
 
-- Establish bone structure, face shape, jaw, chin, nose bridge and cheekbones before surface detail.
-- Allow slight asymmetry: one eye a little lower, one brow different, a nose that is not centered by geometry. Symmetry imposed by the prompt reads as synthetic.
-- Age lives in eyelids, under-eye volume, nasolabial folds, mouth corners, neck and hands before it lives in "wrinkles".
-- Hairline, ears and neck are common synthetic tells. Give them the same attention as the eyes.
-- At full-body scale, identity and silhouette matter more than microscopic pores. Do not describe pore-level detail that the frame cannot show.
+Read the supplied pixels and feedback. Distinguish facial geometry, eye/mouth coordination, exposure, complexion, excessive reflection, artificial texture and oversharpening. Do not infer a defect from a neutral pose, smooth skin, symmetry or missing visible pores. When no pixels are available, describe the intended photograph without inventing a diagnosis.
 
-## Regional color
+## Match detail to framing
 
-- Let forehead, cheeks, nose, perioral area, ears and neck differ in warmth and redness at low amplitude.
-- A shadow side is darker, not a different complexion. Do not lighten deep skin to make it readable; use bounce or exposure, not a global skin change.
-- Keep lips, eyelids and nostrils distinct from cheek tone. A uniform skin color across the whole face is a mask.
-- Sweat, oil, dust, sunburn and makeup are temporary states. Do not bake them into a reusable identity asset unless the design requires that state.
+A full-body or small board panel prioritizes identity, silhouette, clothing and support/contact. Do not request pores, vellus hairs, tiny cracks, skin damage or individual textile fibers below the visible scale. A closer reference is useful only when identity or another required detail cannot otherwise be judged and the additional output is authorized.
 
-## Surface at the actual scale
+At portrait distance, use only the person-specific and light-dependent cues needed to describe a visible property. Microtexture, sheen, fine lines and color variation are conditional, not a checklist. Preserve selected age, complexion, makeup and identifying features rather than inventing asymmetry, blemishes or signs of age.
 
-- At a head-and-shoulders portrait, pores are visible mainly on the nose, inner cheeks and forehead; they soften on the outer cheeks and neck.
-- Fine lines appear at the eyes, mouth and neck according to age. Do not give a young face an old texture map, or an older face a young person's volume.
-- Vellus hair catches light at the jaw and temple. Individual loose hairs cross the skin without drawing a hard outline.
-- Normal sheen follows the light: a small highlight on the nose tip, forehead and lower lip. It is not a continuous gloss over the cheeks.
-- Dry lips, a slightly uneven lip line, faint under-eye shadow and small color irregularities are ordinary. They are not "flaws" to be removed.
-- Fabric, hair and skin must not share one gloss level. If the shirt is matte, the forehead can still have a localized sheen.
+## Keep anatomy and expression coherent
 
-## Light response
+Consider how eyes, eyelids, cheeks and mouth contribute to the chosen expression, and how the face joins the hairline, ears and neck. Keep proportions and apparent age consistent with the selected person. Do not add a distinctive nose, crooked eye or wrinkles simply to avoid a generic face.
 
-- Name the source size, direction and fill. A large window creates a soft transition; a small source creates a harder specular highlight.
-- Skin transmits a little warmth in the shadow side, especially on ears, nose and fingers. This is a subtle color relationship, not a red overlay.
-- The specular highlight should sit on a facial plane facing the source. A highlight that wraps the whole face is a plastic tell.
-- Keep the shadow side readable without flattening the key. A 3:1 ratio is a useful portrait starting point, not a rule for every scene.
+For hands, establish the required position, grip, support and object contact before skin detail. Natural stillness and empty relaxed hands are valid when no action is requested.
 
-## Hands, neck and ears
+## Let light explain appearance
 
-- Check finger count, knuckle direction, nail direction and where each hand is supported. Hands are a stronger realism signal than pores.
-- Neck tendons, Adam's apple, collarbones and ears need age-appropriate structure. A perfectly smooth neck under an older face is a tell.
-- Hair roots, sideburns and the hairline should sit on the skull, not as a painted edge.
-- If a hand holds an object, describe contact, grip pressure and the object's response before describing skin.
+Preserve complexion separately from exposure and temporary moisture. Light direction, source size and facial planes should explain highlights and shadows. Use fill only when motivated by the selected setup or necessary identity visibility; do not expose every shadow to display skin texture. A shadow is not a different complexion.
 
-## Example: woman in her thirties, window light
+Skin, hair, cloth and other surfaces respond differently, but each does not require an additional reflection or texture instruction. Preserve natural smoothness and restrained detail where that is what the view supports. Localized reflection is not a reason to make the rest of the face uniformly matte.
 
-> A real photograph of a fictional woman in her mid-thirties, head and shoulders, 85mm at f/2.8, camera at eye level. A large window camera-left supplies soft directional daylight; a pale wall fills the shadow side at roughly 3:1. She has warm brown skin with visible pores across the nose and inner cheeks, faint lines at the eyes, a slight sheen on the forehead, dry lips and natural uneven tone. Her dark hair is tied back, with loose strands at the temple. One shoulder is lower; she looks just past the lens. The plain room falls into soft depth. Natural color, fine grain, no retouching.
+## Repair within the assigned scope
 
-## Example: woman in her sixties, open shade
-
-> An observed photograph of a fictional woman in her late sixties, medium close-up at eye level, 85mm. Open shade from a doorway lights her face; a warm wall bounces a little light into the shadow cheek. Her age reads through eyelid weight, cheek volume, mouth corners, neck lines and the backs of her hands. Short grey curls have individual strands and a slightly coarse texture. Skin shows pores, faint sun damage and a localized sheen on the nose and forehead. Indigo linen shirt with a softened collar. Muted natural color, gentle highlight roll-off, fine grain.
-
-## Repair the observed region
-
-Use the existing image and the specific feedback: facial volume, color, specular coverage, uniform microtexture or sharpening. Change only that property and keep identity, age, pose, framing, light direction and unrelated regions. Do not answer "shiny" with blur, "waxy" with coarse grit, or "too smooth" with a global pore overlay.
-
-## Cues that create synthetic skin
-
-- "Flawless", "perfect", "beauty", "retouched", "airbrushed", "porcelain", "glowing".
-- "Studio softbox", "even lighting", "no shadows" on a face.
-- "Smooth skin" without a scale, light direction or regional variation.
-- "8K", "ultra detailed", "HDR", "sharp focus" applied to the whole frame.
-- Symmetrical features, identical eyes, a perfectly centered nose.
-- Skin that is uniformly matte or uniformly glossy.
-- Hands hidden, blurred or cropped because they are hard to draw.
+Use the selected image and actual defect: volume, expression, color, reflection, artificial texture or sharpening. Retain identity, age, pose, crop, lighting intent and unrelated regions. Do not answer shine with blur, waxiness with grit, or smoothness with a pore overlay. Return the candidate for coordinator review and user selection; do not initiate further repairs.
 
 ## Check before submitting
 
-- Is the face specific enough to recognize, with a real bone structure and slight asymmetry?
-- Does the skin have regional color and a light-driven highlight rather than a global texture?
-- Are neck, ears, hairline and hands consistent with the face's age?
-- Is the skin's detail appropriate to the actual framing distance?
-- Did I avoid beauty and studio-polish words that pull toward a retouched look?
+- Is the face and expression credible at the intended viewing size?
+- Do head, neck, body and visible hand contacts belong to the same person and scene?
+- Does the prompt preserve identity and complexion without invented damage or aging?
+- Does light explain the appearance without mandatory fill or excessive surface detail?
+
 
 ## Sources and limits
 
-[OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) recommends prompting as if a real photo is being captured, using photography language and explicitly asking for pores, wrinkles, fabric wear and imperfections while avoiding studio-polish language. [OpenAI's image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting) recommends describing visible details and treating camera specifications as cues. These are prompt methods, not guarantees of anatomical or skin fidelity.
+[OpenAI's GPT Image 1.5 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide) illustrates photography language and concrete appearance cues. Select such cues by the actual subject, framing and diagnosed property; the examples are not a universal texture or imperfection checklist. [OpenAI's image prompting guide](https://developers.openai.com/api/docs/guides/image-prompting) recommends describing visible details and treating camera specifications as cues. These are prompt methods, not guarantees of anatomical or skin fidelity.

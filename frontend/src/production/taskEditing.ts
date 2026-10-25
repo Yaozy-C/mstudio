@@ -77,7 +77,7 @@ export function regenerationDraft(task: ProductionTask): ProductionTask {
   };
 }
 
-// Replacing a result preserves its history but revokes its use as generation input.
+// Retrying a task never changes whether earlier images are useful.
 export function regenerateTask(
   p: Project,
   key: string,
@@ -85,7 +85,6 @@ export function regenerateTask(
     title?: string;
     text?: string;
     references?: unknown;
-    keepPreviousResults?: boolean;
   } = {},
 ): Project {
   const original = p.production?.drafts?.[key];
@@ -103,20 +102,6 @@ export function regenerateTask(
     task.prompt = changes.text.trim();
   }
   task = replaceTaskReferences(p, task, changes.references);
-  const obsolete = new Set(
-    changes.keepPreviousResults
-      ? []
-      : [
-          ...(original.resultAssetIds ?? []),
-          ...(original.resultAssetId ? [original.resultAssetId] : []),
-        ],
-  );
-  const next = {
-    ...p,
-    assets: p.assets.map((a) =>
-      obsolete.has(a.id) ? { ...a, discarded: true } : a,
-    ),
-  };
-  assertGenerationReferences(next, task);
-  return saveTask(next, task);
+  assertGenerationReferences(p, task);
+  return saveTask(p, task);
 }

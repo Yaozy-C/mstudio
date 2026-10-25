@@ -69,23 +69,13 @@ Use visible, concrete prose appropriate to the selected model. Carry the actual 
 
 The final submitted text must contain the essential effect progression and preservation boundary. A correct shot note or draft is not sufficient if the service receives different text. Role selects the technical input; purpose says what that input supplies. Neither converts a generic reference into a mask or endpoint.
 
-## Example: partial frost, not a frozen product replacement
+## Surface changes and protected regions
 
-For a locked three-quarter can shot, inspect the actual start/end images and use a route that supports both endpoints. Keep the label readable.
+For an effect attached to a surface, define its onset region, growth boundary, coverage limit, thickness and response to the existing light. Derive these choices from the selected shot and material. Preserve declared identity and protected regions without prescribing a container, label position or camera setup. Exact protected pixels require a supported retained-layer route; endpoint images alone do not prove the intervening process.
 
-Example compiled prose:
+For a reveal that removes surrounding material, distinguish that layer from the subject it exposes. Describe the advancing removal boundary, material-specific detachment, trajectories, settling and exposed ending state. A partial-layer reveal does not satisfy a requested whole-object transformation; retain the actual declared scope.
 
-> Begin from the supplied opening composition and lighting. Fine frost first forms at the can's lower rim, then branches along the lower body and side edges. The visible growth front advances over the metal; regions it has not reached retain their condensation and original finish. The branches thicken into a thin translucent frost layer and stop before the front label. Keep the rim, can silhouette and bare label area consistent with the input. Small ice edges catch the existing side-rear strip reflection; keep the background clear rather than filling it with fog. As growth settles, a few water droplets continue down the unfrosted region. End on the completed product view with the label readable and the camera still.
-
-Exact label pixels need a supported retained-layer route. Endpoint images alone do not establish continuous growth in the generated video.
-
-## Example: disintegrating a wrapper to reveal a product
-
-The declared target is the surrounding paper wrapper, not the product. The wrapper's outer edge loses material as fibrous flakes detach; the advancing boundary reveals more of the intact product. Detached pieces drift away from the label and settle with decreasing density. Keep the main light and camera stable so the reveal remains the dominant event. The ending contains the exposed product rather than an intact wrapper hidden in a particle cloud.
-
-Do not use this limited-scope example to override a request for full product disintegration. Resolve that request's preservation requirements separately.
-
-## Example: smoke transition and cross-scale travel
+## Transitions and cross-scale travel
 
 For a smoke transition, identify the outgoing ending and incoming opening first. Design the direction of coverage, the interval in which the join is fully hidden and the reveal direction. If the incoming material is missing, report that gap instead of treating a smoke overlay as a finished transition. Do not claim deterministic seam control without editing capability.
 

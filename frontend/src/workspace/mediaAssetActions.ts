@@ -6,6 +6,7 @@ import {
   SquaresFour as MenuSquaresFour,
   Trash as MenuTrash,
 } from "@phosphor-icons/react";
+import { isStoryAsset } from "./assetLibrary";
 import { t } from "../i18n";
 import type { Asset } from "../model";
 import type { useAssetLibrary } from "./useAssetLibrary";
@@ -21,6 +22,8 @@ export function mediaAssetActions({
   onPlace,
   onAdd,
   onReference,
+  onUncollect,
+  onUsage,
 }: {
   a: Asset;
   scope: "project" | "global" | "effects";
@@ -32,6 +35,8 @@ export function mediaAssetActions({
   onPlace: (asset: Asset) => void;
   onAdd: (asset: Asset) => void;
   onReference: (asset: Asset) => void;
+  onUncollect: (asset: Asset) => void;
+  onUsage: (asset: Asset, usage: "asset" | "material") => void;
 }): ObjectAction[] {
   return [
     {
@@ -41,6 +46,12 @@ export function mediaAssetActions({
     },
     ...(scope === "project"
       ? [
+          {
+            icon: MenuFolderPlus,
+            label: isStoryAsset(a) ? t("改为普通素材") : t("设为剧本资产"),
+            run: () => onUsage(a, isStoryAsset(a) ? "material" : "asset"),
+            disabled,
+          },
           {
             icon: MenuSquaresFour,
             label: t("放到画布"),
@@ -58,6 +69,12 @@ export function mediaAssetActions({
             label: t("引用到对话"),
             run: () => onReference(a),
             disabled: a.missing,
+          },
+          {
+            icon: MenuFolderPlus,
+            label: t("取消收录"),
+            run: () => onUncollect(a),
+            disabled,
           },
           {
             icon: MenuFolderPlus,

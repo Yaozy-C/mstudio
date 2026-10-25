@@ -25,6 +25,17 @@ pub fn init(db: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS project_observations(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE, turn_id TEXT NOT NULL,target TEXT NOT NULL,value TEXT NOT NULL, PRIMARY KEY(project_id,turn_id,target));")?;
     Ok(())
 }
+fn hydrate_usage(db: &Connection, project: &str, document: &mut Value) -> Result<()> {
+    let ids=db.prepare("SELECT json_extract(j.data,'$.asset.id') FROM jobs j WHERE j.project_id=?1 AND json_extract(j.data,'$.shot.canvasGeneration.task.generationPurpose')='asset'
+        UNION SELECT json_extract(a.value,'$.id') FROM jobs j,json_each(j.data,'$.assets') a WHERE j.project_id=?1 AND json_extract(j.data,'$.shot.canvasGeneration.task.generationPurpose')='asset'")?
+        .query_map([project],|r|r.get::<_,Option<String>>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
+    for asset in document["assets"].as_array_mut().into_iter().flatten() {
+        if asset["usage"].is_null() && ids.iter().flatten().any(|id| asset["id"] == *id) {
+            asset["usage"] = json!("asset");
+        }
+    }
+    Ok(())
+}
 pub fn load(db: &Connection, id: &str) -> Result<Value> {
     let raw: String = db
         .query_row("SELECT document FROM projects WHERE id=?1", [id], |r| {
@@ -33,6 +44,8 @@ pub fn load(db: &Connection, id: &str) -> Result<Value> {
         .context("Project no longer exists")?;
     let mut document = serde_json::from_str(&raw)?;
     crate::previs::media::hydrate(db, id, &mut document)?;
+    crate::image_versions::hydrate(db, id, &mut document)?;
+    hydrate_usage(db, id, &mut document)?;
     Ok(document)
 }
 pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
@@ -46,6 +59,8 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         after.clone()
     };
     crate::previs::media::strip(&mut after);
+    crate::image_versions::hydrate(db, id, &mut after)?;
+    hydrate_usage(db, id, &mut after)?;
     after["storageVersion"] = json!(before["storageVersion"].as_u64().unwrap_or(0) + 1);
     let name = after["name"]
         .as_str()
@@ -64,7 +79,6 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         "Project no longer exists"
     );
     crate::project_storage::remember(db, id, &after)?;
-    production_names::sync(db, before, &after)?;
     crate::project_storage::delete_media::commit(db, before, &after)?;
     Ok(())
 }

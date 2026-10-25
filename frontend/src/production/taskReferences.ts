@@ -31,8 +31,6 @@ export function replaceTaskReferences(
         );
       const input = attachmentInput(p, { kind: "asset", id: r.assetId });
       const asset = referenceAsset(p, r.assetId);
-      if (asset?.discarded)
-        throw failure("VALIDATION_FAILED", "参考素材已废弃，不能用于生成");
       if (!input || !asset || !["image", "video"].includes(asset.kind))
         throw failure("VALIDATION_FAILED", "只能使用项目中已有的图片或视频");
       const role =
@@ -97,11 +95,6 @@ export function assertGenerationReferences(p: Project, task: ProductionTask) {
       throw failure(
         "VALIDATION_FAILED",
         "内部批注图不能用作生成参考，请使用原图",
-      );
-    if (asset?.discarded)
-      throw failure(
-        "VALIDATION_FAILED",
-        `参考素材 ${input.assetId} 已废弃，不能用于生成，请替换该参考`,
       );
     if (!asset || asset.missing)
       throw failure(

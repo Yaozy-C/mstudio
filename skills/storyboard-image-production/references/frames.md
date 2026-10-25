@@ -42,7 +42,7 @@ Use [photographic direction](photographic-direction.md) to state the capture, le
 
 At a 2 by 2 layout, a panel is one quarter of the output. If the board is 1672 by 941, each panel is about 836 by 470: enough for blocking, not for pore-level skin or precise fingers. Do not ask the board to prove detail that the panel cannot hold; state the limitation and propose an authorized full-frame look or control frame when that detail matters.
 
-Check support surfaces and footwear across panels. A seated character can slip from the sand onto the platform edge, and shoes can disappear at panel scale even when the wardrobe is otherwise correct. If the support surface or footwear is story-critical, use a layout sketch or generate the panels separately at full frame and composite; do not accept a board that seats the character on a different surface.
+Check support surfaces and footwear across panels. A character's support surface can change unintentionally, and footwear can disappear at panel scale even when the rest of the wardrobe remains consistent. If the support surface or footwear is story-critical, use a layout sketch or generate the panels separately at full frame and composite; do not accept a board that seats the character on a different surface.
 
 No burned-in panel numbers, captions, arrows, dialogue bubbles, watermarks or decorative borders by default. Deliberate onscreen copy from the selected script remains part of the appropriate state. Use plain gutters only to separate cells. Match the requested photographic or drawn style; polish does not compensate for unreadable action.
 

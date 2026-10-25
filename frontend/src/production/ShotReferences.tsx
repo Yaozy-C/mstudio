@@ -10,7 +10,7 @@ import {
 import { t } from "../i18n";
 import { mediaUrl } from "../bridge";
 import type { Asset, Project, Reference } from "../model";
-import { isSelectableAsset } from "../workspace/assetLibrary";
+import { isLibraryAsset } from "../workspace/assetLibrary";
 import "./shot-references.css";
 
 function Thumbnail({ asset }: { asset?: Asset }) {
@@ -41,7 +41,8 @@ export function ShotReferences({
   const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState("");
   const assets = project.assets.filter(
-    (a) => ["image", "video"].includes(a.kind) && isSelectableAsset(a),
+    (a) =>
+      ["image", "video"].includes(a.kind) && isLibraryAsset(a) && !a.missing,
   );
   const matches = assets.filter((a) =>
     a.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),

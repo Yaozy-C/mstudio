@@ -42,11 +42,19 @@ export function useMissingAssets(
       if (checking || stopped) return;
       checking = true;
       try {
+        const requested = latest.current;
         const status = await bridge<Record<string, boolean>>(
           "asset_file_status",
-          { ids: latest.current.map((a) => a.id) },
+          { projectId: project.id, ids: requested.map((a) => a.id) },
         );
-        if (!stopped) change((p) => applyFileStatus(p, status), false);
+        const current = Object.fromEntries(
+          Object.entries(status).filter(
+            ([id]) =>
+              latest.current.find((a) => a.id === id)?.path ===
+              requested.find((a) => a.id === id)?.path,
+          ),
+        );
+        if (!stopped) change((p) => applyFileStatus(p, current), false);
       } catch {
         /* Keep the last known state when the bridge is unavailable. */
       } finally {

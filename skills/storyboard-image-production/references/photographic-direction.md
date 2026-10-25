@@ -9,7 +9,7 @@ Put these decisions once at the top of the board prompt, not in every panel:
 - Capture: film or digital, grain, contrast and color response.
 - Lens and camera: focal length, distance, height and the resulting perspective.
 - Light: source, size, direction, ratio, bounce and practicals. Panels may change exposure or time of day only when the design does.
-- Palette: sky, sea, skin, wardrobe and neutral values as separate relationships. Do not reduce the whole film to "warm orange".
+- Palette: environment, skin, wardrobe, product and neutral values as separate relationships. Do not reduce the whole film to "warm orange".
 - Finish: highlight roll-off, shadow depth, lens character and grain.
 
 ## Per-panel direction
@@ -26,19 +26,13 @@ At a 2×2 board, each panel is roughly one quarter of the output. If the deliver
 
 | Symptom | Likely cause | Positive repair |
 |---|---|---|
-| Four identical faces | One identity description repeated, no per-panel state | Give each panel one distinct gaze, mouth, hand and weight state |
-| Orange wash across all panels | "Warm sunset" repeated without color relationships | Name sky, sea, skin and neutral values; keep one warm source |
-| Flat panels | "Soft even light" in every cell | One motivated source per setup, with a shadow side and bounce |
+| Four identical faces | One identity description repeated, no per-panel state | Preserve each designed state; distinguish intended stillness from an accidental duplicate |
+| Orange wash across all panels | "Warm sunset" repeated without color relationships | Distinguish environment, skin, product and neutral colors; tie color casts to their light sources |
+| Flat panels | "Soft even light" in every cell | Preserve the designed source direction and natural shadows; add fill only when motivated |
 | Catalogue background | Plain backdrop carried from an asset plate | Put the figures in the actual location with depth and landmarks |
-| Mushy hands/faces | Too much detail demanded at 836×470 | Simplify the pose, keep hands occupied and visible, accept blocking scale |
+| Mushy hands/faces | Too much detail demanded at 836×470 | Keep required hand contact readable and detail proportionate to panel scale |
 | Grid leakage | Model treats the board as a layout | Ask for four full-bleed scene panels with plain gutters, no labels or arrows |
 | Inconsistent crowd | Generic "audience" | Give a count, a few distinct postures and clothing colors, and keep them across panels |
-
-## Worked shared block
-
-> A photorealistic 35mm film board, four equal 16:9 scene panels with thin plain gutters, camera at seated eye level on wet sand, 50mm at T2.8. The sun is below the horizon: a thin apricot band remains, the sky above is dusty blue-grey, the sea is dark slate. Warm sand bounce lights the faces; a cool ambient fill keeps the shadow side readable. Rust-red linen, cream trousers, grey curls, weathered planks and matte black metal each catch the light differently. Fine grain, soft highlight roll-off, open shadows, muted natural color.
-
-Then each panel describes only its instant: who looks where, what the hands do, what changes in the light or sea.
 
 ## Check before submitting
 

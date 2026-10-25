@@ -24,7 +24,7 @@ import { EffectLibrary } from "./EffectLibrary";
 import type { EffectPreset } from "./effects";
 import { useState } from "react";
 import { RemoveLibraryAssetDialog } from "./RemoveLibraryAssetDialog";
-import { isLibraryAsset } from "./assetLibrary";
+import { isLibraryAsset, uncollectAsset, setAssetUsage } from "./assetLibrary";
 import { useAssetLibrary } from "./useAssetLibrary";
 import { type Project, type Asset } from "../model";
 export function MediaPanel({
@@ -227,6 +227,10 @@ export function MediaPanel({
                   onPlace,
                   onAdd,
                   onReference,
+                  onUsage: (asset, usage) =>
+                    change((p) => setAssetUsage(p, asset.id, usage)),
+                  onUncollect: (asset) =>
+                    change((p) => uncollectAsset(p, asset.id)),
                 })}
               >
                 <MediaTile

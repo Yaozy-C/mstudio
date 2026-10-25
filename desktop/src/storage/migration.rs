@@ -59,6 +59,7 @@ fn rewrite_records(db: &Connection, from: &Path, to: &Path) -> Result<()> {
         ("agent_events", "payload"),
         ("previs_exports", "data"),
         ("previs_media", "data"),
+        ("image_versions", "data"),
     ] {
         let mut stmt = db.prepare(&format!("SELECT rowid,{column} FROM {table}"))?;
         let rows = stmt

@@ -72,10 +72,6 @@ pub fn payload(
         };
         let asset = if let Some(id) = asset_id {
             ensure!(
-                !crate::previs::media::find(doc, id).is_some_and(|a| a["discarded"] == true),
-                "废弃素材不能作为 Agent 附件引用"
-            );
-            ensure!(
                 crate::previs::media::find(doc, id).is_some(),
                 "附件素材不属于当前项目"
             );

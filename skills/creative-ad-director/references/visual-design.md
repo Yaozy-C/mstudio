@@ -64,8 +64,6 @@ Provide the selected look, borrowed/excluded reference properties, important sta
 
 Production must compile the relevant decisions into actual request text and verified reference bindings. An elegant handoff that never enters the model input does not control generation. Return unresolved design constraints instead of burying them under longer prose.
 
-## Example: separating metal and matte surfaces
+## Separate adjacent surfaces
 
-For a device whose curved metal edge and matte body should be readable, choose a close three-quarter composition with a silhouette gap between the device and its case. A narrow side-rear source makes a shaped edge reflection; restrained front fill keeps the matte face readable. Keep the brightest background region away from the brightest edge. Leave one clean area for the planned graphic; do not generate a speculative logo there.
-
-A brief calling for flat graphic lighting or an everyday setting needs a different lighting arrangement.
+Choose viewpoint and light so the selected materials and silhouettes remain readable. Shape reflections according to each surface's finish and curvature, keep necessary shadow detail, and separate bright edges from nearby bright regions. Reserve space for graphics only when the brief calls for it. Let the selected visual direction determine whether separation should be strong or deliberately restrained.

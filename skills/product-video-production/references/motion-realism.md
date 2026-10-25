@@ -14,11 +14,11 @@ Use for product demos, hands-on demonstrations, packshots in motion and short co
 ## Make the product behave
 
 - Keep rigid parts rigid. A bottle, box, zip pull or metal clasp may move as a mechanism; it must not bend like cloth.
-- Let soft goods deform under load: a bag side compresses when set down, a strap goes slack when released, fabric folds follow the hand.
+- Let flexible materials respond to the actual load and support: compression, slack and folds should follow the force, contact and release.
 - Show contact and support: the base meets the surface, the hand grips, the lid resists then opens, the product settles under its own weight.
 - Give the material its own response: matte board with a broad soft highlight, coated metal with a narrow reflection, glass with edge thickness and transmission, woven fabric with directional sheen.
 - Keep the label plane facing the camera when it must be read. Do not rotate the product so the label leaves frame and then claim it was preserved.
-- One benefit per clip. A five-second clip cannot prove capacity, insulation, zipper, strap and interior at once.
+- Give a short clip one dominant demonstration or handling beat. Preserve the selected scope rather than crowding several unrelated claims into its duration.
 
 ## AI product-video failures
 
@@ -41,10 +41,6 @@ Use for product demos, hands-on demonstrations, packshots in motion and short co
 - Use a real surface and a motivated light. A seamless white background is optional, not a default; it often produces a catalogue look.
 - When a hand enters, stage the entry from the frame edge, not from inside the product. Show the grip before the force.
 - For a cut, make the outgoing and incoming states physically compatible. Do not use a morph to hide a change of grip or support.
-
-## Worked five-second prompt
-
-> One continuous 5-second product clip, no cuts. A matte black 25-litre lunch bag stands on a pale oak counter, front panel facing camera, label readable. A hand enters from frame right, grips the top handle with four fingers, lifts the bag ten centimetres and sets it down; the base meets the counter, the shadow compresses under it and the side panel flexes slightly under the load. Camera at counter height, 50mm, a slow 15-centimetre push-in; the label stays facing camera. Large soft window light from camera left, a narrow highlight along the coated zip, neutral color, fine grain. Sound: fabric settle, a soft base contact, no music. Preserve the bag's proportions, zip line, handle roots and label from the reference image.
 
 ## Check before submitting
 

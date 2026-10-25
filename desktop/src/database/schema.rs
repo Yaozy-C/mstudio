@@ -3,6 +3,12 @@ use rusqlite::Connection;
 
 pub fn init(db: &Connection) -> Result<()> {
     db.execute_batch("
+        CREATE TABLE IF NOT EXISTS image_processing_results(
+            asset_id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+            project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            input_asset_id TEXT NOT NULL,data TEXT NOT NULL,
+            created INTEGER NOT NULL DEFAULT(unixepoch()));
+        CREATE INDEX IF NOT EXISTS image_processing_project ON image_processing_results(project_id);
         CREATE TABLE IF NOT EXISTS stored_media(digest TEXT PRIMARY KEY,bytes INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS content_blobs(digest TEXT PRIMARY KEY,data BLOB NOT NULL,bytes INTEGER NOT NULL CHECK(bytes>=0),media_digest TEXT REFERENCES stored_media(digest),media_prefix TEXT);
         CREATE TABLE IF NOT EXISTS event_content(

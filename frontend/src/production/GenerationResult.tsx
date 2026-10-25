@@ -1,4 +1,3 @@
-import { DiscardedAssetBadge } from "./DiscardedAssetBadge";
 import { MediaPreview } from "../workspace/MediaPreview";
 import { t, useLanguage } from "../i18n";
 import { useState } from "react";
@@ -41,7 +40,6 @@ export function GenerationResult({
         e.dataTransfer.effectAllowed = "copy";
       }}
     >
-      {asset.discarded && <DiscardedAssetBadge />}
       <div className="generation-result-tools">
         {locate && (
           <button

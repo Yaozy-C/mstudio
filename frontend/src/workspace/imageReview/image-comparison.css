@@ -1,0 +1,62 @@
+.image-comparison,
+.image-comparison-original,
+.image-comparison-result {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.image-comparison-label {
+  position: absolute;
+  padding: 5px 9px;
+  border-radius: 4px;
+  color: #fff;
+  background: #202020b8;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.image-comparison-handle.image-comparison-handle {
+  position: absolute;
+  width: 36px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  touch-action: none;
+  pointer-events: auto;
+}
+.image-comparison-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 2px;
+  background: #fff;
+  transform: translateX(-50%);
+  box-shadow: 0 0 3px #0008;
+}
+.image-comparison-grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #0002;
+  border-radius: 50%;
+  background: #faf9f5;
+  color: #292929;
+  box-shadow: 0 1px 6px #0003;
+  transform: translate(-50%, -50%);
+}
+.image-comparison-handle:focus-visible {
+  outline: none;
+}
+.image-comparison-handle:focus-visible .image-comparison-grip {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 2px;
+}

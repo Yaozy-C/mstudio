@@ -92,6 +92,14 @@ export function MediaTile({
         )}
         <span title={a.name}>{a.name}</span>
       </div>
+      {(scope === "project" || (a.imageVersionCount ?? 0) > 1) && (
+        <small className="media-version-count">
+          {scope === "project" &&
+            t(a.usage === "asset" ? "剧本资产" : "普通素材")}
+          {(a.imageVersionCount ?? 0) > 1 &&
+            `${scope === "project" ? " · " : ""}${t("{count} 个版本", { count: a.imageVersionCount })}`}
+        </small>
+      )}
     </article>
   );
 }

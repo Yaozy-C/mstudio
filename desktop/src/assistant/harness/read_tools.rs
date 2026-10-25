@@ -35,8 +35,8 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "assets",
-        "Read media metadata by exact IDs or list a page. Default reads omit generation provenance. Only for an explicit prompt edit, unchanged retry or generation investigation, select fields=[source] for the original job, prompt, model and inputs. Use read_image to view pixels. Use textOffset to page the source prompt. Do not infer task keys from filenames.",
-        &["ids", "fields", "offset", "textOffset"],
+        "List reviewed story assets by default. For ordinary material explicitly needed by this request, use usage=material/all or exact ids. These categories share one project library. Read selected picture versions through the stable asset IDs. Default reads omit generation provenance. Only for an explicit prompt edit, unchanged retry or generation investigation, select fields=[source] for the original job, prompt, model and inputs. Use read_image to view pixels. Use textOffset to page the source prompt. Do not infer task keys from filenames.",
+        &["ids", "usage", "fields", "offset", "textOffset"],
         &[],
     ),
     (
@@ -100,7 +100,18 @@ fn fields(kind: &str) -> &'static [&'static str] {
             "sound",
         ],
         "nodes" => &["title", "text", "assetId", "resultAssetId", "references"],
-        "assets" => &["name", "kind", "duration", "width", "height", "source"],
+        "assets" => &[
+            "name",
+            "kind",
+            "usage",
+            "duration",
+            "width",
+            "height",
+            "imageId",
+            "imageVersionId",
+            "imageVersionCount",
+            "source",
+        ],
         "clips" => &[
             "assetId",
             "shotId",
@@ -213,7 +224,7 @@ pub fn decode(name: &str, mut args: Value) -> Option<Value> {
             if kind == "assets" && !object.contains_key("fields") && !object.contains_key("ids") {
                 object.insert(
                     "fields".into(),
-                    json!(["name", "kind", "duration", "width", "height"]),
+                    json!(["name", "kind", "usage", "duration", "width", "height"]),
                 );
             }
         }

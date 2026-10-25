@@ -6,7 +6,7 @@ Apply these methods within the selected image deliverable and existing authoriza
 
 Read the selected project look and relevant approved images before choosing appearance. Carry the same medium, degree of realism or stylization, period, palette relationships, material language and finish from reference assets into storyboard imagery. Use the existing project notes, asset records and reference purposes to retain those decisions; do not create a separate style registry or reopen a settled look for each shot.
 
-Adapt presentation to purpose. An asset image should expose useful identity and construction with readable pose, scale and light; a storyboard panel should express the designed attention order, camera, action state and motivated scene light. A neutral background does not require generic commercial photography, glamour retouching or a different rendering style. Shared aesthetics do not require identical exposure, background, pose or lighting: for example, a clear daytime character reference can support a blue-hour scene while preserving the same face, clothing, material character and photographic texture. Do not erase intentional story-driven light or state changes to match the reference's presentation.
+Adapt presentation to purpose. An asset image should expose useful identity and construction with readable pose, scale and light; a storyboard panel should express the designed attention order, camera, action state and motivated scene light. A neutral background does not require generic commercial photography, glamour retouching or a different rendering style. Shared aesthetics preserve identity, clothing, material character and rendering treatment while exposure, background, pose and lighting follow the selected scene. Do not erase intentional story-driven light or state changes to match the reference's presentation.
 
 ## Resolve appearance before execution
 
@@ -18,18 +18,9 @@ Replace generic adjectives with visible relationships. Metal can be described by
 
 For live-action panels, read [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md). Decide the shared capture, lens, camera height, light and palette once; give each panel its own visible state and light/value decision.
 
-When a panel looks synthetic, diagnose the cause before adding detail:
+When a person looks synthetic, identify the visible problem before revising: facial volume, eye/mouth expression, head/neck/body continuity, required hand contact, scene-light integration or excessive detail. Keep the selected identity and style. Smoothness, symmetry, a frontal pose and a simple background are not defects by themselves. Add a property only when it addresses the observed mismatch at the delivered scale; pores, asymmetry, grime, grain, side gaze and occupied hands are not a realism recipe.
 
-| Symptom | Likely cause | Positive repair |
-|---|---|---|
-| Identical faces across cells | One description repeated, no per-panel state | A distinct gaze, mouth, hand and weight state in each cell |
-| Orange or teal wash | "Warm sunset" without color relationships | Separate sky, sea, skin and neutral values; one warm source |
-| Flat panels | "Soft even light" in every cell | A motivated source with direction, ratio and shadow-side fill |
-| Catalogue look | Asset-plate backdrop carried into the scene | The actual location with depth and landmarks |
-| Waxy skin | "Smooth", "flawless", "beauty" | Regional color, scale-appropriate pores, fine lines, a light-driven sheen |
-| Mushy hands | Detail demanded below panel scale | Simpler pose, occupied and visible hands, accept blocking scale |
-
-Do not answer the AI look with more slogans. Replace the cause with a visible relationship, or state the panel-scale limitation.
+Preserve natural shadows and optical falloff. A required face or garment must be identifiable, but secondary texture need not be visible everywhere. For a board, distinguish a scale limitation from a local rendering defect. Return unresolved identity or staging decisions through coordination; do not compensate with decorations or extra unrequested generations.
 
 ## Bind reference transfer explicitly
 
@@ -75,11 +66,11 @@ Use the selected image and the specific change assigned by the user or coordinat
 
 Keep each change within its assigned scope and budget; do not add a new background, camera move or particle field to change a highlight.
 
-## Effect control example: partial frost on a can
+## Compatible effect control states
 
-The chosen shot is a locked three-quarter product view. The opening image has sparse condensation. The ending image has thin frost on the lower body and side edges, stopping before the front label. Keep the can opening, silhouette, viewpoint and light arrangement compatible across both images. Build the ending through a supported edit of the selected opening when available, then return both real images to the coordinator.
+For an authorized effect-control request, derive the opening and ending from the selected shot. Keep viewpoint, identity, construction and protected regions compatible while changing the declared effect state. Use a supported edit of the selected opening when that route fits the request, then return the real assets.
 
-The completed frame is not evidence that frost grew continuously. If the selected video endpoint lacks last-frame control, do not label the ending reference as a bound endpoint. Preserve exact label pixels only with an available retained-layer/compositing route; text requests do not provide that guarantee.
+A completed still does not prove the intervening process. An ending reference binds an endpoint only when supplied through an actual supported last-frame control. Exact protected pixels require an available retained-layer or compositing route; text alone does not guarantee them.
 
 ## Local reference
 

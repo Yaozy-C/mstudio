@@ -25,13 +25,10 @@ export function MediaPreview({
   actions?: (a: Asset) => ReactNode;
 }) {
   useLanguage();
-  const [selection, setSelection] = useState<{
-    sourceId: string;
-    asset: Asset;
-  }>();
-  const asset = selection?.sourceId === source?.id ? selection?.asset : source;
+  const [pendingVersion, setPendingVersion] = useState(false);
+  const asset = source;
   const close = () => {
-    setSelection(undefined);
+    setPendingVersion(false);
     onClose();
   };
   return (
@@ -47,7 +44,7 @@ export function MediaPreview({
       >
         <header>
           <Dialog.Title>{asset?.name}</Dialog.Title>
-          {asset && !asset.missing && reference && (
+          {asset && !asset.missing && reference && !pendingVersion && (
             <ObjectActions
               actions={[
                 {
@@ -79,9 +76,7 @@ export function MediaPreview({
                   key={source!.id}
                   asset={source!}
                   close={close}
-                  onAssetChange={(asset) =>
-                    setSelection({ sourceId: source!.id, asset })
-                  }
+                  onPendingVersion={setPendingVersion}
                 />
               ) : asset.kind === "video" ? (
                 <video src={mediaUrl(asset.path)} controls />
@@ -93,6 +88,7 @@ export function MediaPreview({
               <footer>
                 {place && (
                   <button
+                    disabled={pendingVersion}
                     onClick={() => {
                       place(asset);
                       close();
@@ -104,7 +100,9 @@ export function MediaPreview({
                 {add && (
                   <button
                     disabled={
-                      asset.kind === "text" || asset.kind === "document"
+                      pendingVersion ||
+                      asset.kind === "text" ||
+                      asset.kind === "document"
                     }
                     onClick={() => {
                       add(asset);
@@ -114,7 +112,7 @@ export function MediaPreview({
                     {t("加入时间线")}
                   </button>
                 )}
-                {actions?.(asset)}
+                {!pendingVersion && actions?.(asset)}
               </footer>
             )}
           </>

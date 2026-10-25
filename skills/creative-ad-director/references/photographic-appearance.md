@@ -3,7 +3,7 @@
 
 Apply these methods when the selected brief calls for photographic people or live-action scenes. Preserve the requested art direction, location, ethnicity, age, body type and skin tone. Realism does not imply a fixed palette, lens, geography or beauty standard. Describe the visible cause of an appearance rather than stacking cinematic, 8K or dermatological-quality claims; resolution still belongs in supported parameters.
 
-For skin visible at the selected scale, retain irregular texture, fine lines and restrained local color variation. Close views can include subtle vellus hair and micro-shadowing, with localized oil sheen on raised facial areas rather than a plastic or waxy surface. Match skin detail to focus and distance. Preserve intentional makeup, age marks and styling. Sharpness should support natural optical detail without halos, etched pores or repeated noise patterns. A catchlight must agree with the light source.
+For people, prioritize facial volume, coordinated expression, head/neck/body continuity and integration into the same photographic environment. Match surface detail to framing; pores, vellus hair, lines, localized shine and wear belong only when the selected person, view or assigned repair needs them. Smooth skin, neutral poses and approximate symmetry can be correct. Preserve intentional makeup, age features and styling. Natural shadow and optical falloff may hide secondary texture; do not add fill or sharpening simply to display every material. A catchlight must agree with its actual source.
 
 Specify motivated sources, direction, softness, exposure relationships and relevant room or weather cues. The following are optional setups to adapt, not mandatory defaults:
 

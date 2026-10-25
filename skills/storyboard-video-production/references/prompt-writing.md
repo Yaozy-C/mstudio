@@ -2,7 +2,7 @@
 
 Establish the shot in model-independent terms first, then adapt supported reference syntax and capabilities. Provider rewrite-output schemas are not automatically required submission formats. For difficult weight, contact or timing problems, consult [animation principles](shot-execution.md); apply only principles relevant to this event.
 
-Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Examples are design illustrations, not tested generation evidence.
+Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Describe the current shot; method guidance does not establish a tested generation result.
 
 ## Three different units
 
@@ -100,8 +100,6 @@ Begin by identifying the actual supplied board and its reading order. Describe p
 For one continuous shot, explicitly request one full-screen uninterrupted take developing through the four states. The grid is planning information: the final video has no panel layout, gutters, board labels or slide transitions. Keep the fixed camera fixed; for a moving camera preserve the designed continuous path and world relationships. Do not call panels separate shots or use CUT at each panel boundary.
 
 For an existing group of editorial shots, map cells to those shots and retain only its planned cut points. A four-panel board neither forces four cuts nor four equal durations. Use the selected duration, specified timing and feasible action pace. Missing state mapping or a visibly incorrect board is an input defect to return to image production, not something to hide with prose.
-
-Example structure, not a required API schema or tested prompt: "Image 1 is a temporal four-panel storyboard for shot s1, read top-left, top-right, bottom-left, bottom-right. Produce one full-screen continuous overhead take: begin with the arranged food and empty lower counter; a hand brings the closed bag in from below; lower it until the base rests on the counter, then pause; finally open the palm beside it. Preserve the counter, food positions, bag identity and overhead camera throughout. The board layout stays out of the video." Use actual cell states, not this example's objects by default.
 
 Preserve all required states in order without repeats, unauthorized cuts, grid leakage, morphing, teleportation, product drift or wrong endpoints. Do not claim uninterrupted motion from sampled frames. Do not claim storyboard conditioning is more reliable without comparable output evidence.
 

@@ -102,7 +102,6 @@ pub fn collect(store: &Store, project: &str, id: &str, asset_id: &str) -> Result
         .and_then(|id| {
             document["assets"].as_array()?.iter().find(|a| {
                 a["id"] == *id
-                    && a["discarded"] != true
                     && a["path"]
                         .as_str()
                         .is_some_and(|p| std::path::Path::new(p).is_file())

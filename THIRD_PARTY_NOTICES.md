@@ -4,6 +4,14 @@
 
 Native image processing uses the pinned Apache-2.0 SceneWorks Rust MLX inference crates for SeedVR2 DiT and Depth Anything V2, and the pinned pmetal MLX Rust bindings with Apple's native MLX library. The still-frame VAE architecture in `desktop/image-runtime/src/vae` follows SceneWorks' SeedVR2 implementation and the Apache-2.0 upstream SeedVR2 architecture, adapted to collapse temporal kernels and run two-dimensional convolutions on still images. Dependency versions and source revisions are recorded in Cargo.lock. Model URLs and SHA-256 digests are recorded in `desktop/image-runtime/models.json`; model weights are installed separately. See `desktop/image-runtime/README.md`. No Python runtime is shipped or invoked for inference.
 
+Native Real-ESRGAN super resolution follows the Apache-2.0 BasicSR RRDBNet
+architecture, Copyright 2021 Xintao Wang (https://github.com/XPixelGroup/BasicSR).
+Real-ESRGAN x2plus/x4plus weights are distributed under BSD-3-Clause, Copyright
+2021 Xintao Wang (https://github.com/xinntao/Real-ESRGAN). The retained license
+is `desktop/image-runtime/licenses/Real-ESRGAN-BSD-3-Clause`. The pinned Kornia
+safetensors conversion contains the original F32 model tensors; conversion
+URLs and SHA-256 digests are recorded in `desktop/image-runtime/models.json`.
+
 ## Provider brand icons
 
 The SVG marks in `frontend/src/assets/providers/` originate from LobeHub Icons (`@lobehub/icons-static-svg`), distributed under the MIT License. See [upstream](https://github.com/lobehub/lobe-icons) and the [retained license](frontend/src/assets/providers/LICENSE). Brand names and trademarks belong to their respective owners; inclusion does not imply endorsement.

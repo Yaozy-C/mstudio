@@ -96,13 +96,12 @@ pub fn resolve(
                     .chain(std::iter::once(&task["resultAssetId"]))
                     .filter_map(Value::as_str)
                 {
-                    if doc["assets"].as_array().is_some_and(|assets| {
-                        assets
+                    if doc["assets"]
+                        .as_array()
+                        .is_some_and(|assets| assets.iter().any(|a| a["id"] == asset))
+                        && !attachments
                             .iter()
-                            .any(|a| a["id"] == asset && a["discarded"] != true)
-                    }) && !attachments
-                        .iter()
-                        .any(|r: &Reference| r.kind == "asset" && r.id == asset)
+                            .any(|r: &Reference| r.kind == "asset" && r.id == asset)
                     {
                         attachments.push(Reference {
                             kind: "asset".into(),
@@ -149,18 +148,6 @@ pub fn resolve(
                 .and_then(|items| items.iter().find(|v| v["id"] == id))
         }
         .ok_or_else(|| format!("Referenced {kind} {id} is unavailable in project {project}; use the source's actual reference kind and ID"))?;
-        let asset_id = if kind == "asset" {
-            Some(id.as_str())
-        } else {
-            item["resultAssetId"].as_str().or(item["assetId"].as_str())
-        };
-        if asset_id.is_some_and(|id| {
-            doc["assets"]
-                .as_array()
-                .is_some_and(|a| a.iter().any(|a| a["id"] == id && a["discarded"] == true))
-        }) {
-            return Err("Discarded result cannot be delegated as a reference".into());
-        }
         let reader = match kind {
             "asset" => json!({"tool":"mstudio_read_assets","arguments":{"ids":[id]}}),
             "clip" => json!({"tool":"mstudio_read_clips","arguments":{"ids":[id]}}),

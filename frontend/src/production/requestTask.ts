@@ -1,3 +1,4 @@
+import { isStoryAsset, isLibraryAsset } from "../workspace/assetLibrary";
 import {
   assertGenerationReferences,
   replaceTaskReferences,
@@ -101,26 +102,27 @@ export function requestTask(
                 : r.role,
           })),
         };
-  // An explicit canvas task or reference list wins. Otherwise inherit the
-  // shot's concrete media without replacing selected frame inputs.
-  const shotReferences = p.nodes.find((n) => n.id === ownerId)?.references;
-  if (
-    !saved &&
-    op.references === undefined &&
-    op.canvasTaskKey === undefined &&
-    shotReferences?.length
-  ) {
-    op = {
-      ...op,
-      references: [
-        ...task.inputs.filter((r) => r.role !== "script"),
-        ...shotReferences.filter(
-          (r) => !task.inputs.some((i) => i.assetId === r.assetId),
-        ),
-      ],
-    };
-  }
-  task = replaceTaskReferences(p, task, op.references);
+  // A shot may supply its approved story assets. Other media require explicit
+  // task inputs or this call's references; never sweep the project library.
+  const defaults =
+    kind === "image" && !source && !assetTask && ownerId
+      ? p.nodes
+          .find((n) => n.id === ownerId)
+          ?.references?.filter((r) =>
+            p.assets.some(
+              (a) =>
+                a.id === r.assetId &&
+                a.kind === "image" &&
+                isStoryAsset(a) &&
+                isLibraryAsset(a),
+            ),
+          )
+      : undefined;
+  task = replaceTaskReferences(
+    p,
+    task,
+    op.references === undefined ? defaults : op.references,
+  );
   assertGenerationReferences(p, task);
   const selectedModelId = turn.models[kind] || "";
   if (

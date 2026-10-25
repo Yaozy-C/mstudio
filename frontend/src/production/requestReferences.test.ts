@@ -67,7 +67,7 @@ test("reference image tasks are standalone and require explicit inputs even with
     expect(() => requestTask(p, bad, context)).toThrow();
 });
 
-test("asset generation delivers a standalone canvas card and reusable library image", () => {
+test("asset generation delivers a standalone candidate canvas card", () => {
   const { p, context } = setup();
   let next = requestTask(
     p,
@@ -126,7 +126,7 @@ test("asset generation delivers a standalone canvas card and reusable library im
   ).toBe(image.id);
 });
 
-test("shot image references feed new tasks without changing historical inputs", () => {
+test("shot references do not silently become task inputs", () => {
   const { p, context } = setup();
   const shot = p.nodes.find((n) => n.shot)!;
   shot.references = [{ assetId: "a", purpose: "product identity" }];
@@ -136,35 +136,17 @@ test("shot image references feed new tasks without changing historical inputs", 
     mediaKind: "image",
     text: "Make shot",
   };
-  const first = requestTask(p, op, {
+  const explicitContext = {
     ...context,
     turn: { ...context.turn, task: undefined },
-  });
-  const old = structuredClone(runsOf(first)[0]);
-  expect(old.inputs.map((i) => i.assetId)).toEqual(["a"]);
-  const changed = {
-    ...first,
-    nodes: first.nodes.map((n) =>
-      n.id === shot.id ? { ...n, references: [] } : n,
-    ),
   };
-  const next = requestTask(changed, op, {
-    ...context,
-    callId: "new",
-    turn: { ...context.turn, task: undefined },
-  });
-  expect(next.production!.drafts![old.key]).toEqual(old);
-  expect(runsOf(next).find((r) => r.key === "run:new:0")!.inputs).toEqual([]);
+  const implicit = requestTask(p, op, explicitContext);
+  expect(runsOf(implicit)[0].inputs).toEqual([]);
   const explicit = requestTask(
-    first,
-    { ...op, references: [] },
-    {
-      ...context,
-      callId: "explicit",
-      turn: { ...context.turn, task: undefined },
-    },
+    p,
+    { ...op, references: shot.references },
+    explicitContext,
   );
-  expect(
-    runsOf(explicit).find((r) => r.key === "run:explicit:0")!.inputs,
-  ).toEqual([]);
+  expect(runsOf(explicit)[0].inputs.map((r) => r.assetId)).toEqual(["a"]);
+  expect(implicit.nodes).toBe(p.nodes);
 });

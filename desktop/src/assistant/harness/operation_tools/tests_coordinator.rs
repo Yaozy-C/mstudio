@@ -137,7 +137,7 @@ fn regeneration_accepts_replacement_prompt_and_references_without_creating_a_tas
         json!({
             "taskKey":"existing", "prompt":"Corrected", "references":[
                 {"assetId":"approved", "role":"first-frame", "purpose":"Product identity"}
-            ], "keepPreviousResults":false
+            ]
         }),
     )
     .unwrap()

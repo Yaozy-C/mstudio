@@ -35,12 +35,6 @@ Use five short blocks as a drafting aid, then merge them into coherent prose:
 
 Keep continuity rules, part counts, negative constraints and acceptance checks in the task checklist or `references[].purpose`. Repeat a constraint in the prompt only if the model has already violated it. The prompt should read as a photograph; five unrelated clauses will be averaged into a safe catalogue image.
 
-Example of the same scene written as a photograph:
-
-> A photorealistic 35mm film still, camera at seated eye level on wet sand, 50mm at T2.8. A woman singer stands on a low timber platform at dusk, hand just released from a microphone, looking down-left with a small dawning smile. In the lower left foreground an older woman sits cross-legged, hands meeting in a clap. The sun is below the horizon: a thin apricot band remains, the sky above is dusty blue-grey, the sea is dark slate. Warm sand bounce lights the faces; a cool ambient fill keeps the shadow side readable. Rust-red linen, cream trousers, grey curls, weathered planks and matte black metal each catch the light differently. Fine grain, soft highlight roll-off, open shadows, muted natural color.
-
-Not: a paragraph of "no text, no logo, no extra people, no orange filter, do not copy the reference pose, keep the same identity, 1920x1080" before the scene has been described.
-
 ## Spatial coherence before prose
 
 Fix the camera location relative to the subject, its viewing direction, visible surfaces and occluded regions before adding style. Describe the selected instant: aperture open/closed, object support and contact, foreground/background and light source/path must agree. An interior view through an opening and an exterior product view expose different surfaces; do not combine them to display every product feature. A reference of the outside can establish identity without becoming the requested composition.
@@ -85,4 +79,4 @@ Compare actual output with the intended state, viewpoint, support/contact, ident
 
 For photographic work, also check the camera relationship, light direction and ratio, color relationships and skin/material response. If the result reads as synthetic, use the diagnosis in [visual quality](visual-quality.md) and repair the cause rather than adding more detail.
 
-For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md), plus [photographic appearance](scene-execution.md) for scene-specific light. These examples do not set the style for other projects.
+For photographic people, skin appearance, environmental lighting or a restrained realist style, read [photographic direction](photographic-direction.md) and [skin realism](skin-realism.md), plus [photographic appearance](scene-execution.md) for scene-specific light. Apply these methods within the selected project style.

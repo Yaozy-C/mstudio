@@ -16,10 +16,10 @@ Decide these before writing:
 ## Make motion observable
 
 - One dominant action per short generation, with a readable start and end. A second simultaneous action competes with it.
-- Write cause and effect, not labels: "her weight shifts to the front foot, the plank flexes slightly, the cloth settles after she stops".
+- Describe how weight transfer changes load and contact, how the evidenced material responds, and what settles after the main action stops.
 - Give contact a consequence: a hand presses into fabric, a foot plants and the body's weight follows, a lid resists then gives way.
 - Use a speed curve where it matters: anticipation, acceleration, contact, follow-through, settle. Do not describe every action as "smooth".
-- Add only motivated secondary motion: hair lags when the head turns, a shirt hem settles after the body stops, a cable swings after the stand is moved.
+- Add only motivated secondary motion: hair lags when the head turns, a shirt hem settles after the body stops, an attached cable lags after its supporting object moves.
 - Performance is reaction latency and attention, not a facial-expression label. Establish what the person notices, when the eyes move, when the breath or blink happens, and what the mouth does before or after the line.
 - Keep the camera still or simple when the action is the subject. A floating orbit or a slow push that does not change the information makes the shot feel synthetic.
 
@@ -45,13 +45,7 @@ Keep the camera move compatible with the supplied frame. A first frame that look
 
 ## Performance direction
 
-Describe attention, not emotion labels:
-
-- "She hears the clap off-screen; her eyes move first, then her chin, then a small smile; the breath is still held."
-- "He starts to turn away, stops with his weight on the back foot, and only then looks back."
-- "She claps once, watches the older woman, and claps again on the next beat; the second clap is softer."
-
-Avoid "she is happy then surprised then moved" in a five-second clip. That is three performances without causes.
+Describe the stimulus, where attention moves, the delay before a response, and the resulting gaze, breath, expression or gesture. Tie changes in timing and intensity to the actual interaction. Use only the reactions selected for the shot; several emotion labels in a short clip do not establish their causes or order.
 
 ## Model-aware checks
 
@@ -64,10 +58,6 @@ Use the selected model's injected rules for limits and inputs. Check these befor
 - Does the prompt rely on a control the route does not expose?
 
 Do not copy another model's syntax into a route that does not support it. A prompt phrase does not create a control the endpoint lacks.
-
-## Worked five-second prompt
-
-> One continuous 5-second take, no cuts. A woman in a rust-red linen shirt stands at a microphone on a low timber platform at dusk, hand resting on the stand. She hears a clap from the audience; her eyes move first, then her head turns down-left, and a small smile arrives after a beat. Her fingers release the microphone one by one and her hand floats a few centimetres away. The camera stays at seated eye level, 50mm, with a very slow 10-centimetre push-in; it does not orbit. Warm sand bounce on the face, cool dusk ambient in the shadow; the sea stays dark slate. Sound: one clear clap, a soft breath, distant waves, no music. Preserve her face, hair, shirt and trousers from the reference frame.
 
 ## Check before submitting
 

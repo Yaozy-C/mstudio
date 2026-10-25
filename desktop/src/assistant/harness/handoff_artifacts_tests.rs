@@ -178,11 +178,11 @@ fn video_task_handoff_uses_saved_task_key_without_accepting_rewritten_inputs() {
     let root = std::env::temp_dir().join(format!("mstudio-artifacts-{}", mstudio::media::id()));
     let store = Store::open(root.clone()).unwrap();
     let key = "run:video:exec-1:0";
-    let doc = json!({"revision":8,"assets":[{"id":"result","kind":"video"},{"id":"discarded","discarded":true}],"production":{"drafts":{key:{
+    let doc = json!({"revision":8,"assets":[{"id":"result","kind":"video"}],"production":{"drafts":{key:{
         "key":key,"turnId":"video-turn","createdAt":1,
         "kind":"video","prompt":"保持连续镜头和原台词",
         "inputs":[{"assetId":"board","role":"reference"}],
-        "parameters":{"duration":6},"resultAssetId":"result","resultAssetIds":["result","discarded","missing"]
+        "parameters":{"duration":6},"resultAssetId":"result","resultAssetIds":["result","missing"]
     }}}});
     let refs = json!([{"kind":"generation","id":key}]);
     let resolved = resolve(&store, "p", &doc, Some(&refs)).unwrap();

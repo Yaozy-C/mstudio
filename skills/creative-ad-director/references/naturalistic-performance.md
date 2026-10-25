@@ -13,6 +13,6 @@ Design the stimulus-response order, gesture priority, support and emotional tran
 
 ## Translate into the current segment
 
-For example, if consistent with the script: a person folding a garment hears their name, briefly stops the fold, lifts their eyes toward the speaker, then turns their head; the held garment settles after the torso. This describes an observable causal sequence, not a mandatory template for every reaction. Fit it to the actual duration and reference starting pose.
+For the selected segment, connect the actual stimulus to the ongoing action, attention shift, bodily response and any material settling. Choose their order and overlap from the script, available duration and reference starting pose rather than inserting a new activity.
 
 Distinguish identity and wardrobe locks from performance freedom. Preserve the chosen scene light and skin appearance without importing a white studio background into a location shot. Do not add pore inventories, universal beauty constraints, fixed lenses or long negative lists to motion prompts. Keep required speech and interaction timing explicit, while avoiding lockstep mouth, head and body movement. Keep reaction latency, gesture overlap and weight consistent with the stimulus; isolated frames do not establish their timing.

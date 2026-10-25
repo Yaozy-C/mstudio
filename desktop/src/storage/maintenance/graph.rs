@@ -25,7 +25,6 @@ fn library(a: &Value) -> bool {
     a["annotationSourceId"]
         .as_str()
         .is_none_or(|s| s.is_empty())
-        && a["discarded"] != true
         && a["inLibrary"]
             .as_bool()
             .unwrap_or(a["generated"] != true && a["attachmentOnly"] != true)
@@ -80,6 +79,8 @@ pub fn build(db: &Connection, root: &Path) -> Result<Graph> {
         "SELECT json_object('text',text) FROM previs_messages",
         "SELECT data FROM previs_exports",
         "SELECT data FROM previs_files",
+        // Versions remain user-owned even while not selected as the reference.
+        "SELECT data FROM image_versions",
     ] {
         roots.extend(json_rows(db, sql)?);
     }
