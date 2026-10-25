@@ -21,9 +21,9 @@ At that instant, specify only relationships that affect the intended action:
 
 These are selection criteria, not mandatory fields for every frame. Direction supplies the story-relevant states and spatial relationships; production preserves visual identity, interprets the original component geometry and realizes the detailed physical transition. Do not freeze poses, visible product sides or screen coordinates to enforce consistency. Resolve a missing structural fact when the chosen interaction depends on it; uncertainty about an unrelated hidden part does not prohibit a new camera position.
 
-For example, a frame of a hand starting to lift a lid can show the closure released enough to permit lifting, the fingers supporting the raised edge, the lid still attached to the body, and the base resting on the table. It must not also claim the lid is fully open and the hand has left. Releasing a closure alone does not establish that the lid has swung open.
+Keep every depicted state compatible with the selected instant. Distinguish removal of a constraint from the force that causes the next movement, and identify the contact and support required at that instant.
 
-A frame after wiping may still show the cloth in the hand and an empty pocket. A later frame may show the stored item supported by the pocket after release. Name the intervening handoff or prop exchange when needed; do not call incompatible hand contents one uninterrupted gesture. Video production realizes the necessary intermediate motion. Pocket entry direction and fit must come from evidence, not from the convenient verb "drop".
+When possession changes between states, identify the intervening transfer or exchange and the receiving support. Derive entry direction, fit and mechanism travel from product evidence. Video production realizes the necessary intermediate motion.
 
 ## Carry a state through a cut
 

@@ -9,7 +9,7 @@ Write the complete piece promised by the chosen concept. Own what happens and wh
 
 ## Take up the premise
 
-Carry the audience, market, finished-film language, duration and explicit requirements. Work from the selected concept or a sufficiently concrete user premise. Preserve its central buying reason and expressive connection. Concept examples illustrate the direction; develop their execution unless the user explicitly locked their wording or events.
+Carry the audience, market, finished-film language, duration and explicit requirements. Work from the selected concept or a sufficiently concrete user premise. Preserve its central buying reason and expressive connection. Develop the selected concept into executable content while preserving any user-locked wording or events.
 
 If the task still needs campaign direction development or comparison, return that need to the coordinator for creative planning. Do not silently replace a selected direction. Within it, invent the actions, dialogue and structure needed to make the script work; the writer does not need permission for ordinary writing decisions.
 

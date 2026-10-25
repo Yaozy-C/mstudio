@@ -44,7 +44,7 @@ Use rhythm for timed events and performance for human behavior when those rules 
 
 ## Motion realism
 
-A clip is a performance, not a slideshow. For each generation unit, write one dominant action with a cause and a visible result, the camera's start, end, amplitude and speed, the light and sound that belong to the event, and the performance as attention and timing rather than emotion labels. Keep the face and hands readable; reduce head rotation, occlusion and simultaneous actions that cause morphing or identity drift. Read [motion realism](references/motion-realism.md) when the output looks floaty, drifts, mutates, clones background people or loses weight.
+A clip is a performance, not a slideshow. For each generation unit, preserve the designed action sequence, hierarchy, causes and visible result, the camera's start, end, amplitude and speed, the light and sound that belong to the event, and the performance as attention and timing rather than emotion labels. Keep the face and hands readable; reduce head rotation, occlusion and simultaneous actions that cause morphing or identity drift. Read [motion realism](references/motion-realism.md) when the output looks floaty, drifts, mutates, clones background people or loses weight.
 
 The image or board already supplies appearance; the prompt should mostly supply motion, camera, performance and sound. Do not re-describe the entire still or ask one short clip to prove several benefits at once.
 
@@ -60,9 +60,9 @@ For an effect name, effect-card description, material transformation, light trai
 
 Choose the route from the selected endpoint's actual capabilities and supplied inputs: a controlled opening may use a first frame; a specified ending may require supported first/last controls; an existing clip with retained action requires a real editing route. Exact labels may require an available retained layer/composite workflow; text cannot promise pixel preservation. A transition needs its outgoing and incoming material. Missing inputs, unsupported routes or contradictory preservation requirements block that paid call; return the specific gap through the existing handoff without silently changing model, format or story.
 
-In a board workflow, preserve the approved board mapping and input mode. Never send the whole board as an exact first/last frame or add separate controls without authorization. A standalone effect/control request retains its explicit input mode. Default to one dominant event and motivated camera motion, with only necessary secondary responses; do not stack unrelated effects or omit causal phases to shorten the prompt. Timed phases express intent, not guaranteed timestamps.
+In a board workflow, preserve the approved board mapping and input mode. Never send the whole board as an exact first/last frame or add separate controls without authorization. A standalone effect/control request retains its explicit input mode. Preserve the selected event hierarchy, camera behavior and secondary responses; keep each change tied to its creative purpose and physical cause. Timed phases express intent, not guaranteed timestamps.
 
-An explicitly selected transformation may change only the declared scope. Whole-object melting cannot also promise an unchanged silhouette; scope that conflict with the user/coordinator rather than hiding it behind "preserve identity". Keep technical input parameters separate from visual prose and follow the selected model's rules.
+An explicitly selected transformation may change only its declared scope. Resolve conflicts between transformation and preservation requirements through the current workflow before submission. Keep technical input parameters separate from visual prose and follow the selected model's rules.
 
 ## Complete physical action
 
@@ -72,7 +72,7 @@ Separate editorial omission from motion generation. Within a continuous shot, do
 
 ## Bind every input to a concrete purpose
 
-Each supplied image or video is one of: edit target, first frame, last frame, identity reference, product geometry and material evidence, composition or state reference, or motion reference. Name that use plus the subject it supplies in `references[].purpose` — for example "selected character: face and hair identity", "selected product: visible geometry", "selected object: action-state reference", "selected source interval: motion reference" — never a bare label such as "content reference". `role` selects the technical input mode and `purpose` describes the visual use; both must be correct and consistent with the prompt text.
+Each supplied image or video must have a supported technical role. Name its subject, visual purpose and the properties it supplies in `references[].purpose`. `role` selects the technical input mode; both fields must agree with the prompt and actual input use.
 
 When more than one recurring person or object appears, bind every input to its named subject and keep the binding stable across segments. An unlabelled reference cannot carry a character's identity, and adding more unlabelled references does not fix a missing assignment.
 

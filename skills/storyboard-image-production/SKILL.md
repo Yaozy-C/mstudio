@@ -62,7 +62,7 @@ Keep cross-frame continuity through stable identity and construction, while pose
 
 ## Bind every input to a concrete purpose
 
-Each supplied image is one of: edit target, identity or wardrobe reference, product geometry and material evidence, composition or state reference, or motion reference. Name that use plus the subject it supplies in `references[].purpose` — for example "selected character: face and hair identity", "selected product: visible geometry", "selected object: action-state reference" — never a bare label such as "content reference". `role` selects the technical input mode and `purpose` describes the visual use; they are separate fields and both must be correct.
+Each supplied image must have a supported technical role. Name its subject, visual purpose and the properties it supplies in `references[].purpose`. `role` selects the technical input mode; both fields must agree with the prompt and actual input use.
 
 Purposes carry identity assignments. When a scene has more than one recurring person or object, bind each input to the named subject, and keep that binding consistent through the prompt text and any later segment. An image simply labelled "reference" cannot hold a character's identity.
 

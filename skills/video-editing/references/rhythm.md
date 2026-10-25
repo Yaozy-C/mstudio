@@ -12,7 +12,7 @@ Interpret the handed-off timing and edit actual sources using three distinct clo
 
 Read the planned viewing sequence and any generation groups, then select usable actual source ranges. Preserve the intended event order and significant cut relationships. If the available footage cannot supply a required event or view, return a concrete source request to production through coordination. Model grouping and supported generation duration are production decisions; they do not oblige the editor to fill the final film with every source frame.
 
-For example, a minimum-length source can contribute 0.8 seconds of a completed placement; the remaining footage is not owed screen time. Conversely a multi-shot source is usable as one group only if its internal views and actions actually succeed. Examples illustrate the distinction, not required durations or cut counts.
+Select only the source intervals needed for the intended film experience, independently of generated clip length. Retain a multi-shot group only where its actual internal views and actions succeed.
 
 ## Design information before allocating time
 
@@ -24,13 +24,13 @@ Repeated coverage of the same event may communicate only one idea. Select an add
 
 Physical causality must hold in the underlying action; not every phase must appear in the edit. Distinguish a continuous proof/tutorial from an edited montage. Preserve the complete process only where the request or evidence requires it. Otherwise omit redundant reaches, empty-hand returns, repeated transport and idle endings. Retain enough contact, state change and result for the viewer to understand what happened. Cuts may enter mid-action and leave before the subject stops; outgoing/incoming state and attention must still match.
 
-For each retained event choose the useful entry, decisive change and exit. A placement can retain alignment, contact and the settled result while omitting most transport. If passage through an opening is the evidence, keep that passage visible. Frame count is not information count; additional viewpoints must justify their reading cost. Brief shots and longer recognition holds should follow content, not a universal duration or fixed cut count.
+For each retained event choose the useful entry, decisive change and exit. Retain the action phases that carry the meaning or required evidence, with recognition time appropriate to their importance. Frame count is not information count; additional viewpoints must justify their reading cost. Brief shots and longer recognition holds should follow content, not a universal duration or fixed cut count.
 
-Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Use speed changes and pauses around events; do not apply smooth easing or global acceleration to every action. Use available action and editing handles; request missing material from production. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
+Separate slow physical motion, camera-relative motion, late action start, redundant information and overlong holds. Repair the relevant cause. Choose speed changes, pauses and cuts according to the intended dramatic progression, physical event and reading needs. Use available action and editing handles; request missing material from production. Music cannot repair missing force or contact; retiming cannot conceal a failed action.
 
 ## Sound in the rough cut
 
-Use necessary temporary sound and music in the first authorized rough cut. Let music, action sound and ambience take turns leading. Loudness and density alone do not create impact. An in-shot action may land on a beat without a cut. Choose synchrony, anticipation, delay or cross-beat timing according to the scene; preserve essential contact/results.
+Use necessary temporary sound and music in the first authorized rough cut. Choose the hierarchy, density, onset and decay of music, action sound and ambience from the selected concept and scene. Loudness and density alone do not create impact. An in-shot action may land on a beat without a cut. Choose synchrony, anticipation, delay or cross-beat timing according to the scene; preserve essential contact/results.
 
 ## Pacing rules
 

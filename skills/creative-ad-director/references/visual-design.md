@@ -4,9 +4,9 @@ Use the selected concept, product evidence and user's style constraints. Do not 
 
 ## Start with a visible proposition
 
-Find the relationship that rewards looking: a gesture in its setting, an encounter of shapes or colors, a scale contrast, material behavior or a discovery within the chosen event. Decide how attention moves through the picture. One dominant subject can organize it; several interacting details can also sustain it. Do not impose an absolute focal hierarchy on every photograph. For open photographic exploration, use [the photographic method](photographic-exploration.md) before fixing the look. A product floating in particles is not a proposition unless the relationship means something in this concept. An effect can reveal construction, contrast states or connect spaces; it need not appear at all.
+Find the relationship that rewards looking: a gesture in its setting, an encounter of shapes or colors, a scale contrast, material behavior or a discovery within the chosen event. Decide how attention moves through the picture. One dominant subject can organize it; several interacting details can also sustain it. Do not impose an absolute focal hierarchy on every photograph. For open photographic exploration, use [the photographic method](photographic-exploration.md) before fixing the look. Every introduced visual element needs a role in the selected proposition. An effect can reveal construction, contrast states or connect spaces; it need not appear at all.
 
-Translate emotional language into a hypothesis about visible relationships. "Cold and severe" might mean restrained expression, hard lateral separation and controlled negative space, not simply a blue cast. It might instead require a different solution for a warm-coloured brand. Mark the hypothesis as a design choice, not proof that a model understands an emotion.
+Translate emotional intent into specific composition, performance, light, color and spatial relationships that serve this brief. Mark proposed relationships as design choices rather than proof of model behavior.
 
 ## Make a compact look decision
 
@@ -15,9 +15,9 @@ Record only decisions that change this shot:
 | Decision | Specify | Avoid |
 |---|---|---|
 | Attention | A focal priority or the relationships among several points of interest; what rewards further looking | Assuming either clarity or complexity guarantees an interesting image |
-| Composition | Viewpoint, subject scale, crop, silhouette gaps, negative space | "Beautiful composition" |
+| Composition | Viewpoint, subject scale, crop, silhouette gaps, negative space | Unspecified composition quality |
 | Value and colour | Hue, value, chroma and area relationships in actual surfaces and light; separation or deliberate blending | Treating a global grade or a fixed palette as the composition |
-| Light | Source direction, apparent size, falloff and reflected shape | "Cinematic lighting" alone |
+| Light | Source direction, apparent size, falloff and reflected shape | Lighting labels without physical relationships |
 | Material | Which reflections, transmission, roughness or folds reveal the material | Applying the same shine to skin, metal and cloth |
 | Motion | What new information camera/subject movement reveals | Orbit, push, zoom and shake without a reason |
 | Restraint | Elements to exclude because they compete with the proposition | Decorative particles on every product |
@@ -26,7 +26,7 @@ Do not manufacture focal length, exposure or physically implausible light settin
 
 ## Transfer reference properties, not entire pictures
 
-For each real reference, identify the subject it supplies, properties to borrow, properties not to borrow, and conflicts with other references. Product evidence wins for construction; identity evidence wins for identity. A style reference may supply highlight shape without supplying its product or background. A motion reference may supply direction and timing without supplying a new face.
+For each real reference, identify the subject it supplies, properties to borrow, properties not to borrow, and conflicts with other references. Product evidence wins for construction; identity evidence wins for identity. Borrow only the assigned visual properties; keep subject identity and construction bound to their authoritative evidence.
 
 Do not pretend to have inspected unavailable references. When no reference is supplied, label a written look as proposed rather than reference-matched. Do not invent image asset IDs.
 
@@ -38,7 +38,7 @@ Preserve an explicitly selected four-panel board workflow. Explain when an indep
 
 ## Explore selectively, then keep the selected direction
 
-When the authorized budget includes exploration, compare a small number of distinct hypotheses at the same scope and cost. Change a purposeful design variable: a hard graphic shadow versus a broad reflection, for example. Do not call three random rerolls three visual directions.
+When the authorized budget includes exploration, compare a small number of distinct hypotheses at the same scope and cost. Change an identifiable design relationship and judge what it contributes to the selected viewing experience.
 
 Prefer pairwise reasoning anchored in the brief: which candidate keeps the product legible, realizes the chosen lighting relationship and leaves the intended space? Keep ties and uncertainty. There is no universal numerical beauty threshold. A new reference or user's preference can legitimately change the selection.
 

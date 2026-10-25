@@ -15,13 +15,13 @@ Decide these before writing:
 
 ## Make motion observable
 
-- One dominant action per short generation, with a readable start and end. A second simultaneous action competes with it.
+- Preserve the designed action sequence, attention hierarchy and intended overlaps. Adapt generation complexity to the supported route while retaining the selected progression.
 - Describe how weight transfer changes load and contact, how the evidenced material responds, and what settles after the main action stops.
-- Give contact a consequence: a hand presses into fabric, a foot plants and the body's weight follows, a lid resists then gives way.
-- Use a speed curve where it matters: anticipation, acceleration, contact, follow-through, settle. Do not describe every action as "smooth".
-- Add only motivated secondary motion: hair lags when the head turns, a shirt hem settles after the body stops, an attached cable lags after its supporting object moves.
-- Performance is reaction latency and attention, not a facial-expression label. Establish what the person notices, when the eyes move, when the breath or blink happens, and what the mouth does before or after the line.
-- Keep the camera still or simple when the action is the subject. A floating orbit or a slow push that does not change the information makes the shot feel synthetic.
+- Describe the actual effect of contact on load, support and material state.
+- Derive speed changes, stops and visible duration from physical force, material and creative intent. Choose the editorial exit independently of residual physical motion.
+- Include secondary motion only when its physical cause and contribution to the selected event are clear.
+- Derive reaction latency, amplitude, intensity and overlap from intention, stimulus and urgency. Describe the behavior that carries the meaning of the interaction.
+- Choose camera movement, speed and stability from the selected viewpoint, action and intended audience experience.
 
 ## AI motion failures
 
@@ -30,11 +30,11 @@ Decide these before writing:
 | Face morphs or changes identity | Too much head rotation, small face, no identity reference | Keep the face larger and more stable; reduce rotation; use a selected identity frame; shorten the clip |
 | Hands mutate or gain fingers | Complex hand action, hands near face, occlusion | Simplify the gesture, keep hands visible against a clean background, show grip and release |
 | Feet slide or weight floats | Walking or turning without planted contact | Describe the plant, weight transfer and ground contact; cut before the step if it is not needed |
-| Uniform, floaty speed | "Smooth cinematic motion" with no beats | Give anticipation, acceleration, contact and settle; hold the camera |
+| Motion lacks the intended rhythm | Force, speed and attention changes are unspecified | Derive timing and camera behavior from the selected creative event and material response |
 | Background warps or crowds clone | Complex background motion, many people, camera travel | Reduce camera movement, keep background simple, give a fixed count and few distinct people |
 | Mouth does not match speech | Dialogue not assigned to a speaker or timing | Put exact line, language, speaker and action cue in the prompt; keep the face readable |
 | Extra cut or grid leak | Board treated as four shots or as a layout | State one continuous take or the exact designed cuts; ask for full-screen output with no board layout |
-| Light or grade shifts mid-clip | Vague "cinematic" grade, changing source | Name the light source and keep it fixed; describe one motivated change only |
+| Light or grade shifts mid-clip | Unspecified grade or changing source | Name the light source and keep it fixed; describe one motivated change only |
 | Product/wardrobe drift | No product reference or too many competing actions | Bind product geometry and wardrobe explicitly; keep the action simple |
 
 ## Image-to-video and board-to-motion
@@ -45,7 +45,7 @@ Keep the camera move compatible with the supplied frame. A first frame that look
 
 ## Performance direction
 
-Describe the stimulus, where attention moves, the delay before a response, and the resulting gaze, breath, expression or gesture. Tie changes in timing and intensity to the actual interaction. Use only the reactions selected for the shot; several emotion labels in a short clip do not establish their causes or order.
+Describe the available stimulus, intention, attention shift and bodily response. Derive response timing, intensity and overlap from the actual interaction and selected dramatic form. Include only behavior that serves the shot.
 
 ## Model-aware checks
 
@@ -61,7 +61,7 @@ Do not copy another model's syntax into a route that does not support it. A prom
 
 ## Check before submitting
 
-- Is there one dominant action with a cause and a visible result?
+- Does the action sequence preserve the designed hierarchy, causes, result and timing?
 - Does the camera move have a reason, an amplitude and a speed?
 - Are contact, weight and secondary motion described where they matter?
 - Is the performance written as attention and timing, not emotion labels?

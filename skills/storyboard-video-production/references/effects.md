@@ -22,9 +22,9 @@ Use existing permitted text and actual generation fields. Do not invent tool fie
 
 ## Resolve contradictions before a paid call
 
-Separate a whole-object transformation from an effect on a coating, accessory or surrounding medium. Whole-object melting cannot also preserve the original silhouette; full disintegration cannot leave the entire object intact. Do not silently reinterpret either instruction. Report the conflicting scopes and obtain a resolution through the current workflow.
+Separate a whole-object transformation from an effect on a coating, accessory or surrounding medium. Check whether the requested transformation is compatible with each preservation requirement. Do not silently reinterpret either instruction. Report the conflicting scopes and obtain a resolution through the current workflow.
 
-A requested artistic departure may break ordinary physics only within its declared scope. Protect other identity, construction and contact relationships. "Preserve everything" is not a useful substitute for a boundary, and a textual boundary is not a pixel mask.
+A requested artistic departure may break ordinary physics only within its declared scope. Protect other identity, construction and contact relationships. State the preservation boundary explicitly; a textual boundary is not a pixel mask.
 
 ## Select a route from actual capabilities
 
@@ -44,11 +44,11 @@ For a selected board workflow, the whole board remains an ordered-state referenc
 
 ## Describe a visible process, not accumulated adjectives
 
-Build the prompt from the actual start through the decisive change to a useful end. Establish one dominant event and a motivated camera decision, then add necessary secondary responses such as debris settling or light falling on nearby surfaces. Do not stack an orbit, crash zoom, transformation and explosion merely to sound spectacular.
+Build the prompt from the actual start through the decisive change to the intended end. Derive event hierarchy, progression, speed, secondary response and camera behavior from the selected concept and material. Include only changes that contribute to that expression.
 
 For each phase, describe what changes on screen, where its boundary travels, what remains and what causes the next phase. Phase timing is intended rhythm, not a guarantee of exact timestamps. Keep enough of the completed state to be useful at the intended editorial exit, without imposing the same hold on every shot.
 
-Use material-specific language: flakes peel and tumble differently from dust drifting or liquid pooling. Organize trajectories and densities around the focal subject rather than filling the entire frame uniformly. Preserve the chosen light direction and describe only meaningful interaction with new material.
+Derive motion, detachment, trajectories and density from the actual material and applied force. Organize their visibility around the intended attention and preserve the chosen light relationship.
 
 ## Different effects need different decisions
 

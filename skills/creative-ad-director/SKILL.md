@@ -17,7 +17,7 @@ When creating a production shot plan or regrouping one, save one Mstudio shot re
 
 Each saved shot must be independently understandable for execution. State its relevant subjects, spatial relationships, camera, action, light and current object states in its own text; a reference to another shot cannot replace these decisions. Give film-wide constraints to the coordinator for the existing project creation fields rather than making the first shot their only home. See [shot-record saving](references/shot-design.md#save-and-hand-off) for scope and continuity references.
 
-For example, compatible 2-second and 3-second shots become one 5-second record containing 0–2s and 2–5s internal shots, with the designed cut at 2s. Giving each original record a separate 5-second video task does not implement this grouping. Combine a short final remainder with a compatible neighbor; if the entire passage is shorter than 5 seconds or must remain isolated, distinguish at least 5 seconds of source including editing handles from the unchanged intended film interval. See [shot-record saving](references/shot-design.md#save-and-hand-off) for existing IDs and associations. Production checks model-dependent limits; the director owns saving the grouped design.
+Combine a short final remainder with a compatible neighbor; if the entire passage is shorter than 5 seconds or must remain isolated, distinguish at least 5 seconds of source including editing handles from the unchanged intended film interval. See [shot-record saving](references/shot-design.md#save-and-hand-off) for existing IDs and associations. Production checks model-dependent limits; the director owns saving the grouped design.
 
 ## Read for the task at hand
 

@@ -12,7 +12,7 @@ Adapt presentation to purpose. An asset image should expose useful identity and 
 
 Use the approved look. If it is missing, make a compact, clearly stated execution hypothesis rather than automatically generating alternatives: attention order, viewpoint and scale, light/value separation, material response, palette relationship and exclusions. Return concept or shot-design conflicts to the coordinator. Do not reopen an approved direction just because a sample has a local defect.
 
-Replace generic adjectives with visible relationships. Metal can be described by the shape and roll-off of its reflections, transparent material by edge thickness and transmission, and cloth by fold scale and directional response. Do not give all surfaces the same glossy treatment. A cleaner background cannot compensate for a silhouette that merges into it.
+Describe material appearance through its visible response to light, surface properties and geometry at the delivered scale. Preserve the selected composition and required silhouette separation.
 
 ## Photographic direction and the AI look
 

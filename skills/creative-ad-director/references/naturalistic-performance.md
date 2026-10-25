@@ -1,11 +1,10 @@
 # Naturalistic human performance
 
+Derive response latency, gesture amplitude, force, speed and emotional intensity from the person's intention, available stimulus, urgency and the selected dramatic form. Determine which reactions overlap ongoing action and which need separate screen time. Preserve the selected degree of exaggeration or stillness.
 
-For a selected live-action or restrained performance style, begin with the person's intention and the stimulus they actually receive. Let a response develop through the relevant sequence: perception, a small recognition pause or change in gaze/breath, then a motivated bodily response. Preserve human latency and overlapping motion without imposing the same pause on every event or slowing urgent action.
+Coordinate speech, gaze, breath, head and body through the person's intention and physical support. Choose their onset, overlap and duration for the interaction. Include secondary behavior only when it serves the event; keep performance free of a fixed gesture sequence.
 
-Eyes may briefly shift, blink and refocus; breathing can subtly affect the chest and shoulders. Speech, gaze, head motion, breath and weight transfer need not start and stop together. Avoid a mechanical open-mouth/speak/close-mouth cycle. Choose only a few context-driven secondary actions, such as releasing finger tension, adjusting an existing garment, shifting support, swallowing or momentarily averting gaze. Do not schedule every microgesture or fill stillness with random motion.
-
-Express emotion through its progression, not a stock facial endpoint. Surprise might interrupt a hand action before the eyes lift and the head turns; sadness might begin with silence, a shallower breath and lowered gaze before a small facial change; pleasure might register in the eyes before a slight smile. These are optional examples, not universal acting prescriptions. Preserve the brief's dramatic intensity, comic exaggeration or deliberate stillness when selected.
+Express emotion through its development across the interaction. Select the relevant changes in attention, expression and bodily action, with their intensity and timing grounded in the script.
 
 During interaction, establish who hears or sees what and when. A listener reacts to the available cue rather than anticipating an unheard line. Avoid unintended synchronized turns, gestures and reactions across people. Respect deliberate overlap or interruption in the script. Preserve bodily weight, inertia, asymmetry and small imperfections without changing identity or inventing new story events.
 

@@ -2,7 +2,7 @@
 
 Start from the selected shot's current complete text and dialogue, using linked story context where needed. Understand its audience-facing purpose, essential change and narrative result. Ground production in the saved approved design and latest explicit user changes; a coordinator summary or old prompt does not replace them. Preserve the event's meaning when choosing inputs and organizing generation units.
 
-A clip is a performance, not a slideshow. Write one dominant action with a cause and a visible result, the camera's amplitude and speed, the performance as attention and timing, and sound tied to the visible event. Read [motion realism](references/motion-realism.md) when motion drifts, floats, morphs or loses weight.
+A clip is a performance, not a slideshow. Preserve the designed action sequence, hierarchy, causes and visible result, the camera's amplitude and speed, the performance as attention and timing, and sound tied to the visible event. Read [motion realism](references/motion-realism.md) when motion drifts, floats, morphs or loses weight.
 
 Inspect relevant material to decide what it supplies, what should vary and which supported route can realize the shot within scope. User-designated generation references must remain actual inputs with their requested purpose; do not replace them with prose, stills or planning-only use. Report concrete incompatibilities before submitting an altered input set. Planning media the user has not required as inputs may be used only for understanding and need not determine final appearance. Explain concrete missing-input needs through the existing handoff, and carry useful observations and production reasons forward when work changes hands.
 

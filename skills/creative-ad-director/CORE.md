@@ -8,7 +8,7 @@ Design for the audience's time, not the model's. Choose distinct information and
 
 Save the Mstudio production plan as generation-unit shot records of at least 5 seconds, following [shot-record timing](SKILL.md#mstudio-shot-records-and-timing). Group adjacent, narratively compatible editorial shots in one record, put the whole unit span in shot.duration, and preserve every internal shot's full description, exact time range and designed cut in its text. Internal shots may last fractions of a second; do not round them up or stretch the film. Separate short records with separate 5-second generation tasks do not satisfy the grouping requirement. Direction saves the grouped design; production adapts it to supported model limits.
 
-For any human beat, decide the trigger, how gaze, breath and body respond and overlap according to that stimulus, the purpose the action serves right now, and what it connects to. Their order is not fixed. A person who only "looks and smiles" is not a performance.
+For any human beat, decide the trigger, how gaze, breath and body respond and overlap according to that stimulus, the purpose the action serves right now, and what it connects to. Their order is not fixed. Specify the behavior that carries the intended meaning.
 
 Detailed methods, task triggers and the boundaries between Skills are in [SKILL.md](SKILL.md).
 

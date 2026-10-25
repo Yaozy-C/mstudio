@@ -20,7 +20,7 @@ For a continuous take, panels are successive moments of one photograph, not four
 
 ## Board scale
 
-At a 2×2 board, each panel is roughly one quarter of the output. If the delivered board is 1672×941, a panel is about 836×470: enough for blocking, not for pore-level skin or precise fingers. State the actual limitation instead of asking the model for detail the panel cannot hold. When the look matters more than the sequence, an authorized full-frame look frame is the right artifact; do not demand a board to carry both.
+Determine each panel's actual pixel dimensions from the board resolution and layout. Match visible detail to that scale and state consequential limitations. Use an independently authorized full-frame artifact when the required appearance or control cannot be supplied by a board.
 
 ## Breaking the AI look
 
@@ -30,7 +30,7 @@ At a 2×2 board, each panel is roughly one quarter of the output. If the deliver
 | Orange wash across all panels | "Warm sunset" repeated without color relationships | Distinguish environment, skin, product and neutral colors; tie color casts to their light sources |
 | Flat panels | "Soft even light" in every cell | Preserve the designed source direction and natural shadows; add fill only when motivated |
 | Catalogue background | Plain backdrop carried from an asset plate | Put the figures in the actual location with depth and landmarks |
-| Mushy hands/faces | Too much detail demanded at 836×470 | Keep required hand contact readable and detail proportionate to panel scale |
+| Mushy hands/faces | Detail exceeds actual panel resolution | Keep required hand contact readable and detail proportionate to panel scale |
 | Grid leakage | Model treats the board as a layout | Ask for four full-bleed scene panels with plain gutters, no labels or arrows |
 | Inconsistent crowd | Generic "audience" | Give a count, a few distinct postures and clothing colors, and keep them across panels |
 

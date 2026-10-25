@@ -1,24 +1,24 @@
 # Product motion realism
 
-Use for product demos, hands-on demonstrations, packshots in motion and short commercial clips. A product clip is a physical demonstration, not a moving still. The product's geometry, label and material must survive every frame; the motion must have a cause, weight and a readable end.
+Use for product demos, hands-on demonstrations, packshots in motion and short commercial clips. Realize the selected creative event through physical action. The product's geometry, label and material must survive every frame; the motion must have a cause, weight and a readable end.
 
 ## Motion brief
 
 1. **Product fact.** Which product, which surface faces camera, what must remain readable, and which parts may move.
-2. **Action.** One benefit or handling beat per short clip: open, close, place, lift, pour, press, turn, wear. State the start, the decisive contact and the end.
-3. **Hands.** Which hand enters, from where, what it grips, how much force, and where it exits. Hands are the most common synthetic failure in product video.
+2. **Action.** Define the selected action sequence, causal relationships, decisive change and intended result. Derive speed, force and visible duration from its creative purpose and physical requirements.
+3. **Hands.** Define the required hand position, grip, force and changes of support or possession. Select visible entry and exit according to the shot design.
 4. **Camera.** Product hero angle, lens, height, distance, movement and speed. A turntable, dolly, push-in and orbit are different moves.
 5. **Light and material.** The source that reveals the product's finish, the reflection shape, the shadow contact, and what stays fixed.
 6. **Sound and speech.** Exact line or voice-over, language, delivery and the visible beat it belongs to; material sounds with a cause.
 
 ## Make the product behave
 
-- Keep rigid parts rigid. A bottle, box, zip pull or metal clasp may move as a mechanism; it must not bend like cloth.
+- Preserve each part's evidenced rigidity and allowed mechanism travel.
 - Let flexible materials respond to the actual load and support: compression, slack and folds should follow the force, contact and release.
-- Show contact and support: the base meets the surface, the hand grips, the lid resists then opens, the product settles under its own weight.
-- Give the material its own response: matte board with a broad soft highlight, coated metal with a narrow reflection, glass with edge thickness and transmission, woven fabric with directional sheen.
+- Establish contact, support and force wherever they explain a state change. Choose how long each phase remains visible from the shot purpose and intended editorial exit.
+- Derive deformation, reflection and transmission from the actual material, light and applied force.
 - Keep the label plane facing the camera when it must be read. Do not rotate the product so the label leaves frame and then claim it was preserved.
-- Give a short clip one dominant demonstration or handling beat. Preserve the selected scope rather than crowding several unrelated claims into its duration.
+- Preserve the designed sequence and hierarchy of actions, including intended overlaps and internal cuts. Adapt generation complexity without replacing the creative progression with isolated demonstrations.
 
 ## AI product-video failures
 
@@ -28,15 +28,15 @@ Use for product demos, hands-on demonstrations, packshots in motion and short co
 | Label warps or turns away | Product rotates too far, or the label is not bound | Keep the label plane visible; limit rotation; state the exact readable region |
 | Extra fingers or merged hands | Hand action near the product, occlusion, fast movement | Simplify the grip, keep the hand against a clean area, show entry and exit |
 | Product floats or slides | No support/contact description | State the surface, base contact, weight and shadow |
-| Uniform turntable speed | "Rotate the product" with no beat | Give a start, a slow reveal, a hold on the label and a settle |
-| Light sweep changes product color | "Cinematic light" without a source | Name the source, its path and what stays constant; one change only |
-| Hand or product morphs into another object | Two actions in one clip | Split into separate generations; keep one action per clip |
+| Motion lacks the intended rhythm | Speed and attention changes are unspecified | Derive motion timing, stops and recognition time from the selected creative event and material behavior |
+| Light sweep changes product color | Unspecified light source | Name the source, its path and what stays constant; one change only |
+| Hand or product morphs into another object | Ambiguous possession, occlusion or unsupported action complexity | Clarify transitions and references; split generation only when needed by the supported route, preserving planned film timing and cuts |
 | Background moves but product does not | Camera move described without a subject path | Separate camera movement from product movement; give each a start and end |
 | Audio does not match the action | Generic music or no sound cue | Put the exact line and the visible beat in the prompt; add material sounds with causes |
 
 ## Camera and staging
 
-- A product hero uses a clean angle and a stable horizon. A slow push-in or a controlled 30-degree orbit is enough; a floating camera with no target reads as synthetic.
+- Choose camera position, movement, speed and stability from what the shot must reveal or make the viewer feel. Coordinate camera and subject motion to preserve the intended screen effect.
 - Keep the product large enough that its material and label survive. A small product in a wide frame cannot prove construction.
 - Use a real surface and a motivated light. A seamless white background is optional, not a default; it often produces a catalogue look.
 - When a hand enters, stage the entry from the frame edge, not from inside the product. Show the grip before the force.
@@ -45,8 +45,8 @@ Use for product demos, hands-on demonstrations, packshots in motion and short co
 ## Check before submitting
 
 - Is the product's geometry, label and material bound to actual evidence?
-- Is there one action with a clear start, contact and end?
-- Do hands enter, grip and leave in a readable way?
+- Does the action sequence preserve the selected creative purpose, physical causes and intended timing?
+- Are the required grip, support and possession changes readable?
 - Does the light reveal the material without changing its color?
 - Is the camera move motivated and compatible with the product angle?
 - Does the route support the requested duration, audio and reference?

@@ -4,7 +4,7 @@ Read when designing or revising shots. Decide how viewers understand, anticipate
 
 ## Shot purpose and viewpoint
 
-Define each shot through an observable change: what viewers know on entry, what they discover, misread, anticipate or feel, and which visible event or spatial relationship causes it. Emotional labels such as cinematic or premium are insufficient. Purposeful echoes, pauses and repetition need not introduce another selling point.
+Define each shot through an observable change: what viewers know on entry, what they discover, misread, anticipate or feel, and which visible event or spatial relationship causes it. State the visible relationships that realize the intended emotion. Purposeful echoes, pauses and repetition need not introduce another selling point.
 
 Decide whether viewers know before the subject, discover alongside it, or learn the cause after the result. Reveal targets, obstacles and outcomes accordingly; do not accidentally expose a planned surprise. Choose an observing, participating or restricted viewpoint for a reason. Generation convenience alone does not justify replacing a selected viewing experience.
 
@@ -80,6 +80,6 @@ Give artists the selected moment, viewpoint, attention center and spatial/pose c
 
 Preserve expression, compatible geometry and causal cuts. Do not claim speed, performance timing or audio synchronization from stills. Unexpected good results may be adopted only when they preserve the core task and user constraints.
 
-Choose duration, sound and animation cadence from the current brief rather than inheriting a tutorial example. Exact frame instructions and consistency constraints express design intent; they do not guarantee model control or a successful result.
+Choose duration, sound and animation cadence from the current brief. Exact frame instructions and consistency constraints express design intent; they do not guarantee model control or a successful result.
 
 Method references: [ASC on camera placement and blocking](https://theasc.com/article/shot-craft-where-do-you-put-the-camera/), [ASC on lens and distance](https://theasc.com/article/understanding-lens-distortion/), and [M. David Mullen on movement and editing](https://studentfilmmakers.com/notes-on-camera-movement-when-to-move-the-camera-and-why-by-m-david-mullen-asc/). These are practitioners' approaches, not one compulsory shooting formula.

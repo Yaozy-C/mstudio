@@ -4,7 +4,7 @@ Use this reference to design the timing and relationships of shots from the sele
 
 ## Allocate time from the event
 
-Determine what the audience must notice, understand or feel in each passage. Retain the selected story's important events, emotional movement and recognition time. Then assign provisional film intervals to the shots that express them. A pause, an echo or a sustained view can be purposeful; neither fast cutting nor a new selling point in every shot is a general requirement.
+Determine what the audience must notice, understand or feel and when that experience changes. Allocate action speed, pauses, shot duration and cut placement from the selected creative purpose, dramatic progression and reading needs. Choose rhythm within shots as well as between them; preserve sustained attention or continuous evidence where the concept depends on it.
 
 For a dense passage, distinguish new information from repeated coverage of the same event. Omit redundant preparation while preserving essential contact, state changes and results. When changing a script event, dialogue or the meaning of a reveal would be necessary, return that content conflict to the writer rather than silently making a new story.
 

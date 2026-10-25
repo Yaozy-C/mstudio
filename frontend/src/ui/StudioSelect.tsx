@@ -29,7 +29,8 @@ export function StudioSelect({
       onOpenChange={(next) => {
         if (next)
           setContainer(
-            trigger.current?.closest<HTMLElement>("dialog, [role='dialog']") ?? null,
+            trigger.current?.closest<HTMLElement>("dialog, [role='dialog']") ??
+              null,
           );
         setOpen(next);
       }}

@@ -17,7 +17,7 @@ Reference the [saved shot design](shot-execution.md); add input roles, chosen ro
 
 The default storyboard route uses one board asset for the selected shot record, with its existing ordered panel map. A single asset may contain several states; it is not one simultaneous scene and not four separate input files.
 
-Use an endpoint that accepts storyboard/shot-planning image references. Use its exposed reference role and the matching purpose: for example, "shot s1 temporal storyboard; TL/TR/BL/BR define opening, entry, contact and ending; one continuous take". In Mstudio use role=reference only when the selected model supports it; the adapter owns native field names. Never put the whole grid into first-frame or last-frame fields. Reference support is not a guarantee of exact timestamp/keyframe adherence.
+Use an endpoint that accepts storyboard/shot-planning image references. Use its exposed reference role and state the shot ID, ordered panel map and continuous/cut intent in the input purpose. In Mstudio use role=reference only when the selected model supports it; the adapter owns native field names. Never put the whole grid into first-frame or last-frame fields. Reference support is not a guarantee of exact timestamp/keyframe adherence.
 
 If the chosen endpoint supports only first/last frames or cannot parse board references, report that specific incompatibility before a paid call. Preserve the chosen board workflow; do not silently crop panels, generate a second control set or switch the user's model/service. An explicitly requested independent control task is a different authorized input use.
 

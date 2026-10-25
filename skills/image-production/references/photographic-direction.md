@@ -13,8 +13,8 @@ Use for live-action or photorealistic character assets, scene stills and control
 
 ## Write the photograph
 
-- Open with the photographic fact when realism is requested: "A real photograph of..." or "A photorealistic...".
-- Name the moment and the camera relationship. "Camera at the subject's eye level, 50mm, three metres from the subject" is more useful than "cinematic shot".
+- State the requested photographic medium and degree of realism.
+- Specify the visible moment, camera position, viewing direction, height and distance.
 - Describe light as a physical setup: source position, direction and apparent size, plus fill only when the chosen setup needs it.
 - Describe only material responses that matter at the selected scale; a full-body portrait does not need a close-up skin or fiber inventory.
 - Use the background required by the deliverable. A simple reference backdrop is valid; for scene integration, make perspective, contact and light agree rather than adding decorative objects.
@@ -30,23 +30,13 @@ Match sharpness, surface detail and exposure to the framing and photographic int
 
 ## Camera and optics
 
-| Choice | Visible consequence | Use when |
-|---|---|---|
-| 24–28mm | Expands space, exaggerates near edges and foreground | Environment, crowd, interior geography |
-| 35mm | Natural reportage perspective, readable scene | Establishing stills, two-shot with context |
-| 50mm | Close to human perspective, moderate compression | Observed scene, medium two-shot |
-| 85–105mm | Compresses background, isolates the face | Portrait, reaction, intimate detail |
-| Low camera | Subject gains scale or threat | Performance, product hero |
-| Eye level | Direct, intimate, neutral | Dialogue, identity plate |
-| High camera | Subject looks smaller or exposed | Vulnerability, overhead layout |
-
-State height and distance together with the lens. A lens label alone does not establish perspective, and a shallow aperture does not repair a weak composition.
+Derive focal length, camera height and distance together from the intended perspective, subject scale, spatial relationships and focus needs. State their visible consequences. Use numerical values only when they serve the selected design.
 
 ## Light and color
 
 - A large source close to the subject is soft; a small or distant source is hard. Name the size rather than saying "soft light".
-- Direction creates form: front light flattens, 45-degree side light models, back light separates. State the source direction and any motivated fill; do not add fill merely to expose secondary texture.
-- A 2:1 ratio is gentle; 3:1 is a clear portrait ratio; 4:1 or more is dramatic. Use a ratio only when it describes the intended look.
+- Choose source direction and any motivated fill from the required form, spatial separation and scene conditions.
+- Set the light ratio from the intended contrast and required detail; preserve natural shadow where the selected look calls for it.
 - Let the actual environment and motivated light sources supply color; distinguish direct light, ambient fill and reflected light. Do not put a global orange or teal grade on every surface.
 - Protect skin and product colors. A warm scene does not make a brown complexion orange, and a cool scene does not make it gray.
 - Choose highlight and shadow visibility deliberately. Natural shadow or optical falloff need not reveal every skin and cloth detail.

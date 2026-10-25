@@ -4,19 +4,19 @@ Use for an open photographic look, a flat first pass, or transferring visual jud
 
 ## Find material worth looking at
 
-Study available pictures as pictures before explaining their message. Notice what draws you in: an interval between bodies, a posture in an unexpectedly large room, adjacent colors, a surface catching light, a spatial overlap, a small gesture or an ordinary detail made newly visible. Include the edges and quieter parts of the frame. A reason to look can precede a settled emotional interpretation.
+Study available pictures before explaining their message. Identify the physical, spatial, color and temporal relationships that sustain attention, including the frame edges and secondary regions. Ground the visual proposition in those observed relationships.
 
 For a new scene without visual evidence, propose specific physical material that could offer such a relationship. Work from the actual assignment rather than replacing every setting with a cafe, a luxury interior or an empty cinematic street. Do not present this synthetic exploration as location scouting, documentary observation or research into real people's behavior. If real references are accessible, separate the properties actually seen from imagined additions.
 
 ## Work the scene while the choices are cheap
 
-Explore a different place to stand, camera height, distance, crop, moment or arrangement when the first picture is uninteresting. Ask what the change lets us see. Moving nearer can connect gestures or remove context; moving away can let a place become significant. Either can fail. A lens label alone does not determine the viewer's relationship to the scene.
+Explore a different place to stand, camera height, distance, crop, moment or arrangement when the first picture is uninteresting. Ask what the change lets us see. Judge how each change affects the intended attention and spatial relationship. A lens label alone does not determine the viewer's relationship to the scene.
 
 Use brief layout studies or a small number of actual alternatives when exploration is authorized. Choose changes that test an identifiable relationship. Do not impose a fixed number of images, predefined emotional categories or a mandatory contact sheet. Respect a selected look and a bounded generation allowance. A local repair preserves the picture's working relationships.
 
 ## Compose color, light and space together
 
-Find relationships among actual bodies and surfaces: hue, value, chroma, relative area, edges, repetition, interval, texture, reflection and depth. A color can join distant parts of a frame, interrupt a pattern, create a physical plane or make a quiet detail noticeable. Select those relationships for this scene; a complementary pair, muted grade or fixed area ratio is not a quality formula. Preserve material colors when product evidence or identity requires them.
+Find relationships among actual bodies and surfaces: hue, value, chroma, relative area, edges, repetition, interval, texture, reflection and depth. Determine how color organizes attention and space in the actual composition. Select those relationships for this scene; a complementary pair, muted grade or fixed area ratio is not a quality formula. Preserve material colors when product evidence or identity requires them.
 
 Light changes what those surfaces reveal and how they relate. Decide what emits, transmits, reflects or absorbs it, and where its transitions fall. Keep it consistent with the selected environment. Dramatic contrast and soft light are both available; neither should be added merely to declare a photograph cinematic.
 
@@ -24,11 +24,11 @@ A unified picture need not have one isolated hero. It can invite movement among 
 
 ## Let people belong to a particular moment
 
-Discover a concrete posture, attention, task, pause or interaction that fits the selected event. An open hand, held smile or identical listening pose is not a universal way to depict conversation. People may attend to different things, remain still or be formally posed when appropriate. Do not manufacture an accident, a dramatic backstory or a conspicuous action merely to simulate authenticity.
+Discover a concrete posture, attention, task, pause or interaction that fits the selected event. Derive posture and gesture from this interaction. People may attend to different things, remain still or be formally posed when appropriate. Do not manufacture an accident, a dramatic backstory or a conspicuous action merely to simulate authenticity.
 
 Consider the observer's actual position: inside an exchange, looking in from outside, close to one participant or at a distance shared with the setting. Keep sightlines, bodily contact, support and perspective physically coherent. The same angle or interpersonal distance can mean different things in different scenes. Do not claim a crop or color establishes a character's power, intimacy or inner life by itself.
 
-For spaces, find what makes this place visually particular: the scale of an opening, wear, a furnishing's shape, the meeting of materials or the way light travels. Keep relevant context rather than turning the room into a prop inventory or automatically erasing its irregularities. An empty room can be the subject; it does not need a person to supply a story.
+For spaces, identify the observed geometry, material and light relationships that make this place visually particular. Keep relevant context rather than turning the room into a prop inventory or automatically erasing its irregularities. An empty room can be the subject; it does not need a person to supply a story.
 
 ## Select from the pictures, then refine
 
