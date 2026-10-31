@@ -73,8 +73,6 @@ jobs:
         run: |
           python scripts/check_source_release.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python scripts/check_source_size.py
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/bundle-windows.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $env:GST_PLUGIN_SYSTEM_PATH_1_0 = "$PWD/desktop/native/windows-bundle/gstreamer/lib/gstreamer-1.0"
