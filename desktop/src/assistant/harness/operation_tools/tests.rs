@@ -35,6 +35,62 @@ pub(super) fn decode(
     super::decode(profile, name, args).map(Ok)
 }
 #[test]
+fn concept_role_gets_the_board_writer_without_script_or_shot_writers() {
+    let p = profile("concept");
+    let names: Vec<_> = tools(&p)
+        .into_iter()
+        .map(|tool| tool.definition.name)
+        .collect();
+    assert!(names.iter().any(|name| name == "mstudio_save_concepts"));
+    assert!(names.iter().any(|name| name == "mstudio_remove_concepts"));
+    assert!(!names.iter().any(|name| {
+        [
+            "mstudio_add_screenplay",
+            "mstudio_add_shot",
+            "mstudio_update_screenplay",
+        ]
+        .contains(&name.as_str())
+    }));
+    let decoded = decode(
+        &p,
+        "mstudio_save_concepts",
+        json!({"concepts":[{"id":"the-hearing","title":"THE HEARING","oneLine":"A bear opens a picnic at its hearing.","truth":"Scarcity makes people call hospitality theft.","brandIdea":"There was never a theft problem; there was a portions problem."}]}),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(decoded["operations"][0]["op"], "save_concepts");
+    assert_eq!(decoded["operations"][0]["concepts"][0]["id"], "the-hearing");
+    assert_eq!(
+        decoded["operations"][0]["concepts"][0]["truth"],
+        "Scarcity makes people call hospitality theft."
+    );
+    let removed = decode(
+        &p,
+        "mstudio_remove_concepts",
+        json!({"ids":["the-hearing"]}),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        removed["operations"][0],
+        json!({"op":"remove_concepts","ids":["the-hearing"]})
+    );
+    assert!(
+        decode(
+            &profile("writer"),
+            "mstudio_remove_concepts",
+            json!({"ids":["the-hearing"]})
+        )
+        .is_none()
+    );
+    assert!(
+        decode(&p, "mstudio_remove_concepts", json!({"ids":[]}))
+            .unwrap()
+            .is_err()
+    );
+}
+
+#[test]
 fn production_has_direct_prompt_tools_without_storyboard_writes() {
     let p = profile("production");
     let available = tools(&p);

@@ -34,6 +34,29 @@ fn preflight_failure_without_reservation_records_the_original_error() {
     assert!(crate::jobs::metadata(&store, "job").is_err());
     cleanup(store);
 }
+
+#[test]
+fn local_execution_failure_does_not_blame_model_settings_or_submit_a_job() {
+    let (store, _) = fixture();
+    let error = project_service::domain::execute(json!({
+        "action":"inspect", "document":null, "args":{}
+    }))
+    .unwrap_err();
+    submission_failed(&store, "p", "run", "job", error).unwrap();
+    let doc = project_service::load(&store.conn().unwrap(), "p").unwrap();
+    let issue: crate::app_error::AppError = serde_json::from_str(
+        doc["production"]["drafts"]["run"]["error"]
+            .as_str()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(issue.code, "OPERATION_FAILED");
+    assert_eq!(issue.stage, "prepare");
+    assert!(issue.details.contains("inspect"));
+    assert_ne!(issue.details, "Domain execution failed");
+    assert!(crate::jobs::metadata(&store, "job").is_err());
+    cleanup(store);
+}
 #[test]
 fn failure_status_write_error_is_returned_with_both_causes() {
     let (store, _) = fixture();
@@ -75,6 +98,28 @@ fn an_existing_remote_job_is_reconciled_without_reclassifying_or_resubmitting() 
         project_service::load(&store.conn().unwrap(), "p").unwrap()["production"]["drafts"]["run"]
             ["status"],
         "IN_PROGRESS"
+    );
+    cleanup(store);
+}
+
+#[test]
+fn provider_submission_failure_reconciles_as_a_retryable_task() {
+    let (store, task) = fixture();
+    let mut job = json!({"id":"job","projectId":"p","status":"SUBMITTING","shot":{"canvasGeneration":{"task":task,"x":0,"y":0}}});
+    assert!(crate::jobs::reserve(&store, &job).unwrap());
+    let error = crate::app_error::AppError::http(422, "fal", "size 须为 WIDTHxHEIGHT").into();
+    crate::job_recovery::submission_failed(&mut job, &error);
+    crate::jobs::save(&store, &job).unwrap();
+    let document = project_service::load(&store.conn().unwrap(), "p").unwrap();
+    let task = &document["production"]["drafts"]["run"];
+    assert_eq!(task["status"], "FAILED");
+    let issue: crate::app_error::AppError =
+        serde_json::from_str(task["error"].as_str().unwrap()).unwrap();
+    assert_eq!(issue.code, "INVALID_INPUT");
+    assert_eq!(issue.details, "size 须为 WIDTHxHEIGHT");
+    assert_eq!(
+        crate::jobs::metadata(&store, "job").unwrap()["status"],
+        "FAILED"
     );
     cleanup(store);
 }

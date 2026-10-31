@@ -19,16 +19,7 @@ fn valid_size(value: &str) -> bool {
     let (Ok(width), Ok(height)) = (width.parse::<u64>(), height.parse::<u64>()) else {
         return false;
     };
-    width > 0
-        && height > 0
-        && width % 16 == 0
-        && height % 16 == 0
-        && width <= 3840
-        && height <= 3840
-        && width * height >= 655_360
-        && width * height <= 8_294_400
-        && width * 3 >= height
-        && height * 3 >= width
+    width > 0 && height > 0
 }
 fn size<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
     let value = match input.get("size") {
@@ -36,10 +27,7 @@ fn size<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
         None => default(transport, "size")?,
     };
     ensure!(value != "auto", "请指定明确的 size，不要使用 auto");
-    ensure!(
-        valid_size(value),
-        "size 须为 WIDTHxHEIGHT：宽高为 16 的倍数，比例 1:3–3:1，总像素 655360–8294400"
-    );
+    ensure!(valid_size(value), "size 须为 WIDTHxHEIGHT，宽高须为正整数");
     Ok(value)
 }
 fn quality<'a>(input: &'a Value, transport: &'a Value) -> Result<&'a str> {
@@ -229,13 +217,26 @@ mod tests {
         .unwrap();
         assert_eq!(body["size"], "1536x864");
         assert_eq!(body["quality"], "xhigh");
+        for size in [
+            "1080x1920",
+            "1920x1080",
+            "1000x1000",
+            "4096x4096",
+            "4096x1000",
+            "512x512",
+        ] {
+            let (_, body) =
+                payload(&json!({"prompt":"x","model":"gpt-image-2.5-sunburst","size":size}))
+                    .unwrap();
+            assert_eq!(body["size"], size);
+        }
         for input in [
             json!({"prompt":"x","size":"auto"}),
             json!({"prompt":"x","quality":"auto"}),
-            json!({"prompt":"x","size":"1920x1080"}),
-            json!({"prompt":"x","size":"1000x1000"}),
-            json!({"prompt":"x","size":"4096x4096"}),
-            json!({"prompt":"x","size":"4096x1000"}),
+            json!({"prompt":"x","size":"0x1920"}),
+            json!({"prompt":"x","size":"1080x-1"}),
+            json!({"prompt":"x","size":"1080x1920x3"}),
+            json!({"prompt":"x","size":"portrait"}),
             json!({"prompt":"x","size":1024}),
             json!({"prompt":"x","quality":"ultra"}),
             json!({"prompt":"x","quality":42}),

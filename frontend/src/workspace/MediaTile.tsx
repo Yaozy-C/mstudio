@@ -1,4 +1,5 @@
 import { t } from "../i18n";
+import { isMaterial, isStoryAsset } from "./assetLibrary";
 import type { ComponentPropsWithRef } from "react";
 import {
   FileText,
@@ -15,6 +16,7 @@ export function MediaTile({
   selected,
   select,
   preview,
+  referenceDrag = true,
   onContextMenu,
   className,
   ...props
@@ -24,6 +26,7 @@ export function MediaTile({
   selected: boolean;
   select: (id: string) => void;
   preview: (id: string) => void;
+  referenceDrag?: boolean;
 } & ComponentPropsWithRef<"article">) {
   return (
     <article
@@ -36,9 +39,9 @@ export function MediaTile({
     >
       <button
         className="media-thumbnail"
-        draggable={scope === "project" && !a.missing}
+        draggable={referenceDrag && scope === "project" && !a.missing}
         onDragStart={(e) => {
-          if (scope !== "project" || a.missing) {
+          if (!referenceDrag || scope !== "project" || a.missing) {
             e.preventDefault();
             return;
           }
@@ -95,7 +98,13 @@ export function MediaTile({
       {(scope === "project" || (a.imageVersionCount ?? 0) > 1) && (
         <small className="media-version-count">
           {scope === "project" &&
-            t(a.usage === "asset" ? "剧本资产" : "普通素材")}
+            t(
+              isStoryAsset(a)
+                ? isMaterial(a)
+                  ? "素材 · 镜头资产"
+                  : "镜头资产"
+                : "创作素材",
+            )}
           {(a.imageVersionCount ?? 0) > 1 &&
             `${scope === "project" ? " · " : ""}${t("{count} 个版本", { count: a.imageVersionCount })}`}
         </small>

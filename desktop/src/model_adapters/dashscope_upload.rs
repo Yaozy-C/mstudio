@@ -40,7 +40,12 @@ pub async fn upload(
                 .is_some_and(|h| h.ends_with(".aliyuncs.com")),
         "上传地址必须来自阿里云 OSS"
     );
-    let extension = if mime == "image/png" { "png" } else { "mp4" };
+    let extension = match mime {
+        "image/png" => "png",
+        "audio/mpeg" => "mp3",
+        "video/mp4" => "mp4",
+        _ => anyhow::bail!("不支持的参考素材格式"),
+    };
     let name = format!("{}.{}", mstudio::media::id(), extension);
     let object = format!("{}/{}", field("upload_dir")?.trim_end_matches('/'), name);
     let boundary = format!("mstudio-{}", mstudio::media::id());

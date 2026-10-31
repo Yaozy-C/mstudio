@@ -1,13 +1,14 @@
 import { expect, test } from "bun:test";
 import { fixture, asset } from "./fixtures.test-helper";
 import { applyOperations } from "../assistant/projectCommands";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import { editReferences, mergeReferenceDraft } from "./editReferences";
 
 const edit = (p: ReturnType<typeof fixture>, extra: object) =>
   applyOperations(p, [{ op: "set_references", id: "shot", ...extra }]);
 test("adding and editing one reference preserves other references and never creates cards", () => {
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   const next = edit(p, {
     referenceMode: "upsert",
     references: [{ assetId: "a", purpose: "wardrobe" }],
@@ -22,7 +23,7 @@ test("adding and editing one reference preserves other references and never crea
   ]);
   expect(updated.assets).toBe(p.assets);
   expect(updated.nodes.length).toBe(p.nodes.length);
-  expect(productionItems(updated).some((i) => i.assetId === "reference")).toBe(
+  expect(draftItems(updated).some((i) => i.assetId === "reference")).toBe(
     false,
   );
   const removed = edit(updated, { referenceMode: "remove", assetIds: ["a"] });
@@ -32,13 +33,19 @@ test("adding and editing one reference preserves other references and never crea
 });
 test("reference edits reject missing media and allow more than twelve references", () => {
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   expect(() =>
     edit(p, {
       referenceMode: "upsert",
       references: [{ assetId: "missing", purpose: "test" }],
     }),
   ).toThrow();
-  p.assets.push(...Array.from({ length: 12 }, (_, i) => asset(`new-${i}`)));
+  p.assets.push(
+    ...Array.from({ length: 12 }, (_, i) => ({
+      ...asset(`new-${i}`),
+      usage: "asset" as const,
+    })),
+  );
   const next = edit(p, {
     referenceMode: "upsert",
     references: p.assets
@@ -50,6 +57,7 @@ test("reference edits reject missing media and allow more than twelve references
 });
 test("local editor saves preserve concurrent additions and explicit replacement still works", () => {
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   const before = p.nodes[1].references!;
   const concurrent = edit(p, {
     referenceMode: "upsert",
@@ -64,6 +72,7 @@ test("local editor saves preserve concurrent additions and explicit replacement 
 });
 test("manual media cards remain while multiple shots reference the same asset", () => {
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   p.nodes.push({
     ...p.nodes[1],
     id: "second",
@@ -79,7 +88,7 @@ test("manual media cards remain while multiple shots reference the same asset", 
     y: 0,
   });
   expect(
-    productionItems(p)
+    draftItems(p)
       .filter((i) => i.assetId === "reference")
       .map((i) => i.nodeId),
   ).toEqual(["manual"]);
@@ -87,6 +96,7 @@ test("manual media cards remain while multiple shots reference the same asset", 
 
 test("updating video reference purpose preserves its source interval", () => {
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   p.nodes[1].references = [
     { assetId: "v", purpose: "motion", start: 2, end: 4 },
   ];
@@ -102,6 +112,7 @@ test("updating video reference purpose preserves its source interval", () => {
 test("an open shot editor immediately shows a newly attached private previs", () => {
   const previs = { assetId: "previs", purpose: "camera", start: 0, end: 5 };
   const p = fixture();
+  p.assets = p.assets.map((a) => ({ ...a, usage: "asset" }));
   const base = p.nodes[1].references!;
   p.previsAssets = [asset("previs", "video")];
   p.nodes[1].references = [...base, previs];

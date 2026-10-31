@@ -3,12 +3,10 @@ import { fitView } from "../canvas/fit";
 import { useViewport } from "../canvas/useViewport";
 import type { Project } from "../model";
 import type { ProductionController } from "./useProduction";
-import { productionShots } from "./items";
 export function useProductionViewport(
   project: Project,
   items: ProductionController["items"],
   focus: ProductionController["focus"],
-  shots: ReturnType<typeof productionShots>,
 ) {
   const root = useRef<HTMLDivElement>(null);
   const { view, latest, update, hasSavedView } = useViewport(project);
@@ -32,13 +30,7 @@ export function useProductionViewport(
     const bounds = root.current?.getBoundingClientRect();
     if (!bounds) return;
     const nodes = items
-      .filter(
-        (n) =>
-          all ||
-          (focus.itemKey
-            ? n.key === focus.itemKey
-            : n.ownerId === (focus.id ?? shots[0]?.id)),
-      )
+      .filter((n) => all || (focus.itemKey ? n.key === focus.itemKey : true))
       .map((n) => ({
         id: n.key,
         x: n.x,

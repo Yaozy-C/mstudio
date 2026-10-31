@@ -23,12 +23,14 @@ import {
   SlidersHorizontal,
   Subtitles,
   Cube,
+  Lightbulb,
+  FolderSimple,
 } from "@phosphor-icons/react";
 import { SAVED_LABEL, SAVE_DESCRIPTION } from "./projectAutosave";
 import type { StudioView } from "./StudioStage";
 import type { useProject } from "./useProject";
 
-type Panel = "media" | "preview" | "inspector" | "agent";
+type Panel = "preview" | "inspector" | "agent";
 
 export function StudioChrome({
   view,
@@ -56,7 +58,7 @@ export function StudioChrome({
   onExport: () => void;
   togglePanel: (key: Panel) => void;
   panels: Record<Panel, boolean>;
-  addNote: (kind: "text" | "shot") => void;
+  addNote: () => void;
   onCreation: (tab: string) => void;
 }) {
   useLanguage();
@@ -108,9 +110,10 @@ export function StudioChrome({
       <nav ref={modes} className="studio-modes" aria-label={t("工作区模式")}>
         {(
           [
+            ["concepts", t("创意"), Lightbulb],
             ["script", t("脚本"), NotePencil],
-            ["storyboard", t("制作画布"), SquaresFour],
-            ["film", t("成片"), FilmSlate],
+            ["storyboard", t("制作"), SquaresFour],
+            ["film", t("剪辑"), FilmSlate],
           ] as const
         ).map(([key, label, Icon]) => (
           <button
@@ -139,12 +142,29 @@ export function StudioChrome({
       <span className="top-divider" />
       <button
         className="chrome-action"
-        aria-pressed={panels.media}
-        title={t("素材库 · 导入与管理素材")}
-        onClick={() => togglePanel("media")}
+        aria-pressed={view === "materials"}
+        title={t("素材资料 · 用于创意和脚本")}
+        onClick={() => onView("materials")}
       >
         <Images />
-        {t("素材")}
+        {t("素材资料")}
+      </button>
+      <button
+        className="chrome-action"
+        aria-pressed={view === "assets"}
+        title={t("资产库 · 用于镜头制作")}
+        onClick={() => onView("assets")}
+      >
+        <FolderSimple />
+        {t("资产库")}
+      </button>
+      <button
+        className="chrome-action"
+        aria-pressed={view === "drafts"}
+        onClick={() => onView("drafts")}
+      >
+        <SquaresFour />
+        {t("草稿画布")}
       </button>
       {tasks}
       <DropdownMenu.Root>
@@ -156,16 +176,10 @@ export function StudioChrome({
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content className="studio-menu" sideOffset={12}>
-          <DropdownMenu.Item onSelect={() => addNote("text")}>
+          <DropdownMenu.Item onSelect={() => addNote()}>
             <NotePencil />
-            {t("文字笔记")}
+            {t("草稿笔记")}
           </DropdownMenu.Item>
-          {
-            <DropdownMenu.Item onSelect={() => addNote("shot")}>
-              <FilmSlate />
-              {t("独立镜头")}
-            </DropdownMenu.Item>
-          }
           <DropdownMenu.Separator />
           <DropdownMenu.Item onSelect={() => onCreation("captions")}>
             <Subtitles />
@@ -181,7 +195,6 @@ export function StudioChrome({
       <button
         className="chrome-action"
         aria-pressed={panels.agent}
-
         onClick={() => togglePanel("agent")}
       >
         <Graph />

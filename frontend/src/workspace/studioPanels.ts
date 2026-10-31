@@ -1,5 +1,4 @@
 export const initialPanels = (hasClips: boolean) => ({
-  media: true,
   preview: false,
   agent: true,
   inspector: false,

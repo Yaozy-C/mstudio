@@ -1,3 +1,4 @@
+import { Theme } from "@radix-ui/themes";
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GenerationRun } from "./GenerationRun";
@@ -38,12 +39,7 @@ test("retry preserves task identity and settings but renews job identities", () 
   expect(next.requestId).toBeUndefined();
   expect(next.submissionId).toBeUndefined();
   expect(next.status).toBe("AWAITING_CONFIRMATION");
-  for (const status of [
-    "UNKNOWN",
-    "IN_PROGRESS",
-    "CANCEL_REQUESTED",
-    "RECEIVING",
-  ])
+  for (const status of ["IN_PROGRESS", "CANCEL_REQUESTED", "RECEIVING"])
     expect(() => retryTask({ ...task, status })).toThrow();
 });
 const canvas = {
@@ -53,26 +49,24 @@ const canvas = {
 } as unknown as ProductionController;
 const render = (status: string) =>
   renderToStaticMarkup(
-    <GenerationRun
-      task={{ ...task, status }}
-      project={fixture()}
-      canvas={canvas}
-      settings={() => {}}
-      follow={() => {}}
-    />,
+    <Theme>
+      <GenerationRun
+        task={{ ...task, status }}
+        project={fixture()}
+        canvas={canvas}
+        settings={() => {}}
+        follow={() => {}}
+      />
+    </Theme>,
   );
 test("recovery actions match terminal, uncertain, cancelling and receiving states", () => {
-  for (const status of ["FAILED", "CANCELLED"])
+  for (const status of ["FAILED", "CANCELLED", "UNKNOWN"])
     expect(render(status)).toMatch(/>重试(?:<\/span>)?<\/button>/);
-  for (const status of [
-    "UNKNOWN",
-    "CANCEL_REQUESTED",
-    "IN_PROGRESS",
-    "RECEIVING",
-  ])
+  for (const status of ["CANCEL_REQUESTED", "IN_PROGRESS", "RECEIVING"])
     expect(render(status)).not.toMatch(/>重试(?:<\/span>)?<\/button>/);
   expect(render("RECEIVING")).toContain("重试收取结果");
-  expect(render("UNKNOWN")).toContain("核查后重新设置");
+  expect(render("UNKNOWN")).toContain("生成失败");
+  expect(render("UNKNOWN")).not.toContain("核查后重新设置");
   expect(render("IN_PROGRESS")).toContain("进度暂时无法更新");
   expect(render("CANCEL_REQUESTED")).toContain("正在取消");
   expect(render("FAILED")).toContain("错误详情");

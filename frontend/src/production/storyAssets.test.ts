@@ -47,15 +47,15 @@ test("default discovery shows reviewed story assets; materials and drafts need e
   expect(listed(p).map((a) => a.id)).toEqual(["a", "unused"]);
   expect(listed(p, { ids: [] }).map((a) => a.id)).toEqual(["a", "unused"]);
   expect(listed(p, { usage: "material" }).map((a) => a.id)).toEqual([
-    "b",
+    "a",
     "reference",
-    "v",
+    "unused",
   ]);
   expect(listed(p, { ids: ["b", "draft"] }).map((a) => a.id)).toEqual([
     "b",
     "draft",
   ]);
-  expect(listed(p, { usage: "all" })).toHaveLength(5);
+  expect(listed(p, { usage: "all" })).toHaveLength(3);
   expect(inspectProject(p, {}).assetCount).toBe(2);
 });
 
@@ -107,7 +107,13 @@ test("explicit video frames and ordinary task inputs survive; changing usage pre
   expect(task.inputs).toEqual(source.inputs);
   expect(task.mode).toBe("single");
   const changed = setAssetUsage(p, "a", "material");
-  expect(changed.assets[0]).toEqual({ ...p.assets[0], usage: "material" });
+  expect(changed.assets[0]).toEqual({
+    ...p.assets[0],
+    usage: "material",
+    inMaterials: true,
+    assetStatus: undefined,
+    inLibrary: undefined,
+  });
   expect(changed.nodes).toBe(p.nodes);
   expect(changed.clips).toBe(p.clips);
   expect(isLibraryAsset(changed.assets[0])).toBe(true);

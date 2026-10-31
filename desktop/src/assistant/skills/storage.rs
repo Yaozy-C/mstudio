@@ -24,6 +24,7 @@ pub fn seed(db: &Connection, root: &Path) -> Result<()> {
         );
         seed_directory(&tx, id, &base, &base)?;
     }
+    super::board_upgrade::apply(&tx, root)?;
     tx.commit()?;
     Ok(())
 }

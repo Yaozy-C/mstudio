@@ -34,8 +34,12 @@ export function CanvasControls({
       )}
       {empty && (
         <div className="canvas-empty">
-          <h2>{t("画布为空")}</h2>
-          <p>{t("让 Agent 拆出镜头，或从素材的右键菜单放入画布。")}</p>
+          <h2>{t("草稿画布")}</h2>
+          <p>
+            {t(
+              "从素材资料放入参考图，或新建草稿笔记；选中后交给 Agent，也可以试生成图片和视频。",
+            )}
+          </p>
         </div>
       )}
     </>

@@ -1,11 +1,11 @@
 import type { Project } from "../model";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import type { ProductionTask } from "./types";
 
 // Product reference assets can appear in many shots. Only actual frame/take
 // sources or an explicit edit target establish ownership.
 export function resultOrigin(project: Project, task: ProductionTask) {
-  const items = productionItems(project);
+  const items = draftItems(project);
   const explicit = task.inputs.filter(
     (r) => r.role === "edit" || r.role === "first-frame",
   );

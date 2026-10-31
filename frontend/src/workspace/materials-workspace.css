@@ -1,0 +1,114 @@
+.materials-workspace {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 28px clamp(16px, 3vw, 40px);
+  gap: 20px;
+}
+.materials-workspace > header h1 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 500;
+}
+.materials-workspace > header p,
+.materials-purpose {
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.materials-purpose {
+  padding: 0 0 12px;
+}
+.materials-workspace .materials-purpose {
+  display: none;
+}
+.materials-workspace > .media-panel {
+  width: 100%;
+  border: 0;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+  padding: 0;
+}
+.materials-workspace .media-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 20px;
+  align-content: start;
+}
+.materials-workspace .media-thumbnail {
+  width: 100%;
+  height: 150px;
+}
+.materials-workspace .media-categories {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  order: 2;
+  border-top: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  margin: 0;
+  padding: 0 0 12px;
+}
+.materials-workspace .media-categories button {
+  flex: none;
+  min-width: 80px;
+}
+.materials-workspace .media-item {
+  margin: 0;
+}
+.materials-workspace .media-list-models {
+  display: block;
+}
+
+.materials-workspace .media-panel > header {
+  display: none;
+}
+.materials-workspace .media-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.materials-workspace .media-toolbar .import-box {
+  width: auto;
+  padding: 8px 20px;
+  margin: 0;
+  flex: none;
+  flex-direction: row;
+  min-height: 40px;
+  height: 40px;
+  gap: 8px;
+}
+.materials-workspace .media-toolbar input {
+  flex: 1;
+  min-width: 0;
+}
+
+.materials-workspace .media-scopes {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  order: 0;
+}
+.materials-workspace .media-scopes button {
+  flex: none;
+  display: inline-flex;
+  gap: 8px;
+  width: auto;
+  padding: 8px 12px;
+}
+.materials-workspace .media-toolbar {
+  order: 1;
+}
+.materials-workspace .media-section-label {
+  order: 3;
+}
+.materials-workspace .media-list {
+  order: 4;
+}

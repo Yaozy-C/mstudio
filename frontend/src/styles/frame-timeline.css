@@ -49,7 +49,7 @@
   padding: 4px 12px;
   height: 32px;
   bottom: 6px;
-  left: calc(var(--rail) + 16px);
+  left: 16px;
   transform: none;
 }
 .studio-stage.view-film {

@@ -93,7 +93,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
                 (meta?.attachments as Attachment[] | undefined) ??
                 taskAttachments(
                   p.project,
-                  p.canvas?.task,
+                  undefined,
                   p.draft.items,
                   p.canvas?.referencedTask,
                 ),
@@ -104,9 +104,8 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
               targetNodeId:
                 (meta?.taskTarget as { id?: string } | undefined)?.id ??
                 focus.target,
-              selectedNodeId: p.canvas?.task
-                ? (p.canvas.task.ownerId ?? null)
-                : null,
+              selectedNodeId:
+                p.draft.omitWork || work?.view === "drafts" ? null : p.nodeId,
               selection: { clipId: null, time: 0 },
               production: {
                 projectId: p.project.id,
@@ -117,7 +116,7 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
                       ? { width: bounds.width, height: bounds.height }
                       : undefined,
                 },
-                task: p.canvas?.task,
+                task: undefined,
                 referencedTask: p.canvas?.referencedTask,
                 models: {
                   ...(p.canvas?.modelPreferences ??
@@ -150,8 +149,6 @@ export function createChatAdapter(options: Options): ChatModelAdapter {
           p.draft.consume(turn.refs);
           p.draft.consumeTarget(turn.targetNodeId);
           p.canvas?.clearTaskReference?.(turn.production.referencedTask?.key);
-          if (p.canvas?.task)
-            p.canvas.update({ inputs: [], ownerId: undefined });
         }
         const custom = {
           createdAt: message.createdAt.getTime(),

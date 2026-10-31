@@ -1,3 +1,6 @@
+import { MediaModelSelect } from "../models/MediaModelSelect";
+import { StudioSelect } from "../ui/StudioSelect";
+import { GenerationOptions } from "./GenerationOptions";
 import { GenerationDuration } from "./GenerationDuration";
 import { TaskTitleField } from "./TaskTitleField";
 import { normalizeTaskTitle } from "./taskTitle";
@@ -12,12 +15,16 @@ import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
 import { X } from "@phosphor-icons/react";
 import type { Project } from "../model";
-import { isSelectableAsset } from "../workspace/assetLibrary";
+import { canUseTaskReference } from "../workspace/resourceRoles";
 import { mediaUrl } from "../bridge";
 import type { MediaModel } from "../models/mediaRegistry";
 import { mediaAdapter } from "../models/adapters";
 import { inputFor } from "./request";
-import { parameterFields, taskParameters } from "./parameters";
+import {
+  effectiveParameters,
+  parameterFields,
+  taskParameters,
+} from "./parameters";
 import type { GenerationParameters } from "./parameters";
 import type { ProductionTask } from "./types";
 import "./generation-panel.css";
@@ -48,6 +55,7 @@ export function GenerationSettings({
   );
   const fields = parameterFields(model);
   const options = draft.parameters ?? {};
+  const displayed = effectiveParameters(model, options);
   const patch = (value: Partial<ProductionTask>) => {
     if (onPatch) onPatch(value);
     else setDraft((d) => ({ ...d, ...value }));
@@ -61,7 +69,7 @@ export function GenerationSettings({
     adapter?.fields.some((f) => f.role === "first-frame");
   const tail = frames && adapter?.fields.some((f) => f.role === "last-frame");
   const assets = project.assets.filter(
-    (a) => a.kind === "image" && isSelectableAsset(a),
+    (a) => a.kind === "image" && canUseTaskReference(project, a, task),
   );
   function frame(role: "first-frame" | "last-frame", assetId: string) {
     const inputs = draft.inputs.filter((r) => r.role !== role);
@@ -113,21 +121,15 @@ export function GenerationSettings({
             <span className="frame-empty">{t("选择图片")}</span>
           )}
         </div>
-        <select
-          aria-label={label}
+        <StudioSelect
+          label={label}
           value={selected?.id ?? ""}
-          onChange={(e) => frame(role, e.target.value)}
-        >
-          <option value="">
-            {t("不使用")}
-            {label}
-          </option>
-          {assets.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
+          onValueChange={(id) => frame(role, id)}
+          options={[
+            { value: "", label: `${t("不使用")}${label}` },
+            ...assets.map((a) => ({ value: a.id, label: a.name })),
+          ]}
+        />
       </label>
     );
   };
@@ -153,38 +155,24 @@ export function GenerationSettings({
           commitOnBlur={!!onPatch}
         />
       )}
-      <GenerationMethod draft={draft} models={models} change={patch} />
       {!inline && (
         <label className="generation-setting-field">
           {t("生成模型")}
-          <select
+          <MediaModelSelect
             value={draft.modelId}
-            onChange={(e) => {
-              const next = models.find((m) => m.id === e.target.value);
-              if (next) patch(selectMediaModel(draft, next));
-            }}
-          >
-            <option value="">{t("选择模型")}</option>
-            {draft.modelId && !model && (
-              <option value={draft.modelId}>{t("原模型不可用")}</option>
-            )}
-            {models
-              .filter((m) => m.kind === draft.kind)
-              .map((m) => (
-                <option value={m.id} key={m.id}>
-                  {m.name}
-                </option>
-              ))}
-          </select>
+            models={models.filter((m) => m.kind === draft.kind)}
+            change={(next) => patch(selectMediaModel(draft, next))}
+          />
         </label>
       )}
+      <GenerationMethod draft={draft} models={models} change={patch} />
       <div className="generation-settings-grid">
         {!!fields.ratios.length && (
           <ParameterChoices
             label={t("画面比例")}
             ratios
             values={fields.ratios}
-            value={options.aspectRatio}
+            value={displayed.aspectRatio}
             change={(value) => param({ aspectRatio: value })}
           />
         )}
@@ -192,7 +180,7 @@ export function GenerationSettings({
           <ParameterChoices
             label={t("分辨率")}
             values={fields.resolutions}
-            value={options.resolution}
+            value={displayed.resolution}
             change={(value) => param({ resolution: value })}
           />
         )}
@@ -218,21 +206,24 @@ export function GenerationSettings({
             ))}
           </>
         )}
-        {fields.duration && (
+        {(fields.duration ||
+          (draft.kind === "video" && displayed.duration !== undefined)) && (
           <GenerationDuration
-            value={options.duration}
+            value={displayed.duration}
             range={fields.durationRange}
             onChange={(duration) => param({ duration })}
+          />
+        )}
+        {model && (
+          <GenerationOptions
+            model={model}
+            parameters={options}
+            change={(extra) => param({ options: extra })}
           />
         )}
       </div>
       {fields.frameRatio && (
         <p className="generation-setting-note">{t("画面比例跟随首帧图片。")}</p>
-      )}
-      {model && !fields.supported && (
-        <p className="generation-setting-note">
-          {t("此模型使用模型中心的参数预设。")}
-        </p>
       )}
       {!inline && frames && (
         <div className="generation-settings-grid">

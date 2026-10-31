@@ -34,12 +34,6 @@
   font-size: 12px;
   line-height: 1.6;
 }
-.radix-themes .dock-media .media-thumbnail > .missing-asset {
-  position: static;
-  background: var(--desk-sidebar);
-  color: var(--desk-muted);
-  border-radius: 0;
-}
 .timeline-clip .missing-asset {
   min-height: 0;
   padding: 2px;

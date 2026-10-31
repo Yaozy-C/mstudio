@@ -85,17 +85,21 @@
   pointer-events: none;
 }
 
-.studio-shell[data-view="storyboard"] :is(.dock-agent, .dock-media) {
-  bottom: 0;
+.draft-canvas-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--desk-rule);
+  gap: 20px;
 }
-.radix-themes .studio-shell[data-view="storyboard"] .floating-timeline {
-  left: var(--rail);
-  right: var(--assistant);
+.draft-canvas-heading h1 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 5px;
 }
-.studio-shell[data-view="storyboard"] .timeline-header {
-  overflow-x: auto;
-  white-space: nowrap;
-}
-.studio-shell[data-view="storyboard"] .timeline-header > * {
-  flex-shrink: 0;
+.draft-canvas-heading p {
+  font-size: 12px;
+  color: var(--desk-muted);
+  margin: 0;
 }

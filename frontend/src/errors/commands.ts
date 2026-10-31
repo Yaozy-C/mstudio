@@ -17,7 +17,7 @@ const commandCodes: Record<string, ErrorCode> = {
   native_preview_frame_info: "PREVIEW_FAILED",
   native_preview_present: "PREVIEW_FAILED",
   native_preview_bounds: "PREVIEW_FAILED",
-  submit_job: "SUBMISSION_UNKNOWN",
+  submit_job: "GENERATION_FAILED",
   refresh_job: "JOB_SYNC_FAILED",
   list_jobs: "JOB_SYNC_FAILED",
   cancel_job: "JOB_CANCEL_FAILED",

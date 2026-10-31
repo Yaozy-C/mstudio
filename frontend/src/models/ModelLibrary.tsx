@@ -20,9 +20,22 @@ export function ModelLibrary({
   useLanguage();
   const [query, setQuery] = useState("");
   const [provider, setProvider] = useState("");
-  const available = modelLibrary.filter(
+  const candidates = modelLibrary.filter(
     (m) => m.kind === kind && (m.endpoint || m.connection),
   );
+  const families = new Map<string, ModelSpec>();
+  for (const spec of candidates) {
+    const key = spec.family?.id ?? spec.id;
+    const old = families.get(key);
+    if (old) old.inputs = [...new Set([...old.inputs, ...spec.inputs])];
+    else
+      families.set(key, {
+        ...spec,
+        name: spec.family?.name ?? spec.name,
+        inputs: [...spec.inputs],
+      });
+  }
+  const available = [...families.values()];
   const providers = [
     ...new Set(available.map((m) => m.provider.split(" / ")[0])),
   ];

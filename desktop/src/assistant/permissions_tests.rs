@@ -1,6 +1,42 @@
 use super::*;
 use serde_json::json;
 
+#[test]
+fn resource_readers_follow_deliverable_capabilities() {
+    for p in super::super::profiles::builtins() {
+        assert_eq!(
+            allows_resource_reader(&p, "mstudio_read_materials"),
+            matches!(p.id.as_str(), "concept" | "writer" | "assets"),
+            "{}",
+            p.id
+        );
+        if matches!(p.id.as_str(), "concept" | "writer") {
+            assert!(allows_resource_reader(&p, "mstudio_read_materials"));
+            assert!(!allows_resource_reader(&p, "mstudio_read_assets"));
+        }
+        if matches!(p.id.as_str(), "director" | "editor") {
+            assert!(allows_resource_reader(&p, "mstudio_read_assets"));
+            assert!(!allows_resource_reader(&p, "mstudio_read_materials"));
+        }
+        if matches!(p.id.as_str(), "assets" | "image" | "production") {
+            assert_eq!(
+                allows_resource_reader(&p, "mstudio_read_materials"),
+                p.id == "assets"
+            );
+            assert!(allows_resource_reader(&p, "mstudio_read_assets"));
+        }
+    }
+    let custom = read_only_profile();
+    assert!(!allows_resource_reader(&custom, "mstudio_read_materials"));
+    assert!(allows_resource_reader(&custom, "mstudio_read_assets"));
+    let mut custom = custom;
+    custom.id = "custom-researcher".into();
+    custom.tool_ids.push("material-read".into());
+    assert!(allows_resource_reader(&custom, "mstudio_read_materials"));
+    custom.tool_ids.retain(|id| id != "material-read");
+    assert!(!allows_resource_reader(&custom, "mstudio_read_materials"));
+}
+
 // The optional read-only boundary remains supported for custom roles.
 fn read_only_profile() -> AgentProfile {
     let mut p = super::super::profiles::builtins()

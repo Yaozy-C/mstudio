@@ -11,21 +11,14 @@ export function canvasAsset(asset: Asset, index: number): BoardNode {
     text: "",
   };
 }
-export function canvasNote(
-  project: Project,
-  kind: "text" | "shot",
-  text: string,
-): BoardNode {
+export function canvasNote(project: Project, text: string): BoardNode {
   const view = canvasViewport(project);
   return {
     id: uid(),
-    kind,
+    kind: "note",
     x: (Math.max(330, window.innerWidth / 2 - 180) - view.x) / view.scale,
     y: (160 - view.y) / view.scale,
-    title:
-      kind === "shot"
-        ? `镜头 ${project.nodes.filter((n) => n.kind === "shot").length + 1}`
-        : "创作脚本",
+    title: "草稿笔记",
     text,
     width: 360,
     height: 300,

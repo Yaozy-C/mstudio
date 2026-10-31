@@ -1,11 +1,7 @@
 .studio-shell {
-  --rail: 240px;
   --assistant: 420px;
   --timeline: 252px;
   min-width: 1000px;
-}
-.studio-shell[data-media="false"] {
-  --rail: 0px;
 }
 .studio-shell[data-agent="false"] {
   --assistant: 0px;
@@ -99,7 +95,7 @@
   flex-direction: column;
   position: absolute;
   top: 64px;
-  left: var(--rail);
+  left: 0px;
   right: var(--assistant);
   bottom: var(--timeline);
   min-width: 0;
@@ -108,6 +104,45 @@
 .studio-stage > .board {
   position: absolute;
   inset: 0;
+}
+@media (max-width: 1400px) {
+  .studio-top .studio-wordmark {
+    display: none;
+  }
+  .studio-top .studio-modes {
+    gap: 6px;
+    padding: 0 6px;
+  }
+  .radix-themes .studio-top .studio-modes button {
+    gap: 4px;
+    font-size: 12px;
+    padding-inline: 3px;
+  }
+  .studio-top .studio-modes button > svg {
+    width: 16px;
+  }
+  .studio-top .studio-project .project-title {
+    max-width: 80px;
+  }
+  .radix-themes .studio-top .chrome-action {
+    padding-inline: 6px;
+    font-size: 12px;
+  }
+  .radix-themes .studio-top {
+    height: 108px;
+    padding-bottom: 44px;
+  }
+  .studio-top .studio-modes {
+    position: absolute;
+    inset: auto 0 0;
+    height: 44px;
+    justify-content: center;
+    border-top: 1px solid var(--desk-rule);
+    margin: 0;
+  }
+  .studio-shell :is(.studio-stage, .dock-panel, .dock-resizer) {
+    top: 108px;
+  }
 }
 .radix-themes .board {
   background: var(--desk-bg);

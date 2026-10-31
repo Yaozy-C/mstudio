@@ -1,6 +1,4 @@
 import { StudioProviders } from "./StudioProviders";
-import { requestCreativeTask } from "../creative/aiTasks";
-import { effectAgentTask, effectReference } from "./effectAgentTask";
 import { StudioTaskPanel } from "./StudioTaskPanel";
 import { useTaskNavigation } from "./useTaskNavigation";
 import { initialPanels, toggleStudioPanel } from "./studioPanels";
@@ -14,7 +12,6 @@ import { CreationPanel } from "../creation/CreationPanel";
 import { StudioNodeEditor } from "./StudioNodeEditor";
 import { useAttachments } from "../assistant/useAttachments";
 import { StudioAgent } from "./StudioAgent";
-import { deleteAssets, deleteCanvasNodes } from "./deleteAssets";
 import { useMissingAssets } from "./useMissingAssets";
 import { useClipEditing } from "./useClipEditing";
 import { useShortcuts } from "./useShortcuts";
@@ -23,14 +20,13 @@ import { StudioError } from "./StudioError";
 import { useCanvasInsertion } from "./useCanvasInsertion";
 import { StudioChrome } from "./StudioChrome";
 import type { Asset } from "../model";
-import { useImportMedia } from "./useImportMedia";
 import { useProject } from "./useProject";
 import { StudioStage, type StudioView } from "./StudioStage";
-import { StudioMedia } from "./StudioMedia";
 import { StudioTimeline } from "./StudioTimeline";
 import { StudioInspector } from "./StudioInspector";
 import { StudioDialogs, type StudioDialogKind } from "./StudioDialogs";
 import type { StudioProps } from "./StudioProps";
+import { initialStudioView } from "./initialStudioView";
 export function Studio({ initial, initialTask, onBack }: StudioProps) {
   const m = useProject(initial);
   const { project, change } = m;
@@ -44,11 +40,16 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
   const [scriptContext, setScriptContext] = useState<WorkContext>({
     view: "script",
   });
-  const [view, setView] = useState<StudioView>("script");
+  const [view, setView] = useState<StudioView>(() =>
+    initialStudioView(initial, initialTask),
+  );
   const activeView = panels.preview ? "film" : view;
   useTaskNavigation(activeView, (next, id) => {
     if (id) setNodeId(id);
     setView(next);
+    if (next !== "storyboard" && next !== "drafts")
+      canvas.setComposerMode("agent");
+    setCreationTab(null);
     setPanels((p) => ({ ...p, preview: false }));
   });
   const canInspect = project.clips.some((clip) => clip.id === clipId);
@@ -76,7 +77,6 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
     setPanels((p) => ({ ...p, timeline: true }));
   };
   const [error, setError] = useState("");
-  const { busy, importMedia } = useImportMedia(initial.id, change, setError);
   const [dialog, setDialog] = useState<StudioDialogKind>(null);
   const canvas = useProduction(
     project,
@@ -85,6 +85,7 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
     m.flush,
     () => setPanels((p) => ({ ...p, agent: true, inspector: false })),
     attachments,
+    activeView === "storyboard" ? (nodeId ?? undefined) : undefined,
   );
   useStudioCreativeEvents(
     clock,
@@ -113,7 +114,9 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
     setEditing,
   );
   useClipEditing(m, clipId, clock, activeView === "film", setClipId);
-  const split = () => playback.split(clipId);
+  const split = () => {
+    if (activeView === "film") playback.split(clipId);
+  };
   useShortcuts(m, setError, {
     film: activeView === "film",
     clock,
@@ -122,16 +125,17 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
       if (activeView === "film") togglePanel("timeline");
     },
     play,
-    remove: () =>
-      activeView === "storyboard"
+    remove: () => {
+      if (activeView !== "film" && !(activeView === "drafts")) return;
+      return activeView === "drafts"
         ? canvas.items
             .filter((n) => canvas.selected.includes(n.key))
             .forEach(canvas.remove)
-        : change((p) =>
-            activeView === "film"
-              ? { ...p, clips: p.clips.filter((c) => c.id !== clipId) }
-              : deleteCanvasNodes(p, nodeId ? [nodeId] : []),
-          ),
+        : change((p) => ({
+            ...p,
+            clips: p.clips.filter((c) => c.id !== clipId),
+          }));
+    },
   });
   const sidebarWidths = useSidebarWidths({
     ...panels,
@@ -144,7 +148,6 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
       <div
         hidden={["settings", "models", "agents"].includes(dialog ?? "")}
         style={sidebarWidths.style}
-        data-media={panels.media}
         data-agent={panels.agent || inspectorOpen || !!creationTab}
         data-view={activeView}
         className={`studio-shell ${panels.timeline && activeView === "film" ? "" : "timeline-hidden"}`}
@@ -162,7 +165,14 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
           onView={(next) => {
             clock.pause();
             setView(next);
-            setPanels((p) => ({ ...p, preview: false }));
+            if (next !== "storyboard" && next !== "drafts")
+              canvas.setComposerMode("agent");
+            setPanels((p) => ({
+              ...p,
+              preview: false,
+              ...(next !== "film" ? { inspector: false } : {}),
+            }));
+            setCreationTab(null);
           }}
           m={m}
           onBack={onBack}
@@ -187,6 +197,14 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
         <StudioError message={error} close={() => setError("")} />
         <StudioStage
           onAdd={add}
+          onPlace={place}
+          onAssetReference={(a) => {
+            canvas.setComposerMode("agent");
+            if (activeView === "materials") setView("script");
+            attachments.add([{ kind: "asset", id: a.id }]);
+            setPanels((p) => ({ ...p, agent: true, inspector: false }));
+            setCreationTab(null);
+          }}
           onContext={setScriptContext}
           canvas={canvas}
           view={activeView}
@@ -202,31 +220,6 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
           onChange={change}
           onReference={referenceNode}
         />
-        {panels.media && (
-          <StudioMedia
-            close={() => togglePanel("media")}
-            project={project}
-            change={change}
-            onImport={() => void importMedia()}
-            onAdd={add}
-            onPlace={place}
-            onEffect={(effect, asset) => {
-              clock.pause();
-              setCreationTab(null);
-              canvas.setComposerMode("agent");
-              const ref = effectReference(asset, clipId, nodeId);
-              requestCreativeTask(effectAgentTask(effect, ref));
-            }}
-            onRemove={(a) => change((p) => deleteAssets(p, [a.id]))}
-            onReference={(a) => {
-              if (canvas.task && activeView === "storyboard")
-                canvas.attach({ kind: "asset", id: a.id });
-              else attachments.add([{ kind: "asset", id: a.id }]);
-              setPanels((p) => ({ ...p, agent: true }));
-            }}
-            busy={busy}
-          />
-        )}
         {inspectorOpen && !creationTab && (
           <StudioInspector
             project={project}
@@ -237,7 +230,11 @@ export function Studio({ initial, initialTask, onBack }: StudioProps) {
         )}
         <StudioAgent
           onInspect={() => togglePanel("inspector")}
-          canvas={canvas}
+          canvas={
+            activeView === "storyboard" || activeView === "drafts"
+              ? canvas
+              : undefined
+          }
           project={project}
           nodeId={nodeId}
           clipId={clipId}

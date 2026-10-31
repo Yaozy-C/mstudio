@@ -12,17 +12,17 @@ export function useCanvasInsertion(
   setEditing: (id: string) => void,
 ) {
   const place = (asset: Asset) => {
-    setView("storyboard");
+    setView("drafts");
     setPanels((p) => ({ ...p, preview: false }));
     change((p) => ({
       ...p,
       nodes: [...p.nodes, canvasAsset(asset, p.nodes.length)],
     }));
   };
-  function addNote(kind: "text" | "shot", text = "") {
-    setView("storyboard");
+  function addNote(text = "") {
+    setView("drafts");
     setPanels((p) => ({ ...p, preview: false }));
-    const node = canvasNote(project, kind, text);
+    const node = canvasNote(project, text);
     change((p) => ({ ...p, nodes: [...p.nodes, node] }));
     selectNode(node.id);
     if (!text) setEditing(node.id);

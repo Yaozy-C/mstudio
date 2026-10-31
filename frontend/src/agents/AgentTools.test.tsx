@@ -16,3 +16,18 @@ test("video analyst has no tool controls while other roles retain them", () => {
     renderToStaticMarkup(<AgentTools profile={writer} onChange={() => {}} />),
   ).toContain('type="checkbox"');
 });
+
+test("source-material reading is a separate tool assigned only to the three research roles by default", () => {
+  expect(
+    defaultAgents
+      .filter((a) => a.toolIds.includes("material-read"))
+      .map((a) => a.id),
+  ).toEqual(["concept", "writer", "assets"]);
+  const image = defaultAgents.find((a) => a.id === "image")!;
+  expect(image.toolIds).toContain("project-assets");
+  expect(image.toolIds).not.toContain("material-read");
+  const html = renderToStaticMarkup(
+    <AgentTools profile={image} onChange={() => {}} />,
+  );
+  expect(html).toContain("读取创作素材");
+});

@@ -144,3 +144,43 @@ fn encodes_two_short_clips_as_one_playable_video_with_trim_order_and_mixed_audio
         }
     }
 }
+
+#[test]
+fn audio_references_are_encoded_as_mp3_without_becoming_video_inputs() {
+    let work = Work(std::env::temp_dir().join(format!("mstudio-audio-ref-{}", media::id())));
+    std::fs::create_dir_all(&work.0).unwrap();
+    let path = work.0.join("voice.wav");
+    media::run(
+        media::command("ffmpeg")
+            .args([
+                "-v",
+                "error",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=440:sample_rate=44100:duration=3",
+            ])
+            .arg(&path),
+    )
+    .unwrap();
+    let mut audio = source("voice", "audio", 3.);
+    audio.0.path = path.to_string_lossy().into_owned();
+    audio.1.start = Some(1.);
+    audio.1.end = Some(2.);
+    let groups = plan(vec![source("image", "image", 0.), audio.clone()]).unwrap();
+    assert_eq!(groups.len(), 2);
+    let (bytes, mime) = prepare_group(&groups[1], &work.0).unwrap();
+    assert_eq!(mime, "audio/mpeg");
+    assert!(!bytes.is_empty());
+    let metadata = media::probe(&work.0.join("reference.mp3")).unwrap();
+    assert_eq!(metadata["streams"][0]["codec_type"], "audio");
+    let duration: f64 = metadata["format"]["duration"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    assert!((duration - 1.).abs() < 0.1);
+    audio.1.end = Some(4.);
+    assert!(prepare_group(&[audio], &work.0).is_err());
+}

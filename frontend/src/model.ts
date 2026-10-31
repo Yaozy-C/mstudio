@@ -1,5 +1,8 @@
 import type { ScriptDocument, PlannedShot } from "./creative/types";
 export type Asset = {
+  /** Independent research membership and production approval; usage is legacy. */
+  inMaterials?: boolean;
+  assetStatus?: "candidate" | "confirmed";
   usage?: "asset" | "material";
   annotationSourceId?: string;
   attachmentOnly?: boolean;
@@ -109,6 +112,24 @@ export type BoardNode = {
   width?: number;
   height?: number;
 };
+export type ConceptStatus = "rough" | "developed" | "selected" | "killed";
+export type Concept = {
+  id: string;
+  title: string;
+  oneLine: string;
+  truth?: string;
+  brandIdea?: string;
+  participant: string;
+  want: string;
+  ritual: string;
+  evidence: string;
+  reframe: string;
+  risk: string;
+  cost?: string;
+  status: ConceptStatus;
+  createdAt: number;
+  updatedAt: number;
+};
 export type Project = {
   production?: import("./production/types").ProductionState;
   revision?: number;
@@ -123,6 +144,7 @@ export type Project = {
   clips: Clip[];
   tracks: Track[];
   captions: Caption[];
+  concepts?: Concept[];
   captionTracks?: import("./timeline/captionTracks").CaptionLane[];
   creation?: Creation;
   width: number;
@@ -162,6 +184,7 @@ export function newProject(name: string): Project {
       { id: "a1", name: "音轨 1", kind: "audio" },
     ],
     captions: [],
+    concepts: [],
     width: 1080,
     height: 1920,
     fps: 30,

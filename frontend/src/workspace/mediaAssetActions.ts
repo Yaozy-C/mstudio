@@ -1,9 +1,8 @@
 import {
   ChatText as MenuChatText,
   Eye as MenuEye,
-  FilmStrip as MenuFilmStrip,
+  SquaresFour,
   FolderPlus as MenuFolderPlus,
-  SquaresFour as MenuSquaresFour,
   Trash as MenuTrash,
 } from "@phosphor-icons/react";
 import { isStoryAsset } from "./assetLibrary";
@@ -19,22 +18,20 @@ export function mediaAssetActions({
   projectAssets,
   setPreview,
   setRemoving,
-  onPlace,
-  onAdd,
   onReference,
+  onPlace,
   onUncollect,
   onUsage,
 }: {
   a: Asset;
-  scope: "project" | "global" | "effects";
+  scope: "project" | "global";
   disabled: boolean;
   library: ReturnType<typeof useAssetLibrary>;
   projectAssets: Asset[];
   setPreview: (id: string) => void;
   setRemoving: (asset: Asset) => void;
-  onPlace: (asset: Asset) => void;
-  onAdd: (asset: Asset) => void;
   onReference: (asset: Asset) => void;
+  onPlace?: (asset: Asset) => void;
   onUncollect: (asset: Asset) => void;
   onUsage: (asset: Asset, usage: "asset" | "material") => void;
 }): ObjectAction[] {
@@ -48,25 +45,27 @@ export function mediaAssetActions({
       ? [
           {
             icon: MenuFolderPlus,
-            label: isStoryAsset(a) ? t("改为普通素材") : t("设为剧本资产"),
-            run: () => onUsage(a, isStoryAsset(a) ? "material" : "asset"),
-            disabled,
+            label: isStoryAsset(a) ? t("已建立镜头资产") : t("建立镜头资产"),
+            run: () => onUsage(a, "asset"),
+            disabled:
+              disabled ||
+              isStoryAsset(a) ||
+              !!a.missing ||
+              !["image", "video", "audio"].includes(a.kind),
           },
-          {
-            icon: MenuSquaresFour,
-            label: t("放到画布"),
-            run: () => onPlace(a),
-            disabled: a.missing,
-          },
-          {
-            icon: MenuFilmStrip,
-            label: t("加入时间线"),
-            run: () => onAdd(a),
-            disabled: a.missing || a.kind === "text" || a.kind === "document",
-          },
+          ...(onPlace
+            ? [
+                {
+                  icon: SquaresFour,
+                  label: t("放到草稿画布"),
+                  run: () => onPlace(a),
+                  disabled: !!a.missing,
+                },
+              ]
+            : []),
           {
             icon: MenuChatText,
-            label: t("引用到对话"),
+            label: t("用于创意或脚本"),
             run: () => onReference(a),
             disabled: a.missing,
           },

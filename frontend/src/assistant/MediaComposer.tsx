@@ -45,7 +45,13 @@ export function MediaComposer({
       m.enabled,
   );
   const { dragging, ...files } = useComposerFiles(draft, (refs) =>
-    refs.forEach((ref) => canvas.attach(ref)),
+    refs.forEach((ref) => {
+      try {
+        canvas.attach(ref);
+      } catch (e) {
+        setError(String(e));
+      }
+    }),
   );
   let issue = referenceMode && task ? referenceIssue(task, model) : "";
   if (task && model && !issue) {

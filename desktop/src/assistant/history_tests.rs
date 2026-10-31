@@ -42,12 +42,8 @@ fn accepted_request_survives_process_exit_with_refs_and_retry_context() {
         "interrupted"
     );
     assert!(after[1].content.is_empty());
-    assert!(
-        !context::assemble(&after, json!("next"), json!({}))
-            .unwrap()
-            .to_string()
-            .contains("根据图片写脚本")
-    );
+    let recalled = context::assemble(&after, json!("next"), json!({})).unwrap();
+    assert_eq!(recalled.to_string().matches("根据图片写脚本").count(), 1);
     assert!(history::read(&store, "other").unwrap().is_empty());
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
@@ -84,7 +80,7 @@ fn success_failure_and_cancellation_are_durable_and_repeated_delivery_cannot_dup
         .to_string();
     assert!(input.contains("成功的脚本"));
     assert!(!input.contains("模型回答超时"));
-    assert_eq!(input.matches("根据图片写脚本").count(), 1);
+    assert_eq!(input.matches("根据图片写脚本").count(), 3);
     assert!(begin(&store, "failure").is_err());
     drop(store);
     std::fs::remove_dir_all(root).unwrap();

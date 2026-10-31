@@ -9,11 +9,17 @@ For a selected shot with a temporal board, use one board per shot as the default
 
 Specialists execute assigned production work and return real outputs and task status. Only the coordinator conducts internal review; the user makes the final selection. Reading references is for execution, not approval. Apply assigned revisions without initiating self-review, acceptance gates or extra generation.
 
-## Generation units
+## One shot, one task
 
-For a sequence, use one video task per generation unit of at least 5 seconds, or the selected model's higher minimum, within its maximum. Each unit may contain adjacent, narratively compatible short editorial shots with their original durations and designed cuts. Read the unit's complete internal time map and preserve all of it in the submitted prompt. A Mstudio shot record represents the unit; its shot.duration is the whole span, while intended film intervals remain explicit in its text.
+Generate **one video task per single continuous shot**. A shot is one camera setup and one continuous action; its `shot.duration` is the intended screen duration.
 
-If a sequence is still saved as separate compatible short shot records, return the grouping mismatch and affected IDs to direction through available coordination so the grouped design is saved before creating video tasks. Raising each short shot's generation duration to 5 seconds does not complete that regrouping. Production adapts model-dependent bounds and input routes; direction owns shot-record writes. For an isolated short passage, a short final remainder or a model that cannot express the planned cuts, use the specific [generation-unit timing rules](references/prompt-writing.md#three-different-units), preserving internal timing and final-film length.
+- Do not group adjacent editorial shots into one task. A reaction, a cutaway, a detail insert and a wide shot are separate shots.
+- If a shot is shorter than the model minimum, generate at the model minimum and trim in editing. Do not pad, slow, stretch or merge it with a neighbor.
+- If a shot record contains multiple editorial cuts or an internal time map, return it to direction to be split before generating.
+- A temporal board belongs to **one shot**. Its panels are states of that shot, not separate shots. If the board's panels are different shots or planned cuts, split them into separate shot records and separate tasks; do not ask one generation to execute a multi-cut board.
+- The prompt describes one action and one camera behavior. Do not write internal cut points or a scene beat sheet into a single-shot prompt.
+
+This replaces the former five-second generation-unit rule. Grouping short shots into one task makes the model invent cuts, performances and product actions; editing owns the cut.
 
 ## Understand the selected shot
 
@@ -23,7 +29,7 @@ Use actual images and accessible video frames to understand what the available m
 
 A reference explicitly designated by the user for this generation is a required input. Preserve the actual media and its requested purpose in the generation request; do not omit it, replace it with a written description or sampled stills, or demote it to planning-only use. Concerns about placeholder appearance, style contamination or preferred production methods do not authorize exclusion. If an actual endpoint restriction, reference limit or unavailable source prevents its use, report the specific conflict and leave the affected request unsubmitted rather than sending a reduced input set or silently changing the route. Only an explicit user change can remove or replace that reference.
 
-Choose a supported realization from that understanding, the available evidence and the user's locked choices. Reuse suitable assets, request a concrete missing still through image production, or organize compatible generation units as needed. Preserve the shot's narrative result as well as physical action when adapting execution. No particular frame set, reference bundle or route is required for every shot. For spatial, performance or timing decisions, use [shot execution](references/shot-execution.md).
+Choose a supported realization from that understanding, the available evidence and the user's locked choices. Reuse suitable assets, request a concrete missing still through image production, or split the scene into single shots as needed. Preserve the shot's narrative result as well as physical action when adapting execution. No particular frame set, reference bundle or route is required for every shot. For spatial, performance or timing decisions, use [shot execution](references/shot-execution.md).
 
 When continuing or revising work, retain useful observations and the reasons for production choices in existing task descriptions, reference purposes and normal handoffs. Reassess affected choices when the shot or material changes; an old prompt is not a substitute for the intended shot. Use the user's or coordinator's feedback for assigned revisions; return results without judging acceptance or adding extra paid work.
 
@@ -44,7 +50,7 @@ Use rhythm for timed events and performance for human behavior when those rules 
 
 ## Motion realism
 
-A clip is a performance, not a slideshow. For each generation unit, preserve the designed action sequence, hierarchy, causes and visible result, the camera's start, end, amplitude and speed, the light and sound that belong to the event, and the performance as attention and timing rather than emotion labels. Keep the face and hands readable; reduce head rotation, occlusion and simultaneous actions that cause morphing or identity drift. Read [motion realism](references/motion-realism.md) when the output looks floaty, drifts, mutates, clones background people or loses weight.
+A clip is a performance, not a slideshow. For each shot, preserve the designed action sequence, hierarchy, causes and visible result, the camera's start, end, amplitude and speed, the light and sound that belong to the event, and the performance as attention and timing rather than emotion labels. Keep the face and hands readable; reduce head rotation, occlusion and simultaneous actions that cause morphing or identity drift. Read [motion realism](references/motion-realism.md) when the output looks floaty, drifts, mutates, clones background people or loses weight.
 
 The image or board already supplies appearance; the prompt should mostly supply motion, camera, performance and sound. Do not re-describe the entire still or ask one short clip to prove several benefits at once.
 

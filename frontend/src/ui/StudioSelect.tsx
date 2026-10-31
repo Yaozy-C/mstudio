@@ -1,8 +1,13 @@
 import { t, useLanguage } from "../i18n";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Select } from "@radix-ui/themes";
 import "../styles/studio-select.css";
-type SelectOption = { value: string; label: string; disabled?: boolean };
+type SelectOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+  icon?: ReactNode;
+};
 export function StudioSelect({
   value,
   onValueChange,
@@ -67,7 +72,10 @@ export function StudioSelect({
               setOpen(false);
             }}
           >
-            {option.label}
+            <span className="studio-select-option">
+              {option.icon}
+              <span>{option.label}</span>
+            </span>
           </Select.Item>
         ))}
         {!options.length && (

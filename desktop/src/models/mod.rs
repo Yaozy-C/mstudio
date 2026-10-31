@@ -11,6 +11,7 @@ mod context_discovery_tests;
 #[cfg(test)]
 mod context_execution_tests;
 pub(crate) mod context_policy;
+pub mod generation_options;
 pub mod media;
 mod storage;
 #[cfg(test)]

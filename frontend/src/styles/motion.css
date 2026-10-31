@@ -156,9 +156,6 @@
   animation: overlay-presence var(--motion-exit) linear;
   pointer-events: none;
 }
-.dock-media {
-  --dock-entry: -6px;
-}
 .dock-panel:not([hidden]) {
   animation: dock-enter var(--motion-page) var(--motion-ease);
 }

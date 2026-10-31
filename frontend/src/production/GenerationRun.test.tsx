@@ -1,3 +1,4 @@
+import { Theme } from "@radix-ui/themes";
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GenerationRun } from "./GenerationRun";
@@ -25,20 +26,22 @@ test("image and video tasks retain settings after cancellation and reset executi
     };
     const canvas = { media: { models: [] } } as unknown as ProductionController;
     const html = renderToStaticMarkup(
-      <GenerationRun
-        task={task}
-        project={fixture()}
-        canvas={canvas}
-        settings={() => {}}
-        follow={() => {}}
-      />,
+      <Theme>
+        <GenerationRun
+          task={task}
+          project={fixture()}
+          canvas={canvas}
+          settings={() => {}}
+          follow={() => {}}
+        />
+      </Theme>,
     );
     expect(html).toContain("已取消");
     expect(html).toContain('class="task-generation-settings"');
     expect(html).toContain("生成模型");
     expect(html).toContain("任务名称");
     expect(html).toContain(`value="${task.title}"`);
-    expect(html).toContain("添加参考素材");
+    expect(html).toContain("添加资产或制作结果");
     expect(html).not.toMatch(/>设置(?:<\/span>)?<\/button>/);
     expect(html).not.toContain("保存设置");
     if (kind === "video") expect(html).toContain("生成方式");

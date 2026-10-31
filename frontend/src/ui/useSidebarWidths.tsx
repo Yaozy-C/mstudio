@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { snapWidth } from "./snapWidth";
 
-type Side = "media" | "agent";
-const defaults = { media: 240, agent: 420 };
-const minimum = { media: 180, agent: 320 };
-const maximum = { media: 480, agent: 800 };
+type Side = "agent";
+const defaults = { agent: 420 };
+const minimum = { agent: 320 };
+const maximum = { agent: 800 };
 const key = "mstudio-sidebar-widths";
 function initial() {
   try {
     const saved = JSON.parse(localStorage.getItem(key) || "{}");
     return Object.fromEntries(
-      (["media", "agent"] as const).map((side) => [
+      (["agent"] as const).map((side) => [
         side,
         Number.isFinite(saved[side])
           ? Math.max(minimum[side], Math.min(maximum[side], saved[side]))
@@ -44,16 +44,10 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
     }
   }, [widths]);
   const space = Math.max(1000, viewport) - 360;
-  const left = visible.media
-    ? Math.min(widths.media, space - (visible.agent ? minimum.agent : 0))
-    : 0;
-  const right = visible.agent ? Math.min(widths.agent, space - left) : 0;
-  const shown = { media: left, agent: right };
-  function limit(side: Side) {
-    return Math.min(
-      maximum[side],
-      space - shown[side === "media" ? "agent" : "media"],
-    );
+  const right = visible.agent ? Math.min(widths.agent, space) : 0;
+  const shown = { agent: right };
+  function limit(_side: Side) {
+    return Math.min(maximum.agent, space);
   }
   function change(side: Side, value: number) {
     setWidths((w) => ({
@@ -61,7 +55,7 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
       [side]: Math.max(minimum[side], Math.min(limit(side), value)),
     }));
   }
-  const handles = (["media", "agent"] as const)
+  const handles = (["agent"] as const)
     .filter((s) => visible[s])
     .map((side) => (
       <div
@@ -69,7 +63,7 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
         role="separator"
         tabIndex={0}
         className={`dock-resizer dock-resizer-${side}`}
-        aria-label={side === "media" ? "调整素材栏宽度" : "调整助手栏宽度"}
+        aria-label={"调整助手栏宽度"}
         aria-orientation="vertical"
         aria-valuemin={minimum[side]}
         aria-valuemax={limit(side)}
@@ -87,12 +81,11 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
         onPointerMove={(e) => {
           const d = drag.current;
           if (d?.side === side) {
-            const value =
-              d.width + (e.clientX - d.x) * (side === "media" ? 1 : -1);
+            const value = d.width + (e.clientX - d.x) * -1;
             const stops = [
               minimum[side],
               defaults[side],
-              ...(side === "media" ? [320] : [560]),
+              560,
               maximum[side],
             ].filter((stop) => stop <= limit(side));
             d.snap = snapWidth(value, stops, d.snap);
@@ -121,16 +114,13 @@ export function useSidebarWidths(visible: Record<Side, boolean>) {
             change(
               side,
               shown[side] +
-                (e.key === "ArrowRight" ? 1 : -1) *
-                  (side === "media" ? 1 : -1) *
-                  (e.shiftKey ? 40 : 10),
+                (e.key === "ArrowRight" ? 1 : -1) * -1 * (e.shiftKey ? 40 : 10),
             );
         }}
       />
     ));
   return {
     style: {
-      "--rail": `${left}px`,
       "--assistant": `${right}px`,
     } as CSSProperties,
     handles,

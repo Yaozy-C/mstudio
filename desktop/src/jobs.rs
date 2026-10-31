@@ -105,7 +105,7 @@ pub async fn submit_job(
         storage_lease,
     )
     .await
-    .map_err(|e| crate::app_error::wire(e, "SUBMISSION_UNKNOWN", "submit"))
+    .map_err(|e| crate::app_error::wire(e, "GENERATION_FAILED", "submit"))
 }
 #[allow(clippy::too_many_arguments)]
 async fn submit(
@@ -179,24 +179,15 @@ async fn submit(
     }
     let result = provider
         .submit(&key, &endpoint, &input, &config, Some(storage_lease))
-        .await;
+        .await
+        .and_then(|update| update.apply(&mut job));
     match result {
-        Ok(update) => {
-            update.apply(&mut job)?;
+        Ok(()) => {
             save(&store, &job)?;
             Ok(job)
         }
         Err(error) => {
-            let mut issue =
-                crate::app_error::AppError::from_error(&error, "SUBMISSION_UNKNOWN", "submit");
-            let rejected = issue.outcome.as_deref() == Some("rejected");
-            if !rejected {
-                issue.code = "SUBMISSION_UNKNOWN".into();
-                issue.outcome = Some("unknown".into());
-                issue.retryable = false;
-            }
-            job["status"] = json!(if rejected { "FAILED" } else { "UNKNOWN" });
-            job["error"] = json!(issue.to_string());
+            crate::job_recovery::submission_failed(&mut job, &error);
             save(&store, &job)?;
             Ok(job)
         }
@@ -226,23 +217,44 @@ pub(crate) async fn refresh(app: &tauri::AppHandle, id: &str) -> Result<Value> {
     }
     let provider = crate::model_adapters::for_job(&job)?;
     let key = credential(&store, &job)?;
-    let update = provider.refresh(&key, &job).await?;
+    let result = provider.refresh(&key, &job).await;
+    apply_refresh(&mut job, result)?;
+    save(&store, &job)?;
+    Ok(job)
+}
+fn apply_refresh(
+    job: &mut Value,
+    result: Result<crate::model_adapters::ProviderUpdate>,
+) -> Result<()> {
+    let update = match result.and_then(|update| {
+        update.validate()?;
+        Ok(update)
+    }) {
+        Ok(update) => update,
+        Err(error) => {
+            let mut issue =
+                crate::app_error::AppError::from_error(&error, "GENERATION_FAILED", "status");
+            if issue.retryable
+                || matches!(
+                    issue.code.as_str(),
+                    "NETWORK_ERROR" | "AUTH_REQUIRED" | "ACCESS_DENIED"
+                )
+            {
+                return Err(error);
+            }
+            issue.outcome = Some("failed".into());
+            job["status"] = json!("FAILED");
+            job["error"] = json!(issue.to_string());
+            return Ok(());
+        }
+    };
     let cancelling = job["status"] == "CANCEL_REQUESTED";
     job.as_object_mut().unwrap().remove("error");
-    update.apply(&mut job)?;
+    update.apply(job)?;
     if cancelling && matches!(job["status"].as_str(), Some("IN_QUEUE" | "IN_PROGRESS")) {
         job["status"] = json!("CANCEL_REQUESTED");
     }
-    save(&store, &job)?;
-    if job["status"] == "UNKNOWN"
-        && let Some(error) = job["error"].as_str()
-    {
-        let issue: crate::app_error::AppError = serde_json::from_str(error)?;
-        if !issue.retryable {
-            return Err(issue.into());
-        }
-    }
-    Ok(job)
+    Ok(())
 }
 #[tauri::command]
 pub async fn cancel_job(app: tauri::AppHandle, id: String) -> Result<Value, String> {
@@ -270,3 +282,6 @@ pub async fn cancel_job(app: tauri::AppHandle, id: String) -> Result<Value, Stri
 #[cfg(test)]
 #[path = "jobs/connection_tests.rs"]
 mod connection_tests;
+#[cfg(test)]
+#[path = "jobs/status_tests.rs"]
+mod status_tests;

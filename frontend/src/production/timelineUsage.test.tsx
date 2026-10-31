@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { makeClip, splitClip } from "../model";
 import { CanvasCard } from "./CanvasCard";
 import { timelineAssetIds } from "./canvasIndex";
-import { fixture } from "./fixtures.test-helper";
-import { productionItems } from "./items";
+import { draftFixture as fixture } from "./fixtures.test-helper";
+import { draftItems } from "./items";
 import { MediaReferenceStrip } from "../assistant/MediaReferenceStrip";
 import { attachmentInput } from "./attachmentInput";
 import { createTask } from "./tasks";
@@ -27,7 +27,7 @@ test("usage tracks actual clips through split, removal, replacement and undo", (
     "replacement",
   ]);
   // Script references and generated takes alone do not mean used in the edit.
-  expect(productionItems(p).some((item) => item.assetId === "v")).toBe(true);
+  expect(draftItems(p).some((item) => item.assetId === "v")).toBe(true);
   expect(timelineAssetIds(p.clips).size).toBe(0);
 });
 
@@ -44,7 +44,7 @@ test("image/audio clips count as used even when their tracks are hidden or muted
 
 test("card usage is visible independently of selection and explicit references", () => {
   const p = fixture();
-  const item = productionItems(p).find((i) => i.assetId === "v")!;
+  const item = draftItems(p).find((i) => i.assetId === "v")!;
   const asset = p.assets.find((a) => a.id === item.assetId)!;
   const canvas = {
     selected: [item.key],

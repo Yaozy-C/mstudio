@@ -18,7 +18,7 @@ export const runStatuses: Record<string, string> = {
   CANCELLED: "已取消",
   FAILED: "生成失败",
   CANCEL_REQUESTED: "正在取消",
-  UNKNOWN: "正在核实提交状态",
+  UNKNOWN: "生成失败",
 };
 export const pendingRun = (t: ProductionTask) =>
   pendingStatuses.includes(t.status ?? "");

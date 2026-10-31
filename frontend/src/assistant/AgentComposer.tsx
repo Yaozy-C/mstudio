@@ -4,7 +4,6 @@ import { TaskReference } from "../production/TaskReference";
 import { compositionGuard } from "./compositionGuard";
 import type { WorkContext } from "./workContext";
 import { useComposerFiles } from "./useComposerFiles";
-import { MediaReferenceStrip } from "./MediaReferenceStrip";
 import { ComposerGeneration } from "../production/ComposerGeneration";
 import type { ProductionController } from "../production/useProduction";
 import { ComposerContext } from "./ComposerContext";
@@ -95,8 +94,7 @@ export function AgentComposer({
     if (query) setText(text.slice(0, query.start) + text.slice(query.end));
     if (option.agent) chooseAgent(option.agent.id);
     else if (option.ref) {
-      if (canvas?.task) canvas.attach(option.ref);
-      else draft.add([option.ref]);
+      draft.add([option.ref]);
     }
     setQuery(null);
     input.current?.focus();
@@ -118,12 +116,7 @@ export function AgentComposer({
       );
     });
   }
-  const { dragging, ...fileEvents } = useComposerFiles(
-    draft,
-    canvas?.task
-      ? (refs) => refs.forEach((ref) => canvas.attach(ref))
-      : undefined,
-  );
+  const { dragging, ...fileEvents } = useComposerFiles(draft);
   const blocked =
     attachments.length > MAX_ATTACHMENTS ||
     unsupportedAttachments(attachments, model).length > 0;
@@ -147,31 +140,14 @@ export function AgentComposer({
           close={() => setQuery(null)}
         />
         {canvas && <TaskReference canvas={canvas} />}
-        {canvas?.task ? (
-          <MediaReferenceStrip
-            canvas={canvas}
-            project={project}
-            draft={draft}
-          />
-        ) : (
-          <ComposerContext
-            work={work}
-            project={project}
-            draft={draft}
-            attachments={attachments}
-            model={model}
-            settings={settings}
-          />
-        )}
-        {canvas?.task && blocked && (
-          <p className="agent-attachment-hint">
-            {attachments.length > MAX_ATTACHMENTS
-              ? t("本次最多引用 12 项，请移除部分引用。")
-              : t(
-                  "当前对话模型无法读取所选资料，请切换支持这些素材的对话模型。",
-                )}
-          </p>
-        )}
+        <ComposerContext
+          work={work}
+          project={project}
+          draft={draft}
+          attachments={attachments}
+          model={model}
+          settings={settings}
+        />
         <ComposerPrimitive.Input
           {...ime}
           ref={input}
@@ -235,11 +211,6 @@ export function AgentComposer({
               <AddAttachments
                 draft={draft}
                 disabled={attachments.length >= MAX_ATTACHMENTS}
-                receive={
-                  canvas?.task
-                    ? (refs) => refs.forEach((ref) => canvas.attach(ref))
-                    : undefined
-                }
               />
               <button
                 type="button"

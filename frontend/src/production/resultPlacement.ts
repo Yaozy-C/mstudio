@@ -1,6 +1,6 @@
 import type { Project } from "../model";
 import type { ProductionTask } from "./types";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import {
   freeResultPosition,
   resultObstacles,
@@ -16,24 +16,13 @@ export function resultPlacement(
   size = { width: 900, height: 650 },
   view = project.production?.viewport ?? project.viewport,
 ) {
-  const items = productionItems(project);
+  const items = draftItems(project);
   const original = resultOrigin(project, task).origin;
   if (original)
     return freeResultPosition(project, task, {
       x: original.x + original.width + 32,
       y: original.y,
     });
-  const shot = items.find(
-    (item) =>
-      item.kind === "script" &&
-      item.ownerId === (task.ownerId ?? task.targetNodeId),
-  );
-  if (shot)
-    return freeResultPosition(project, task, {
-      x: shot.x + shot.width + (task.kind === "video" ? 640 : 32),
-      y: shot.y,
-    });
-
   // Unassigned work is the only case that depends on the viewport.
   const v =
     view &&

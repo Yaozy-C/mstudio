@@ -2,6 +2,7 @@ import { referenceAsset } from "../previs/media";
 import { uid, type Project, type Reference, type BoardNode } from "../model";
 import { validCaption } from "../creation/captions";
 import { tracksOf } from "../timeline/document";
+import { isShotReference } from "../workspace/resourceRoles";
 type Op = Record<string, unknown>;
 const text = (v: unknown, max = 6000): string => {
   if (typeof v !== "string" || v.length > max)
@@ -17,6 +18,7 @@ function checkedReferences(
   p: Project,
   raw: unknown,
   existing: Reference[] = [],
+  shot = false,
 ): Reference[] {
   if (!Array.isArray(raw)) throw new Error("参考数量无效");
   const refs = raw.map((r: Record<string, unknown>) => {
@@ -24,8 +26,10 @@ function checkedReferences(
     const a = referenceAsset(p, r.assetId);
     if (a?.inLibrary === false && !existing.some((ref) => ref.assetId === a.id))
       throw new Error("素材已从素材库移除，不能新增引用；请先恢复素材");
-    if (!a || a.kind === "audio")
+    if (!a || !["image", "video", "audio"].includes(a.kind))
       throw new Error("只能选择项目中的图片或视频参考");
+    if (shot && !isShotReference(p, a))
+      throw new Error("镜头只能关联已确认资产，请先在资产库建立资产。");
     const out: Reference = { assetId: a.id, purpose: text(r.purpose, 400) };
     if (a.kind === "video") {
       out.start = r.start === undefined ? 0 : number(r.start);
@@ -58,7 +62,12 @@ export function nodeExtras(p: Project, node: BoardNode, op: Op) {
   if (op.references !== undefined)
     node = {
       ...node,
-      references: checkedReferences(p, op.references, previous?.references),
+      references: checkedReferences(
+        p,
+        op.references,
+        previous?.references,
+        node.kind === "shot",
+      ),
     };
   if (op.resultAssetId !== undefined) {
     const id = text(op.resultAssetId, 100);
@@ -119,7 +128,12 @@ export function creationOperation(p: Project, op: Op): Project | null {
                   : ref,
               )
             : op.references;
-        const incoming = checkedReferences(p, raw, node.references);
+        const incoming = checkedReferences(
+          p,
+          raw,
+          node.references,
+          node.kind === "shot",
+        );
         if (mode === "replace") references = incoming;
         else {
           const merged = new Map(

@@ -41,6 +41,39 @@ fn object_readers_reject_cross_object_fields_and_dotted_paths() {
     assert!(decode("mstudio_read_unsupported", json!({})).is_none());
 }
 #[test]
+fn asset_readers_include_existing_descriptions_and_accept_description_paging() {
+    for args in [
+        json!({}),
+        json!({"ids":["asset"]}),
+        json!({"ids":["asset"],"fields":["description"],"textOffset":1000}),
+    ] {
+        let decoded = checked("mstudio_read_assets", args).unwrap();
+        assert!(schema::issues(&crate::assistant::tool_schema::schema(), &decoded).is_empty());
+        if decoded["ids"].is_null() {
+            assert!(
+                decoded["fields"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|field| field == "description")
+            );
+        }
+    }
+}
+
+#[test]
+fn material_reader_has_a_fixed_research_scope() {
+    let decoded = checked(
+        "mstudio_read_materials",
+        json!({"ids":["source"],"fields":["name","description"]}),
+    )
+    .unwrap();
+    assert_eq!(decoded["section"], "assets");
+    assert_eq!(decoded["usage"], "material");
+    assert!(checked("mstudio_read_materials", json!({"usage":"asset"})).is_err());
+    assert!(checked("mstudio_read_assets", json!({"usage":"material"})).is_err());
+}
+#[test]
 fn direct_fields_map_to_private_reader_and_flatten_results() {
     let args = checked(
         "mstudio_read_shots",
@@ -107,7 +140,7 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
             schema::issues(&crate::assistant::tool_schema::schema(), &decoded).is_empty(),
             "{name}: {decoded}"
         );
-        let raw = crate::project_service::runtime::execute(
+        let raw = crate::project_service::domain::execute(
             json!({"action":"inspect","document":doc,"args":decoded}),
         )
         .unwrap();
@@ -134,4 +167,30 @@ fn split_reads_run_through_real_domain_and_preserve_generation_continuation() {
             }
         }
     }
+}
+
+#[test]
+fn materials_and_assets_can_list_the_same_file_without_changing_approval() {
+    let doc = json!({"assets":[
+        {"id":"source","name":"Product photo","kind":"image","usage":"asset","inMaterials":true,"assetStatus":"confirmed"},
+        {"id":"candidate","name":"Candidate","kind":"image","usage":"asset","generated":true,"inLibrary":true,"inMaterials":true,"assetStatus":"candidate"}
+    ],"nodes":[],"clips":[]});
+    for name in ["mstudio_read_materials", "mstudio_read_assets"] {
+        let args = checked(name, json!({})).unwrap();
+        let output = crate::project_service::domain::execute(
+            json!({"action":"inspect","document":doc,"args":args}),
+        )
+        .unwrap();
+        let items = output["items"].as_array().unwrap();
+        assert!(items.iter().any(|a| a["id"] == "source"
+            && a["inMaterials"] == true
+            && a["assetStatus"] == "confirmed"));
+        assert_eq!(
+            items.iter().any(|a| a["id"] == "candidate"),
+            name == "mstudio_read_materials"
+        );
+    }
+    assert!(!crate::project_service::asset_roles::is_shot_asset(
+        &doc["assets"][1]
+    ));
 }

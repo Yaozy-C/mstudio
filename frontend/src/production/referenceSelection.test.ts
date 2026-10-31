@@ -77,7 +77,7 @@ test("references reject missing assets and use configured count limits", () => {
 
 test("video references retain full duration across pickers and selected canvas items", async () => {
   const { attachmentInput } = await import("./attachmentInput");
-  const { productionItems } = await import("./items");
+  const { draftItems } = await import("./items");
   const p = fixture();
   p.assets.find((a) => a.id === "v")!.duration = 17.033333;
   p.nodes.push({
@@ -97,7 +97,7 @@ test("video references retain full duration across pickers and selected canvas i
   ).inputs![0];
   const selected = createTask(
     p,
-    productionItems(p).filter((i) => i.nodeId === "video-card"),
+    draftItems(p).filter((i) => i.nodeId === "video-card"),
     "video",
   ).inputs[0];
   for (const input of [attached, picked, selected]) {
@@ -156,4 +156,68 @@ test("picker toggles selected media off at the limit and after changing models",
     toggleTaskReference(removed, p.assets[1], limited).inputs?.[0].assetId,
   ).toBe(p.assets[1].id);
   expect(selected.inputs[0].assetId).toBe(p.assets[0].id);
+});
+
+test("Declared reference picking carries image, video and audio into the generation request", () => {
+  const p = fixture();
+  const voice = {
+    ...asset("voice", "audio"),
+    usage: "asset" as const,
+    duration: 4,
+    preview: "",
+  };
+  p.assets.push(voice);
+  const omni = {
+    ...model("custom"),
+    plugin: "fal",
+    endpoint: "example/omni-reference-video",
+    params: {},
+    capabilities: {
+      referenceLimit: 3,
+      references: [
+        {
+          key: "/images",
+          kind: "image",
+          role: "reference",
+          multiple: true,
+          max: 2,
+        },
+        {
+          key: "/videos",
+          kind: "video",
+          role: "reference",
+          multiple: true,
+          max: 1,
+        },
+        {
+          key: "/audios",
+          kind: "audio",
+          role: "reference",
+          multiple: true,
+          max: 1,
+        },
+      ],
+    },
+  } satisfies import("../models/mediaRegistry").MediaModel;
+  let task = {
+    ...createTask(p, [], "video"),
+    prompt: "Follow the movement and voice",
+  };
+  for (const a of [p.assets[0], p.assets.find((a) => a.id === "v")!, voice])
+    task = { ...task, ...addTaskReference(task, a, omni) };
+  const input = inputFor(p, task, omni, [
+    { assetId: "a", kind: "image", url: "https://example.com/image.png" },
+    { assetId: "v", kind: "video", url: "https://example.com/video.mp4" },
+    { assetId: "voice", kind: "audio", url: "https://example.com/voice.mp3" },
+  ]);
+  expect(input.images).toEqual(["https://example.com/image.png"]);
+  expect(input.videos).toEqual(["https://example.com/video.mp4"]);
+  expect(input.audios).toEqual(["https://example.com/voice.mp3"]);
+  expect(input.prompt).toContain("Audio 1: 内容参考 · voice");
+  expect(supportsReference(voice, model("minimax/h3/image-to-video"))).toBe(
+    true,
+  );
+  expect(supportsReference(voice, model("minimax/h3/text-to-video"))).toBe(
+    false,
+  );
 });

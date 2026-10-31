@@ -1,4 +1,3 @@
-import { removeNodes } from "../canvas/removeNodes";
 import type { Project } from "../model";
 import type { ProductionTask } from "../production/types";
 
@@ -76,7 +75,6 @@ export function deleteAssets(p: Project, ids: string[]): Project {
     production: p.production
       ? {
           ...p.production,
-          hidden: p.production.hidden?.filter((k) => !removeKey(k)),
           positions: p.production.positions
             ? Object.fromEntries(
                 Object.entries(p.production.positions).filter(
@@ -95,11 +93,4 @@ export function deleteAssets(p: Project, ids: string[]): Project {
         }
       : undefined,
   };
-}
-
-export function deleteCanvasNodes(p: Project, ids: string[]): Project {
-  const assets = p.nodes
-    .filter((n) => ids.includes(n.id) && n.assetId)
-    .map((n) => n.assetId!);
-  return removeNodes(deleteAssets(p, assets), ids);
 }

@@ -3,7 +3,7 @@ import { fixture, asset } from "./fixtures.test-helper";
 import { requestTask, runsOf } from "./requestTask";
 import { receiveProductionResult, saveTask } from "./document";
 import { retryTask } from "./recovery";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import type { GeneratedJob } from "../workspace/generatedJobTracking";
 import { reconcileJob } from "../domain/generation";
 import type { ProductionSource } from "./types";
@@ -86,11 +86,11 @@ test("multiple outputs sharing a source position do not move earlier cards or ov
   let { p, source } = setup();
   source.canvasGeneration!.task.position = { x: -1200, y: 87 };
   p = receiveProductionResult(p, asset("front"), source);
-  const first = productionItems(p).find((n) => n.assetId === "front")!;
+  const first = draftItems(p).find((n) => n.assetId === "front")!;
   const originalPosition = { x: first.x, y: first.y };
   p = receiveProductionResult(p, asset("right"), source);
   p = receiveProductionResult(p, asset("top"), source);
-  const results = productionItems(p).filter((n) =>
+  const results = draftItems(p).filter((n) =>
     ["front", "right", "top"].includes(n.assetId ?? ""),
   );
   expect(source.canvasGeneration!.task.position).toEqual({ x: -1200, y: 87 });

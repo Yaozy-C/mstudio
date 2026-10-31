@@ -15,14 +15,22 @@ pub async fn import_job_result(
         .map_err(|e| crate::app_error::wire(e, "RESULT_IMPORT_FAILED", "import"))
 }
 pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> Result<Asset> {
-    let _job_guard = crate::job_locks::acquire(id).await;
     let store = app.state::<Store>();
-    let mut job = jobs::get(&store, id)?;
+    let asset = receive(&store, id, index).await?;
+    let job = jobs::get(&store, id)?;
+    crate::project_service::notify(app, job["projectId"].as_str().context("任务缺少项目")?);
+    Ok(asset)
+}
+
+/// Same durable import path used by the worker and headless provider integration checks.
+pub(crate) async fn receive(store: &Store, id: &str, index: usize) -> Result<Asset> {
+    let _job_guard = crate::job_locks::acquire(id).await;
+    let mut job = jobs::get(store, id)?;
     let project = job["projectId"]
         .as_str()
         .context("任务缺少项目")?
         .to_owned();
-    let guard = std::sync::Arc::new(crate::project_storage::working(&store, &project).await?);
+    let guard = std::sync::Arc::new(crate::project_storage::working(store, &project).await?);
     let downloads = store.media_root().join("downloads");
     std::fs::create_dir_all(&downloads)?;
     if let Some(asset) = job["assets"]
@@ -49,7 +57,7 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
             _ => "jpg",
         };
         let temp = downloads.join(format!("download-{}.{}", mstudio::media::id(), extension));
-        crate::project_storage::track_file(&store, &project, &temp)?;
+        crate::project_storage::track_file(store, &project, &temp)?;
         std::fs::write(&temp, bytes)?;
         temp
     } else {
@@ -84,7 +92,7 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
             "mp4"
         };
         let temp = downloads.join(format!("download-{}.{}", mstudio::media::id(), extension));
-        crate::project_storage::track_file(&store, &project, &temp)?;
+        crate::project_storage::track_file(store, &project, &temp)?;
         let mut file = std::fs::File::create(&temp)?;
         let mut size = 0;
         let result: Result<()> = async {
@@ -106,20 +114,18 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
     let root = store.media_root();
     let copy = temp.clone();
     let _guard = guard.clone();
-    let app_copy = app.clone();
-    let owner = project.clone();
     let name = crate::project_service::production_names::result_name(&*store.conn()?, &job)?;
     let result = tauri::async_runtime::spawn_blocking(move || {
         let _guard = guard;
         let mut asset = mstudio::media::import(&copy, &root)?;
         asset.generated = true;
         asset.name = name;
-        crate::project_storage::save_asset(&app_copy.state::<Store>(), &owner, &asset)?;
         Ok::<_, anyhow::Error>(asset)
     })
     .await?;
     let _ = std::fs::remove_file(temp);
     let asset = result?;
+    crate::project_storage::save_asset(store, &project, &asset)?;
     let value = serde_json::to_value(&asset)?;
     if !job["assets"].is_array() {
         job["assets"] = serde_json::json!([]);
@@ -132,8 +138,7 @@ pub(crate) async fn download(app: &tauri::AppHandle, id: &str, index: usize) -> 
     if index == 0 {
         job["asset"] = value;
     }
-    jobs::save(&store, &job)?;
-    crate::project_service::notify(app, &project);
+    jobs::save(store, &job)?;
     Ok(asset)
 }
 

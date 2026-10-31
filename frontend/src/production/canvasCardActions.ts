@@ -1,6 +1,5 @@
 import {
   ChatText as MenuChatText,
-  Cube as MenuCube,
   FilmStrip as MenuFilmStrip,
   FolderPlus as MenuFolderPlus,
   PencilSimple as MenuPencilSimple,
@@ -8,11 +7,9 @@ import {
   VideoCamera as MenuVideoCamera,
 } from "@phosphor-icons/react";
 import { t } from "../i18n";
-import { openPrevis } from "../previs/context";
-import { native } from "../bridge";
-import { isLibraryAsset } from "../workspace/assetLibrary";
+import { isShotAsset } from "../workspace/resourceRoles";
 import type { Asset } from "../model";
-import type { ProductionItem } from "./types";
+import type { DraftItem } from "./types";
 import type { ProductionController } from "./useProduction";
 import type { ObjectAction } from "../ui/ObjectMenu";
 export function canvasCardActions({
@@ -23,24 +20,14 @@ export function canvasCardActions({
   collect,
   onAdd,
 }: {
-  item: ProductionItem;
+  item: DraftItem;
   asset?: Asset;
   canvas: ProductionController;
-  preview: (item: ProductionItem) => void;
+  preview: (item: DraftItem) => void;
   collect: (asset: Asset) => void;
   onAdd: (asset: Asset) => void;
 }): ObjectAction[] {
   return [
-    ...(item.kind === "script" && item.nodeId
-      ? [
-          {
-            icon: MenuCube,
-            label: t("三维预演"),
-            run: () => openPrevis(item.nodeId!),
-            disabled: !native,
-          },
-        ]
-      : []),
     {
       icon: MenuPencilSimple,
       label: t("预览 / 编辑"),
@@ -51,32 +38,34 @@ export function canvasCardActions({
       label: t("引用到对话"),
       run: () => canvas.reference([item.key]),
     },
-    ...(asset &&
-    (asset.kind === "image" || asset.kind === "video" || asset.kind === "audio")
+    ...(asset && (asset.kind === "image" || asset.kind === "video")
       ? [
           {
             icon: MenuFilmStrip,
-            label: t("加入时间线"),
+            label: t("用于正式镜头"),
             run: () => onAdd(asset),
             disabled: !!asset.missing,
           },
         ]
       : []),
-    ...(asset
+    ...(asset && ["image", "video", "audio"].includes(asset.kind)
       ? [
           {
             icon: MenuFolderPlus,
-            label: isLibraryAsset(asset)
-              ? t("已在项目素材中")
-              : t("保存为项目素材"),
+            label: isShotAsset(asset) ? t("已确认资产") : t("确认为镜头资产"),
             run: () => collect(asset),
-            disabled: isLibraryAsset(asset),
+            disabled: isShotAsset(asset) || !!asset.missing,
           },
         ]
       : []),
     {
+      icon: MenuPencilSimple,
+      label: t("试生成图片"),
+      run: () => canvas.act("image", [item.key]),
+    },
+    {
       icon: MenuVideoCamera,
-      label: t("制作视频"),
+      label: t("试生成视频"),
       run: () => canvas.act("video", [item.key]),
     },
     { icon: MenuTrash, label: t("从画布移除"), run: () => canvas.remove(item) },

@@ -1,3 +1,9 @@
+import {
+  generationOptions,
+  generationOptionDefaults,
+  validateGenerationOption,
+  type GenerationValue,
+} from "../models/generationOptions";
 import { failure } from "../errors/failure";
 import type { MediaModel } from "../models/mediaRegistry";
 import {
@@ -28,7 +34,7 @@ type ParameterVocabulary = {
 };
 
 // Shared by model capability discovery and the model-facing operation schema.
-function parameterSchema(fields: ParameterVocabulary) {
+function parameterSchema(fields: ParameterVocabulary, model: MediaModel) {
   const range = fields.durationRange ?? {};
   const properties: Record<string, Schema> = {};
   if (fields.ratios.length)
@@ -43,7 +49,10 @@ function parameterSchema(fields: ParameterVocabulary) {
     );
   if (fields.duration)
     properties.duration = described(
-      { ...number(range.min, range.max), exclusiveMinimum: 0 },
+      {
+        ...number(range.min, range.max),
+        exclusiveMinimum: 0,
+      },
       "Generated source clip length in seconds. Use the configured model bounds when present. Editorial shot length is separate.",
     );
   if (fields.customSize) {
@@ -56,6 +65,22 @@ function parameterSchema(fields: ParameterVocabulary) {
       "Image height in pixels. Supply width together; use the selected model configuration.",
     );
   }
+  const extra = generationOptions(model);
+  if (extra.length)
+    properties.options = object(
+      Object.fromEntries(
+        extra.map((option) => [
+          option.key,
+          {
+            type: option.type,
+            description: option.label,
+            ...(option.values ? { enum: option.values } : {}),
+            ...(option.min !== undefined ? { minimum: option.min } : {}),
+            ...(option.max !== undefined ? { maximum: option.max } : {}),
+          } as Schema,
+        ]),
+      ),
+    );
   return described(
     object(properties),
     "Explicit generation overrides. Read mstudio_models for the chosen model's supported fields, values and configuredDefaults. Omitted fields inherit task/configured settings; project export settings and shot duration do not imply these overrides.",
@@ -68,7 +93,38 @@ export type GenerationParameters = {
   duration?: number;
   width?: number;
   height?: number;
+  options?: Record<string, GenerationValue>;
 };
+
+/** Display the values that will be sent, with explicit Agent/task values taking precedence. */
+export function effectiveParameters(
+  model?: MediaModel,
+  task: GenerationParameters = {},
+): GenerationParameters {
+  if (!model) return task;
+  const controls = resolvedControls(model);
+  const duration = controls.duration
+    ? Number(pointerGet(model.params, controls.duration.path))
+    : NaN;
+  return {
+    ...task,
+    duration:
+      task.duration ??
+      (Number.isFinite(duration) && duration > 0 ? duration : undefined),
+    aspectRatio:
+      task.aspectRatio ??
+      (controls.aspectRatio
+        ? (pointerGet(model.params, controls.aspectRatio.path) as
+            string | undefined)
+        : undefined),
+    resolution:
+      task.resolution ??
+      (controls.resolution
+        ? (pointerGet(model.params, controls.resolution.path) as
+            string | undefined)
+        : undefined),
+  };
+}
 
 type ParameterFields = Omit<ParameterVocabulary, "durationRange"> & {
   durationRange: { min?: number; max?: number };
@@ -120,12 +176,15 @@ export function parameterContract(model: MediaModel) {
   const configured = (control: { path: string } | null) =>
     control ? (pointerGet(model.params, control.path) ?? null) : null;
   return {
-    parameters: parameterSchema(fields),
+    parameters: parameterSchema(fields, model),
     configuredDefaults: {
       aspectRatio: configured(controls.aspectRatio),
       resolution: configured(controls.resolution),
       duration: configured(controls.duration),
       imageSize: configured(controls.imageSize),
+      ...(generationOptions(model).length
+        ? { options: generationOptionDefaults(model) }
+        : {}),
     },
     constraints: fields.customSize
       ? "Specify positive integer width and height together; use configured bounds when present."
@@ -188,6 +247,13 @@ export function taskParameters(
       );
   }
   const resolved = copyParameters(model.params);
+  for (const [key, setting] of Object.entries(value.options ?? {})) {
+    const option = generationOptions(model).find((o) => o.key === key);
+    if (!option)
+      throw failure("VALIDATION_FAILED", `此模型不支持生成选项：${key}`);
+    validateGenerationOption(option, setting);
+    pointerSet(resolved, option.path, setting);
+  }
   if (aspectRatio && controls.aspectRatio)
     pointerSet(resolved, controls.aspectRatio.path, aspectRatio);
   if (resolution && controls.resolution)

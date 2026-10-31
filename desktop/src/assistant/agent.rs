@@ -44,13 +44,8 @@ pub(crate) async fn complete_with_resume(
         let mut binding = json!({"provider":profile.adapter,"endpoint":profile.endpoint,"model":profile.model,"agentId":t.profile.id,"revision":t.profile.revision,"tools":host.definitions()?});
         harness::session_selection::bind_task(&store, &t.project, &t.turn, resume, &mut binding)?;
         fork_history = harness::handoff::completed(&store, &t.project, &t.turn, &binding)?;
-        let restored = harness::session_selection::for_message(
-            &store,
-            &t.project,
-            &binding,
-            resume,
-            t.prompt.trim() == "/compact",
-        )?;
+        let restored =
+            harness::session_selection::for_message(&store, &t.project, &binding, resume)?;
         harness::session_selection::record_selection(
             &store,
             &t.project,
@@ -59,21 +54,24 @@ pub(crate) async fn complete_with_resume(
             restored.as_ref().map_or(0, Vec::len),
         )?;
         let restored_count = restored.as_ref().map_or(0, Vec::len);
-        if let Some(mut restored) = restored {
-            let mut additions = messages.iter().rev().take(2).cloned().collect::<Vec<_>>();
-            additions.reverse();
-            if resume.is_some() {
-                additions.pop();
-            } // Original user input is already committed.
-            // Reconcile the system prompt and inject fresh project state at the step boundary.
-            if let (Some(Message::System { content }), Some(Message::System { content: old })) =
-                (messages.first(), restored.first_mut())
-            {
-                *old = content.clone();
-            }
-            harness::context_boundary::refresh_snapshot(&mut restored, &mut additions);
-            restored.extend(additions);
-            messages = restored;
+        if let Some(restored) = restored {
+            messages =
+                harness::context_boundary::continue_messages(restored, &messages, resume.is_some());
+        }
+        if restored_count == 0 {
+            let scope = super::task_context::saved(&store, &t.project, resume.unwrap_or(&t.turn))?
+                .ok_or("缺少任务上下文")?;
+            let previous = super::task_context::history(
+                &store,
+                &t.project,
+                &scope,
+                resume.unwrap_or(&t.turn),
+            )?;
+            let doc = crate::project_service::load(&store.db.lock().unwrap(), &t.project)
+                .map_err(|e| e.to_string())?;
+            let snapshot = super::context::project_snapshot(&doc, None);
+            let recalled = super::context::fallback_history(&previous, &snapshot);
+            messages.splice(1..1, recalled.iter().map(convert));
         }
         if restored_count == 0
             && let Some(turn) = resume

@@ -35,7 +35,12 @@ test("even a known endpoint uses configuration alone for numeric controls", () =
 
 test("reference count and clip length have no hidden limits beyond configuration", () => {
   const p = fixture();
-  p.assets.push(...Array.from({ length: 16 }, (_, i) => asset(`extra-${i}`)));
+  p.assets.push(
+    ...Array.from({ length: 16 }, (_, i) => ({
+      ...asset(`extra-${i}`),
+      usage: "asset" as const,
+    })),
+  );
   const m = model("custom/model", "video", {
     references: [
       { key: "/images", kind: "image", role: "reference", multiple: true },

@@ -188,7 +188,6 @@ fn main() {
             jobs::runtime_health::generation_runtime_issues,
             jobs::submit_job,
             jobs::refresh_job,
-            job_recovery::resolve_unknown_job,
             jobs::cancel_job,
             job_download::import_job_result,
             projects::list_projects,

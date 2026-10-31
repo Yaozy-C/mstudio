@@ -114,8 +114,9 @@ test("backend processing, import, pause, failure and real result have distinct c
       .action,
   ).toBe("resume_tracking");
   expect(taskOutcome(task("UNKNOWN")).continuation.action).toBe(
-    "resolve_unknown_submission",
+    "report_outcome",
   );
+  expect(taskOutcome(task("UNKNOWN")).status).toBe("FAILED");
   for (const status of ["FAILED", "CANCELLED"])
     expect(taskOutcome(task(status)).continuation.state).toBe("finished");
   expect(

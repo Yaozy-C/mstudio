@@ -1,4 +1,13 @@
 import { AsyncButton, LoadingState } from "../ui/AsyncState";
+import {
+  catalogModelFamily,
+  generationMethod,
+  groupMediaModels,
+  modelGroupKey,
+  modelInGroup,
+} from "./modelGroups";
+import { modelLibrary } from "./catalogSpecs";
+import { MediaModelModesForm } from "./MediaModelModesForm";
 import { presets } from "./mediaModelPresets";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
@@ -42,10 +51,11 @@ export function MediaModels({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const Icon = icons[kind];
-  const items = hub.models.filter(
-    (m) =>
-      m.kind === kind &&
-      `${m.name} ${m.endpoint}`.toLowerCase().includes(query.toLowerCase()),
+  const groups = groupMediaModels(hub.models.filter((m) => m.kind === kind));
+  const items = groups.filter((group) =>
+    `${group.name} ${group.variants.map((m) => `${m.name} ${m.endpoint}`).join(" ")}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
   );
   const create = (preset = false) =>
     setEdit({
@@ -86,17 +96,55 @@ export function MediaModels({
         }}
       />
     );
-  if (edit)
-    return (
+  if (edit) {
+    const group = groups.find((g) => g.key === modelGroupKey(edit));
+    const saveMode = async (model: MediaModel) => {
+      await hub.save(model);
+      const family = catalogModelFamily(model);
+      if (family) {
+        const existing = group?.variants ?? [model];
+        for (const variant of existing) {
+          if (variant.id !== model.id)
+            await hub.save({
+              ...variant,
+              name: model.name,
+              connectionId: model.connectionId,
+            });
+        }
+        const methods = new Set(existing.map(generationMethod));
+        methods.add(generationMethod(model));
+        for (const spec of modelLibrary.filter(
+          (spec) => spec.family?.id === family.id,
+        )) {
+          const variant = {
+            ...catalogMediaModel(spec, model.kind),
+            connectionId: model.connectionId,
+            name: model.name,
+          };
+          const method = generationMethod(variant);
+          if (!methods.has(method)) {
+            await hub.save(variant);
+            methods.add(method);
+          }
+        }
+      }
+      setAdding(false);
+    };
+    return group && group.variants.length > 1 ? (
+      <MediaModelModesForm
+        initial={edit}
+        variants={group.variants}
+        save={saveMode}
+        cancel={() => setEdit(null)}
+      />
+    ) : (
       <MediaModelForm
         initial={edit}
-        save={async (...args) => {
-          await hub.save(...args);
-          setAdding(false);
-        }}
+        save={saveMode}
         cancel={() => setEdit(null)}
       />
     );
+  }
   if (adding && kind !== "audio")
     return (
       <ModelLibrary
@@ -115,6 +163,7 @@ export function MediaModels({
         <div>
           <h3>{t("{kind}模型", { kind: t(mediaLabels[kind]) })}</h3>
         </div>
+
         <button
           className="primary"
           disabled={!native || hub.loading || busy}
@@ -144,107 +193,134 @@ export function MediaModels({
         <LoadingState label={t("正在读取…")} />
       )}
       <div className="hub-model-grid">
-        {items.map((m) => (
-          <article className="hub-model-card" key={m.id}>
-            <div className="hub-card-top">
-              <span className={`hub-capability ${kind}`}>
-                <ModelMark identity={`${m.name} ${m.endpoint}`} size={26} />
-              </span>
-              <span
-                className={`hub-status ${m.enabled && (m.hasKey || m.plugin === "codex-image" || localEndpoint(m.endpoint)) ? "ready" : ""}`}
-              >
-                {!m.enabled
-                  ? t("已停用")
-                  : m.plugin === "codex-image"
-                    ? t("本机 Codex")
-                    : m.hasKey
-                      ? t("密钥已配置")
-                      : localEndpoint(m.endpoint)
-                        ? t("本机连接")
-                        : t("待配置密钥")}
-              </span>
-            </div>
-            <h3>{m.name}</h3>
-            <p className="hub-endpoint" title={m.endpoint}>
-              {m.endpoint}
-            </p>
-            <div className="hub-tags">
-              <span>{t("{kind}生成", { kind: t(mediaLabels[kind]) })}</span>
-              <span>
-                {m.plugin === "codex-image"
-                  ? `Codex · ${typeof m.params.model === "string" ? m.params.model : t("待配置模型 ID")}`
-                  : m.plugin === "fal"
-                    ? t("fal · 第三方")
-                    : m.plugin === "dashscope"
-                      ? t("百炼 · 官方直连")
-                      : m.plugin === "gemini-native"
-                        ? t("Google · 官方直连")
-                        : t("自定义 HTTP")}
-              </span>
-            </div>
-            <footer>
-              <button
-                disabled={busy}
-                onClick={() =>
-                  void act(() => hub.save({ ...m, enabled: !m.enabled }))
-                }
-              >
-                {m.enabled ? t("停用") : t("启用")}
-              </button>
-              <button
-                disabled={busy}
-                onClick={() => setEdit(m)}
-                aria-label={t("配置 {v0}", { v0: m.name })}
-              >
-                <PencilSimple />
-                {t("配置")}
-              </button>
-              <AlertDialog.Root
-                open={remove === m.id}
-                onOpenChange={(open) => {
-                  if (busy) return;
-                  setError("");
-                  setRemove(open ? m.id : null);
-                }}
-              >
-                <AlertDialog.Trigger>
-                  <button
-                    disabled={busy}
-                    aria-label={t("移除 {v0}", { v0: m.name })}
-                  >
-                    <Trash />
-                  </button>
-                </AlertDialog.Trigger>
-                <AlertDialog.Content className="modal small" aria-busy={busy}>
-                  <AlertDialog.Title>{t("移除模型")}</AlertDialog.Title>
-                  <AlertDialog.Description>
-                    {t("移除「")}
-                    {m.name}
-                    {t("」的模型配置？已生成的素材和任务会保留。")}
-                  </AlertDialog.Description>
-                  {error && (
-                    <ErrorNotice error={error} fallback="OPERATION_FAILED" />
+        {items.map((group) => {
+          const m = {
+            ...modelInGroup(group),
+            name: group.name,
+            enabled: group.variants.some((v) => v.enabled),
+          };
+          return (
+            <article className="hub-model-card" key={group.key}>
+              <div className="hub-card-top">
+                <span className={`hub-capability ${kind}`}>
+                  <ModelMark identity={`${m.name} ${m.endpoint}`} size={26} />
+                </span>
+                <span
+                  className={`hub-status ${m.enabled && (m.hasKey || m.plugin === "codex-image" || localEndpoint(m.endpoint)) ? "ready" : ""}`}
+                >
+                  {!m.enabled
+                    ? t("已停用")
+                    : m.plugin === "codex-image"
+                      ? t("本机 Codex")
+                      : m.hasKey
+                        ? t("密钥已配置")
+                        : localEndpoint(m.endpoint)
+                          ? t("本机连接")
+                          : t("待配置密钥")}
+                </span>
+              </div>
+              <h3>{m.name}</h3>
+              <p className="hub-endpoint" title={m.endpoint}>
+                {m.endpoint}
+              </p>
+              <div className="hub-tags">
+                {group.variants.length > 1 &&
+                  [...new Set(group.variants.map(generationMethod))].map(
+                    (method) => (
+                      <span key={method}>
+                        {method === "references"
+                          ? t("全参考")
+                          : method === "frames"
+                            ? t("首尾帧")
+                            : t("文生视频")}
+                      </span>
+                    ),
                   )}
-                  <footer>
-                    <AlertDialog.Cancel>
-                      <button type="button" disabled={busy}>
-                        {t("取消")}
-                      </button>
-                    </AlertDialog.Cancel>
+                <span>{t("{kind}生成", { kind: t(mediaLabels[kind]) })}</span>
+                <span>
+                  {m.plugin === "codex-image"
+                    ? `Codex · ${typeof m.params.model === "string" ? m.params.model : t("待配置模型 ID")}`
+                    : m.plugin === "fal"
+                      ? t("fal · 第三方")
+                      : m.plugin === "dashscope"
+                        ? t("百炼 · 官方直连")
+                        : m.plugin === "gemini-native"
+                          ? t("Google · 官方直连")
+                          : t("自定义 HTTP")}
+                </span>
+              </div>
+              <footer>
+                <button
+                  disabled={busy}
+                  onClick={() =>
+                    void act(async () => {
+                      for (const variant of group.variants)
+                        await hub.save({ ...variant, enabled: !m.enabled });
+                    })
+                  }
+                >
+                  {m.enabled ? t("停用") : t("启用")}
+                </button>
+                <button
+                  disabled={busy}
+                  onClick={() => setEdit(m)}
+                  aria-label={t("配置 {v0}", { v0: m.name })}
+                >
+                  <PencilSimple />
+                  {t("配置")}
+                </button>
+                <AlertDialog.Root
+                  open={remove === m.id}
+                  onOpenChange={(open) => {
+                    if (busy) return;
+                    setError("");
+                    setRemove(open ? m.id : null);
+                  }}
+                >
+                  <AlertDialog.Trigger>
                     <button
-                      type="button"
-                      className="primary"
                       disabled={busy}
-                      onClick={() => void act(() => hub.remove(m.id))}
+                      aria-label={t("移除 {v0}", { v0: m.name })}
                     >
-                      {busy ? t("正在移除…") : t("确认移除")}
+                      <Trash />
                     </button>
-                  </footer>
-                </AlertDialog.Content>
-              </AlertDialog.Root>
-            </footer>
-          </article>
-        ))}
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Content className="modal small" aria-busy={busy}>
+                    <AlertDialog.Title>{t("移除模型")}</AlertDialog.Title>
+                    <AlertDialog.Description>
+                      {t("移除「")}
+                      {m.name}
+                      {t("」的模型配置？已生成的素材和任务会保留。")}
+                    </AlertDialog.Description>
+                    {error && (
+                      <ErrorNotice error={error} fallback="OPERATION_FAILED" />
+                    )}
+                    <footer>
+                      <AlertDialog.Cancel>
+                        <button type="button" disabled={busy}>
+                          {t("取消")}
+                        </button>
+                      </AlertDialog.Cancel>
+                      <button
+                        type="button"
+                        className="primary"
+                        disabled={busy}
+                        onClick={() =>
+                          void act(async () => {
+                            for (const variant of group.variants)
+                              await hub.remove(variant.id);
+                          })
+                        }
+                      >
+                        {busy ? t("正在移除…") : t("确认移除")}
+                      </button>
+                    </footer>
+                  </AlertDialog.Content>
+                </AlertDialog.Root>
+              </footer>
+            </article>
+          );
+        })}
       </div>
       {!hub.loading && !hub.error && !items.length && (
         <div className="hub-empty">

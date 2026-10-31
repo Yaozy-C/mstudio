@@ -18,9 +18,9 @@ pub(super) fn transport(error: reqwest::Error) -> AppError {
     let mut issue = AppError::new(
         "NETWORK_ERROR",
         "submit",
-        &format!("Codex 图片传输失败（{reason}）；未自动重试，服务端可能仍在生成"),
+        &format!("Codex 图片传输失败（{reason}）"),
     );
-    issue.outcome = Some("unknown".into());
+    issue.outcome = Some("failed".into());
     issue
 }
 

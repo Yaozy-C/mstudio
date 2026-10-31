@@ -7,7 +7,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript 和 SQLite。前端维护交互�
 - `src/`：独立 Rust 媒体核心，负责 FFmpeg / ffprobe、混音、调色、转场、导出及 GES 播放计划。
 - `desktop/src/`：桌面命令、SQLite、素材导入、模型适配、生成队列与 Agent。
 - `desktop/image-runtime/`：本机深度图与图像修复推理；与桌面端共用 Cargo workspace 和锁文件。
-- `frontend/src/domain/`：界面与宿主共用的纯领域规则。Bun 构建为嵌入包，宿主用受内存、栈和时间限制的 QuickJS 执行，只交换 JSON。
+- `desktop/src/project_service/domain/`：Rust 原生项目规则，处理合并、编辑、读取、删除引用及生成结果恢复。`frontend/src/domain/operations.json` 是共享的数据契约，Rust 直接读取，不执行 JavaScript。
 - `frontend/src/creative/`、`production/`、`canvas/`：脚本、镜头、生成任务与画布。
 - `frontend/src/timeline/`：多轨编辑、播放、素材拖放与预览控制。
 - `skills/`：应用自带的创作方法，随 Tauri resources 分发。
@@ -17,7 +17,11 @@ Mstudio 使用 Tauri 2、React 19、TypeScript 和 SQLite。前端维护交互�
 
 `Project` 是工程编辑与自动保存的聚合。素材以 ID 标识，片段引用素材并保存裁切、速度、轨道和变换。素材库收录、画布卡片、生成参考和镜头产出分别表示不同关系。
 
-结构化脚本存于 `screenplay.script`，镜头通过 `shot.screenplayId/scriptId` 关联段落。`references` 保存生成参考，`shot.frames` 保存分镜图，`shot.takes` 保存候选视频。画布坐标只负责展示。独立资产生成结果收录到素材库并创建独立卡片。
+主流程为创意、脚本、制作、剪辑；素材资料与资产库是独立资源入口。独立的 `material-read` 工具默认分配给创意、编剧和资产 Agent，资产读取工具分配给资产及制作相关 Agent。素材收录（`inMaterials`）与资产状态（`assetStatus: candidate / confirmed`）独立，同一文件可同时存在于素材库和资产库；建立资产保留来源素材，收录素材不会确认候选资产。旧 `usage` 字段只用于兼容历史工程。已确认资产供镜头设计及图片、视频制作使用。资产 Agent 负责从来源资料建立角色、场景、物品资产；生成结果先作为候选，用户确认后才供镜头使用。普通素材不能通过显式 ID、对话附件或拖放直接进入镜头生成。宿主在领域操作和提交预检中执行同一规则。
+
+结构化脚本存于 `screenplay.script`，镜头通过 `shot.screenplayId/scriptId` 关联段落。制作工作台围绕镜头展示设计、资产关联、分镜图、候选视频、选用结果及生成任务；草稿画布是独立的自由探索空间，只显示用户放入的文字、参考和独立试生成结果，不展示正式镜头及其结果副本。草稿经用户明确选择后，可确认为镜头资产，或加入某镜头的分镜图/视频版本。`references` 关联已确认资产以及私有预演控制输入，`shot.frames` 保存分镜图，`shot.takes` 保存候选视频。分镜图、视频及预演是制作结果，可继续作为制作控制输入，不自动进入创作素材列表。正式镜头任务指定目标镜头，结果直接归入该镜头；独立资产任务进入资产库候选；无目标镜头的探索任务进入草稿画布。坐标仅服务草稿展示，不再为分镜图额外物化卡片。
+
+Agent 的资料读取与资产读取使用独立工具，并按角色能力提供。对话附件、制作草稿与已引用任务分别维护；发送 Agent 消息不会隐式附带或清空生成草稿。切换工作区时使用相应专业角色作为默认协作者。
 
 界面保存基线与草稿，宿主对最新工程做三方合并：独立字段合并，重叠编辑返回冲突。存储版本阻止乱序通知覆盖新内容；`project-changed` 触发界面刷新。撤销、迟到的生成结果与并发保存都尊重永久删除的素材 ID。
 
@@ -27,13 +31,15 @@ Mstudio 使用 Tauri 2、React 19、TypeScript 和 SQLite。前端维护交互�
 
 ## 工程工具与生成
 
-`domain/operationContract.ts` 定义操作字段与 schema，构建时同时提供给 Rust。角色工具将模型参数转换为领域操作，由 `project_service` 统一执行权限、对象观察、事务与回执。
+`domain/operations.json` 定义操作字段与 schema，前端与 Rust 直接读取同一份数据。角色工具将模型参数转换为领域操作，由 Rust `project_service` 统一执行权限、对象观察、事务与回执。
 
 读取登记本轮实际取得的对象版本。写入检查改变的对象及依赖；解码期间发生的并发修改不会被登记成已读。批次在副本上执行，整批校验通过后原子保存。执行 ID 和回执在同一事务提交，重放同一请求返回原回执，复用 ID 提交不同参数会被拒绝。
 
 生成草稿与开始执行分开：保存的草稿为 `DRAFT`，用户开始后进入 `READY` 队列。缺少名称时显示“未命名”。模型能力和参数来自 `frontend/src/models/config/`，保存的模型配置决定实际输入角色、尺寸、时长及限制。
 
 `production_queue` 跨项目最多同时提交两个任务，上传完成后再次检查取消状态。网络提交前保存 job 占位；有远端请求记录的任务沿用原 job 查询。提交结果不确定时保留 `UNKNOWN`，避免自动重复付费请求。后台 worker 下载全部结果，并通过领域服务写回工程，页面关闭不影响落盘。
+
+生成请求在 Rust 中读取任务、解析模型参数、绑定已上传参考并直接交给供应商适配器。结果命名、状态同步、任务查询和结果恢复同样由 Rust 完成。前端的参数预览与交互草稿使用 TypeScript；宿主不嵌入 JS 引擎，构建也无需执行 JS 来生成后端业务代码。原生规则以迁移前的固定输入输出样例和事务测试验证兼容性。
 
 素材来源按 job 中真实的素材 ID 查询，保留原始 prompt、模型和参考用途。普通任务、素材与委派读取只携带结果及必要元数据；明确编辑 prompt、原样重试或调查生成时才读取历史请求。
 
@@ -45,7 +51,7 @@ Mstudio 使用 Tauri 2、React 19、TypeScript 和 SQLite。前端维护交互�
 
 普通聊天、委派、续接与父任务唤醒共用 `assistant/turn_context.rs`。消息 attribution 保存任务 ID、角色、目标与原始要求。继续任务与新建任务由明确操作区分；工作区和选中对象是上下文，不授予额外权限。
 
-普通新消息读取同任务、同角色最近一个已完成问答；重试与压缩恢复匹配会话。会话按项目、角色、任务和模型路由隔离。`inspect` 支持对象、字段和分页读取。长工具结果卸载后通过 `mstudio_read_result` 分页恢复，Skill 正文完整交给模型。
+普通新消息、重试和压缩继续同一任务的事件派生消息面，保留用户要求、成对工具调用与结果及已持久化的压缩和卸载。会话按项目、角色和任务隔离，模型切换更新请求配置而不丢弃历史。旧版不完整快照首次从任务聊天记录重建文字上下文，后续以持续会话的规范结果为准。变更的动态项目上下文追加，未变则省略。`inspect` 支持对象、字段和分页读取。长工具结果卸载后通过 `mstudio_read_result` 分页恢复，Skill 正文完整交给模型。
 
 工具循环持续到模型正常结束、用户停止、整轮超时或不可恢复错误。工具参数错误返回模型纠正。生成完成、待用户开始和等待远端结果是不同状态；工程回执证明已保存操作，不能证明画面效果。
 
@@ -101,6 +107,7 @@ macOS 通过三个共享内存槽传 BGRA，Metal 纹理在 GPU 完成后复用�
 
 ## 实现参考
 
+- 持续会话以核对时的 DSH 最新 `master` 为目标：[执行循环](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/core/agent-loop/src/agent.ts)、[会话消息面](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/core/session/src/index.ts)、[动态上下文](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/core/agent-loop/src/runtime-context.ts)和[按需压缩](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/compaction/compaction-basic/src/index.ts)。2026-10-26 已复核；其余固定提交链接是子系统的历史实现参考，不代表当前锁定版本。
 - [DSH 工具调度](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/tool-subagent/src/index.ts)与[父任务唤醒](https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/subagent/src/continuation-activation.ts)。
 - [DSH 图片预算](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/packages/llm/llm/src/content.ts)与[图片卸载](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/packages/compaction/compaction-image-offload/src/image-offload.ts)。Mstudio 额外保护尚未消费的新批次。
 - [Anthropic artifact 交接](https://www.anthropic.com/engineering/multi-agent-research-system)、[DSH 压缩](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/compaction)、[DSH 计量](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/llm/token-meter)。

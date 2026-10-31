@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { fixture, model } from "./fixtures.test-helper";
-import { productionItems } from "./items";
+import { shotSources } from "./fixtures.test-helper";
 import { createTask } from "./tasks";
 import {
   requestTask,
@@ -14,7 +14,7 @@ function setup() {
   const p = fixture();
   const task = createTask(
     p,
-    productionItems(p).filter((n) => n.assetId === "a"),
+    shotSources(p).filter((n) => n.assetId === "a"),
   );
   const context: GenerationCommandContext = {
     callId: "call",

@@ -107,47 +107,42 @@ pub fn saved(store: &Store, project: &str, turn: &str) -> Result<Option<Scope>, 
         .transpose()
 }
 
+/// Legacy/audit fallback only; a surviving continuous session is authoritative.
 pub fn history(
     store: &Store,
     project: &str,
     scope: &Scope,
+    current_turn: &str,
 ) -> Result<Vec<history::Message>, String> {
-    // Keep one completed question/answer for follow-ups; older turns stay queryable.
-    let rows = {
-        let db = store.db.lock().unwrap();
-        let mut stmt = db.prepare("SELECT u.id,u.content,u.model,u.payload,u.attribution,a.id,a.content,a.model,a.payload,a.attribution FROM agent_messages u JOIN agent_messages a ON a.project_id=u.project_id AND a.role='assistant' AND json_extract(a.attribution,'$.turnId')=json_extract(u.attribution,'$.turnId') WHERE u.project_id=?1 AND u.role='user' AND json_extract(u.attribution,'$.taskScope.taskId')=?2 AND json_extract(u.attribution,'$.agentId')=?3 AND json_extract(a.attribution,'$.status')='completed' ORDER BY u.id DESC LIMIT 1").map_err(|e|e.to_string())?;
-        stmt.query_map(params![project, scope.task_id, scope.agent_id], |r| {
-            let make = |offset, role: &str| -> rusqlite::Result<history::Message> {
-                let payload: String = r.get(offset + 3)?;
-                let meta: String = r.get(offset + 4)?;
-                Ok(history::Message {
-                    id: r.get(offset)?,
-                    role: role.into(),
-                    content: r.get(offset + 1)?,
-                    model: r.get(offset + 2)?,
-                    payload: serde_json::from_str(&payload).map_err(|e| {
-                        rusqlite::Error::FromSqlConversionFailure(
-                            offset + 3,
-                            rusqlite::types::Type::Text,
-                            Box::new(e),
-                        )
-                    })?,
-                    attribution: Some(serde_json::from_str(&meta).map_err(|e| {
-                        rusqlite::Error::FromSqlConversionFailure(
-                            offset + 4,
-                            rusqlite::types::Type::Text,
-                            Box::new(e),
-                        )
-                    })?),
+    let db = store.db.lock().unwrap();
+    let mut stmt = db.prepare("SELECT id,role,content,model,payload,attribution FROM agent_messages WHERE project_id=?1 AND json_extract(attribution,'$.taskScope.taskId')=?2 AND json_extract(attribution,'$.agentId')=?3 AND json_extract(attribution,'$.turnId')!=?4 AND (role='user' OR json_extract(attribution,'$.status') IN ('completed','waiting')) ORDER BY id").map_err(|e| e.to_string())?;
+    stmt.query_map(
+        params![project, scope.task_id, scope.agent_id, current_turn],
+        |r| {
+            let payload: String = r.get(4)?;
+            let meta: String = r.get(5)?;
+            let parse = |index, raw: &str| {
+                serde_json::from_str(raw).map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        index,
+                        rusqlite::types::Type::Text,
+                        Box::new(e),
+                    )
                 })
             };
-            Ok([make(0, "user")?, make(5, "assistant")?])
-        })
-        .map_err(|e| e.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| e.to_string())?
-    };
-    Ok(rows.into_iter().rev().flatten().collect())
+            Ok(history::Message {
+                id: r.get(0)?,
+                role: r.get(1)?,
+                content: r.get(2)?,
+                model: r.get(3)?,
+                payload: parse(4, &payload)?,
+                attribution: Some(parse(5, &meta)?),
+            })
+        },
+    )
+    .map_err(|e| e.to_string())?
+    .collect::<Result<Vec<_>, _>>()
+    .map_err(|e| e.to_string())
 }
 
 pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
@@ -174,7 +169,7 @@ pub fn snapshot(mut snapshot: Value, scope: &Scope, doc: &Value) -> Value {
         snapshot["tracks"] = json!([]);
     }
     snapshot["task"] = json!({"taskId":scope.task_id,"agentId":scope.agent_id,"targets":scope.targets,"view":scope.view});
-    snapshot["contextPolicy"] = json!({"history":"Fresh context includes only the latest completed exchange, without old tool traces; request earlier history as needed. Current requirements take precedence.","details":"Omission does not mean absence. Use mstudio_read_project for the node directory, mstudio_read_screenplay for paragraphs, mstudio_read_shots for shot design and mstudio_read_nodes for text, note or asset nodes. Establish current target state before editing.","sharedConstraints":"requirements/creation preview project constraints with length limits; when truncated=true, use mstudio_read_creation for full constraints."});
+    snapshot["contextPolicy"] = json!({"history":"Continue the task session, including prior user requirements, tool results and durable compaction. Earlier assistant proposals are not user decisions. Current requirements take precedence; history can retrieve details no longer retained after compaction.","details":"Omission does not mean absence. Use mstudio_read_project for the node directory, mstudio_read_screenplay for paragraphs, mstudio_read_shots for shot design and mstudio_read_nodes for text, note or asset nodes. Establish current target state before editing.","sharedConstraints":"requirements/creation preview project constraints with length limits; when truncated=true, use mstudio_read_creation for full constraints."});
     snapshot["constraintsTruncated"] = json!(
         doc["brief"].as_str().unwrap_or("").chars().count() > 2000
             || ["intent", "essential", "preserve"]

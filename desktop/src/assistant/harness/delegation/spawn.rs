@@ -118,7 +118,7 @@ async fn run(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &refs,
     );
     let mut reference = vec![super::super::context_source::snapshot(reference)];
-    super::super::context_boundary::refresh_snapshot(&mut messages, &mut reference);
+    super::super::context_boundary::refresh_snapshot(&messages, &mut reference);
     messages.extend(reference);
     let source = json!({"kind":"agent-message", "senderAgentId":parent.profile.id,
         "senderTurnId":parent.turn, "originalRequest":original, "artifacts":sources.manifest,

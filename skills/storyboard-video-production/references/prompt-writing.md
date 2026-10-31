@@ -4,15 +4,14 @@ Establish the shot in model-independent terms first, then adapt supported refere
 
 Use for video prompts, production handoff and confused-action diagnosis. Adapt mode, fields and syntax to the actual model. Describe the current shot; method guidance does not establish a tested generation result.
 
-## Three different units
+## One shot, one task
 
-A script section describes a dramatic change; an editorial shot describes one viewpoint; a generation group describes a model call and occupies one Mstudio production shot record. They need not map one-to-one.
+A script section describes a dramatic change; an editorial shot describes one viewpoint; a video task generates one continuous shot. They are not a montage.
 
-Each Mstudio video generation unit must be at least 5 seconds, or the selected model's higher minimum, and remain within its supported maximum. Meet that length by grouping adjacent, narratively compatible short shots into one generation task. Preserve every internal shot's complete description, exact duration, viewpoint, action and designed cut in the actual submitted prompt. Sub-second shots are valid; there is no 1-second floor. Read those relative time ranges and the unit span from the saved shot design; return structural grouping changes through the coordinator to direction. Use one task anchored to the unit, rather than a separate task for each internal shot. Preserve the selected continuous-take or cut intent; do not invent cuts to fill a group.
+Each Mstudio video task generates **one single continuous shot**: one camera setup, one action, one viewpoint. Its `shot.duration` is the intended screen duration. Do not group adjacent editorial shots into one task. Do not put internal cut points or a scene beat sheet into a single-shot prompt. A temporal board belongs to one shot; if its panels are different shots, split them into separate shot records/tasks before generating.
 
-Combine a short final group with a compatible neighboring unit when the model's maximum allows. If the complete requested passage is itself shorter than 5 seconds or must remain isolated, generate a source of at least 5 seconds with clearly separated editing handles outside the intended passage. Keep the internal action timings and final-film runtime unchanged; do not add story events, repeats, slow motion or prolonged internal shots to fill the source. Reference-input minimum lengths are separate service constraints, not this output-unit rule.
+If a shot is shorter than the selected model's minimum, generate at the model minimum and trim in editing. Do not pad, slow, stretch or merge it with a neighboring shot. One task per shot; editing owns the cut and all on-screen text.
 
-Only when the selected model or input route cannot retain the planned cuts or required references, identify that concrete limitation and generate the affected parts separately with editing handles, handing the intended cut map to editing. Do not use this exception merely because the incoming plan has separate short records. Generation length does not determine selected edit length. Do not slow actions or lengthen the finished film to consume the minimum. Preserve this mapping in existing text and source ranges, without inventing schema fields.
 
 ## Design before conversion
 

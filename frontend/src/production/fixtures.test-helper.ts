@@ -79,3 +79,55 @@ export const model = (
   params: {},
   capabilities: capabilities ?? libraryDeclaration("fal", endpoint),
 });
+
+export function draftFixture() {
+  const p = fixture();
+  p.nodes.push(
+    ...p.assets
+      .filter((a) => a.id !== "reference")
+      .map((a, i) => ({
+        id: `draft-${a.id}`,
+        kind: "asset" as const,
+        assetId: a.id,
+        title: a.name,
+        text: "",
+        x: i * 300,
+        y: 0,
+      })),
+  );
+  return p;
+}
+export function shotSources(
+  p: ReturnType<typeof fixture>,
+): import("./types").DraftItem[] {
+  return p.nodes
+    .filter((n) => n.shot)
+    .flatMap((n) => [
+      ...(n.shot?.frames ?? []).map((f) => ({
+        key: `frame:${n.id}:${f.assetId}`,
+        kind: "image" as const,
+        nodeId: n.id,
+        ownerId: n.id,
+        assetId: f.assetId,
+        title: f.title,
+        text: "",
+        x: 0,
+        y: 0,
+        width: 250,
+        height: 300,
+      })),
+      ...(n.shot?.takes ?? []).map((f) => ({
+        key: `take:${n.id}:${f.assetId}`,
+        kind: "video" as const,
+        nodeId: n.id,
+        ownerId: n.id,
+        assetId: f.assetId,
+        title: f.assetId,
+        text: "",
+        x: 0,
+        y: 0,
+        width: 250,
+        height: 300,
+      })),
+    ]);
+}

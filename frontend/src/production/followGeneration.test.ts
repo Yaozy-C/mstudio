@@ -19,7 +19,7 @@ test("image continuation resets an earlier video choice and uses the generated i
   followGeneration(canvas, task, "video");
   followGeneration(canvas, task);
   expect(calls).toEqual([
-    ["video", ["result"]],
-    ["image", ["result"]],
+    ["video", [], [{ kind: "asset", id: "img" }]],
+    ["image", [], [{ kind: "asset", id: "img" }]],
   ]);
 });

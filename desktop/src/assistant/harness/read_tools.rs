@@ -35,8 +35,20 @@ const SPECS: &[(&str, &str, &[&str], &[&str])] = &[
     ),
     (
         "assets",
-        "List reviewed story assets by default. For ordinary material explicitly needed by this request, use usage=material/all or exact ids. These categories share one project library. Read selected picture versions through the stable asset IDs. Default reads omit generation provenance. Only for an explicit prompt edit, unchanged retry or generation investigation, select fields=[source] for the original job, prompt, model and inputs. Use read_image to view pixels. Use textOffset to page the source prompt. Do not infer task keys from filenames.",
-        &["ids", "usage", "fields", "offset", "textOffset"],
+        "List confirmed shot assets (characters, locations, props) and their selected reference versions. These are the reusable production references for shot design and generation. Exact IDs can also retrieve known storyboard/video outputs. Materials and assets have independent memberships: a source can remain a material while also being a confirmed shot asset. Raw materials without a confirmed asset cannot be shot-generation references. Descriptions express design intent, not verified pixels. Follow description.nextTextOffset with textOffset. Full provenance fields=[source] is only for prompt editing, unchanged retries or investigation.",
+        &["ids", "fields", "offset", "textOffset"],
+        &[],
+    ),
+    (
+        "materials",
+        "Read source materials for creative development and screenwriting: product facts, brand documents, source photos and reference films. Available when the material-read tool is assigned (creative, assets and writer by default). Research membership survives establishing a confirmed shot asset; the same media may appear in both libraries. The assets specialist may use them to establish a named character/location/prop asset; that asset must be confirmed before a shot can use it. For shot generation, require confirmed asset membership; a source may already share the same ID with a confirmed asset. Collection alone does not confirm a candidate. Exact ids and fields=[description] narrow this read.",
+        &["ids", "fields", "offset", "textOffset"],
+        &[],
+    ),
+    (
+        "concepts",
+        "Read the project concept board. Each card contains title, oneLine, participant, want, ritual, evidence, reframe, risk, optional cost and status. Read titles/status first, then exact cards by id.",
+        &["ids", "fields", "offset", "textOffset"],
         &[],
     ),
     (
@@ -100,8 +112,9 @@ fn fields(kind: &str) -> &'static [&'static str] {
             "sound",
         ],
         "nodes" => &["title", "text", "assetId", "resultAssetId", "references"],
-        "assets" => &[
+        "assets" | "materials" => &[
             "name",
+            "description",
             "kind",
             "usage",
             "duration",
@@ -110,6 +123,8 @@ fn fields(kind: &str) -> &'static [&'static str] {
             "imageId",
             "imageVersionId",
             "imageVersionCount",
+            "inMaterials",
+            "assetStatus",
             "source",
         ],
         "clips" => &[
@@ -132,6 +147,20 @@ fn fields(kind: &str) -> &'static [&'static str] {
         ],
         "tracks" => &["title", "kind", "muted", "hidden"],
         "captions" => &["text", "start", "end", "style"],
+        "concepts" => &[
+            "title",
+            "oneLine",
+            "truth",
+            "brandIdea",
+            "participant",
+            "want",
+            "ritual",
+            "evidence",
+            "reframe",
+            "risk",
+            "cost",
+            "status",
+        ],
         "generation" => &[
             "title",
             "status",
@@ -219,12 +248,26 @@ pub fn decode(name: &str, mut args: Value) -> Option<Value> {
         "creation" => {
             object.insert("section".into(), json!("creation"));
         }
+        "materials" => {
+            object.insert("section".into(), json!("assets"));
+            object.insert("usage".into(), json!("material"));
+        }
         _ => {
             object.insert("section".into(), json!(kind));
             if kind == "assets" && !object.contains_key("fields") && !object.contains_key("ids") {
                 object.insert(
                     "fields".into(),
-                    json!(["name", "kind", "usage", "duration", "width", "height"]),
+                    json!([
+                        "name",
+                        "description",
+                        "kind",
+                        "usage",
+                        "inMaterials",
+                        "assetStatus",
+                        "duration",
+                        "width",
+                        "height"
+                    ]),
                 );
             }
         }

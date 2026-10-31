@@ -5,7 +5,6 @@ import { GenerationSettings } from "./GenerationSettings";
 import { useState } from "react";
 import { TaskPromptEditor } from "./TaskPromptEditor";
 import { canEditOriginal, canRegenerate } from "./taskEditing";
-import { UnknownRunRecovery } from "./UnknownRunRecovery";
 import { normalizeError } from "../errors/catalog";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { runProgress } from "./runProgress";
@@ -24,6 +23,7 @@ import type { Project } from "../model";
 import type { ProductionTask } from "./types";
 import type { ProductionController } from "./useProduction";
 import { canvasSnapshot, inputFor, roleLabels } from "./request";
+import { MediaPreview } from "../workspace/MediaPreview";
 import { GenerationResults } from "./GenerationResults";
 import type { ReactNode } from "react";
 import { ActionButton } from "../ui/ActionButton";
@@ -50,6 +50,7 @@ export function GenerationRun({
   ) => void;
 }) {
   useLanguage();
+  const [preview, setPreview] = useState<string | null>(null);
   const [startError, setStartError] = useState("");
   const { busy, check } = useRunActions(task, canvas, project.id);
   const pending = pendingRun(task);
@@ -116,18 +117,10 @@ export function GenerationRun({
                     type="button"
                     key={r.key}
                     title={`${a?.name ?? t("素材已移除")} · ${t(roleLabels[r.role])}`}
-                    aria-label={t("在画布查看 {v0}", {
-                      v0: a?.name ?? t("素材"),
+                    aria-label={t("预览 {name}", {
+                      name: a?.name ?? t("素材"),
                     })}
-                    onClick={() => {
-                      const item = canvas.items.find(
-                        (n) => n.assetId === r.assetId,
-                      );
-                      if (item) {
-                        canvas.choose([item.key]);
-                        canvas.focusShot(item.ownerId);
-                      }
-                    }}
+                    onClick={() => setPreview(r.assetId)}
                   >
                     {a?.preview && (
                       <img src={mediaUrl(a.preview)} alt={a.name} />
@@ -145,6 +138,10 @@ export function GenerationRun({
         )}
         <TaskPromptEditor key={task.key} task={task} canvas={canvas} />
       </div>
+      <MediaPreview
+        asset={project.assets.find((a) => a.id === preview)}
+        close={() => setPreview(null)}
+      />
       <footer className="run-footer">
         {editable && !models.length && (
           <ActionButton icon={PlugsConnected} onClick={settings}>
@@ -162,7 +159,9 @@ export function GenerationRun({
         <ErrorNotice
           error={task.error}
           fallback={
-            task.status === "FAILED" ? "GENERATION_FAILED" : "JOB_SYNC_FAILED"
+            ["FAILED", "UNKNOWN"].includes(task.status ?? "")
+              ? "GENERATION_FAILED"
+              : "JOB_SYNC_FAILED"
           }
           taskId={task.requestId ?? task.jobId}
         >
@@ -225,18 +224,13 @@ export function GenerationRun({
               <span>{t(runProgress(task))}</span>
               {task.error && (
                 <small>
-                  {task.status === "UNKNOWN"
-                    ? t(" · 核查原任务后再继续")
-                    : task.trackingPaused
-                      ? t(" · 自动重试已暂停，请处理后手动重试")
-                      : t(" · 正在重试原任务，不会重新生成")}
+                  {task.trackingPaused
+                    ? t(" · 自动重试已暂停，请处理后手动重试")
+                    : t(" · 正在重试原任务，不会重新生成")}
                 </small>
               )}
             </div>
-            {task.status === "UNKNOWN" && (
-              <UnknownRunRecovery task={task} canvas={canvas} />
-            )}
-            {task.jobId && (task.status === "UNKNOWN" || task.error) && (
+            {task.jobId && task.error && (
               <ActionButton
                 icon={ArrowClockwise}
                 busy={busy}

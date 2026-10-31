@@ -1,27 +1,25 @@
 import { expect, test } from "bun:test";
-import { fixture } from "./fixtures.test-helper";
-import { productionItems } from "./items";
+import { draftFixture as fixture } from "./fixtures.test-helper";
+import { draftItems } from "./items";
 import { referencedItems } from "./referencedItems";
 import { createTask } from "./tasks";
 
 test("reference borders follow the composer inputs, including removal", () => {
   const p = fixture();
-  const items = productionItems(p);
+  const items = draftItems(p);
   const frame = items.find((item) => item.assetId === "a")!;
   const task = createTask(p, [frame]);
   expect(referencedItems(p, items, task, []).has(frame.key)).toBe(true);
   task.inputs = task.inputs.filter((input) => input.key !== frame.key);
   const referenced = referencedItems(p, items, task, []);
   expect(referenced.has(frame.key)).toBe(false);
-  expect(
-    referenced.has(items.find((item) => item.kind === "script")!.key),
-  ).toBe(false);
+  expect(items.some((item) => item.kind === "script")).toBe(false);
   expect(items.some((item) => item.assetId === "reference")).toBe(false);
 });
 
 test("a canvas reference marks its card rather than unrelated copies", () => {
   const p = fixture();
-  const items = productionItems(p);
+  const items = draftItems(p);
   const frame = items.find((item) => item.assetId === "a")!;
   const copy = { ...frame, key: "another-shot-frame", ownerId: "another-shot" };
   const task = createTask(p, [frame]);
@@ -40,7 +38,7 @@ test("@ references resolve asset and text cards without canvas selection", () =>
     x: 0,
     y: 0,
   });
-  const items = productionItems(p);
+  const items = draftItems(p);
   const frame = items.find((item) => item.assetId === "a")!;
   const note = items.find((item) => item.nodeId === "note")!;
   expect(
@@ -54,7 +52,7 @@ test("@ references resolve asset and text cards without canvas selection", () =>
 
 test("an active canvas task excludes attachments outside the active composer", () => {
   const p = fixture();
-  const items = productionItems(p);
+  const items = draftItems(p);
   const frame = items.find((item) => item.assetId === "a")!;
   const other = items.find((item) => item.assetId === "b")!;
   const task = createTask(p, [frame]);

@@ -1,7 +1,6 @@
 import { deleteAssets } from "./deleteAssets";
 import { listen } from "@tauri-apps/api/event";
 import { contentChanged } from "./projectRevision";
-import { materializeFrameCards } from "../production/frameCards";
 import { flushPendingEdits } from "./pendingEdits";
 import { registerExitSave } from "./useSafeExit";
 import {
@@ -17,7 +16,7 @@ import { restoreProject } from "./restoreProject";
 import { createProjectAutosave } from "./projectAutosave";
 export function useProject(initial: Project) {
   const [project, setProject] = useState(() =>
-    deleteAssets(materializeFrameCards(initial), initial.removedAssetIds ?? []),
+    deleteAssets(initial, initial.removedAssetIds ?? []),
   );
   const [autosave] = useState(() =>
     createProjectAutosave(initial, saveProject, (next, remote) => {
@@ -76,12 +75,10 @@ export function useProject(initial: Project) {
       const previous = latest.current;
       const value = fn(previous);
       if (value === previous) return;
-      const materialized = materializeFrameCards(value);
       const next = {
-        ...materialized,
+        ...value,
         revision:
-          (previous.revision || 0) +
-          Number(contentChanged(previous, materialized)),
+          (previous.revision || 0) + Number(contentChanged(previous, value)),
       };
       latest.current = next;
       autosave.update(next);

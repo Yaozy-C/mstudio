@@ -135,8 +135,8 @@ export function NodeEditor({
         </button>
         {asset && (
           <button
-            aria-label={t("将素材加入时间线")}
-            title={t("加入时间线")}
+            aria-label={t("用于正式镜头")}
+            title={t("用于正式镜头")}
             onClick={onAdd}
           >
             <ArrowDown />

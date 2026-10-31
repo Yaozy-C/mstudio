@@ -77,6 +77,7 @@ fn validate(service: &ServiceConnection) -> Result<()> {
         ensure!(service.endpoint == "codex://local", "Codex 使用本机服务");
         return Ok(());
     }
+
     let url = reqwest::Url::parse(&service.endpoint)?;
     ensure!(
         url.scheme() == "https"

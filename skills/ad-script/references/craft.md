@@ -18,7 +18,7 @@ For the selected premise, invent the action, response, observation or audible ev
 
 A speaker's attempt to do something can be the passage: convince, conduct, confess, present, interrupt, misunderstand or play along. The human situation can supply action and entertainment while carrying the product message; every gesture need not demonstrate a feature.
 
-Develop the selected performance premise into specific behaviour and exact wording, while maintaining its product message. Do not add random business around a sales paragraph. A quiet observation or a direct explanation may suit another concept better than a staged sketch.
+Develop the selected performance premise into specific behaviour and exact wording, while maintaining its product message. Do not add random business around a sales paragraph. A quiet observation or a direct explanation still needs a scene with a protagonist and a product action; a direct explanation is not a scene.
 
 ## Compose a perceptible experience
 

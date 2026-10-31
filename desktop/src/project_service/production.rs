@@ -1,6 +1,6 @@
 //! Project task state is the durable outbox. Claiming and updating a task are
 //! database transactions; a view opening/closing never dispatches a paid job.
-use super::{load, persist, runtime};
+use super::{domain, load, persist};
 use crate::database::Store;
 use anyhow::{Context, Result, ensure};
 use rusqlite::Connection;
@@ -69,20 +69,7 @@ pub fn prepare(
     uploaded: Option<Value>,
 ) -> Result<Value> {
     let document = load(&*store.conn()?, project)?;
-    let mut input =
-        json!({"action":"prepare_generation","document":document,"taskKey":key,"model":model});
-    if let Some(uploaded) = uploaded {
-        input["uploaded"] = uploaded;
-    }
-    let value = runtime::execute(input)?;
-    ensure!(
-        value.get("error").is_none(),
-        "{}",
-        value["error"]
-            .as_str()
-            .unwrap_or("Generation preflight failed")
-    );
-    Ok(value)
+    super::generation_prepare::prepare(&document, key, model, uploaded)
 }
 pub fn sync_job(db: &Connection, job: &Value) -> Result<Option<crate::app_error::AppError>> {
     if !job["shot"]["canvasGeneration"].is_object() {
@@ -90,7 +77,7 @@ pub fn sync_job(db: &Connection, job: &Value) -> Result<Option<crate::app_error:
     }
     let project = job["projectId"].as_str().context("Missing project")?;
     let before = load(db, project)?;
-    let result = runtime::execute(json!({"action":"recover_jobs","document":before,"jobs":[job]}))?;
+    let result = domain::execute(json!({"action":"recover_jobs","document":before,"jobs":[job]}))?;
     ensure!(
         result.get("error").is_none(),
         "{}",
@@ -123,7 +110,7 @@ pub fn sync_tracking(db: &Connection, job: &Value) -> Result<()> {
     }
     let project = job["projectId"].as_str().context("Missing project")?;
     let before = load(db, project)?;
-    let result = runtime::execute(json!({"action":"job_tracking","document":before,"job":job}))?;
+    let result = domain::execute(json!({"action":"job_tracking","document":before,"job":job}))?;
     ensure!(
         result["document"].is_object() && result.get("error").is_none(),
         "Job tracking reconciliation failed: {}",

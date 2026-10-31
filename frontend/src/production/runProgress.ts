@@ -15,6 +15,5 @@ export function runProgress(task: ProductionTask): string {
     return task.progress?.message || "生成服务正在处理，等待返回结果";
   if (task.status === "RECEIVING")
     return "生成已完成，正在导入图片或视频到项目";
-  if (task.status === "UNKNOWN") return "正在核实提交结果，请勿重复提交";
   return "等待执行";
 }

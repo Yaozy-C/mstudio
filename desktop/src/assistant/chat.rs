@@ -126,7 +126,6 @@ async fn execute(
     )
     .map_err(|e| e.to_string())?;
     let profile = model.profile;
-    let previous = super::task_context::history(&store, project_id, scope)?;
     let skill_setting = profiles::skill_setting(&agent_profile);
     let doc = crate::project_service::load(&store.db.lock().unwrap(), project_id)
         .map_err(|e| e.to_string())?;
@@ -173,7 +172,7 @@ async fn execute(
     }
     snapshot = super::task_context::snapshot(snapshot, scope, &doc);
     let input = context::assemble_with_budget(
-        &previous,
+        &[],
         payload.clone(),
         snapshot.clone(),
         profile.input_budget().unwrap_or(12_000).min(12_000),

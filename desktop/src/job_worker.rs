@@ -25,7 +25,7 @@ fn work(job: &Value) -> Option<Work> {
         return Some(Work::Reconcile);
     }
     match job["status"].as_str()? {
-        "IN_QUEUE" | "IN_PROGRESS" | "CANCEL_REQUESTED" | "UNKNOWN" | "SUBMITTING"
+        "IN_QUEUE" | "IN_PROGRESS" | "CANCEL_REQUESTED" | "SUBMITTING"
             if job["requestId"].as_str().is_some_and(|s| !s.is_empty()) =>
         {
             Some(Work::Status)

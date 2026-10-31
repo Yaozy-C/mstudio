@@ -7,18 +7,12 @@ export function followGeneration(
   kind?: "image" | "video",
 ) {
   if (!canvas) return;
-  const result = task.resultAssetId
-    ? (canvas.items.find(
-        (n) => n.assetId === task.resultAssetId && n.ownerId === task.ownerId,
-      ) ?? canvas.items.find((n) => n.assetId === task.resultAssetId))
-    : undefined;
-  const inputs = task.inputs.flatMap((r) => {
-    const item = canvas.items.find(
-      (n) => n.key === r.key || (r.assetId && n.assetId === r.assetId),
-    );
-    return item ? [item.key] : [];
-  });
-  const next = canvas.act(kind ?? task.kind, result ? [result.key] : inputs);
-  canvas.focusShot(task.ownerId);
+  const refs = task.resultAssetId
+    ? [{ kind: "asset" as const, id: task.resultAssetId }]
+    : task.inputs.flatMap((r) =>
+        r.assetId ? [{ kind: "asset" as const, id: r.assetId }] : [],
+      );
+  const next = canvas.act(kind ?? task.kind, [], refs);
+  canvas.focusShot(task.targetNodeId ?? task.ownerId);
   return next;
 }

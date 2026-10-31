@@ -192,7 +192,7 @@ pub fn user_refs(original: &Value) -> Vec<Reference> {
 
 pub fn source_message(task: &str, agent: &str, turn: &str, manifest: &Value) -> String {
     format!(
-        "Delegated work from Agent {agent} in turn {turn} (not an original user statement):\n{task}\n\nHost-resolved source artifacts:\n{manifest}\nUse result media and necessary task metadata, not old generation prompts. Read fields=[prompt] from a generation task or fields=[source] from an asset only when the user explicitly requests a prompt edit, unchanged retry or generation investigation. Read actual pixels when needed for the current decision; do not restart completed research. Relay descriptions do not replace saved artifacts. Product geometry comes from original product images, never an agent's interpretation or a generated image's source prompt."
+        "Delegated work from Agent {agent} in turn {turn} (not an original user statement):\n{task}\n\nHost-resolved source artifacts:\n{manifest}\nUse result media and necessary task metadata, not old generation prompts. Use only the recipient's current assigned readers. Read fields=[prompt] from a generation task or fields=[source] from an asset only when the user explicitly requests a prompt edit, unchanged retry or generation investigation. Read actual pixels when needed for the current decision; do not restart completed research. Relay descriptions do not replace saved artifacts. Product geometry comes from original product images, never an agent's interpretation or a generated image's source prompt."
     )
 }
 
@@ -237,7 +237,7 @@ pub fn message(
         task,
         source["senderAgentId"].as_str().unwrap_or(""),
         source["senderTurnId"].as_str().unwrap_or(""),
-        &source["artifacts"],
+        &crate::assistant::resource_context::manifest(doc, role, &source["artifacts"]),
     ));
     text.push_str(&format!(
         "\nRequired generation task receipts: {}",

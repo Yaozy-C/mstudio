@@ -10,7 +10,7 @@ import type { Project, Reference } from "../model";
 import { referenceGroups } from "./referenceGroups";
 export type UploadedReference = {
   assetId: string;
-  kind: "image" | "video";
+  kind: "image" | "video" | "audio";
   url: string;
   role?: ModelInput["role"];
   sourceAssetIds?: string[];
@@ -74,10 +74,16 @@ export function requestPrompt(
   refs: Reference[],
 ) {
   let images = 0,
-    videos = 0;
+    videos = 0,
+    audios = 0;
   const roles = referenceGroups(project, refs).flatMap((group) => {
     const kind = referenceAsset(project, refs[group[0]].assetId)?.kind;
-    const label = kind === "image" ? `Image ${++images}` : `Video ${++videos}`;
+    const label =
+      kind === "image"
+        ? `Image ${++images}`
+        : kind === "video"
+          ? `Video ${++videos}`
+          : `Audio ${++audios}`;
     let offset = 0;
     return group.map((index) => {
       const r = refs[index];

@@ -1,32 +1,37 @@
-//! Refresh host-owned state only at turn boundaries; session/start journals the result.
+//! Derive a continuing surface and admit changed host context at the boundary.
 use super::session::project_snapshot_text;
 use rig_core::message::Message;
 
-pub fn refresh_snapshot(history: &mut Vec<Message>, additions: &mut Vec<Message>) {
+pub fn refresh_snapshot(history: &[Message], additions: &mut Vec<Message>) {
     let Some(index) = additions
         .iter()
         .position(|m| project_snapshot_text(m).is_some())
     else {
         return;
     };
-    let fresh = additions.remove(index);
-    let old: Vec<_> = history
-        .iter()
-        .enumerate()
-        .filter(|(_, m)| project_snapshot_text(m).is_some())
-        .map(|(i, _)| i)
-        .collect();
-    let Some(&keep) = old.last() else {
-        additions.insert(index, fresh);
-        return;
+    let last = history.iter().rev().find_map(project_snapshot_text);
+    // As in DSH RuntimeContextProjection, unchanged context emits nothing;
+    // changed context is appended instead of rewriting historical evidence.
+    if last == project_snapshot_text(&additions[index]) {
+        additions.remove(index);
+    }
+}
+
+pub fn continue_messages(history: Vec<Message>, fresh: &[Message], resume: bool) -> Vec<Message> {
+    let mut messages = match fresh.first() {
+        Some(Message::System { content }) => super::handoff::messages(content.clone(), &history),
+        _ => history,
     };
-    // Identical snapshots keep their exact message and position (cache-friendly).
-    if project_snapshot_text(&history[keep]) != project_snapshot_text(&fresh) {
-        history[keep] = fresh;
+    // Fresh input is system + optional fallback chat + snapshot + current user.
+    // Only the snapshot and new input enter an already-restored session.
+    let mut additions = fresh.iter().rev().take(2).cloned().collect::<Vec<_>>();
+    additions.reverse();
+    if resume {
+        additions.pop(); // The interrupted input is already in the durable log.
     }
-    for &index in old[..old.len() - 1].iter().rev() {
-        history.remove(index);
-    }
+    refresh_snapshot(&messages, &mut additions);
+    messages.extend(additions);
+    messages
 }
 
 #[cfg(test)]
@@ -38,7 +43,7 @@ mod tests {
         super::super::context_source::snapshot(json!({"revision":rev}))
     }
     #[test]
-    fn boundary_replaces_only_snapshots_and_roundtrips_through_journal() {
+    fn boundary_appends_changed_snapshots_and_roundtrips_through_journal() {
         let mut history = vec![
             Message::System {
                 content: "rules".into(),
@@ -49,14 +54,14 @@ mod tests {
             snapshot(2),
         ];
         let mut additions = vec![snapshot(3), Message::user("改为1.5秒")];
-        refresh_snapshot(&mut history, &mut additions);
+        refresh_snapshot(&history, &mut additions);
         history.extend(additions);
         assert_eq!(
             history
                 .iter()
                 .filter(|m| project_snapshot_text(m).is_some())
                 .count(),
-            1
+            3
         );
         assert!(
             serde_json::to_string(&history)
@@ -82,7 +87,7 @@ mod tests {
         );
         let before = serde_json::to_value(&history).unwrap();
         let mut next = vec![snapshot(3)];
-        refresh_snapshot(&mut history, &mut next);
+        refresh_snapshot(&history, &mut next);
         assert!(next.is_empty());
         assert_eq!(serde_json::to_value(&history).unwrap(), before);
         drop(store);

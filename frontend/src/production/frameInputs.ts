@@ -1,3 +1,7 @@
+import {
+  generationOptions,
+  validateGenerationOption,
+} from "../models/generationOptions";
 import { isSelectableAsset } from "../workspace/assetLibrary";
 import type { Project } from "../model";
 import { mediaAdapter } from "../models/adapters";
@@ -44,9 +48,25 @@ export function selectMediaModel(
 ): Partial<ProductionTask> {
   const roles = frameRoles(model);
   const inputs = task.inputs;
+  const parameters = task.parameters ? { ...task.parameters } : undefined;
+  if (parameters?.options) {
+    const declared = generationOptions(model);
+    parameters.options = Object.fromEntries(
+      Object.entries(parameters.options).filter(([key, value]) => {
+        const option = declared.find((o) => o.key === key);
+        if (!option) return false;
+        try {
+          validateGenerationOption(option, value);
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+    );
+  }
   return {
     modelId: model.id,
-    parameters: {},
+    parameters,
     inputs,
     mode: roles.length
       ? inputs.some((r) => r.role === "last-frame")

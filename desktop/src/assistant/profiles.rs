@@ -3,12 +3,14 @@ use anyhow::{Result, ensure};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, State};
 
-pub const TOOL_IDS: [&str; 12] = [
+pub const TOOL_IDS: [&str; 14] = [
     "agent-delegate",
     "project-read",
     "media-read",
+    "material-read",
     "project-brief",
     "project-script",
+    "project-concepts",
     "project-shots",
     "project-frames",
     "project-assets",
@@ -49,18 +51,38 @@ pub fn defaults(_: &str) -> AgentProfile {
     builtins().remove(0)
 }
 pub fn read(db: &rusqlite::Connection) -> Result<Vec<AgentProfile>> {
-    match crate::models::setting(db, "agents")? {
-        Some(raw) => Ok(serde_json::from_str(&raw)?),
-        None => {
-            let defaults = builtins();
-            db.execute(
-                "INSERT INTO settings(key,value) VALUES('agents',?1)",
-                [serde_json::to_string(&defaults)?],
-            )?;
-            Ok(defaults)
+    let raw = crate::models::setting(db, "agents")?;
+    let mut agents: Vec<AgentProfile> = match &raw {
+        Some(raw) => serde_json::from_str(raw)?,
+        None => builtins(),
+    };
+    // Upgrade the tool assignment once; later user edits remain authoritative.
+    let migrate = crate::models::setting(db, "material-reader-tools-v1")?.is_none();
+    if migrate {
+        for agent in &mut agents {
+            if matches!(agent.id.as_str(), "concept" | "assets" | "writer")
+                && agent.tool_ids.iter().any(|id| id == "project-read")
+                && !agent.tool_ids.iter().any(|id| id == "material-read")
+            {
+                agent.tool_ids.push("material-read".into());
+                agent.revision += 1;
+            }
         }
     }
+    let prompt_changed = super::resource_prompt_upgrade::apply(db, &mut agents, &builtins())?;
+    if raw.is_none() || migrate || prompt_changed {
+        db.execute("INSERT INTO settings(key,value) VALUES('agents',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            [serde_json::to_string(&agents)?])?;
+    }
+    if migrate {
+        db.execute(
+            "INSERT INTO settings(key,value) VALUES('material-reader-tools-v1','1')",
+            [],
+        )?;
+    }
+    Ok(agents)
 }
+
 pub fn resolve(db: &rusqlite::Connection, id: Option<&str>) -> Result<AgentProfile> {
     let profile = read(db)?
         .into_iter()
@@ -109,7 +131,9 @@ pub fn validate(profile: &AgentProfile) -> Result<()> {
         !profile
             .tool_ids
             .iter()
-            .any(|id| (id.starts_with("project-") && id != "project-read") || id == "media-read")
+            .any(|id| (id.starts_with("project-") && id != "project-read")
+                || id == "media-read"
+                || id == "material-read")
             || profile.tool_ids.contains(&"project-read".into()),
         "项目编辑及媒体读取工具依赖读取项目工具"
     );

@@ -57,11 +57,9 @@ export type ProductionState = {
   models?: GenerationPreferences;
   positions?: Record<string, { x: number; y: number }>;
   drafts?: Record<string, ProductionTask>;
-  hidden?: string[];
   viewport?: Project["viewport"];
 };
-export type ProductionItem = {
-  usages?: { shotId: string; title: string }[];
+export type DraftItem = {
   key: string;
   kind: "script" | "reference" | "image" | "video" | "note";
   title: string;

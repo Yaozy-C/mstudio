@@ -17,6 +17,7 @@ const base = (): ProductionTask => ({
 });
 test("replacing first frame preserves last frame and submission roles regardless of order", () => {
   const p = fixture();
+  p.assets.find((a) => a.id === "reference")!.usage = "asset";
   const task = {
     ...base(),
     ...setFrameInput(base(), p, "first-frame", {

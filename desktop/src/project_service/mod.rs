@@ -1,7 +1,11 @@
+pub(crate) mod asset_roles;
 mod asset_sources;
 mod dependencies;
 #[cfg(test)]
 mod dependency_tests;
+pub mod domain;
+mod generation_parameters;
+mod generation_prepare;
 pub mod generation_wait;
 pub(crate) mod observations;
 pub mod production;
@@ -10,7 +14,6 @@ mod production_recovery;
 #[cfg(test)]
 mod production_recovery_tests;
 pub mod receipts;
-pub mod runtime;
 use crate::{
     assistant::{permissions, profiles::AgentProfile},
     database::Store,
@@ -54,7 +57,7 @@ pub fn persist(db: &Connection, before: &Value, after: &Value) -> Result<()> {
         .as_array()
         .is_some_and(|ids| !ids.is_empty())
     {
-        runtime::execute(json!({"action":"prune_deleted","document":after,"current":before}))?["document"].clone()
+        domain::execute(json!({"action":"prune_deleted","document":after,"current":before}))?["document"].clone()
     } else {
         after.clone()
     };
@@ -102,8 +105,8 @@ pub fn execute(
     let before = load(&tx, project)?;
     if args["action"] == "inspect" {
         let mut result =
-            runtime::execute(json!({"action":"inspect","document":before,"args":args}))?;
-        asset_sources::enrich(&tx, project, &args, &mut result)?;
+            domain::execute(json!({"action":"inspect","document":before,"args":args}))?;
+        asset_sources::enrich(&tx, project, &before, &args, &mut result)?;
         observations::remember(
             &tx,
             project,
@@ -127,7 +130,7 @@ pub fn execute(
     let context = (!generation.is_null()).then(
         || json!({"callId":execution,"turnId":generation["turnId"],"turn":generation["turn"]}),
     );
-    let value = runtime::execute(
+    let value = domain::execute(
         json!({"action":"edit","document":before,"args":args,"context":context,"executionId":execution,"models":models}),
     )?;
     if value.get("error").is_some() {

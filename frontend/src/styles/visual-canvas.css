@@ -18,60 +18,11 @@
 .production-workspace .canvas-card.referenced {
   border-color: var(--reference-color);
 }
-.production-workspace .canvas-card.script {
-  padding: 20px;
-  border-radius: 5px;
-}
-.production-workspace .canvas-card.script .card-title {
-  padding-bottom: 12px;
-  font-size: 18px;
-  line-height: 26px;
-  font-weight: 600;
-}
 .production-workspace .canvas-card:not(.script) .card-title {
   font-size: var(--ui-caption);
   font-weight: 500;
   line-height: 18px;
   color: var(--desk-muted);
-}
-.production-workspace .shot-card-duration {
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--desk-bg);
-  color: var(--desk-text);
-  font-family: var(--ui-mono);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 500;
-}
-.production-workspace .shot-card-chapter {
-  color: var(--desk-muted);
-  font-size: var(--ui-caption);
-  line-height: 20px;
-}
-.production-workspace .shot-card-sections section {
-  margin-top: 16px;
-}
-.production-workspace .shot-card-sections h3 {
-  margin-bottom: 6px;
-  color: var(--desk-muted);
-  font-size: var(--ui-caption);
-  font-weight: 500;
-  line-height: 18px;
-}
-.production-workspace .shot-card-sections p {
-  color: var(--desk-text);
-  font-size: var(--ui-body);
-  line-height: 24px;
-}
-.production-workspace
-  .canvas-world[data-detail="summary"]
-  .shot-card-sections
-  p {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-  overflow: hidden;
 }
 .production-workspace .card-video,
 .production-workspace .canvas-card > img {

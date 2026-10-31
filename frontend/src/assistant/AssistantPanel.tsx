@@ -33,6 +33,7 @@ import { useAgents } from "../agents/catalog";
 import { useAgentModel } from "../models/useAgentModel";
 import type { Attachment } from "./attachments";
 import type { AttachmentDraft } from "./useAttachments";
+import { workflowAgent } from "./workflowAgents";
 type Props = {
   visible?: boolean;
   canvas?: ProductionController;
@@ -65,7 +66,13 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
   const [sent, setSent] = useState<Record<string, Attachment[]>>({});
   const [error, setError] = useState("");
   const agents = useAgents();
-  const [agentId, setAgentId] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string | null>(() =>
+    workflowAgent(props.work?.view),
+  );
+  useEffect(
+    () => setAgentId(workflowAgent(props.work?.view)),
+    [props.work?.view],
+  );
   const effectiveAgent = agentId ?? "coordinator";
   const chosen = agents.agents.find((a) => a.id === effectiveAgent);
   const agentRef = useRef(agentId);
@@ -135,7 +142,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
   if (props.visible === false) return null;
   const attachments = taskAttachments(
     props.project,
-    props.canvas?.task,
+    props.canvas?.composerMode === "agent" ? undefined : props.canvas?.task,
     props.draft.items,
     props.canvas?.referencedTask,
   );
@@ -177,6 +184,7 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
             {!props.canvas?.runs.length && (
               <ThreadPrimitive.Empty>
                 <AgentWelcome
+                  view={props.work?.view}
                   hasContent={props.project.nodes.length > 0}
                   editingFrame={false}
                   connected={models.available && agentReady}
@@ -197,13 +205,14 @@ function Chat(props: Props & { history: ThreadMessageLike[] }) {
               variant="conversation"
             />
           )}
-          {props.canvas?.task?.error && (
-            <ErrorNotice
-              error={props.canvas.task.error}
-              fallback="VALIDATION_FAILED"
-              variant="conversation"
-            />
-          )}
+          {props.canvas?.composerMode !== "agent" &&
+            props.canvas?.task?.error && (
+              <ErrorNotice
+                error={props.canvas.task.error}
+                fallback="VALIDATION_FAILED"
+                variant="conversation"
+              />
+            )}
           {props.draft.notice && (
             <p className="agent-attachment-hint" role="status">
               {props.draft.notice}

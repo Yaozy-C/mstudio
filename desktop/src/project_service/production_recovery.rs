@@ -1,6 +1,6 @@
 //! Decode only reconciliation metadata. Domain work runs without the database lock;
 //! a short compare-and-swap transaction protects concurrent UI and worker changes.
-use super::{load, persist, runtime};
+use super::{domain, load, persist};
 use crate::database::Store;
 use anyhow::{Context, Result, ensure};
 use rusqlite::Connection;
@@ -56,6 +56,14 @@ fn reconcile(before: &Snapshot) -> Result<(Value, Vec<JobFailure>)> {
     let mut document = before.document.clone();
     if let Some(tasks) = document["production"]["drafts"].as_object_mut() {
         for task in tasks.values_mut() {
+            if task["status"] == "UNKNOWN" {
+                let details = task["error"].as_str().unwrap_or("未收到生成服务的提交确认");
+                let error = serde_json::from_str::<crate::app_error::AppError>(details)
+                    .map(anyhow::Error::new)
+                    .unwrap_or_else(|_| anyhow::anyhow!("{details}"));
+                crate::job_recovery::submission_failed(task, &error);
+                task["trackingPaused"] = json!(false);
+            }
             if matches!(task["status"].as_str(), Some("UPLOADING" | "SUBMITTING"))
                 && !task["submissionId"]
                     .as_str()
@@ -79,8 +87,7 @@ fn reconcile(before: &Snapshot) -> Result<(Value, Vec<JobFailure>)> {
     if jobs.is_empty() {
         return Ok((document, Vec::new()));
     }
-    let result =
-        runtime::execute(json!({"action":"recover_jobs","document":document,"jobs":jobs}))?;
+    let result = domain::execute(json!({"action":"recover_jobs","document":document,"jobs":jobs}))?;
     ensure!(
         result["document"].is_object() && result.get("error").is_none(),
         "Job recovery failed: {}",

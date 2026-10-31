@@ -19,10 +19,15 @@ export function directTask(
     turnId: `direct:${id}`,
     createdAt: Date.now(),
     kind: draft.kind,
+    generationPurpose: draft.generationPurpose,
+    targetNodeId: draft.targetNodeId ?? draft.ownerId,
     mode: draft.mode,
     modelId: model.id,
-    ownerId: undefined,
-    position: draft.position ?? resultPlacement(project, draft),
+    ownerId: draft.targetNodeId ?? draft.ownerId,
+    position:
+      draft.targetNodeId || draft.ownerId || draft.generationPurpose === "asset"
+        ? undefined
+        : (draft.position ?? resultPlacement(project, draft)),
     prompt: draft.prompt.trim(),
     instruction: draft.prompt.trim(),
     parameters: structuredClone(draft.parameters),

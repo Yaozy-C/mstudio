@@ -5,13 +5,8 @@ import { pendingRun, runStatuses } from "./useRunActions";
 
 function runStatusKind(task: ProductionTask): StatusKind {
   if (task.status === "COMPLETED") return "success";
-  if (task.status === "FAILED") return "error";
-  if (
-    task.trackingPaused ||
-    task.status === "UNKNOWN" ||
-    task.status === "CANCELLED"
-  )
-    return "paused";
+  if (task.status === "FAILED" || task.status === "UNKNOWN") return "error";
+  if (task.trackingPaused || task.status === "CANCELLED") return "paused";
   return pendingRun(task) ? "loading" : "info";
 }
 export function RunStatus({ task }: { task: ProductionTask }) {
@@ -19,10 +14,10 @@ export function RunStatus({ task }: { task: ProductionTask }) {
   return (
     <span className="run-status" data-kind={kind} role="status">
       <StatusIcon kind={kind} size={14} />
-      {task.trackingPaused
-        ? t("状态同步已暂停")
-        : task.status === "UNKNOWN"
-          ? t("待核查")
+      {kind === "error"
+        ? t("生成失败")
+        : task.trackingPaused
+          ? t("状态同步已暂停")
           : t(runStatuses[task.status ?? ""] ?? "") || t("待开始")}
     </span>
   );

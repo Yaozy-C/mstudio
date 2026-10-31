@@ -14,7 +14,10 @@ function continuation(task: ProductionTask, hasResults: boolean): Continuation {
       action: "read_details_on_request",
       trigger: "new_user_request",
     };
-  if (task.trackingPaused)
+  if (
+    task.trackingPaused &&
+    !["UNKNOWN", "FAILED", "CANCELLED"].includes(task.status ?? "")
+  )
     return {
       state: "waiting_user",
       action: "resume_tracking",
@@ -29,11 +32,6 @@ function continuation(task: ProductionTask, hasResults: boolean): Continuation {
         trigger: "user_confirmation",
       };
     case "UNKNOWN":
-      return {
-        state: "waiting_user",
-        action: "resolve_unknown_submission",
-        trigger: "user_action",
-      };
     case "FAILED":
     case "CANCELLED":
       return {
@@ -88,7 +86,7 @@ export function taskOutcome(task: ProductionTask) {
     kind: task.kind,
     modelId: task.modelId,
     parameters: task.parameters,
-    status: task.status ?? "DRAFT",
+    status: task.status === "UNKNOWN" ? "FAILED" : (task.status ?? "DRAFT"),
     archived: !!task.hiddenFromList,
     resultAssetIds,
     error: task.error,

@@ -1,6 +1,6 @@
 # Creative relationships for advertising premises
 
-Use these relationships to open possibilities within the current assignment. They are optional ways of connecting product material and audience experience, not story templates, required beats or evidence of performance. Work from accessible project material; Mstudio has no live search.
+Use these relationships to open possibilities within the current assignment. They are optional ways of finding material within the [entry document](../SKILL.md)'s required scene workflow. Every study must be a one-scene event with a protagonist, a product action and a turn; a world, a montage or a theme is not a concept. They do not waive its 8–12 rough studies, three developed directions, product-removal and brand-replacement tests, truth, brand idea, or reframe field. A format (ASMR, POV, pack-with-me, three-ways) is a treatment, not a concept. Explicit user scope takes precedence. They are not evidence of performance. Work from accessible project material; Mstudio has no live search.
 
 ## A quality changes meaning in context
 
@@ -32,4 +32,4 @@ Discover both the invention and its product meaning while the premise is rough. 
 
 ## Method basis and limits
 
-[IDEO's brainstorming practice](https://www.ideou.com/blogs/inspiration/7-simple-rules-of-brainstorming) separates producing rough ideas from early criticism. Its [analogous-inspiration exercise](https://www.ideou.com/blogs/inspiration/activity-explore-analogous-inspiration) examines behavior behind a shared experience to generate new possibilities. These are creative-development methods, not advertising-performance evidence. The relationships above are working interpretations; no fixed concept count, genre or workflow follows from them.
+[IDEO's brainstorming practice](https://www.ideou.com/blogs/inspiration/7-simple-rules-of-brainstorming) separates producing rough ideas from early criticism. Its [analogous-inspiration exercise](https://www.ideou.com/blogs/inspiration/activity-explore-analogous-inspiration) examines behavior behind a shared experience to generate new possibilities. These are creative-development methods, not advertising-performance evidence. The relationships above are working interpretations. Research does not establish the board's candidate count or prove performance; the entry document supplies the application workflow and required card fields.

@@ -1,0 +1,1933 @@
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "add_node",
+          "description": "Operation discriminator; must be exactly add_node."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["text", "shot", "note", "asset", "screenplay"]
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 24000,
+          "description": "Node body; for a shot, action/staging notes. Video/image prompt drafts belong in shot.prompt/shot.framePrompt, not here."
+        },
+        "assetId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "resultAssetId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "screenplay": {
+          "type": "object",
+          "properties": {
+            "removeParagraphIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "minItems": 0,
+              "maxItems": 200
+            },
+            "paragraphOrder": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "minItems": 0,
+              "maxItems": 200
+            },
+            "script": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "action": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "onScreenText": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "dialogue": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "sound": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "duration": {
+                    "type": "number",
+                    "minimum": 0.01,
+                    "maximum": 3600
+                  }
+                },
+                "required": ["id"],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "description": "Screenplay changes, including script paragraphs; not shot fields."
+        },
+        "shot": {
+          "type": "object",
+          "properties": {
+            "screenplayId": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Existing screenplay node ID that owns this shot."
+            },
+            "scriptId": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Existing paragraph ID inside shot.screenplayId; not a screenplay or shot ID."
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999,
+              "description": "Shot sequence number within its screenplay, starting at 1."
+            },
+            "duration": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 3600,
+              "description": "Editorial shot length in seconds. This is distinct from request_generation.parameters.duration, which is the generated source clip length and must satisfy the selected model."
+            },
+            "dialogue": {
+              "type": "string",
+              "maxLength": 24000,
+              "description": "Spoken dialogue for this shot."
+            },
+            "frames": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "assetId": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "maxLength": 12000
+                  }
+                },
+                "required": ["assetId", "title"],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 50
+            },
+            "framePrompt": {
+              "type": "string",
+              "maxLength": 12000,
+              "description": "Image prompt draft saved on the shot. Write inside shot: {\"shot\":{\"framePrompt\":\"Complete still-image prompt\"}}. Saving does not generate an image."
+            },
+            "prompt": {
+              "type": "string",
+              "maxLength": 12000,
+              "description": "Video prompt draft saved on the shot. Write inside shot: {\"shot\":{\"prompt\":\"Complete video prompt\"}}. Saving does not generate a video. For request_generation or update_generation, the task prompt field is text."
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "description": "Nested shot fields; use only the properties listed here for this role. Prompt drafts belong inside this object, not at the operation top level. Omitted fields are preserved."
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": ["op", "id", "kind", "title"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "update_node",
+          "description": "Update an existing node. Fields are siblings of op/id except shot-specific fields, which must be nested in shot. Saves content only."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "expectedKind": {
+          "type": "string",
+          "enum": ["text", "shot", "note", "asset", "screenplay"]
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 24000,
+          "description": "Node body; for a shot, action/staging notes. Video/image prompt drafts belong in shot.prompt/shot.framePrompt, not here."
+        },
+        "assetId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "resultAssetId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "screenplay": {
+          "type": "object",
+          "properties": {
+            "removeParagraphIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "minItems": 0,
+              "maxItems": 200
+            },
+            "paragraphOrder": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "minItems": 0,
+              "maxItems": 200
+            },
+            "script": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "action": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "onScreenText": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "dialogue": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "sound": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "duration": {
+                    "type": "number",
+                    "minimum": 0.01,
+                    "maximum": 3600
+                  }
+                },
+                "required": ["id"],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "description": "Screenplay changes, including script paragraphs; not shot fields."
+        },
+        "shot": {
+          "type": "object",
+          "properties": {
+            "screenplayId": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Existing screenplay node ID that owns this shot."
+            },
+            "scriptId": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Existing paragraph ID inside shot.screenplayId; not a screenplay or shot ID."
+            },
+            "order": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999,
+              "description": "Shot sequence number within its screenplay, starting at 1."
+            },
+            "duration": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 3600,
+              "description": "Editorial shot length in seconds. This is distinct from request_generation.parameters.duration, which is the generated source clip length and must satisfy the selected model."
+            },
+            "dialogue": {
+              "type": "string",
+              "maxLength": 24000,
+              "description": "Spoken dialogue for this shot."
+            },
+            "frames": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "assetId": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 24000
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "maxLength": 12000
+                  }
+                },
+                "required": ["assetId", "title"],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 50
+            },
+            "framePrompt": {
+              "type": "string",
+              "maxLength": 12000,
+              "description": "Image prompt draft saved on the shot. Write inside shot: {\"shot\":{\"framePrompt\":\"Complete still-image prompt\"}}. Saving does not generate an image."
+            },
+            "prompt": {
+              "type": "string",
+              "maxLength": 12000,
+              "description": "Video prompt draft saved on the shot. Write inside shot: {\"shot\":{\"prompt\":\"Complete video prompt\"}}. Saving does not generate a video. For request_generation or update_generation, the task prompt field is text."
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "description": "Nested shot fields; use only the properties listed here for this role. Prompt drafts belong inside this object, not at the operation top level. Omitted fields are preserved."
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "remove_node",
+          "description": "Operation discriminator; must be exactly remove_node."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "expectedKind": {
+          "type": "string",
+          "enum": ["text", "shot", "note", "asset", "screenplay"]
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_brief",
+          "description": "Operation discriminator; must be exactly set_brief."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 24000
+        }
+      },
+      "required": ["op", "text"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "choose_take",
+          "description": "Operation discriminator; must be exactly choose_take."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "assetId": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["op", "id", "assetId"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "assemble_screenplay",
+          "description": "Operation discriminator; must be exactly assemble_screenplay."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt."
+        },
+        "op": {
+          "type": "string",
+          "const": "request_generation",
+          "description": "Create a new generation task. Supply the complete prompt in text, output kind in mediaKind, and only that kind’s parameter fields. Shots use confirmed assets and existing production outputs. Ordinary research materials are allowed for standalone draft experiments and standalone asset-generation tasks; shot tasks require confirmed assets or shot outputs. Omitted settings inherit the referenced task or selected model settings."
+        },
+        "mediaModelId": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Media model ID from mstudio_models. Omit to use the user's selected model. If this turn already has a selected model, an explicit ID must match it; this field cannot override that choice."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 12000,
+          "minLength": 1,
+          "description": "Complete final prompt sent to the generation model. For request_generation this field is text, not prompt or shot.prompt. The host does not append the shot draft or script automatically."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Existing target shot ID. Omission inherits the referenced task’s shot when present; otherwise creates an exploratory task on the draft canvas. For a reusable standalone image use generationPurpose=asset, which forbids id."
+        },
+        "canvasTaskKey": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Exact canvas task key referenced by this turn; omit when targeting only a shot. Not a shot ID or a new arbitrary task name."
+        },
+        "mediaKind": {
+          "type": "string",
+          "const": "image",
+          "description": "Generate a still image. This branch has no mode or duration."
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "aspectRatio": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's aspectRatio enum from mstudio_models."
+            },
+            "resolution": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's case-sensitive resolution enum from mstudio_models."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean"]
+              },
+              "description": "Per-task generation options. Use only keys and values declared by the selected model in mstudio_models.parameters.options."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "Existing project media asset ID."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400,
+                "description": "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role."
+              },
+              "role": {
+                "type": "string",
+                "enum": ["edit", "reference"],
+                "description": "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration."
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim end in seconds, greater than start and within the source video duration."
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false,
+            "description": "One existing media input. Example: {\"assetId\":\"existing-image-id\",\"role\":\"reference\",\"purpose\":\"Preserve product geometry visible in the top view\"}. Replace the example ID with an actual project asset ID."
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["op", "text", "mediaKind"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt."
+        },
+        "op": {
+          "type": "string",
+          "const": "request_generation",
+          "description": "Create a new generation task. Supply the complete prompt in text, output kind in mediaKind, and only that kind’s parameter fields. Shots use confirmed assets and existing production outputs. Ordinary research materials are allowed for standalone draft experiments and standalone asset-generation tasks; shot tasks require confirmed assets or shot outputs. Omitted settings inherit the referenced task or selected model settings."
+        },
+        "mediaModelId": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Media model ID from mstudio_models. Omit to use the user's selected model. If this turn already has a selected model, an explicit ID must match it; this field cannot override that choice."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 12000,
+          "minLength": 1,
+          "description": "Complete final prompt sent to the generation model. For request_generation this field is text, not prompt or shot.prompt. The host does not append the shot draft or script automatically."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Existing target shot ID. Omission inherits the referenced task’s shot when present; otherwise creates an exploratory task on the draft canvas. For a reusable standalone image use generationPurpose=asset, which forbids id."
+        },
+        "canvasTaskKey": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Exact canvas task key referenced by this turn; omit when targeting only a shot. Not a shot ID or a new arbitrary task name."
+        },
+        "mediaKind": {
+          "type": "string",
+          "const": "video",
+          "description": "Generate a video clip; the reference arrangement is specified separately by mode."
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "aspectRatio": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's aspectRatio enum from mstudio_models."
+            },
+            "resolution": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's case-sensitive resolution enum from mstudio_models."
+            },
+            "duration": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": 0,
+              "description": "Seconds within the selected model's duration bounds from mstudio_models. Editorial duration is separate."
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean"]
+              },
+              "description": "Per-task generation options. Use only keys and values declared by the selected model in mstudio_models.parameters.options."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["single", "ends", "multi", "mixed"],
+          "description": "Video input arrangement: single = first-frame image; ends = first-frame and last-frame images; multi = reference images; mixed = image/video references. Match references[].role: for ordinary reference images use mode=multi with role=reference; reference is a role, never a mode. For bookend images use mode=ends with first-frame and last-frame roles. Omission inherits the referenced task arrangement; without a source task it defaults to single. When supplying reference images explicitly, also set mode=multi. This is not media kind or output count."
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "Existing project media asset ID."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400,
+                "description": "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "reference",
+                  "first-frame",
+                  "last-frame",
+                  "video-reference"
+                ],
+                "description": "Video input mode: reference = image guidance; first-frame = starting image; last-frame = ending image; video-reference = reference video. Omission defaults to reference for images and video-reference for videos. Select only modes supported by the chosen model; describe visual use in purpose."
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration."
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim end in seconds, greater than start and within the source video duration."
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false,
+            "description": "One existing media input. Example: {\"assetId\":\"existing-image-id\",\"role\":\"reference\",\"purpose\":\"Preserve product geometry visible in the top view\"}. Replace the example ID with an actual project asset ID."
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["op", "text", "mediaKind"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt."
+        },
+        "op": {
+          "type": "string",
+          "const": "request_generation",
+          "description": "Create a new generation task. Supply the complete prompt in text, output kind in mediaKind, and only that kind’s parameter fields. Shots use confirmed assets and existing production outputs. Ordinary research materials are allowed for standalone draft experiments and standalone asset-generation tasks; shot tasks require confirmed assets or shot outputs. Omitted settings inherit the referenced task or selected model settings."
+        },
+        "mediaModelId": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Media model ID from mstudio_models. Omit to use the user's selected model. If this turn already has a selected model, an explicit ID must match it; this field cannot override that choice."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 12000,
+          "minLength": 1,
+          "description": "Complete final prompt sent to the generation model. For request_generation this field is text, not prompt or shot.prompt. The host does not append the shot draft or script automatically."
+        },
+        "mediaKind": {
+          "type": "string",
+          "const": "image",
+          "description": "Generate a still image. This branch has no mode or duration."
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "aspectRatio": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's aspectRatio enum from mstudio_models."
+            },
+            "resolution": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Use the selected model's case-sensitive resolution enum from mstudio_models."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean"]
+              },
+              "description": "Per-task generation options. Use only keys and values declared by the selected model in mstudio_models.parameters.options."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "generationPurpose": {
+          "type": "string",
+          "const": "asset",
+          "description": "Standalone reusable reference asset, without a shot or canvas task target."
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "Existing project media asset ID."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400,
+                "description": "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role."
+              },
+              "role": {
+                "type": "string",
+                "enum": ["edit", "reference"],
+                "description": "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration."
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim end in seconds, greater than start and within the source video duration."
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false,
+            "description": "One existing media input. Example: {\"assetId\":\"existing-image-id\",\"role\":\"reference\",\"purpose\":\"Preserve product geometry visible in the top view\"}. Replace the example ID with an actual project asset ID."
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "op",
+        "text",
+        "mediaKind",
+        "generationPurpose",
+        "references"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "archive_generation",
+          "description": "Operation discriminator; must be exactly archive_generation."
+        },
+        "taskKey": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "true removes the task from current work while preserving history; false restores it. Running or uncertain tasks must stop first."
+        }
+      },
+      "required": ["op", "taskKey", "archived"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "update_generation",
+          "description": "Replace an existing generation task prompt using taskKey and text. Does not submit generation."
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt."
+        },
+        "taskKey": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Existing generation task key from a task receipt or inspection; not a shot ID."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 12000,
+          "minLength": 1,
+          "description": "Optional complete replacement prompt for this generation task. Omission preserves the existing prompt. This operation accepts text, not prompt or shot. Saves only; does not regenerate or modify the shot draft."
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "Existing project media asset ID."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400,
+                "description": "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "edit",
+                  "reference",
+                  "first-frame",
+                  "last-frame",
+                  "video-reference"
+                ],
+                "description": "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration."
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim end in seconds, greater than start and within the source video duration."
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false,
+            "description": "One existing media input. Example: {\"assetId\":\"existing-image-id\",\"role\":\"reference\",\"purpose\":\"Preserve product geometry visible in the top view\"}. Replace the example ID with an actual project asset ID."
+          },
+          "minItems": 0,
+          "description": "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references. Saves only; does not regenerate. Supply title, text or references."
+        }
+      },
+      "required": ["op", "taskKey"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "regenerate_generation",
+          "description": "Operation discriminator; must be exactly regenerate_generation."
+        },
+        "title": {
+          "type": "string",
+          "description": "Optional display name; omitted or blank uses the default unnamed label. Name of the actual deliverable: asset name and view/light state, or shot name and output type. Examples: Xiaoman - character, Beach - sunset, D01 Beach arrival - storyboard, D01 Beach arrival - video. Do not copy a generic user instruction. Display metadata only; not part of the generation prompt."
+        },
+        "taskKey": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 12000,
+          "minLength": 1,
+          "description": "Optional complete replacement prompt. Omission preserves the existing prompt."
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100,
+                "description": "Existing project media asset ID."
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400,
+                "description": "What to preserve or use from this asset, e.g. product geometry, top view or character identity. Put descriptive text here, never in role."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "edit",
+                  "reference",
+                  "first-frame",
+                  "last-frame",
+                  "video-reference"
+                ],
+                "description": "Image input mode: reference = visual guidance; edit = source image to modify. Omission defaults to reference. Describe identity, geometry, viewpoint or composition in purpose."
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim start in seconds; only meaningful for video-reference. Not output clip duration."
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Reference video trim end in seconds, greater than start and within the source video duration."
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false,
+            "description": "One existing media input. Example: {\"assetId\":\"existing-image-id\",\"role\":\"reference\",\"purpose\":\"Preserve product geometry visible in the top view\"}. Replace the example ID with an actual project asset ID."
+          },
+          "minItems": 0,
+          "description": "Optional complete replacement reference list; [] clears media inputs. Omission preserves existing references."
+        }
+      },
+      "required": ["op", "taskKey"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_creation",
+          "description": "Operation discriminator; must be exactly set_creation."
+        },
+        "intent": {
+          "type": "string",
+          "maxLength": 6000
+        },
+        "essential": {
+          "type": "string",
+          "maxLength": 6000
+        },
+        "preserve": {
+          "type": "string",
+          "maxLength": 6000
+        },
+        "stage": {
+          "type": "string",
+          "enum": ["planning", "production", "editing"]
+        }
+      },
+      "required": ["op"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_references",
+          "description": "Operation discriminator; must be exactly set_references."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "referenceMode": {
+          "type": "string",
+          "enum": ["upsert", "replace"]
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "purpose": {
+                "type": "string",
+                "maxLength": 400
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": ["assetId", "purpose"],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["op", "id", "referenceMode", "references"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_references",
+          "description": "Operation discriminator; must be exactly set_references."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "referenceMode": {
+          "type": "string",
+          "enum": ["remove"]
+        },
+        "assetIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["op", "id", "referenceMode", "assetIds"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "append_clip",
+          "description": "Operation discriminator; must be exactly append_clip."
+        },
+        "assetId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "trimIn": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trimOut": {
+          "type": "number",
+          "minimum": 0
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 4
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trackId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scale": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "fadeIn": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fadeOut": {
+          "type": "number",
+          "minimum": 0
+        },
+        "visual": {
+          "type": ["object", "null"],
+          "properties": {
+            "brightness": {
+              "type": "number",
+              "minimum": -0.5,
+              "maximum": 0.5
+            },
+            "contrast": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5
+            },
+            "saturation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": -1,
+              "maximum": 1
+            },
+            "effect": {
+              "type": "string",
+              "enum": ["none", "grayscale", "sepia", "blur", "vignette"]
+            },
+            "grade": {
+              "type": ["object", "null"],
+              "properties": {
+                "temperature": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "tint": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "contrast": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "saturation": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "vibrance": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "shadows": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "highlights": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "whites": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "blacks": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "balance": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "exposure": {
+                  "type": "number",
+                  "minimum": -3,
+                  "maximum": 3
+                },
+                "hsl": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 100
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 8,
+                  "maxItems": 8
+                },
+                "curves": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "wheels": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 360
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": ["op", "assetId"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "update_clip",
+          "description": "Operation discriminator; must be exactly update_clip."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "trimIn": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trimOut": {
+          "type": "number",
+          "minimum": 0
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 4
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trackId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "scale": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "fadeIn": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fadeOut": {
+          "type": "number",
+          "minimum": 0
+        },
+        "visual": {
+          "type": ["object", "null"],
+          "properties": {
+            "brightness": {
+              "type": "number",
+              "minimum": -0.5,
+              "maximum": 0.5
+            },
+            "contrast": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 1.5
+            },
+            "saturation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": -1,
+              "maximum": 1
+            },
+            "effect": {
+              "type": "string",
+              "enum": ["none", "grayscale", "sepia", "blur", "vignette"]
+            },
+            "grade": {
+              "type": ["object", "null"],
+              "properties": {
+                "temperature": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "tint": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "contrast": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "saturation": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "vibrance": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "shadows": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "highlights": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "whites": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "blacks": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "balance": {
+                  "type": "number",
+                  "minimum": -100,
+                  "maximum": 100
+                },
+                "exposure": {
+                  "type": "number",
+                  "minimum": -3,
+                  "maximum": 3
+                },
+                "hsl": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 100
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 8,
+                  "maxItems": 8
+                },
+                "curves": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "wheels": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 360
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "move_clip",
+          "description": "Operation discriminator; must be exactly move_clip."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trackId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "allowOverlap": {
+          "type": "boolean"
+        }
+      },
+      "required": ["op", "id", "start"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "retime_clip",
+          "description": "Operation discriminator; must be exactly retime_clip."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 4
+        },
+        "ripple": {
+          "type": "boolean"
+        },
+        "allowOverlap": {
+          "type": "boolean"
+        }
+      },
+      "required": ["op", "id", "speed"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "slip_clip",
+          "description": "Operation discriminator; must be exactly slip_clip."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sourceOffset": {
+          "type": "number"
+        }
+      },
+      "required": ["op", "id", "sourceOffset"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "remove_clip",
+          "description": "Operation discriminator; must be exactly remove_clip."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_transition",
+          "description": "Operation discriminator; must be exactly set_transition."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "fromClipId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "kind": {
+          "type": ["string", "null"],
+          "enum": [
+            "fade",
+            "fadeblack",
+            "fadewhite",
+            "wipeleft",
+            "wiperight",
+            "slideleft",
+            "slideright",
+            "smoothleft",
+            "smoothright",
+            "circleopen",
+            "circleclose",
+            "dissolve",
+            "custom",
+            null
+          ]
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 3
+        },
+        "design": {
+          "type": "object",
+          "properties": {
+            "mask": {
+              "type": "string",
+              "enum": ["uniform", "linear", "radial"]
+            },
+            "angle": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "center": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "feather": {
+              "type": "number",
+              "minimum": 0.001,
+              "maximum": 1
+            },
+            "curve": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 2,
+              "maxItems": 8
+            },
+            "outgoingZoom": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 4
+            },
+            "incomingZoom": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 4
+            },
+            "outgoingOffset": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "incomingOffset": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": ["op", "id", "fromClipId", "kind"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "add_track",
+          "description": "Operation discriminator; must be exactly add_track."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "trackKind": {
+          "type": "string",
+          "enum": ["video", "audio"]
+        }
+      },
+      "required": ["op", "title", "trackKind"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "update_track",
+          "description": "Operation discriminator; must be exactly update_track."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "add_caption",
+          "description": "Operation discriminator; must be exactly add_caption."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["op", "text", "start", "end"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "update_caption",
+          "description": "Operation discriminator; must be exactly update_caption."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "remove_caption",
+          "description": "Operation discriminator; must be exactly remove_caption."
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "save_concepts",
+          "description": "Operation discriminator; must be exactly save_concepts."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["merge", "replace"],
+          "description": "merge upserts concepts by id; replace rewrites the board."
+        },
+        "concepts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "oneLine": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "truth": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "brandIdea": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "participant": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "want": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "ritual": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "evidence": {
+                "type": "string",
+                "maxLength": 1200
+              },
+              "reframe": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "risk": {
+                "type": "string",
+                "maxLength": 600
+              },
+              "cost": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "status": {
+                "type": "string",
+                "enum": ["rough", "developed", "selected", "killed"]
+              },
+              "createdAt": {
+                "type": "number",
+                "minimum": 0
+              },
+              "updatedAt": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["op", "concepts"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "remove_concepts",
+          "description": "Operation discriminator; must be exactly remove_concepts."
+        },
+        "ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "description": "Exact concept card IDs the user requested to delete. Other cards and project content are preserved."
+        }
+      },
+      "required": ["op", "ids"],
+      "additionalProperties": false
+    }
+  ]
+}

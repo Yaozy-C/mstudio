@@ -120,6 +120,140 @@ fn batched_sources_obey_page_budget_and_report_ambiguous_provenance() {
     );
     cleanup(store);
 }
+
+#[test]
+fn story_asset_descriptions_reuse_the_original_output_prompt_and_page_without_provenance() {
+    let (store, mut doc, profile) = super::super::tests::fixture();
+    doc["assets"] = json!([
+        {"id":"old","name":"Character","kind":"image","usage":"asset"},
+        {"id":"new","name":"Character revised","kind":"image","usage":"asset"},
+        {"id":"import","name":"Product source","kind":"image","usage":"asset"},
+        {"id":"material","name":"Ordinary material","kind":"image"},
+    ]);
+    doc["production"] = json!({"drafts":{"task":{
+        "key":"task","kind":"image","mode":"multi","inputs":[],
+        "prompt":"An unsent edit must not replace the saved description",
+        "modelId":"","resultAssetId":"new"
+    }}});
+    crate::projects::write_document(&store, doc, false).unwrap();
+    let original = "人物原始设计".repeat(1000);
+    {
+        let db = store.db.lock().unwrap();
+        for (id, asset, prompt) in [
+            ("old-job", "old", original.as_str()),
+            ("new-job", "new", "Revised outfit"),
+            ("material-job", "material", "Ordinary material description"),
+        ] {
+            let mut job = json!({"asset":{"id":asset},"input":{
+                "prompt":prompt,"image":"DO_NOT_LOAD","api_key":"SECRET"
+            },"providerConfig":{"authorization":"SECRET"},
+                "shot":{"canvasGeneration":{"task":{"key":"task","prompt":"UNSENT"}}}});
+            db.execute("INSERT INTO jobs VALUES(?1,'p','{}')", [id])
+                .unwrap();
+            blobs::pack(&db, blobs::Owner::Job(id), &mut job).unwrap();
+            db.execute(
+                "UPDATE jobs SET data=?2 WHERE id=?1",
+                params![id, job.to_string()],
+            )
+            .unwrap();
+        }
+    }
+    let read = |extra: Value| {
+        let mut args = json!({"action":"inspect","section":"assets"});
+        args.as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        super::super::execute(&store, &profile, "p", "turn", "descriptions", args).unwrap()
+    };
+    let first = read(json!({}));
+    assert_eq!(
+        first["items"][0]["description"]["origin"],
+        "generationPrompt"
+    );
+    assert_eq!(first["items"][1]["description"]["text"], "Revised outfit");
+    assert!(first["items"][2]["description"].is_null());
+    assert_eq!(first["items"].as_array().unwrap().len(), 3);
+    assert!(first["items"][0].get("source").is_none());
+    for excluded in ["SECRET", "DO_NOT_LOAD", "UNSENT", "An unsent edit"] {
+        assert!(!first.to_string().contains(excluded));
+    }
+    let mut full = String::new();
+    let mut offset = 0;
+    loop {
+        let page = read(json!({"ids":["old"],"fields":["description"],"textOffset":offset}));
+        let description = &page["items"][0]["description"];
+        full.push_str(description["text"].as_str().unwrap());
+        match description["nextTextOffset"].as_u64() {
+            Some(next) => {
+                assert!(next > offset);
+                offset = next;
+            }
+            None => break,
+        }
+    }
+    assert_eq!(full, original);
+    let metadata = read(json!({"ids":["old"],"fields":["name","width"]}));
+    assert!(metadata["items"][0].get("description").is_none());
+    let material = read(json!({"ids":["material"]}));
+    assert!(material["items"][0].get("description").is_none());
+    let explicit = read(json!({"ids":["material"],"fields":["description"]}));
+    assert_eq!(
+        explicit["items"][0]["description"]["text"],
+        "Ordinary material description"
+    );
+    cleanup(store);
+}
+
+#[test]
+fn default_story_descriptions_keep_the_asset_page_bounded() {
+    let (store, mut doc, profile) = super::super::tests::fixture();
+    doc["assets"] =
+        json!((0..12).map(|i|
+        json!({"id":format!("a{i}"),"name":"Character","kind":"image","usage":"asset"})
+    ).collect::<Vec<_>>());
+    crate::projects::write_document(&store, doc, false).unwrap();
+    {
+        let db = store.db.lock().unwrap();
+        for i in 0..12 {
+            db.execute(
+                "INSERT INTO jobs VALUES(?1,'p',?2)",
+                params![
+                    format!("j{i}"),
+                    json!({"asset":{"id":format!("a{i}")},"input":{"prompt":"文".repeat(2000)}})
+                        .to_string()
+                ],
+            )
+            .unwrap();
+        }
+    }
+    let mut offset = 0;
+    let mut ids = Vec::new();
+    loop {
+        let page = super::super::execute(
+            &store,
+            &profile,
+            "p",
+            "turn",
+            "descriptions",
+            json!({"action":"inspect","section":"assets","offset":offset}),
+        )
+        .unwrap();
+        assert!(page.to_string().len() < 12500);
+        for item in page["items"].as_array().unwrap() {
+            assert_eq!(item["description"]["nextTextOffset"], 1000);
+            ids.push(item["id"].clone());
+        }
+        match page["nextOffset"].as_u64() {
+            Some(next) => {
+                assert!(next > offset);
+                offset = next;
+            }
+            None => break,
+        }
+    }
+    assert_eq!(ids.len(), 12);
+    cleanup(store);
+}
 fn cleanup(store: Store) {
     let root = store.root.clone();
     drop(store);

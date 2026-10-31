@@ -25,3 +25,25 @@ test("sent chat carries referenced result media without either task's old prompt
   result.resolve({ text: "完成", status: "completed" });
   await sending;
 });
+
+test("Agent dialogue never reads or consumes the media-generation draft", async () => {
+  const f = fixture(true);
+  f.context.canvas!.task!.inputs = [
+    {
+      key: "b",
+      assetId: "b",
+      purpose: "Unrelated generation input",
+      role: "reference",
+    },
+  ];
+  f.thread.composer.setText("根据本次资料写脚本");
+  const original = structuredClone(f.context.canvas!.task);
+  const sending = f.thread.composer.send();
+  f.flush.resolve();
+  await until(() => f.calls.length === 1);
+  expect(f.calls[0].args.attachments).toEqual([f.a]);
+  expect(f.calls[0].args.prompt).not.toContain("Unrelated generation input");
+  expect(f.context.canvas!.task).toEqual(original);
+  f.calls[0].result.resolve({ text: "完成", status: "completed" });
+  await sending;
+});

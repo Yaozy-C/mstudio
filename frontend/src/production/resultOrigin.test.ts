@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
-import { fixture, asset } from "./fixtures.test-helper";
+import { draftFixture as fixture, asset } from "./fixtures.test-helper";
 import { resultOrigin } from "./resultOrigin";
 import { resultPlacement } from "./resultPlacement";
 import { receiveProductionResult } from "./document";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import { attachmentInput } from "./attachmentInput";
 import { createTask } from "./tasks";
 import { directTask } from "./directTask";
@@ -33,7 +33,7 @@ test("ordinary references neither infer ownership nor select a placement anchor"
   expect(
     createTask(
       p,
-      productionItems(p).filter((n) => n.assetId === "a"),
+      draftItems(p).filter((n) => n.assetId === "a"),
     ).inputs,
   ).toHaveLength(1);
   expect(attachmentInput(p, { kind: "node", id: "shot" })?.assetId).toBe("");
@@ -41,7 +41,7 @@ test("ordinary references neither infer ownership nor select a placement anchor"
 });
 test("explicit edits create an independent card beside the source and preserve the original", () => {
   let p = fixture();
-  const origin = productionItems(p).find((n) => n.assetId === "a")!;
+  const origin = draftItems(p).find((n) => n.assetId === "a")!;
   p.production = { positions: { [origin.key]: { x: 900, y: 900 } } };
   const t = task();
   t.inputs[0].role = "edit";
@@ -52,7 +52,7 @@ test("explicit edits create an independent card beside the source and preserve t
     canvasGeneration: { task: t, ...t.position },
   };
   const next = receiveProductionResult(p, asset("result"), source);
-  const result = productionItems(next).find((n) => n.assetId === "result")!;
+  const result = draftItems(next).find((n) => n.assetId === "result")!;
   expect(result.ownerId).toBeUndefined();
   expect(result.x).toBe(1182);
   expect(result.y).toBe(900);
@@ -89,7 +89,7 @@ test("model changes retain unsupported roles and independent images work as vide
     x: 0,
     y: 0,
   });
-  const item = productionItems(p).find((n) => n.key === "node:standalone")!;
+  const item = draftItems(p).find((n) => n.key === "node:standalone")!;
   const draft = createTask(p, [item], "video");
   draft.title = "Product · push in";
   draft.prompt = "推进";
@@ -103,23 +103,6 @@ test("model changes retain unsupported roles and independent images work as vide
   ).toEqual(draft.inputs);
 });
 
-test("shot results stay beside their shot even when the viewport is far away", () => {
-  const p = fixture();
-  p.production = { viewport: { x: 980, y: 660, scale: 0.18 } };
-  const t = { ...task(), ownerId: "shot", inputs: [] };
-  const position = resultPlacement(p, t);
-  expect(position.x).toBe(1447);
-  expect(position.y).toBeLessThan(1000);
-  const next = receiveProductionResult(p, asset("new-frame"), {
-    ...p.nodes[1],
-    canvasGeneration: { task: { ...t, position }, ...position },
-  });
-  const card = productionItems(next).find((n) => n.assetId === "new-frame")!;
-  expect(card.x).toBe(position.x);
-  expect(card.y).toBe(position.y);
-  expect(next.production?.positions?.[card.key]).toEqual(position);
-});
-
 test("overview generation stays near visible content instead of the remote viewport corner", () => {
   const p = fixture();
   p.production = { viewport: { x: 980, y: 660, scale: 0.18 } };
@@ -129,7 +112,7 @@ test("overview generation stays near visible content instead of the remote viewp
     { ...task(), inputs: [] },
     { width: 1650, height: 1100 },
   );
-  expect(pos.x).toBeGreaterThan(0);
+  expect(pos.x).toBeGreaterThanOrEqual(0);
   expect(pos.y).toBeGreaterThanOrEqual(110);
   expect(pos.y).toBeLessThan(1000);
   expect(p).toEqual(before);

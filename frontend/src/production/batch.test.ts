@@ -72,6 +72,6 @@ test("resume preserves completed jobs; retry resets only known failed tasks once
       .every((task) => !task.jobId && !task.submissionId),
   ).toBe(true);
   const stopped = changeBatch(retried, "batch", "stop");
-  expect(batchSummary(runsOf(stopped)).counts.CANCELLED).toBe(38);
+  expect(batchSummary(runsOf(stopped)).counts.CANCELLED).toBe(39);
   expect(batchSummary(runsOf(stopped)).counts.COMPLETED).toBe(60);
 });

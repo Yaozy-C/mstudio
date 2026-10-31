@@ -209,5 +209,9 @@
   "修改轨道": "Update track",
   "添加字幕": "Add caption",
   "修改字幕": "Update caption",
-  "删除字幕": "Remove caption"
+  "删除字幕": "Remove caption",
+  "读取来源照片、产品资料和参考视频目录，供创意、资产整理和编剧使用": "Read source photos, product information and reference video listings for creative research, asset preparation and screenwriting",
+  "整理镜头资产": "Manage shot assets",
+  "维护镜头资产参考记录；配合媒体生成准备候选图片，素材收录与资产确认独立": "Maintain shot-asset references and prepare candidate images; material collection and asset confirmation are independent",
+  "按资源 ID 读取图片内容、视频帧和历史媒体；发现素材或资产目录由对应读取工具负责，直接发送的附件不受此开关影响": "Read image pixels, video frames and historical media by ID; library discovery uses the assigned resource readers. Direct attachments are unaffected."
 }

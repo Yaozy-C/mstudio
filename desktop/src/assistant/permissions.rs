@@ -2,6 +2,32 @@ use super::profiles::{AgentProfile, allows};
 use anyhow::{Result, ensure};
 use serde_json::Value;
 
+pub fn allows_resource_reader(p: &AgentProfile, name: &str) -> bool {
+    resource_reader_tools(&p.tool_ids, name)
+}
+
+pub(crate) fn resource_reader_tools(tools: &[String], name: &str) -> bool {
+    let has = |id: &str| tools.iter().any(|s| s == id);
+    match name {
+        "mstudio_read_materials" => has("material-read"),
+        "mstudio_read_assets" => {
+            !has("project-concepts") && !has("project-script")
+                || [
+                    "project-assets",
+                    "project-shots",
+                    "project-frames",
+                    "project-production",
+                    "project-timeline",
+                    "project-brief",
+                    "project-edit",
+                ]
+                .iter()
+                .any(|id| has(id))
+        }
+        _ => true,
+    }
+}
+
 pub fn asset_only(p: &AgentProfile) -> bool {
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
     has("project-assets")
@@ -27,6 +53,9 @@ pub fn allows_operation(p: &AgentProfile, op: &str) -> bool {
         return false;
     }
     let has = |id: &str| p.tool_ids.iter().any(|s| s == id);
+    if matches!(op, "save_concepts" | "remove_concepts") {
+        return has("project-concepts");
+    }
     if op == "archive_generation" {
         return has("project-brief")
             || has("project-production")

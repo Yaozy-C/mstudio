@@ -102,8 +102,13 @@ fn send_message(host: &ProjectHost, call: &ToolCall) -> Result<Value, String> {
         &doc,
         args.get("artifacts"),
     )?;
-    let child_profile: profiles::AgentProfile =
+    let saved_profile: profiles::AgentProfile =
         serde_json::from_str(&profile_json).map_err(|e| e.to_string())?;
+    let child_profile = scoped(
+        profiles::resolve(&store.db.lock().unwrap(), Some(&saved_profile.id))
+            .map_err(|e| e.to_string())?,
+        &parent.profile.id,
+    )?;
     if !sources.manifest.as_array().unwrap().is_empty()
         && !profiles::allows(&child_profile, "inspect")
     {

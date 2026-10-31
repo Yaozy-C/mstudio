@@ -169,7 +169,7 @@ export function mediaAdapter(model: MediaModel): ModelAdapter {
       return httpJsonAdapter;
     case "dashscope":
       return create(
-        "dashscope",
+        model.plugin,
         referenceFields(model),
         declaredLimitCheck(model),
       );

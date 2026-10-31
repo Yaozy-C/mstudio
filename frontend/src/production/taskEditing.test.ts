@@ -122,7 +122,9 @@ test("explicit regenerate resets the existing task once with new prompt and the 
   expect(run.turnId).toBe(original.turnId);
   expect(run.createdAt).toBe(original.createdAt);
   expect(applyOperations(next, ops, context)).toEqual(next);
-  expect(() => regenerationDraft({ ...task, status: "UNKNOWN" })).toThrow();
+  expect(regenerationDraft({ ...task, status: "UNKNOWN" }).status).toBe(
+    "AWAITING_CONFIRMATION",
+  );
 });
 test("invalid prompts do not change task records", () => {
   const p = saveTask(fixture(), task);
@@ -158,7 +160,7 @@ test("explicit generation reuses an unsubmitted hidden task and respects executi
   }
 });
 
-test("regeneration still blocks pending and uncertain submissions", () => {
+test("regeneration still blocks running submissions", () => {
   for (const status of [
     "READY",
     "UPLOADING",
@@ -167,7 +169,6 @@ test("regeneration still blocks pending and uncertain submissions", () => {
     "IN_PROGRESS",
     "RECEIVING",
     "CANCEL_REQUESTED",
-    "UNKNOWN",
   ]) {
     expect(() => regenerationDraft({ ...task, status })).toThrow();
   }

@@ -2,8 +2,11 @@ import { referenceAsset } from "../previs/media";
 import { failure } from "../errors/failure";
 import type { Project } from "../model";
 import { attachmentInput } from "./attachmentInput";
-import { productionItems } from "./items";
 import type { ProductionInput, ProductionTask } from "./types";
+import {
+  canUseTaskReference,
+  MATERIAL_REFERENCE_ERROR,
+} from "../workspace/resourceRoles";
 
 export function replaceTaskReferences(
   p: Project,
@@ -31,8 +34,11 @@ export function replaceTaskReferences(
         );
       const input = attachmentInput(p, { kind: "asset", id: r.assetId });
       const asset = referenceAsset(p, r.assetId);
-      if (!input || !asset || !["image", "video"].includes(asset.kind))
-        throw failure("VALIDATION_FAILED", "只能使用项目中已有的图片或视频");
+      if (!input || !asset || !["image", "video", "audio"].includes(asset.kind))
+        throw failure(
+          "VALIDATION_FAILED",
+          "只能使用项目中已有的图片、视频或音频",
+        );
       const role =
         r.role ?? (asset.kind === "video" ? "video-reference" : "reference");
       const allowed =
@@ -40,11 +46,13 @@ export function replaceTaskReferences(
           ? kind === "image"
             ? ["edit", "reference"]
             : ["reference", "first-frame", "last-frame"]
-          : ["video-reference"];
+          : asset.kind === "video"
+            ? ["video-reference"]
+            : ["reference"];
       if (!allowed.includes(String(role)))
         throw failure("VALIDATION_FAILED", "素材用途与类型不匹配");
-      const frame = productionItems(p).find(
-        (n) => n.kind === "image" && n.assetId === asset.id,
+      const frame = p.nodes.find((n) =>
+        n.shot?.frames?.some((f) => f.assetId === asset.id),
       );
       for (const field of ["start", "end"])
         if (
@@ -69,8 +77,8 @@ export function replaceTaskReferences(
         role: role as ProductionInput["role"],
         start,
         end,
-        nodeId: frame?.nodeId ?? input.nodeId,
-        frame: !!frame && !!p.nodes.find((n) => n.id === frame.nodeId)?.shot,
+        nodeId: frame?.id ?? input.nodeId,
+        frame: !!frame,
         purpose:
           r.purpose === undefined ? input.purpose : (r.purpose as string),
       };
@@ -106,5 +114,7 @@ export function assertGenerationReferences(p: Project, task: ProductionTask) {
         "VALIDATION_FAILED",
         "参考素材已从素材库移除，请移除该参考或先恢复素材",
       );
+    if (!canUseTaskReference(p, asset, task))
+      throw failure("VALIDATION_FAILED", MATERIAL_REFERENCE_ERROR);
   }
 }

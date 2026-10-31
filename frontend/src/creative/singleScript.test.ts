@@ -50,8 +50,8 @@ test("screenplays reject retired contracts and summary fields atomically", () =>
 });
 
 test("a screenplay never creates a production canvas card", async () => {
-  const { productionItems } = await import("../production/items");
+  const { draftItems } = await import("../production/items");
   const project = createScript(newProject("Script workspace"));
   expect(project.nodes[0].kind).toBe("screenplay");
-  expect(productionItems(project)).toEqual([]);
+  expect(draftItems(project)).toEqual([]);
 });

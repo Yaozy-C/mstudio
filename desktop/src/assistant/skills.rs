@@ -1,3 +1,4 @@
+mod board_upgrade;
 mod metadata;
 use metadata::{model_catalog, model_metadata};
 pub mod storage;

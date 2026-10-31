@@ -223,6 +223,11 @@ pub fn select(store: &Store, project: &str, asset_id: &str, version: &str) -> Re
         .unwrap();
     apply_file(asset, &json!(chosen.image));
     asset["imageVersionId"] = json!(version);
+    if crate::project_service::asset_roles::is_asset(asset) {
+        asset["assetStatus"] = json!("confirmed");
+    } else {
+        asset["inMaterials"] = json!(true);
+    }
     asset["inLibrary"] = json!(true);
     let selected = asset.clone();
     project_service::persist(&tx, &before, &after)?;

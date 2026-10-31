@@ -109,7 +109,7 @@ test("Agent archives obsolete pending tasks with a finished receipt and can rest
   ).toThrow("不存在");
 });
 
-test("Agent archive batch rejects active and uncertain tasks without partial edits", () => {
+test("Agent archive batch rejects active tasks without partial edits", () => {
   for (const status of [
     "READY",
     "UPLOADING",
@@ -117,7 +117,6 @@ test("Agent archive batch rejects active and uncertain tasks without partial edi
     "IN_QUEUE",
     "IN_PROGRESS",
     "RECEIVING",
-    "UNKNOWN",
     "CANCEL_REQUESTED",
   ]) {
     let before = saveTask(fixture(), {

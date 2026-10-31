@@ -1,15 +1,13 @@
 import { canvasCardActions } from "./canvasCardActions";
 import { t, useLanguage } from "../i18n";
-import { ShotCardText } from "./ShotCardText";
-import { ShotCardHeader } from "./ShotCardHeader";
 import { CanvasAssetStatus } from "./CanvasAssetStatus";
-import { memo, useEffect, useLayoutEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Play, Image, VideoCamera, FileText } from "@phosphor-icons/react";
 import { ObjectMenu } from "../ui/ObjectMenu";
 import { mediaUrl } from "../bridge";
 import { MissingAsset } from "../workspace/MissingAsset";
 import type { Asset, Project } from "../model";
-import type { ProductionItem } from "./types";
+import type { DraftItem } from "./types";
 import type { ProductionController } from "./useProduction";
 import "./cards.css";
 const labels = {
@@ -24,19 +22,18 @@ export const CanvasCard = memo(function CanvasCard({
   asset,
   compact,
   inTimeline = false,
-  project,
   canvas,
   preview,
   collect,
   onAdd,
 }: {
-  item: ProductionItem;
+  item: DraftItem;
   asset?: Asset;
   compact: boolean;
   inTimeline?: boolean;
   project: Project;
   canvas: ProductionController;
-  preview: (item: ProductionItem) => void;
+  preview: (item: DraftItem) => void;
   collect: (asset: Asset) => void;
   onAdd: (asset: Asset) => void;
 }) {
@@ -55,16 +52,6 @@ export const CanvasCard = memo(function CanvasCard({
       : asset?.kind === "image"
         ? Image
         : FileText;
-  const cardRef = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    if (compact || !cardRef.current) return;
-    const element = cardRef.current;
-    const report = () => canvas.measure?.(item.key, element.offsetHeight);
-    const observer = new ResizeObserver(report);
-    observer.observe(element);
-    report();
-    return () => observer.disconnect();
-  }, [item.key, item.kind, compact, canvas.measure]);
   const dragging = useRef(false);
   const referenceDrag = useRef(false);
   const stopDrag = useRef<(() => void) | null>(null);
@@ -82,17 +69,13 @@ export const CanvasCard = memo(function CanvasCard({
   return (
     <ObjectMenu actions={actions}>
       <article
-        ref={cardRef}
         className={`canvas-card ${selected ? "selected" : ""} ${referenced ? "referenced" : ""} ${item.kind}`}
         style={{
           left: item.x,
           top: item.y,
           width: item.width,
           height:
-            !compact &&
-            (item.kind === "script" ||
-              asset?.kind === "image" ||
-              asset?.kind === "video")
+            !compact && (asset?.kind === "image" || asset?.kind === "video")
               ? "auto"
               : item.height,
         }}
@@ -216,28 +199,16 @@ export const CanvasCard = memo(function CanvasCard({
           if (!dragging.current) preview(item);
         }}
       >
-        {item.kind === "script" ? (
-          <ShotCardHeader item={item} project={project} />
-        ) : (
-          <strong className="card-title" title={item.title}>
-            <Icon size={16} />
-            <span>{mediaTitle}</span>
-          </strong>
-        )}
-        {!compact && !!item.usages?.length && (
-          <small className="card-usage">
-            {t("用于：")}
-            {item.usages.map((u) => u.title).join(" · ")}
-          </small>
-        )}
+        <strong className="card-title" title={item.title}>
+          <Icon size={16} />
+          <span>{mediaTitle}</span>
+        </strong>
         {compact ? (
           <div className="card-overview">
             <Icon size={44} />
           </div>
-        ) : item.kind === "script" ? (
-          <ShotCardText item={item} project={project} />
         ) : !asset ? (
-          <p className="card-copy">{item.text || t("双击补充镜头内容")}</p>
+          <p className="card-copy">{item.text || t("双击编辑草稿")}</p>
         ) : asset.missing ? (
           <MissingAsset asset={asset} />
         ) : asset.kind === "video" ? (

@@ -1,8 +1,16 @@
 export const tools = [
   {
+    id: "material-read",
+    name: "读取创作素材",
+    description:
+      "读取来源照片、产品资料和参考视频目录，供创意、资产整理和编剧使用",
+    kind: "项目工具",
+  },
+  {
     id: "project-assets",
-    name: "整理项目素材",
-    description: "维护素材参考记录；配合媒体生成准备独立图片资产",
+    name: "整理镜头资产",
+    description:
+      "维护镜头资产参考记录；配合媒体生成准备候选图片，素材收录与资产确认独立",
     kind: "项目工具",
   },
   {
@@ -22,7 +30,7 @@ export const tools = [
     id: "media-read",
     name: "读取媒体内容",
     description:
-      "按需读取素材原图、视频帧和历史图片；直接发送的附件不受此开关影响",
+      "按资源 ID 读取图片内容、视频帧和历史媒体；发现素材或资产目录由对应读取工具负责，直接发送的附件不受此开关影响",
     kind: "项目工具",
   },
   {
@@ -41,6 +49,12 @@ export const tools = [
     id: "project-script",
     name: "编辑脚本与创意",
     description: "创建和修改结构化声画脚本与段落，保留镜头关联",
+    kind: "项目工具",
+  },
+  {
+    id: "project-concepts",
+    name: "维护创意板",
+    description: "创建、比较、淘汰和选择项目创意方向卡片",
     kind: "项目工具",
   },
   {

@@ -12,6 +12,7 @@ import deepseek from "../assets/providers/deepseek.svg";
 import google from "../assets/providers/google.svg";
 import fal from "../assets/providers/fal.svg";
 import bytedance from "../assets/providers/bytedance.svg";
+import alibaba from "../assets/providers/alibaba.svg";
 export function AgentMark({
   id = "coordinator",
   ...props
@@ -42,13 +43,15 @@ export function ModelMark({
       ? minimax
       : /deepseek/.test(key)
         ? deepseek
-        : /bytedance|seedance/.test(key)
-          ? bytedance
-          : /fal/.test(key)
-            ? fal
-            : /openai|gpt/.test(key)
-              ? openai
-              : null;
+        : /alibaba|wan|qwen|tongyi/.test(key)
+          ? alibaba
+          : /bytedance|seedance/.test(key)
+            ? bytedance
+            : /fal/.test(key)
+              ? fal
+              : /openai|gpt/.test(key)
+                ? openai
+                : null;
   return src ? (
     <img
       className="provider-mark"

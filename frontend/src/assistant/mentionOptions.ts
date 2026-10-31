@@ -1,4 +1,4 @@
-import { isLibraryAsset } from "../workspace/assetLibrary";
+import { isLibraryAsset, isStoryAsset } from "../workspace/assetLibrary";
 import type { AgentProfile } from "../agents/catalog";
 import type { Project } from "../model";
 import { describeAttachment, type AttachmentRef } from "./attachments";
@@ -40,7 +40,7 @@ export function mentionOptions(
     })),
     ...project.assets.filter(isLibraryAsset).map((a) => ({
       ref: { kind: "asset" as const, id: a.id },
-      type: "素材",
+      type: isStoryAsset(a) ? "镜头资产" : "创作素材",
     })),
     ...project.clips.map((c) => ({
       ref: { kind: "clip" as const, id: c.id },

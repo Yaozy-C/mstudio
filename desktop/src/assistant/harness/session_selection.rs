@@ -7,21 +7,18 @@ use rig_core::message::Message;
 use rusqlite::params;
 use serde_json::{Value, json};
 
-/// New user messages use the last completed question/answer, not the tool journal.
-/// Explicit recovery preserves exact provider messages and committed operation receipts.
+/// Every user turn continues the task's durable message surface, including tools
+/// and compaction. Explicit recovery selects the interrupted turn instead.
 pub fn for_message(
     store: &Store,
     project: &str,
     binding: &Value,
     resume: Option<&str>,
-    compact: bool,
 ) -> Result<Option<Vec<Message>>, String> {
     if let Some(turn) = resume {
         super::session::restore(store, project, turn, binding)
-    } else if compact {
-        latest(store, project, binding)
     } else {
-        Ok(None)
+        latest(store, project, binding)
     }
 }
 
@@ -54,24 +51,38 @@ pub fn latest(
 ) -> Result<Option<Vec<Message>>, String> {
     let candidates = {
         let db = store.db.lock().unwrap();
-        let mut stmt=db.prepare("SELECT e.turn_id,json_extract(e.payload,'$.binding') FROM agent_events e WHERE e.project_id=?1 AND e.kind='session/start' AND json_extract(e.payload,'$.binding.agentId') IS ?2 AND json_extract(e.payload,'$.binding.taskId') IS ?3 AND e.seq>COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0) AND EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND m.role='assistant' AND json_extract(m.attribution,'$.turnId')=e.turn_id) ORDER BY e.seq DESC").map_err(|e|e.to_string())?;
+        let mut stmt=db.prepare("SELECT e.turn_id,json_extract(e.payload,'$.binding'),json_extract(e.payload,'$.contextMode') FROM agent_events e WHERE e.project_id=?1 AND e.kind='session/start' AND json_extract(e.payload,'$.binding.agentId') IS ?2 AND json_extract(e.payload,'$.binding.taskId') IS ?3 AND e.seq>COALESCE((SELECT MAX(seq) FROM agent_events WHERE project_id=?1 AND kind='session/reset'),0) AND EXISTS(SELECT 1 FROM agent_messages m WHERE m.project_id=e.project_id AND m.role='assistant' AND json_extract(m.attribution,'$.turnId')=e.turn_id) ORDER BY e.seq DESC LIMIT 1").map_err(|e|e.to_string())?;
         stmt.query_map(
             params![
                 project,
                 binding["agentId"].as_str(),
                 binding["taskId"].as_str()
             ],
-            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)),
+            |r| {
+                Ok((
+                    r.get::<_, String>(0)?,
+                    r.get::<_, String>(1)?,
+                    r.get::<_, Option<String>>(2)?,
+                ))
+            },
         )
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?
     };
-    for (turn, raw) in candidates {
+    if let Some((turn, raw, mode)) = candidates.into_iter().next() {
         let saved: Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
-        if super::binding::compatible(&saved, binding) {
-            return super::session::restore(store, project, &turn, binding);
+        // Legacy snapshots deliberately discarded earlier exchanges. Seed once
+        // from the task's chat log, then preserve the new continuous surface.
+        // Archived-task projections also rebuild from that log and fresh facts.
+        if mode.as_deref() != Some("continuous")
+            || saved["archiveContext"] != binding["archiveContext"]
+        {
+            return Ok(None);
         }
+        // Model selection is request configuration, not task identity. Preserve
+        // canonical messages across a switch; the current adapter owns the wire.
+        return super::session::restore(store, project, &turn, &saved);
     }
     Ok(None)
 }

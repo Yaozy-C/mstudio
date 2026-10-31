@@ -4,7 +4,7 @@ Use for shot-state, frame and asset dependency rules. [Shot grammar](cinematogra
 
 ## Shots, frames and generated clips
 
-An editorial shot is a continuous viewpoint; a Mstudio shot record may group several editorial shots for generation. A frame is one selected moment; a generated clip is a tool output. Preserve internal shot labels/time ranges in the record text and map them to actual footage cuts. Multiple frames do not multiply duration; a generation group does not erase internal shots.
+An editorial shot is a continuous viewpoint; a Mstudio shot record is one continuous shot. A frame is one selected moment; a generated clip is a tool output. Do not group several editorial shots into one record. If the scene needs a cut, save separate records and map each to its actual footage. Multiple frames do not multiply duration.
 
 For important action, track source/initial support, path, necessary contact or boundary, and destination/final support. Record only the states required to understand the action; do not generate every state by default. A frame shows one readable instant, not mutually exclusive states at once. Necessary start/end frames retain shared landmarks. Image production executes the designed frames.
 

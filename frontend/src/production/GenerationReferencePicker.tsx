@@ -1,9 +1,9 @@
-import { isLibraryAsset } from "../workspace/assetLibrary";
+import { canUseTaskReference } from "../workspace/resourceRoles";
 import { t, useLanguage } from "../i18n";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import { useState } from "react";
 import { Dialog } from "@radix-ui/themes";
-import { Plus, Check, VideoCamera, X } from "@phosphor-icons/react";
+import { Plus, Check, VideoCamera, MusicNote, X } from "@phosphor-icons/react";
 import { ActionButton } from "../ui/ActionButton";
 import { mediaUrl } from "../bridge";
 import type { Project } from "../model";
@@ -33,14 +33,17 @@ export function GenerationReferencePicker({
   const assets = project.assets.filter(
     (a) =>
       (selected.has(a.id) ||
-        (isLibraryAsset(a) && supportsReference(a, model))) &&
+        (canUseTaskReference(project, a, draft) &&
+          supportsReference(a, model))) &&
       a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
   return (
     <Dialog.Root>
       <Dialog.Trigger>
         <ActionButton icon={Plus} className="generation-add-reference">
-          {t("添加参考素材")}
+          {draft.generationPurpose === "asset"
+            ? t("选择资产来源")
+            : t("添加资产或制作结果")}
         </ActionButton>
       </Dialog.Trigger>
       <Dialog.Content
@@ -48,15 +51,19 @@ export function GenerationReferencePicker({
         aria-describedby={undefined}
       >
         <header>
-          <Dialog.Title>{t("添加项目参考素材")}</Dialog.Title>
+          <Dialog.Title>
+            {draft.generationPurpose === "asset"
+              ? t("选择资产来源")
+              : t("资产与制作结果")}
+          </Dialog.Title>
           <Dialog.Close>
             <ActionButton icon={X} aria-label={t("关闭")} />
           </Dialog.Close>
         </header>
         <input
           type="search"
-          aria-label={t("搜索任务参考素材")}
-          placeholder={t("搜索图片或视频")}
+          aria-label={t("搜索生成输入")}
+          placeholder={t("搜索生成输入")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -85,6 +92,8 @@ export function GenerationReferencePicker({
               <div>
                 {a.preview || a.kind === "image" ? (
                   <img src={mediaUrl(a.preview || a.path)} alt="" />
+                ) : a.kind === "audio" ? (
+                  <MusicNote size={28} />
                 ) : (
                   <VideoCamera size={28} />
                 )}
@@ -102,7 +111,9 @@ export function GenerationReferencePicker({
           <p className="reference-picker-empty">
             {query
               ? t("没有匹配的素材")
-              : t("没有当前模型可用的参考素材；首尾帧请在对应槽位选择。")}
+              : t(
+                  "没有可用输入。镜头制作使用已确认资产或已有分镜图、视频片段。",
+                )}
           </p>
         )}
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}

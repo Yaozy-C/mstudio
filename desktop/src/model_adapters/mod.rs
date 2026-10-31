@@ -52,6 +52,19 @@ pub struct ProviderUpdate {
 }
 impl ProviderUpdate {
     pub fn validate(&self) -> Result<()> {
+        ensure!(
+            matches!(
+                self.status.as_str(),
+                "IN_QUEUE"
+                    | "IN_PROGRESS"
+                    | "COMPLETED"
+                    | "FAILED"
+                    | "CANCEL_REQUESTED"
+                    | "CANCELLED"
+            ),
+            "生成服务返回了无效任务状态：{}",
+            self.status
+        );
         if self.status == "COMPLETED" {
             ensure!(
                 self.outputs

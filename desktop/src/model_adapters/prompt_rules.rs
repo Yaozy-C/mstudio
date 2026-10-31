@@ -33,6 +33,6 @@ pub fn guidance(db: &Connection, model: &MediaModel) -> Result<Value> {
         .optional()?
         .unwrap_or_else(|| config["rules"][rule_id].as_str().unwrap_or_default().into());
     Ok(
-        json!({"modelId":model.id,"kind":model.kind,"provider":model.plugin,"endpoint":model.endpoint,"inputDescription":input_description,"rules":rules,"capabilities":crate::project_service::runtime::execute(json!({"action":"capabilities","model":model}))?}),
+        json!({"modelId":model.id,"kind":model.kind,"provider":model.plugin,"endpoint":model.endpoint,"inputDescription":input_description,"rules":rules,"capabilities":crate::project_service::domain::execute(json!({"action":"capabilities","model":model}))?}),
     )
 }

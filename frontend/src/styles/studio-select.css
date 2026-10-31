@@ -25,6 +25,21 @@
   flex-shrink: 0;
   color: var(--desk-text);
 }
+.studio-select-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.studio-select-option > svg,
+.studio-select-option > img {
+  flex-shrink: 0;
+}
+.studio-select-option > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .radix-themes.studio-select-menu,
 .radix-themes .studio-select-menu {
   min-width: var(--radix-select-trigger-width);

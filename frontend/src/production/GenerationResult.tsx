@@ -44,8 +44,8 @@ export function GenerationResult({
         {locate && (
           <button
             className="result-reference result-locate"
-            aria-label={t("在画布查看此结果")}
-            title={t("在画布查看")}
+            aria-label={t("查看结果所在位置")}
+            title={t("查看所在位置")}
             onClick={locate}
           >
             <Crosshair size={16} />

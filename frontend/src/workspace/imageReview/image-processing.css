@@ -41,12 +41,6 @@
   flex-shrink: 0;
   white-space: nowrap;
 }
-.image-version-notice {
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--desk-muted);
-  border-bottom: 1px solid var(--desk-rule);
-}
 .media-version-count {
   display: block;
   margin-top: 3px;

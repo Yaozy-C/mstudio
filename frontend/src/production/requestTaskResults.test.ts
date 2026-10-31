@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { fixture, asset } from "./fixtures.test-helper";
-import { productionItems } from "./items";
+import { shotSources } from "./fixtures.test-helper";
 import { createTask } from "./tasks";
 import {
   requestTask,
@@ -16,7 +16,7 @@ function setup() {
   const p = fixture();
   const task = createTask(
     p,
-    productionItems(p).filter((n) => n.assetId === "a"),
+    shotSources(p).filter((n) => n.assetId === "a"),
   );
   const context: GenerationCommandContext = {
     callId: "call",
@@ -74,7 +74,7 @@ test("composer parameters survive assigning a new shot after preflight", () => {
   expect(run.status).toBe("AWAITING_CONFIRMATION");
 });
 
-test("a shot task does not implicitly add its images or own new generation results", () => {
+test("a shot task owns its new result without implicitly adding image inputs", () => {
   const { p, context, op } = setup();
   context.turn.task = createTask(p, [], "video");
   const next = requestTask(
@@ -90,13 +90,13 @@ test("a shot task does not implicitly add its images or own new generation resul
   );
   const run = runsOf(next)[0];
   expect(run.inputs).toEqual([]);
-  expect(run.ownerId).toBeUndefined();
+  expect(run.ownerId).toBe("shot");
   const done = receiveProductionResult(next, asset("independent", "video"), {
     ...p.nodes[1],
     canvasGeneration: canvasSnapshot(next, run, { x: 3000, y: 100 }),
   });
-  expect(done.nodes[1]).toEqual(p.nodes[1]);
-  expect(done.nodes.some((n) => n.assetId === "independent")).toBe(true);
+  expect(done.nodes[1].shot?.takes?.at(-1)?.assetId).toBe("independent");
+  expect(done.nodes.some((n) => n.assetId === "independent")).toBe(false);
 });
 
 test("100 generation tasks persist across tool batches without replaying the same call", () => {

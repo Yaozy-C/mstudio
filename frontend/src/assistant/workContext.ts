@@ -1,5 +1,12 @@
 export type WorkContext = {
-  view: "script" | "storyboard" | "film";
+  view:
+    | "drafts"
+    | "concepts"
+    | "script"
+    | "materials"
+    | "assets"
+    | "storyboard"
+    | "film";
   screenplayId?: string;
   paragraphId?: string;
 };

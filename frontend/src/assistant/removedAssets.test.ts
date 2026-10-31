@@ -7,22 +7,24 @@ import { createTask } from "../production/tasks";
 
 test("removed media is absent from agent discovery, including explicit ID lookup", () => {
   const source = fixture();
-  source.assets[0].usage = "asset";
   const p = uncollectAsset(source, "a");
   for (const args of [
-    { section: "assets" },
+    { section: "assets", usage: "material" },
     { section: "assets", ids: ["a"] },
   ]) {
     expect(JSON.stringify(inspectProject(p, args))).not.toContain('"id":"a"');
   }
   expect(
     JSON.stringify(
-      inspectProject(collectAsset(p, p.assets[0]), { section: "assets" }),
+      inspectProject(collectAsset(p, p.assets[0]), {
+        section: "assets",
+        usage: "material",
+      }),
     ),
   ).toContain('"id":"a"');
 });
 
-test("stale IDs cannot add references or timeline uses, but existing references survive edits", () => {
+test("removed resources cannot acquire new shot references or timeline uses", () => {
   const p = uncollectAsset(fixture(), "a");
   for (const op of [
     {
@@ -41,19 +43,20 @@ test("stale IDs cannot add references or timeline uses, but existing references 
   ])
     expect(() => applyOperations(p, [op])).toThrow("移除");
   const oldReference = uncollectAsset(fixture(), "reference");
-  const edited = applyOperations(oldReference, [
-    {
-      op: "set_references",
-      id: "shot",
-      references: [
-        { assetId: "reference", purpose: "Updated existing purpose" },
-      ],
-    },
+  expect(() =>
+    applyOperations(oldReference, [
+      {
+        op: "set_references",
+        id: "shot",
+        references: [
+          { assetId: "reference", purpose: "Updated existing purpose" },
+        ],
+      },
+    ]),
+  ).toThrow("镜头只能关联已确认资产");
+  expect(oldReference.nodes[1].references).toEqual([
+    { assetId: "reference", purpose: "product" },
   ]);
-  expect(
-    edited.nodes.find((n) => n.id === "shot")?.references?.[0].assetId,
-  ).toBe("reference");
-  expect(edited.assets).toBe(oldReference.assets);
 });
 
 test("agent generation rejects explicit task references to removed media", () => {

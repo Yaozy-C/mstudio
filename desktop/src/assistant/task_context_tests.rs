@@ -53,7 +53,7 @@ fn follows_same_task_across_views_and_targets_but_isolates_roles() {
     );
 }
 #[test]
-fn scoped_history_pairs_by_turn_and_restores_after_another_role() {
+fn scoped_history_retains_user_intent_and_restores_after_another_role() {
     let root = std::env::temp_dir().join(format!("mstudio-scope-{}", mstudio::media::id()));
     let store = Store::open(root.clone()).unwrap();
     store
@@ -89,27 +89,27 @@ fn scoped_history_pairs_by_turn_and_restores_after_another_role() {
         )
         .unwrap();
     }
-    let history = history(&store, "p", &scope("task1", "color", &[])).unwrap();
-    assert_eq!(history.len(), 2);
-    assert_eq!(history[0].attribution.as_ref().unwrap()["turnId"], "a2");
-    assert_eq!(history[1].attribution.as_ref().unwrap()["turnId"], "a2");
+    let history = history(&store, "p", &scope("task1", "color", &[]), "current").unwrap();
+    assert_eq!(history.len(), 5);
+    assert_eq!(history[0].attribution.as_ref().unwrap()["turnId"], "a");
+    assert_eq!(history[4].attribution.as_ref().unwrap()["turnId"], "d");
     assert!(
-        super::history(&store, "p", &scope("new", "color", &[]))
+        super::history(&store, "p", &scope("new", "color", &[]), "current")
             .unwrap()
             .is_empty()
     );
     let binding = json!({"agentId":"color","taskId":"task1"});
     assert!(
-        session_selection::for_message(&store, "p", &binding, None, false)
+        session_selection::for_message(&store, "p", &binding, None)
             .unwrap()
-            .is_none()
+            .is_some()
     );
-    let resumed = session_selection::for_message(&store, "p", &binding, Some("d"), false)
+    let resumed = session_selection::for_message(&store, "p", &binding, Some("d"))
         .unwrap()
         .unwrap();
     assert!(serde_json::to_string(&resumed).unwrap().contains("state-d"));
     assert!(
-        session_selection::for_message(&store, "p", &binding, None, true)
+        session_selection::for_message(&store, "p", &binding, None)
             .unwrap()
             .is_some()
     );
@@ -232,7 +232,7 @@ fn invalid_persisted_payload_is_an_error_instead_of_empty_model_history() {
             [],
         )
         .unwrap();
-    assert!(history(&store, "p", &scope).is_err());
+    assert!(history(&store, "p", &scope, "current").is_err());
     drop(store);
     std::fs::remove_dir_all(root).unwrap();
 }

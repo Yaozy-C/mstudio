@@ -2,7 +2,7 @@ use super::{context, history, journal};
 use crate::{database::Store, jobs};
 use serde_json::json;
 #[test]
-fn context_uses_bounded_pairs_and_offloads_old_images() {
+fn fallback_context_keeps_all_exchanges_and_excludes_audit_image_bytes() {
     let image = json!([{"type":"text","text":"old prompt"},{"type":"image_url","image_url":{"url":"data:verylargeimage"}}]);
     let mut previous = vec![];
     for _ in 0..30 {
@@ -31,7 +31,7 @@ fn context_uses_bounded_pairs_and_offloads_old_images() {
     .unwrap();
     assert!(!messages.to_string().contains("verylargeimage"));
     assert!(messages.to_string().contains("locked fact"));
-    assert!(messages.as_array().unwrap().len() < 63);
+    assert_eq!(messages.as_array().unwrap().len(), 63);
     let large = "a".repeat(100_000);
     let input = context::assemble(&[], json!(large), json!({})).unwrap();
     assert_eq!(input.as_array().unwrap().last().unwrap()["content"], large);

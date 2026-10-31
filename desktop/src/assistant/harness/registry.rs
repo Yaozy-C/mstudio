@@ -86,7 +86,16 @@ impl ProjectHost {
         if profiles::allows(&t.profile, "inspect") {
             definitions.push(super::agent_artifacts::definition());
             definitions.push(super::generation_tool::definition());
-            definitions.extend(super::read_tools::definitions());
+            definitions.extend(
+                super::read_tools::definitions()
+                    .into_iter()
+                    .filter(|definition| {
+                        crate::assistant::permissions::allows_resource_reader(
+                            &t.profile,
+                            definition.name.as_str(),
+                        )
+                    }),
+            );
         }
         definitions.push(ToolDefinition { name:"mstudio_read_result".try_into().expect("nonempty tool name"), description:"Read an offloaded complete tool result by page. callId comes from resultRef. Omitted turnId means this turn; supply the original turnId for history. Continue with returned nextOffset.".into(), parameters:json!({"type":"object","properties":{"callId":{"type":"string"},"turnId":{"type":"string"},"offset":{"type":"integer","minimum":0}},"required":["callId"],"additionalProperties":false}) });
         for (action, description, fields) in ACTIONS {
@@ -224,6 +233,12 @@ pub async fn execute_local(
         return json!({"error":"Video analysis has no tools", "code":"FORBIDDEN"});
     }
     let mut args = serde_json::Value::Object(call.function.arguments.clone());
+    if !crate::assistant::permissions::allows_resource_reader(
+        &t.profile,
+        call.function.name.as_str(),
+    ) {
+        return json!({"error":"This resource reader belongs to a different workflow stage", "code":"FORBIDDEN"});
+    }
     if let Some(decoded) = super::read_tools::decode(&call.function.name, args.clone()) {
         let value = t
             .execute(decoded, format!("{}:{}", t.turn, call.id.wire().as_ref()))

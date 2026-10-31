@@ -1,12 +1,12 @@
 import { StatusMessage } from "../ui/AsyncState";
 import { t, useLanguage } from "../i18n";
-import { isLibraryAsset } from "../workspace/assetLibrary";
+import { isShotAsset, canUseTaskReference } from "../workspace/resourceRoles";
 import { ErrorNotice } from "../errors/ErrorNotice";
 import type { FrameRole } from "../production/frameInputs";
 import { useEffect, useState } from "react";
 import { Popover } from "@radix-ui/themes";
 import {
-  UploadSimple,
+  FolderSimple,
   Image,
   VideoCamera,
   Check,
@@ -42,7 +42,7 @@ export function ComposerReference({
       ? t("首帧")
       : role === "last-frame"
         ? t("尾帧")
-        : t("参考素材");
+        : t("资产");
   const current = project.assets.find(
     (a) => a.id === canvas.task?.inputs.find((r) => r.role === role)?.assetId,
   );
@@ -69,7 +69,9 @@ export function ComposerReference({
   }, [open, scope]);
   const assets = (scope === "project" ? project.assets : globalAssets).filter(
     (a) =>
-      (scope === "project" ? isLibraryAsset(a) && !a.missing : !a.missing) &&
+      (scope === "project"
+        ? canUseTaskReference(project, a, canvas.task!)
+        : isShotAsset(a)) &&
       (a.kind === "image" ||
         (!role &&
           (canvas.composerMode === "agent" ||
@@ -108,7 +110,7 @@ export function ComposerReference({
           type="button"
           className="composer-reference-tile"
           disabled={draft.busy}
-          title={t("{v0}：引用素材或上传文件", { v0: label })}
+          title={t("{v0}：选择已确认资产或制作结果", { v0: label })}
           aria-label={t("选择{v0}", { v0: label })}
         >
           {current ? (
@@ -125,29 +127,19 @@ export function ComposerReference({
       <Popover.Content side="top" align="start" className="reference-picker">
         <header>
           <strong>
-            {role ? t("选择{v0}", { v0: label }) : t("引用参考素材")}
+            {role ? t("选择{v0}", { v0: label }) : t("资产与制作结果")}
           </strong>
           <button
             type="button"
-            aria-label={t("从电脑上传参考素材")}
-            title={t("从电脑上传")}
+            aria-label={t("管理镜头资产")}
+            title={t("管理镜头资产")}
             disabled={draft.busy || busy}
             onClick={() => {
-              void draft.importFiles((refs) => {
-                try {
-                  if (role) {
-                    if (refs.length !== 1)
-                      throw new Error(t("每个帧槽位请选择一张图片"));
-                    canvas.attach(refs[0], role);
-                  } else refs.forEach((ref) => canvas.attach(ref));
-                  setOpen(false);
-                } catch (e) {
-                  setError(String(e).replace(/^Error: /, ""));
-                }
-              });
+              setOpen(false);
+              window.dispatchEvent(new Event("studio-show-assets"));
             }}
           >
-            <UploadSimple size={18} />
+            <FolderSimple size={18} />
           </button>
         </header>
         <div className="reference-picker-tabs">
@@ -158,14 +150,14 @@ export function ComposerReference({
               aria-pressed={scope === value}
               onClick={() => setScope(value)}
             >
-              {value === "project" ? t("项目素材") : t("全局素材")}
+              {value === "project" ? t("项目资产与结果") : t("公共资产")}
             </button>
           ))}
         </div>
         <input
           type="search"
-          aria-label={t("搜索参考素材")}
-          placeholder={t("搜索素材")}
+          aria-label={t("搜索生成输入")}
+          placeholder={t("搜索生成输入")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -242,7 +234,9 @@ export function ComposerReference({
           !assets.length &&
           !nodes.length && (
             <p className="reference-picker-empty">
-              {query ? t("没有匹配的素材") : t("暂无可引用素材，可从电脑上传")}
+              {query
+                ? t("没有匹配的资产")
+                : t("没有可用输入，请先在资产库建立并确认资产。")}
             </p>
           )
         )}
@@ -250,7 +244,7 @@ export function ComposerReference({
           <span>
             {selected.size
               ? t("已引用 {v0} 项", { v0: selected.size })
-              : t("点击素材即可引用")}
+              : t("选择资产或制作结果")}
           </span>
           <Popover.Close>
             <button type="button">{t("完成")}</button>

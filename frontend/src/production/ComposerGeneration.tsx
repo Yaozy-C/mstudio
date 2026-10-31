@@ -1,5 +1,11 @@
 import { isVideoMode, supportsVideoReference } from "./referenceMode";
 import { t, useLanguage } from "../i18n";
+import { effectiveParameters } from "./parameters";
+import {
+  groupMediaModels,
+  modelDisplayName,
+  modelInGroup,
+} from "../models/modelGroups";
 import { selectMediaModel } from "./frameInputs";
 import { useState } from "react";
 import { Popover } from "@radix-ui/themes";
@@ -51,7 +57,8 @@ export function ComposerGeneration({
         : mode === "video"
           ? VideoCamera
           : ChatCircle;
-  const params = task?.parameters;
+  const groups = groupMediaModels(models);
+  const params = effectiveParameters(selected, task?.parameters);
   const summary = isVideoMode(mode)
     ? `${task?.mode === "ends" ? t("首尾帧") : task?.inputs.some((r) => r.role === "first-frame") ? t("首帧") : t("参考图/视频")} · ${params?.duration ? `${params.duration}s` : t("时长")}`
     : `${params?.aspectRatio || t("比例")} · ${params?.resolution || (params?.width ? `${params.width}×${params.height}` : t("尺寸"))}`;
@@ -175,7 +182,7 @@ export function ComposerGeneration({
             <button
               type="button"
               className="composer-setting-chip"
-              title={selected?.name || t("选择生成模型")}
+              title={selected ? modelDisplayName(selected) : t("选择生成模型")}
               aria-label={t("选择生成模型")}
             >
               {selected ? (
@@ -186,7 +193,9 @@ export function ComposerGeneration({
               ) : (
                 <Icon size={17} />
               )}
-              <span>{selected?.name.split(" · ").at(-1) || t("选择模型")}</span>
+              <span>
+                {selected ? modelDisplayName(selected) : t("选择模型")}
+              </span>
               <CaretDown size={12} />
             </button>
           </Popover.Trigger>
@@ -195,26 +204,30 @@ export function ComposerGeneration({
             align="end"
             className="composer-media-menu"
           >
-            {models.map((m) => (
-              <button
-                type="button"
-                className="composer-media-option"
-                key={m.id}
-                aria-pressed={modelId === m.id}
-                onClick={() => {
-                  canvas.preferences({ [kind]: m.id });
-                  if (task) canvas.update(selectMediaModel(task, m));
-                  setModelOpen(false);
-                }}
-              >
-                <ModelMark
-                  identity={`${m.name} ${m.endpoint} ${m.plugin}`}
-                  size={18}
-                />
-                <span>{m.name}</span>
-                {modelId === m.id && <Check size={16} />}
-              </button>
-            ))}
+            {groups.map((group) => {
+              const m = modelInGroup(group, selected);
+              const chosen = group.variants.some((v) => v.id === modelId);
+              return (
+                <button
+                  type="button"
+                  className="composer-media-option"
+                  key={group.key}
+                  aria-pressed={chosen}
+                  onClick={() => {
+                    canvas.preferences({ [kind]: m.id });
+                    if (task) canvas.update(selectMediaModel(task, m));
+                    setModelOpen(false);
+                  }}
+                >
+                  <ModelMark
+                    identity={`${m.name} ${m.endpoint} ${m.plugin}`}
+                    size={18}
+                  />
+                  <span>{group.name}</span>
+                  {chosen && <Check size={16} />}
+                </button>
+              );
+            })}
             {!models.length && (
               <p>
                 {t("还没有可用的")}

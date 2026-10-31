@@ -1,12 +1,12 @@
-use super::{runtime, tests::fixture};
+use super::{generation_prepare, tests::fixture};
 use serde_json::json;
 
 #[test]
-fn embedded_generation_maps_short_video_sources_to_one_uploaded_reference() {
+fn native_generation_maps_short_video_sources_to_one_uploaded_reference() {
     let (store, mut doc, _) = fixture();
     doc["assets"] = json!([
-        {"id":"one","kind":"video","name":"One","duration":1.333333,"width":160,"height":120},
-        {"id":"two","kind":"video","name":"Two","duration":1.333333,"width":160,"height":120}
+        {"id":"one","kind":"video","usage":"asset","name":"One","duration":1.333333,"width":160,"height":120},
+        {"id":"two","kind":"video","usage":"asset","name":"Two","duration":1.333333,"width":160,"height":120}
     ]);
     doc["production"] = json!({"drafts":{"task":{
         "key":"task","title":"Merged reference video","position":{"x":0,"y":0},"kind":"video","mode":"mixed",
@@ -22,7 +22,8 @@ fn embedded_generation_maps_short_video_sources_to_one_uploaded_reference() {
             "referenceLimit":1,"referenceSeconds":15
         }
     }});
-    let preflight = runtime::execute(request.clone()).unwrap();
+    let preflight =
+        generation_prepare::prepare(&request["document"], "task", &request["model"], None).unwrap();
     assert!(preflight.get("error").is_none(), "{preflight}");
     assert_eq!(preflight["references"].as_array().unwrap().len(), 2);
     assert_eq!(
@@ -35,7 +36,14 @@ fn embedded_generation_maps_short_video_sources_to_one_uploaded_reference() {
     request["uploaded"] = json!([{
         "assetId":"one","sourceAssetIds":["one","two"],"kind":"video","url":"https://cdn.example.com/merged.mp4"
     }]);
-    let result = runtime::execute(request).unwrap();
+    let uploaded = request["uploaded"].take();
+    let result = generation_prepare::prepare(
+        &request["document"],
+        "task",
+        &request["model"],
+        Some(uploaded),
+    )
+    .unwrap();
     assert!(result.get("error").is_none(), "{result}");
     assert_eq!(
         result["input"]["reference_video_urls"],

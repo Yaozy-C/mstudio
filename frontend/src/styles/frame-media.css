@@ -24,11 +24,6 @@
   color: var(--desk-accent);
   font-weight: 600;
 }
-.dock-media .media-list {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
 .media-empty {
   grid-column: 1 / -1;
   font-size: 12px;
@@ -94,8 +89,5 @@
   }
   .radix-themes .media-categories button {
     padding-block: 6px;
-  }
-  .dock-media .import-box {
-    margin-bottom: 12px;
   }
 }

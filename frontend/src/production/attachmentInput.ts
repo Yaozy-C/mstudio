@@ -45,7 +45,7 @@ export function attachmentInput(
     role:
       asset.kind === "video"
         ? "video-reference"
-        : asset.kind === "image"
+        : ["image", "audio"].includes(asset.kind)
           ? "reference"
           : "script",
     ...(asset.kind === "video"

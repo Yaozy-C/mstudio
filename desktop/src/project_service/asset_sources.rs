@@ -3,12 +3,20 @@ use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
-pub fn enrich(db: &Connection, project: &str, args: &Value, result: &mut Value) -> Result<()> {
-    if args["section"] != "assets"
-        || args["fields"]
-            .as_array()
-            .is_none_or(|f| !f.iter().any(|v| v == "source"))
-    {
+pub fn enrich(
+    db: &Connection,
+    project: &str,
+    document: &Value,
+    args: &Value,
+    result: &mut Value,
+) -> Result<()> {
+    if args["section"] != "assets" {
+        return Ok(());
+    }
+    let fields = args["fields"].as_array();
+    let include_source = fields.is_some_and(|f| f.iter().any(|v| v == "source"));
+    let include_description = fields.is_none_or(|f| f.iter().any(|v| v == "description"));
+    if !include_source && !include_description {
         return Ok(());
     }
     let detailed = args["ids"].is_array() || args["fields"].is_array();
@@ -25,7 +33,33 @@ pub fn enrich(db: &Connection, project: &str, args: &Value, result: &mut Value) 
     let mut kept = 0;
     for item in items.iter_mut() {
         let id = item["id"].as_str().unwrap_or("");
-        item["source"] = source(db, project, id, detailed, offset, limit)?;
+        let story_asset = document["assets"].as_array().is_some_and(|assets| {
+            assets
+                .iter()
+                .any(|a| a["id"] == id && super::asset_roles::is_asset(a))
+        });
+        let describe = include_description && (story_asset || fields.is_some());
+        if include_source || describe {
+            // Resolve the submitted description by this output's identity. A live
+            // task draft may already describe a different regeneration.
+            let original = source(db, project, id, detailed || describe, offset, limit)?;
+            if describe {
+                item["description"] = if original["prompt"]["text"].is_string() {
+                    json!({
+                        "origin":"generationPrompt",
+                        "meaning":"Design intent; not a verified description of the image.",
+                        "taskKey":original["taskKey"],
+                        "text":original["prompt"]["text"],
+                        "nextTextOffset":original["prompt"]["nextTextOffset"],
+                    })
+                } else {
+                    Value::Null
+                };
+            }
+            if include_source {
+                item["source"] = original;
+            }
+        }
         let bytes = item.to_string().len();
         if kept > 0 && size + bytes > 12000 {
             break;

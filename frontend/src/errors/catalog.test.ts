@@ -123,7 +123,34 @@ test("local validation remains actionable through serialization", () => {
     normalizeError(
       issue("SUBMISSION_UNKNOWN", "timeout", { outcome: "unknown" }),
     ).outcome,
-  ).toBe("unknown");
+  ).toBe("failed");
+});
+
+test("submission failures retain the reason and legacy errors no longer ask for manual verification", () => {
+  const error = normalizeError(
+    commandError("submit_job", "size 须为 WIDTHxHEIGHT"),
+  );
+  expect(error.code).toBe("GENERATION_FAILED");
+  expect(error.details).toBe("size 须为 WIDTHxHEIGHT");
+  const legacy = normalizeError({
+    code: "SUBMISSION_UNKNOWN",
+    outcome: "unknown",
+    details: "size 须为 WIDTHxHEIGHT",
+    httpStatus: 422,
+  });
+  expect(legacy.code).toBe("GENERATION_FAILED");
+  expect(legacy.outcome).toBe("failed");
+  expect(legacy.httpStatus).toBe(422);
+  expect(legacy.details).toBe(error.details);
+  expect(legacy.message).toBe("本次生成未完成");
+  expect(legacy.recovery).toContain("重新生成");
+  expect(
+    normalizeError({
+      code: "SERVICE_UNAVAILABLE",
+      outcome: "failed",
+      stage: "submit",
+    }).recovery,
+  ).toContain("重新生成");
 });
 
 test("provider field constraints become Chinese guidance without changing the error outcome", () => {

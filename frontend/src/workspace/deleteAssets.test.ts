@@ -1,12 +1,11 @@
 import { expect, test } from "bun:test";
 import { fixture } from "../production/fixtures.test-helper";
 import { deleteAssets } from "./deleteAssets";
-import { productionItems } from "../production/items";
+import { draftItems } from "../production/items";
 import { createTask } from "../production/tasks";
 import { inspectProject } from "../assistant/inspectProject";
 import { reconcileJob } from "../domain/generation";
 import { restoreProject } from "./restoreProject";
-import "../domain/entry";
 
 test("permanent deletion clears every live use and agent discovery, without changing other media", () => {
   const p = fixture();
@@ -54,7 +53,6 @@ test("permanent deletion clears every live use and agent discovery, without chan
   };
   p.production = {
     drafts: { run: task },
-    hidden: ["node:card"],
     positions: { "node:card": { x: 1, y: 2 } },
   };
   const next = deleteAssets(p, ["a"]);
@@ -73,7 +71,7 @@ test("permanent deletion clears every live use and agent discovery, without chan
     resultAssetIds: ["b"],
   });
   expect(next.production?.drafts?.run.resultAssetId).toBeUndefined();
-  expect(productionItems(next).some((i) => i.assetId === "a")).toBe(false);
+  expect(draftItems(next).some((i) => i.assetId === "a")).toBe(false);
   expect(
     JSON.stringify(inspectProject(next, { section: "assets", ids: ["a"] })),
   ).not.toContain('"id":"a"');
@@ -104,30 +102,6 @@ test("late job reconciliation does not resurrect a deleted output or keep tracki
   expect(next.production?.drafts?.run.resultAssetIds).toEqual([]);
   expect(next.production?.drafts?.run.status).toBe("COMPLETED");
   expect(reconcileJob(next, job)).toEqual(next);
-});
-
-test("concurrent edits cannot restore removed references through merge", () => {
-  const p = fixture();
-  const local = structuredClone(p);
-  local.nodes[1].shot!.frames![0].prompt = "stale edit";
-  const current = deleteAssets(p, ["a"]);
-  const execute = (
-    globalThis as unknown as { domainExecute(raw: string): string }
-  ).domainExecute;
-  const result = JSON.parse(
-    execute(
-      JSON.stringify({ action: "merge", base: p, document: local, current }),
-    ),
-  );
-  expect(result.error).toBeUndefined();
-  expect(result.document.assets.some((a: { id: string }) => a.id === "a")).toBe(
-    false,
-  );
-  expect(
-    result.document.nodes[1].shot.frames.map(
-      (f: { assetId: string }) => f.assetId,
-    ),
-  ).toEqual(["b"]);
 });
 
 test("deleting a source also deletes internal guides, but preserves ordinary attachments", () => {

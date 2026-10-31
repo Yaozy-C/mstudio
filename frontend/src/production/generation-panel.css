@@ -41,6 +41,36 @@
   font-size: 11px;
   line-height: 1.7;
 }
+.generation-duration-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 6px;
+  background: var(--desk-surface);
+}
+.generation-duration-input input {
+  border: 0;
+  background: transparent;
+  min-width: 0;
+}
+.generation-duration-input:focus-within {
+  outline: 2px solid var(--desk-accent);
+  outline-offset: 1px;
+}
+.generation-duration-input input:focus {
+  outline: 0;
+}
+.generation-setting-field .composer-model-tabs > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.generation-setting-field .composer-model-tabs > button[aria-pressed="true"] {
+  background: var(--desk-sidebar);
+  color: var(--desk-accent);
+}
 .generation-frame-slot {
   display: flex;
   flex-direction: column;

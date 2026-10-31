@@ -28,6 +28,7 @@ export type OutputKind = "text" | "image" | "video";
 export type ModelSpec = {
   id: string;
   name: string;
+  family?: { id: string; name: string };
   provider: string;
   kind: OutputKind;
   inputs: string[];

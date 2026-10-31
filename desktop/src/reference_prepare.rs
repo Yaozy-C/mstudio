@@ -125,6 +125,40 @@ pub(super) fn prepare(
     reference: &Reference,
     work: &Path,
 ) -> Result<(Vec<u8>, &'static str)> {
+    if asset.kind == "audio" {
+        let output = work.join("reference.mp3");
+        let start = reference.start.unwrap_or(0.);
+        let end = reference.end.unwrap_or(asset.duration);
+        ensure!(
+            start.is_finite()
+                && end.is_finite()
+                && start >= 0.
+                && end <= asset.duration
+                && end > start,
+            "音频参考区间无效"
+        );
+        media::run(
+            media::command("ffmpeg")
+                .args([
+                    "-v",
+                    "error",
+                    "-y",
+                    "-ss",
+                    &start.to_string(),
+                    "-t",
+                    &(end - start).to_string(),
+                    "-i",
+                    &asset.path,
+                    "-vn",
+                    "-c:a",
+                    "libmp3lame",
+                    "-q:a",
+                    "2",
+                ])
+                .arg(&output),
+        )?;
+        return Ok((std::fs::read(output)?, "audio/mpeg"));
+    }
     let image = asset.kind == "image";
     ensure!(image || asset.kind == "video", "请选择图片或视频参考");
     let output = work.join(if image {

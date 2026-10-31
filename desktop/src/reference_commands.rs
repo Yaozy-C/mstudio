@@ -94,6 +94,7 @@ async fn upload(
             .clone();
         match asset.kind.as_str() {
             "image" => {}
+            "audio" => {}
             "video" => {
                 videos += 1;
                 let start = r.start.unwrap_or(0.);
@@ -108,8 +109,14 @@ async fn upload(
                 );
                 seconds += end - start;
             }
-            _ => anyhow::bail!("参考仅支持图片与视频"),
+            _ => anyhow::bail!("此模型不支持该参考素材类型"),
         }
+        ensure!(
+            crate::models::capabilities::effective_references(&model)
+                .iter()
+                .any(|f| f.kind == asset.kind),
+            "此模型不支持该参考素材类型"
+        );
         planned.push((asset, r));
     }
     let planned = plan(planned)?;
@@ -150,6 +157,7 @@ async fn upload(
             });
             continue;
         }
+
         if model.plugin == "dashscope" {
             let url = crate::model_adapters::dashscope::upload(
                 &key,
@@ -167,10 +175,10 @@ async fn upload(
             });
             continue;
         }
-        let name = if mime == "image/png" {
-            "reference.png"
-        } else {
-            "reference.mp4"
+        let name = match mime {
+            "image/png" => "reference.png",
+            "audio/mpeg" => "reference.mp3",
+            _ => "reference.mp4",
         };
         let initiated = client
             .post("https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3")

@@ -54,10 +54,7 @@ impl ProviderAdapter for Fal {
                 .header("Authorization", format!("Key {key}"))
                 .json(input)
                 .send()
-                .await
-                .map_err(|_| {
-                    anyhow::anyhow!("提交连接中断；结果未知，请在服务商控制台核查，避免重复提交")
-                })?;
+                .await?;
             let value = json_response(response, "submit").await?;
             Ok(serde_json::from_value(
                 json!({"requestId":value["request_id"],
@@ -73,7 +70,7 @@ impl ProviderAdapter for Fal {
             let url = queue_url(
                 job["statusUrl"]
                     .as_str()
-                    .context("提交结果未知，请先在服务商控制台核查")?,
+                    .context("生成任务缺少状态查询地址")?,
             )?;
             let response = match json_response(
                 client()?

@@ -48,6 +48,7 @@ pub fn validate(model: &MediaModel) -> Result<()> {
             "请填写有效的 Gemini 模型 ID"
         );
     }
+
     if model.plugin == "http-json" {
         crate::model_adapters::http_json::validate(
             model

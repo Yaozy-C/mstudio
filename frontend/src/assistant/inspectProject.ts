@@ -5,8 +5,8 @@ import { inspectScript } from "./inspectScript";
 import { scriptChanged } from "../creative/script";
 import type { Project } from "../model";
 import {
-  assetUsage,
-  isLibraryAsset,
+  isStoryAsset,
+  isConfirmedStoryAsset,
   isSelectableAsset,
 } from "../workspace/assetLibrary";
 import { promptStale } from "../creative/prompt";
@@ -15,6 +15,7 @@ import { framesOf } from "../production/frames";
 import { runsOf } from "../production/requestTask";
 import { taskOutcome } from "../production/taskOutcome";
 import { taskTitle } from "../production/taskTitle";
+import { isPlanningMaterial } from "../workspace/resourceRoles";
 const offsetOf = (v: unknown) =>
   typeof v === "number" && Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0;
 export function inspectProject(p: Project, args: Record<string, unknown>) {
@@ -52,36 +53,33 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
     .filter(
       (a) =>
         isSelectableAsset(a) &&
-        (direct || isLibraryAsset(a)) &&
         ((direct && args.usage === undefined) ||
-          usage === "all" ||
-          assetUsage(a) === usage),
+          (usage === "material"
+            ? isPlanningMaterial(a, p)
+            : usage === "asset"
+              ? isStoryAsset(a) && (direct || isConfirmedStoryAsset(a))
+              : direct ||
+                isPlanningMaterial(a, p) ||
+                isConfirmedStoryAsset(a))),
     )
-    .map(
-      ({
-        id,
-        name,
-        kind,
-        duration,
-        width,
-        height,
-        usage,
-        imageId,
-        imageVersionId,
-        imageVersionCount,
-      }) => ({
-        id,
-        name: name.slice(0, 100),
-        usage: usage ?? "material",
-        kind,
-        duration,
-        width,
-        height,
-        imageId,
-        imageVersionId,
-        imageVersionCount,
-      }),
-    );
+    .map((a) => ({
+      id: a.id,
+      name: a.name.slice(0, 100),
+      usage: a.usage ?? "material",
+      kind: a.kind,
+      duration: a.duration,
+      width: a.width,
+      height: a.height,
+      imageId: a.imageId,
+      imageVersionId: a.imageVersionId,
+      imageVersionCount: a.imageVersionCount,
+      inMaterials: isPlanningMaterial(a, p),
+      assetStatus: isStoryAsset(a)
+        ? isConfirmedStoryAsset(a)
+          ? "confirmed"
+          : "candidate"
+        : null,
+    }));
   const creation = p.creation;
   const captions = (p.captions ?? []).map((c) => ({
     ...c,
@@ -310,6 +308,12 @@ export function inspectProject(p: Project, args: Record<string, unknown>) {
       })),
     assets: ids.length ? [] : assets.slice(offset, offset + 10),
     assetCount: assets.length,
+    materialCount: p.assets.filter(
+      (a) => isSelectableAsset(a) && isPlanningMaterial(a, p),
+    ).length,
+    candidateAssetCount: p.assets.filter(
+      (a) => isStoryAsset(a) && !isConfirmedStoryAsset(a),
+    ).length,
     clips: ids.length ? [] : p.clips.slice(offset, offset + 10),
     clipCount: p.clips.length,
     tracks: ids.length ? [] : tracksOf(p).slice(0, 10),

@@ -7,7 +7,7 @@ import type { ProductionTask } from "./types";
 export function supportsReference(asset: Asset, model?: MediaModel) {
   return (
     isSelectableAsset(asset) &&
-    ["image", "video"].includes(asset.kind) &&
+    ["image", "video", "audio"].includes(asset.kind) &&
     (!model ||
       mediaAdapter(model).fields.some(
         (f) => f.kind === asset.kind && f.role === "reference",

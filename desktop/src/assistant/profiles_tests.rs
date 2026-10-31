@@ -75,13 +75,57 @@ fn media_read_is_read_only_and_requires_project_read() {
 }
 
 #[test]
-fn coordinator_can_read_media_without_production_authoring() {
+fn coordinator_delegates_without_media_inspection_or_production_authoring() {
     let profile = defaults("");
-    assert!(allows(&profile, "read_media"));
+    assert!(!allows(&profile, "read_media"));
+    assert!(allows(&profile, "inspect"));
     assert!(allows(&profile, "delegate"));
     for operation in ["request_generation", "set_frame", "append_clip"] {
         assert!(!super::super::permissions::allows_operation(
             &profile, operation
         ));
     }
+    for specialist in builtins().into_iter().filter(|p| {
+        matches!(
+            p.id.as_str(),
+            "concept" | "writer" | "director" | "assets" | "image" | "production" | "editor"
+        )
+    }) {
+        assert!(allows(&specialist, "read_media"), "{}", specialist.id);
+    }
+}
+
+#[test]
+fn material_tool_upgrade_preserves_customization_and_later_tool_removal() {
+    let db = rusqlite::Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
+        .unwrap();
+    let mut old = builtins();
+    for role in &mut old {
+        role.tool_ids.retain(|id| id != "material-read");
+        role.instructions = format!("Custom {}", role.id);
+    }
+    db.execute(
+        "INSERT INTO settings VALUES('agents',?1)",
+        [serde_json::to_string(&old).unwrap()],
+    )
+    .unwrap();
+    let upgraded = read(&db).unwrap();
+    for role in &upgraded {
+        assert_eq!(role.instructions, format!("Custom {}", role.id));
+        assert_eq!(
+            role.tool_ids.iter().any(|id| id == "material-read"),
+            matches!(role.id.as_str(), "concept" | "assets" | "writer")
+        );
+    }
+    let mut writer = upgraded.into_iter().find(|a| a.id == "writer").unwrap();
+    writer.tool_ids.retain(|id| id != "material-read");
+    save(&db, writer).unwrap();
+    assert!(
+        !resolve(&db, Some("writer"))
+            .unwrap()
+            .tool_ids
+            .iter()
+            .any(|id| id == "material-read")
+    );
 }

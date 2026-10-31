@@ -34,4 +34,5 @@ export const ImageReviewContext = createContext<{
   ) => Promise<ImageVersion>;
   versions: (imageId: string) => Promise<ImageVersion[]>;
   selectReference: (assetId: string, versionId: string) => Promise<Asset>;
+  clearReference: (assetId: string) => Promise<void>;
 } | null>(null);

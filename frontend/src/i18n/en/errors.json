@@ -55,6 +55,8 @@
   "存储操作未完成": "Storage operation incomplete",
   "检查存储设备、空间与目录权限后重试。": "Check the storage device, available space and folder permissions, then retry.",
   "操作未完成": "Operation incomplete",
+  "任务尚未结束，请稍后重试": "The task is still running. Try again later.",
+  "生成声音与保留原声不能同时开启，请选择一种声音方式": "Generate audio and Keep original sound cannot both be enabled. Choose one audio mode.",
   "请查看错误详情，处理后再重试。": "Review the error details, resolve the issue and retry.",
   "[服务地址已隐藏]": "[Service URL hidden]",
   "[媒体数据已隐藏]": "[Media data hidden]",

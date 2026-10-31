@@ -28,13 +28,23 @@ pub fn project_snapshot(document: &Value, selected: Option<&str>) -> Value {
         .as_array()
         .into_iter()
         .flatten()
+        .filter(|a| crate::project_service::asset_roles::is_shot_asset(a))
+        .count();
+    let material_count = document["assets"]
+        .as_array()
+        .into_iter()
+        .flatten()
         .filter(|a| {
-            a["usage"] == "asset"
-                && a["missing"] != true
-                && a["annotationSourceId"].is_null()
-                && a["inLibrary"]
-                    .as_bool()
-                    .unwrap_or(a["generated"] != true && a["attachmentOnly"] != true)
+            a["missing"] != true && crate::project_service::asset_roles::is_material(document, a)
+        })
+        .count();
+    let candidate_count = document["assets"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|a| {
+            crate::project_service::asset_roles::is_asset(a)
+                && !crate::project_service::asset_roles::is_confirmed(a)
         })
         .count();
     let details:Vec<_>=nodes.iter().filter(|n|n["id"].as_str()==selected).take(4).map(|n|json!({"id":n["id"],"title":clipped(&n["title"],100),"text":clipped(&n["text"],1200),"kind":n["kind"],"creative":super::creative_context::node_context(document,n),"assetId":n["assetId"],"resultAssetId":n["resultAssetId"],"references":n["references"].as_array().map(|refs|refs.iter().take(12).map(|r|json!({"assetId":r["assetId"],"purpose":clipped(&r["purpose"],400),"start":r["start"],"end":r["end"]})).collect::<Vec<_>>())})).collect();
@@ -43,7 +53,7 @@ pub fn project_snapshot(document: &Value, selected: Option<&str>) -> Value {
       "nodes":nodes.iter().take(30).map(|n|json!({"id":n["id"],"title":clipped(&n["title"],80),"kind":n["kind"],"screenplayId":n["shot"]["screenplayId"],"order":n["shot"]["order"]})).collect::<Vec<_>>(),
       "creation": {"intent":clipped(&document["creation"]["intent"],2000),"essential":clipped(&document["creation"]["essential"],1500),"preserve":clipped(&document["creation"]["preserve"],1500),"stage":document["creation"]["stage"]},
       "tracks":document["tracks"].as_array().map(|v|v.iter().take(20).collect::<Vec<_>>()),"captionCount":document["captions"].as_array().map_or(0,Vec::len),
-      "selected":selected,"relevantNodes":details,"assetCount":asset_count,"clipCount":document["clips"].as_array().map_or(0,Vec::len)})
+      "selected":selected,"relevantNodes":details,"assetCount":asset_count,"materialCount":material_count,"candidateAssetCount":candidate_count,"clipCount":document["clips"].as_array().map_or(0,Vec::len)})
 }
 #[cfg(test)]
 pub fn assemble(
@@ -59,18 +69,12 @@ pub fn assemble_with_budget(
     mut snapshot: Value,
     budget: usize,
 ) -> Result<Value, String> {
-    let history_generation = snapshot
-        .as_object_mut()
-        .and_then(|s| s.remove("_historyGeneration"))
-        .unwrap_or(json!({}));
-    let archived_turns = snapshot
-        .as_object_mut()
-        .and_then(|s| s.remove("_archivedTurns"))
-        .unwrap_or(json!([]));
-    let archived_prompts = snapshot
-        .as_object_mut()
-        .and_then(|s| s.remove("_archivedPrompts"))
-        .unwrap_or(json!([]));
+    let recalled = fallback_history(previous, &snapshot);
+    if let Some(fields) = snapshot.as_object_mut() {
+        for key in ["_historyGeneration", "_archivedTurns", "_archivedPrompts"] {
+            fields.remove(key);
+        }
+    }
     let versions = snapshot
         .as_object_mut()
         .and_then(|s| s.remove("_observations"))
@@ -108,64 +112,56 @@ pub fn assemble_with_budget(
     if used > budget {
         snapshot["nodes"] = json!([]);
         snapshot["tracks"] = json!([]);
-        used = cost(&snapshot);
     }
-    // The budget bounds optional history. Current user content remains intact;
+    // The startup budget bounds optional project detail. User history remains intact;
     // only the provider can authoritatively reject the actual request envelope.
     let context = format!(
         "Current project snapshot (reference data; inspect more details as needed):\n{snapshot}"
     );
-    let mut retained = vec![];
-    // Keep whole user/assistant pairs. Media is reattached only for the current request.
-    for pair in previous.rchunks_exact(2) {
-        if pair.iter().any(|m| {
-            m.attribution.as_ref().is_some_and(|meta| {
-                archived_turns
-                    .as_array()
-                    .is_some_and(|turns| turns.contains(&meta["turnId"]))
-            })
-        }) {
-            continue;
-        }
-        // Incomplete attempts remain visible in history, never as model answers.
-        if pair[1].attribution.as_ref().is_some_and(|m| {
-            matches!(
-                m["status"].as_str(),
-                Some("running" | "failed" | "cancelled" | "interrupted")
-            )
-        }) {
-            continue;
-        }
-        let cost: usize = pair.iter().map(|m| estimate(&text_only(&m.payload))).sum();
-        if used + cost > budget {
-            break;
-        }
-        used += cost;
-        retained.push(pair);
-    }
     let mut result = vec![json!({"role":"system","content":system})];
-    for pair in retained.into_iter().rev() {
-        for m in pair {
-            let turn = m
-                .attribution
-                .as_ref()
-                .and_then(|meta| meta["turnId"].as_str())
-                .unwrap_or("");
-            let mut content = if m.role == "assistant" && !history_generation[turn].is_null() {
-                json!(history_generation[turn].to_string())
-            } else {
-                text_only(&m.payload)
-            };
-            super::archive_context::scrub(
-                &mut content,
-                archived_prompts.as_array().map_or(&[], Vec::as_slice),
-            );
-            result.push(json!({"role":m.role,"content":content}));
-        }
-    }
+    result.extend(recalled);
     snapshot["_observations"] = versions;
     let metadata = super::harness::context_source::metadata(&mut snapshot);
     result.push(json!({"role":"user","content":context,"source":metadata}));
     result.push(json!({"role":"user","content":payload}));
     Ok(json!(result))
+}
+
+/// Seed only when no continuous provider snapshot survives. Archived media work
+/// stays a factual summary; user requirements are not removed by a token cutoff.
+pub fn fallback_history(previous: &[history::Message], snapshot: &Value) -> Vec<Value> {
+    let history_generation = &snapshot["_historyGeneration"];
+    let archived_prompts = &snapshot["_archivedPrompts"];
+    let mut result = vec![];
+    // This is a fallback for pre-continuous sessions or invalidated snapshots.
+    // Never silently drop user requirements to fit a small startup budget.
+    // The harness owns pressure, durable compaction and provider overflow recovery.
+    for m in previous {
+        if m.role == "assistant"
+            && m.attribution.as_ref().is_some_and(|meta| {
+                matches!(
+                    meta["status"].as_str(),
+                    Some("running" | "failed" | "cancelled" | "interrupted")
+                )
+            })
+        {
+            continue;
+        }
+        let turn = m
+            .attribution
+            .as_ref()
+            .and_then(|meta| meta["turnId"].as_str())
+            .unwrap_or("");
+        let mut content = if m.role == "assistant" && !history_generation[turn].is_null() {
+            json!(history_generation[turn].to_string())
+        } else {
+            text_only(&m.payload)
+        };
+        super::archive_context::scrub(
+            &mut content,
+            archived_prompts.as_array().map_or(&[], Vec::as_slice),
+        );
+        result.push(json!({"role":m.role,"content":content}));
+    }
+    result
 }

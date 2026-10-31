@@ -1,6 +1,7 @@
+import { addStoryAsset } from "../workspace/storyAssetLibrary";
 import { expect, test } from "bun:test";
 import { fixture, asset } from "./fixtures.test-helper";
-import { productionItems } from "./items";
+import { shotSources } from "./fixtures.test-helper";
 import { createTask } from "./tasks";
 import {
   requestTask,
@@ -13,7 +14,7 @@ function setup() {
   const p = fixture();
   const task = createTask(
     p,
-    productionItems(p).filter((n) => n.assetId === "a"),
+    shotSources(p).filter((n) => n.assetId === "a"),
   );
   const context: GenerationCommandContext = {
     callId: "call",
@@ -67,7 +68,7 @@ test("reference image tasks are standalone and require explicit inputs even with
     expect(() => requestTask(p, bad, context)).toThrow();
 });
 
-test("asset generation delivers a standalone candidate canvas card", () => {
+test("asset generation delivers a candidate in the asset library without a draft card", () => {
   const { p, context } = setup();
   let next = requestTask(
     p,
@@ -92,16 +93,11 @@ test("asset generation delivers a standalone candidate canvas card", () => {
     canvasGeneration: { task: run, x: 30, y: 40 },
   });
   expect(next.assets.find((a) => a.id === image.id)?.inLibrary).toBeUndefined();
-  expect(next.nodes.filter((n) => n.assetId === image.id)).toHaveLength(1);
-  expect(
-    productionItems(next).find((n) => n.assetId === image.id),
-  ).toMatchObject({
-    kind: "reference",
-    ...run.position,
-  });
+  expect(next.nodes.some((n) => n.assetId === image.id)).toBe(false);
   expect(next.nodes.find((n) => n.id === "shot")).toEqual(
     p.nodes.find((n) => n.id === "shot"),
   );
+  next = addStoryAsset(next, image.id);
   next = applyOperations(next, [
     {
       op: "set_references",

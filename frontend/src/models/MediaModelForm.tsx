@@ -56,8 +56,9 @@ export function MediaModelForm({
               name: model.name.trim(),
               endpoint: model.endpoint.trim(),
               params:
-                model.plugin === "gemini-native"
-                  ? { ...JSON.parse(params), model: nativeModel }
+                model.plugin === "gemini-native" ||
+                typeof initial.params.model === "string"
+                  ? { ...JSON.parse(params), model: nativeModel.trim() }
                   : JSON.parse(params),
               http:
                 model.plugin === "http-json" ? JSON.parse(mapping) : undefined,
@@ -161,7 +162,8 @@ export function MediaModelForm({
                 );
             }}
           />
-          {model.plugin === "gemini-native" && (
+          {(model.plugin === "gemini-native" ||
+            typeof initial.params.model === "string") && (
             <>
               <label className="model-field-wide">
                 {t("模型 ID")}
@@ -224,28 +226,22 @@ export function MediaModelForm({
                 )}
               </small>
             </label>
-            <label className="model-field-wide">
-              {model.plugin !== "http-json"
-                ? t("默认生成参数")
-                : t("请求 JSON 模板")}
-              <textarea
-                rows={6}
-                value={params}
-                onChange={(e) => setParams(e.target.value)}
-                spellCheck={false}
-              />
-              <small>
-                {["fal", "dashscope"].includes(model.plugin)
-                  ? t("按模型文档填写 JSON，提交时自动填入 prompt。")
-                  : model.plugin === "gemini-native"
-                    ? t(
-                        "generationConfig 可设置画幅等选项（model 以上方模型 ID 为准），文字和图片由适配器自动处理。",
-                      )
-                    : t(
-                        "按接口文档填写完整请求，可包含模型 ID 和嵌套输入。{{prompt}} 会替换为当前生成描述；参考 URL 可直接填写。密钥不要写在这里。",
-                      )}
-              </small>
-            </label>
+            {model.plugin === "http-json" && (
+              <label className="model-field-wide">
+                {t("请求 JSON 模板")}
+                <textarea
+                  rows={6}
+                  value={params}
+                  onChange={(e) => setParams(e.target.value)}
+                  spellCheck={false}
+                />
+                <small>
+                  {t(
+                    "按接口文档填写完整请求，可包含模型 ID 和嵌套输入。{{prompt}} 会替换为当前生成描述；参考 URL 可直接填写。密钥不要写在这里。",
+                  )}
+                </small>
+              </label>
+            )}
           </details>
         </div>
         {error && <ErrorNotice error={error} fallback="VALIDATION_FAILED" />}

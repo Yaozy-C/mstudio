@@ -14,7 +14,7 @@ export const canEditOriginal = (task: ProductionTask) =>
     task.status === "DRAFT" ||
     task.status === "AWAITING_CONFIRMATION");
 export const canRegenerate = (task: ProductionTask) =>
-  ["COMPLETED", "FAILED", "CANCELLED"].includes(task.status ?? "");
+  ["COMPLETED", "FAILED", "CANCELLED", "UNKNOWN"].includes(task.status ?? "");
 export function editTaskPrompt(p: Project, key: string, text: string): Project {
   return editTask(p, key, { text });
 }
@@ -61,7 +61,7 @@ export function editTask(
 
 export function regenerationDraft(task: ProductionTask): ProductionTask {
   if (!canRegenerate(task) && !canEditOriginal(task))
-    throw new Error("请先核查原任务状态，再重新生成");
+    throw new Error("任务尚未结束，请稍后重试");
   return {
     ...structuredClone(task),
     hiddenFromList: false,

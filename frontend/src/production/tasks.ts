@@ -1,13 +1,13 @@
 import type { Project } from "../model";
 import {
   type ProductionInput,
-  type ProductionItem,
+  type DraftItem,
   type ProductionTask,
 } from "./types";
 export function taskKey(ids: string[]) {
   return JSON.stringify([...ids].sort());
 }
-function videoRange(p: Project, item: ProductionItem) {
+function videoRange(p: Project, item: DraftItem) {
   const take = p.nodes
     .find((n) => n.id === item.ownerId)
     ?.shot?.takes?.find((t) => t.assetId === item.assetId);
@@ -21,7 +21,7 @@ function videoRange(p: Project, item: ProductionItem) {
 }
 export function createTask(
   p: Project,
-  selected: ProductionItem[],
+  selected: DraftItem[],
   kind?: ProductionTask["kind"],
 ): ProductionTask {
   const video = selected.find((n) => n.kind === "video" && n.nodeId);

@@ -10,7 +10,10 @@ export function useModeIndicator(
     if (!nav) return;
     const measure = () => {
       const button = nav.querySelector<HTMLElement>('[aria-pressed="true"]');
-      if (!button) return;
+      if (!button) {
+        delete nav.dataset.indicator;
+        return;
+      }
       const container = nav.getBoundingClientRect();
       const bounds = button.getBoundingClientRect();
       nav.style.setProperty(
@@ -25,7 +28,8 @@ export function useModeIndicator(
     };
     measure();
     const frame = requestAnimationFrame(() => {
-      nav.dataset.indicator = "ready";
+      if (nav.querySelector('[aria-pressed="true"]'))
+        nav.dataset.indicator = "ready";
     });
     const resize = new ResizeObserver(measure);
     resize.observe(nav);

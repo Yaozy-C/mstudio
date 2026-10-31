@@ -105,8 +105,7 @@ impl ProviderAdapter for Gemini {
                 .header("x-goog-api-key", key)
                 .json(&payload(input)?)
                 .send()
-                .await
-                .map_err(|_| anyhow::anyhow!("Google 请求中断，结果未知，请核查后重试"))?;
+                .await?;
             if !response.status().is_success() {
                 return Err(crate::app_error::http_error(response, "submit")
                     .await
@@ -127,7 +126,7 @@ impl ProviderAdapter for Gemini {
         Box::pin(async move {
             ensure!(
                 job["status"] == "COMPLETED",
-                "Google 同步请求无法轮询，请到服务端核查结果"
+                "Google 同步图像请求无法重新查询结果"
             );
             super::ProviderUpdate::completed_job(job)
         })

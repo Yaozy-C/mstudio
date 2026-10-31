@@ -60,7 +60,9 @@ export function useTaskPanel(
         const current = p.production?.drafts?.[task.key];
         if (
           !current ||
-          !["FAILED", "CANCELLED", "COMPLETED"].includes(current.status ?? "")
+          !["FAILED", "CANCELLED", "COMPLETED", "UNKNOWN"].includes(
+            current.status ?? "",
+          )
         )
           return p;
         const next = regenerateTask(p, current.key);

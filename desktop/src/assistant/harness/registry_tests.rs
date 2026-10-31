@@ -52,7 +52,14 @@ fn bound_skill_tool_references_and_activity_labels_match_available_tools() {
             .map(|t| t.definition)
             .collect();
         if profiles::allows(&profile, "inspect") {
-            definitions.extend(super::super::read_tools::definitions());
+            definitions.extend(super::super::read_tools::definitions().into_iter().filter(
+                |definition| {
+                    crate::assistant::permissions::allows_resource_reader(
+                        &profile,
+                        definition.name.as_str(),
+                    )
+                },
+            ));
             definitions.extend([
                 super::super::agent_artifacts::definition(),
                 super::super::generation_tool::definition(),

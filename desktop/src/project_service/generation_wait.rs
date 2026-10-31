@@ -1,6 +1,6 @@
 //! A wait observes committed task state and sleeps on project events. It never
 //! polls a provider, submits generation or consumes a model turn while waiting.
-use super::{load, runtime};
+use super::{domain, load};
 use crate::database::Store;
 use anyhow::{Result, ensure};
 use rusqlite::Connection;
@@ -10,7 +10,7 @@ use tokio_util::sync::CancellationToken;
 
 pub fn snapshot(db: &Connection, project: &str, keys: &[String]) -> Result<Value> {
     let document = load(db, project)?;
-    let value = runtime::execute(
+    let value = domain::execute(
         json!({"action":"generation_outcomes","document":document,"taskKeys":keys}),
     )?;
     ensure!(

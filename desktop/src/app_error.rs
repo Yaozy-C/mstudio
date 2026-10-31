@@ -56,6 +56,15 @@ impl AppError {
             return known.clone();
         }
         let mut result = Self::new(code, stage, &error.to_string());
+        // An internal project failure is not evidence that the selected model or its
+        // inputs were rejected. Keep contextual import/reconciliation codes.
+        if code == "VALIDATION_FAILED"
+            && let Some(execution) =
+                error.downcast_ref::<crate::project_service::domain::ExecutionError>()
+        {
+            result.code = "OPERATION_FAILED".into();
+            result.details = execution.to_string();
+        }
         if let Some(network) = error.downcast_ref::<reqwest::Error>() {
             result.code = "NETWORK_ERROR".into();
             result.retryable = true;
@@ -103,14 +112,17 @@ pub fn provider_details(value: &Value) -> String {
             .collect();
     }
     [
+        value.as_str(),
         detail.as_str(),
         value["message"].as_str(),
+        value["msg"].as_str(),
         value["error"]["message"].as_str(),
+        value["error"]["msg"].as_str(),
         value["error"].as_str(),
     ]
     .into_iter()
     .flatten()
-    .next()
+    .find(|message| !message.trim().is_empty())
     .unwrap_or("服务未提供可读的错误原因")
     .chars()
     .take(2000)
@@ -179,5 +191,24 @@ mod tests {
         let encoded = wire(e.context("request failed"), "OPERATION_FAILED", "submit");
         assert!(encoded.contains("INVALID_INPUT"));
         assert!(!encoded.contains("private prompt"));
+    }
+    #[test]
+    fn provider_plain_text_and_msg_errors_keep_the_actual_reason() {
+        assert_eq!(
+            provider_details(&serde_json::json!("Invalid generationId.")),
+            "Invalid generationId."
+        );
+        assert_eq!(
+            provider_details(
+                &serde_json::json!({"msg":"enable_audio and keepOriginalSound cannot both be true","input":"private prompt"})
+            ),
+            "enable_audio and keepOriginalSound cannot both be true"
+        );
+        assert_eq!(
+            provider_details(
+                &serde_json::json!({"error":{"msg":"Invalid audio combination"},"headers":{"authorization":"private token"}})
+            ),
+            "Invalid audio combination"
+        );
     }
 }

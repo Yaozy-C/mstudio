@@ -1,30 +1,12 @@
-import { test, expect } from "bun:test";
-import { creativeTask, videoAnalysisTask } from "./aiTasks";
+import { expect, test } from "bun:test";
+import { creativeTask } from "./aiTasks";
 
-test("creative tasks route each stage with an independent task target and preserve idea and scope", () => {
-  const write = creativeTask("write", undefined, undefined, "A lunch bag ad");
-  expect(write.agentId).toBe("writer");
-  expect(creativeTask("revise-script", "p1").agentId).toBe("writer");
-  expect(write.refs).toEqual([]);
-  expect(write.text).toContain("A lunch bag ad");
-  expect(write.text).toContain("本轮只写脚本");
-  const split = creativeTask("split", "p1", "第 2 段");
-  // Shot design has its own role.
-  expect(split.agentId).toBe("director");
-  expect(split.refs).toEqual([]);
-  expect(split.targetNodeId).toBe("p1");
-  expect(split.text).toContain("只处理第 2 段");
-  expect(split.text).toContain("避免重复创建");
-  expect(creativeTask("revise-shot", "s1").targetNodeId).toBe("s1");
-  expect(creativeTask("split", "p1").refs).toEqual([]);
-  expect(creativeTask("split", "p1").targetNodeId).toBe("p1");
-});
-
-test("video breakdown starts an isolated analyst task without targeting an existing screenplay", () => {
-  const task = videoAnalysisTask();
-  expect(task.agentId).toBe("video-analyst");
-  expect(task.isolated).toBe(true);
-  expect(task.targetNodeId).toBeUndefined();
-  expect(task.refs).toEqual([]);
-  expect(task.text).toContain("原视频");
+test("writing uses available source readers before asking for another attachment", () => {
+  const task = creativeTask("write");
+  expect(task.agentId).toBe("writer");
+  expect(task.text).toContain("已分配的素材读取工具");
+  expect(task.text).toContain("素材与资产可同时存在");
+  expect(task.text).toContain("没有本地文件路径也不代表无法读取");
+  expect(task.text).not.toContain("请我用 @ 补充");
+  expect(creativeTask("split").text).toContain("脚本和已确认资产");
 });

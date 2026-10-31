@@ -75,7 +75,7 @@ fn artifact_images_stay_references_while_explicit_attachments_keep_pixels() {
     std::fs::remove_file(root.join("assets/image.jpg")).unwrap();
     let reference = message(&store, &doc, &model, &role, "设计镜头", &source).unwrap();
     let text = serde_json::to_string(&reference).unwrap();
-    assert!(text.contains("mstudio_read_assets") && text.contains("image"));
+    assert!(text.contains("mstudio_read_image") && text.contains("image"));
     let Message::User { content } = reference else {
         panic!("Expected user message")
     };

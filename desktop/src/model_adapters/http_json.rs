@@ -176,14 +176,7 @@ impl ProviderAdapter for HttpJson {
             if !key.is_empty() {
                 builder = builder.bearer_auth(key);
             }
-            let value = response(
-                with_headers(builder, config)?
-                    .send()
-                    .await
-                    .map_err(|_| anyhow::anyhow!("提交中断，结果未知；请核查服务后再重试"))?,
-                "submit",
-            )
-            .await?;
+            let value = response(with_headers(builder, config)?.send().await?, "submit").await?;
             if let Some(template) = config["pollUrl"].as_str().filter(|s| !s.is_empty()) {
                 let id = value
                     .pointer(config["idPointer"].as_str().unwrap())
@@ -211,7 +204,7 @@ impl ProviderAdapter for HttpJson {
                 config["pollUrl"].as_str().context("此接口没有轮询地址")?,
                 job["requestId"]
                     .as_str()
-                    .context("任务未取得 ID，请在服务端核查")?,
+                    .context("生成任务缺少服务端任务 ID")?,
             )?;
             let value = response(
                 with_headers(request(key, &url)?, config)?.send().await?,

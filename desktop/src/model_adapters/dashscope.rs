@@ -106,7 +106,7 @@ fn update(value: Value) -> Result<ProviderUpdate> {
         "RUNNING" => "IN_PROGRESS",
         "SUCCEEDED" => "COMPLETED",
         "FAILED" => "FAILED",
-        "UNKNOWN" => "UNKNOWN",
+        "UNKNOWN" => "FAILED",
         "CANCELED" => "CANCELLED",
         other => anyhow::bail!("未知百炼任务状态：{other}"),
     };
@@ -115,16 +115,16 @@ fn update(value: Value) -> Result<ProviderUpdate> {
         let outputs = outputs(&value)?;
         result["outputs"] = serde_json::to_value(outputs)?;
         result["result"] = value.clone();
-    } else if status == "FAILED" {
-        result["error"] = json!(crate::app_error::provider_details(&value["output"]));
-    } else if status == "UNKNOWN" {
+    } else if value["output"]["task_status"] == "UNKNOWN" {
         let mut error = crate::app_error::AppError::new(
             "RESULT_UNAVAILABLE",
             "status",
-            "百炼任务不存在或已超过查询保留期，无法确认原任务结果，请到服务商核查",
+            "百炼任务不存在或已超过查询保留期，无法获取生成结果",
         );
-        error.outcome = Some("unknown".into());
+        error.outcome = Some("failed".into());
         result["error"] = json!(error.to_string());
+    } else if status == "FAILED" {
+        result["error"] = json!(crate::app_error::provider_details(&value["output"]));
     }
     if matches!(status, "FAILED" | "CANCELLED")
         && value["output"]
@@ -185,10 +185,7 @@ impl ProviderAdapter for DashScope {
                     .header("X-DashScope-OssResourceResolve", "enable")
                     .json(&body(input)?)
                     .send()
-                    .await
-                    .map_err(|_| {
-                        anyhow::anyhow!("提交连接中断，结果未知；请在百炼控制台核查后再重试")
-                    })?,
+                    .await?,
                 "submit",
             )
             .await?;
@@ -207,7 +204,7 @@ impl ProviderAdapter for DashScope {
                 job["endpoint"].as_str().context("缺少端点")?,
                 job["requestId"]
                     .as_str()
-                    .context("提交结果未知，请在百炼控制台核查")?,
+                    .context("生成任务缺少百炼任务 ID")?,
             )?;
             update(response(client()?.get(url).bearer_auth(key).send().await?, "status").await?)
         })
@@ -241,13 +238,13 @@ pub use storage::upload;
 mod status_tests {
     use super::*;
     #[test]
-    fn unknown_does_not_claim_failure_or_completion() {
+    fn unavailable_provider_task_finishes_as_failed() {
         let state = update(json!({"output":{"task_status":"UNKNOWN"}})).unwrap();
-        assert_eq!(state.status, "UNKNOWN");
+        assert_eq!(state.status, "FAILED");
         let error: crate::app_error::AppError =
             serde_json::from_str(&state.error.unwrap()).unwrap();
         assert_eq!(error.code, "RESULT_UNAVAILABLE");
-        assert_eq!(error.outcome.as_deref(), Some("unknown"));
+        assert_eq!(error.outcome.as_deref(), Some("failed"));
         assert!(!error.retryable);
     }
     #[test]

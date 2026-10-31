@@ -43,7 +43,7 @@ pub fn check(schema: &Value) -> Result<(), String> {
                 }
             }
             "additionalProperties" if !value.is_boolean() => {
-                return Err("additionalProperties must be boolean".into());
+                check(value)?;
             }
             "required" | "enum" if !value.is_array() => {
                 return Err(format!("{key} must be an array"));
@@ -91,5 +91,28 @@ mod tests {
             &json!({"visual":{"curve":[0.2],"unknown":1},"extra":2}),
         );
         assert_eq!(errors.len(), 3);
+    }
+}
+
+#[cfg(test)]
+mod map_tests {
+    #[test]
+    fn scalar_option_maps_are_validated_recursively() {
+        let schema = serde_json::json!({"type":"object","additionalProperties":{"type":["string","number","boolean"]}});
+        super::check(&schema).unwrap();
+        assert!(
+            super::super::schema::validate(&schema, &serde_json::json!({"audio":false,"count":2}))
+                .is_ok()
+        );
+        assert!(
+            super::super::schema::validate(&schema, &serde_json::json!({"audio":{"invalid":true}}))
+                .is_err()
+        );
+        assert!(
+            super::check(
+                &serde_json::json!({"type":"object","additionalProperties":{"pattern":"bad"}})
+            )
+            .is_err()
+        );
     }
 }

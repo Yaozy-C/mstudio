@@ -37,5 +37,15 @@
   "压缩余量须在 0 到 2000000 token 之间": "Compaction headroom must be between 0 and 2,000,000 tokens.",
   "输出上限超过此模型公布的输出能力": "The output limit exceeds this model’s published output capacity.",
   "上下文窗口须在 8192 到 2000000 token 之间": "The context window must be between 8,192 and 2,000,000 tokens.",
-  "Codex 的输出上限由本机服务管理": "The local Codex service manages its output limit."
+  "Codex 的输出上限由本机服务管理": "The local Codex service manages its output limit.",
+  "先支持单张首帧图生视频。赠送积分和团队权益不可用，提交后无法取消。": "Supports single first-frame image-to-video. Bonus credits and team benefits are unavailable. Submitted generations cannot be canceled.",
+  "可用积分：{credits}": "Available credits: {credits}",
+  "检测并同步模型": "Check and sync models",
+  "生成数量": "Output count",
+  "生成声音": "Generate audio",
+  "保留原声": "Keep original sound",
+  "画面比例": "Aspect ratio",
+  "多镜头": "Multiple shots",
+  "搜索参考素材": "Search reference media",
+  "支持首尾帧和全参考，素材类型及数量以账号模型能力为准。赠送积分和团队权益不可用，提交后无法取消。": "Supports frame and full-reference video. Reference types and counts depend on your account’s models. Bonus credits and team benefits are unavailable. Submitted generations cannot be canceled."
 }

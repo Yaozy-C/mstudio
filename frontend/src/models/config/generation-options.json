@@ -1,0 +1,100 @@
+[
+  {
+    "plugin": "codex-image",
+    "options": [
+      {
+        "key": "n",
+        "label": "生成数量",
+        "path": "/n",
+        "type": "integer",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "quality",
+        "label": "生成质量",
+        "path": "/quality",
+        "type": "string",
+        "values": ["low", "medium", "high", "xhigh", "max"]
+      },
+      {
+        "key": "size",
+        "label": "输出尺寸",
+        "path": "/size",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "plugin": "dashscope",
+    "model": "wan3.0-video",
+    "options": [
+      {
+        "key": "audio",
+        "label": "生成声音",
+        "path": "/parameters/audio",
+        "type": "boolean"
+      }
+    ]
+  },
+  {
+    "plugin": "fal",
+    "endpoints": [
+      "openai/gpt-image-2.5/sunburst/text-to-image",
+      "openai/gpt-image-2.5/sunburst/edit",
+      "openai/gpt-image-2.5/flare/text-to-image",
+      "openai/gpt-image-2.5/flare/edit"
+    ],
+    "options": [
+      {
+        "key": "num_images",
+        "label": "生成数量",
+        "path": "/num_images",
+        "type": "integer",
+        "min": 1,
+        "max": 4
+      },
+      {
+        "key": "quality",
+        "label": "生成质量",
+        "path": "/quality",
+        "type": "string",
+        "values": ["auto", "low", "medium", "high", "xhigh", "max"]
+      },
+      {
+        "key": "output_format",
+        "label": "输出格式",
+        "path": "/output_format",
+        "type": "string",
+        "values": ["png", "jpeg", "webp"]
+      }
+    ]
+  },
+  {
+    "plugin": "fal",
+    "endpoints": ["fal-ai/nano-banana-2", "fal-ai/nano-banana-2/edit"],
+    "options": [
+      {
+        "key": "num_images",
+        "label": "生成数量",
+        "path": "/num_images",
+        "type": "integer",
+        "min": 1
+      },
+      {
+        "key": "seed",
+        "label": "随机种子",
+        "path": "/seed",
+        "type": "integer",
+        "min": 0
+      },
+      {
+        "key": "output_format",
+        "label": "输出格式",
+        "path": "/output_format",
+        "type": "string",
+        "values": ["png", "jpeg", "webp"]
+      }
+    ]
+  }
+]

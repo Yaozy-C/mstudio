@@ -6,8 +6,13 @@ use serde_json::{Value, json};
 pub fn result_name(db: &Connection, job: &Value) -> Result<String> {
     let project = job["projectId"].as_str().context("任务缺少项目")?;
     let document = super::load(db, project)?;
-    let value =
-        super::runtime::execute(json!({"action":"result_name","document":document,"job":job}))?;
+    // Naming only reads the saved task snapshot. Request/response bodies can
+    // contain several copies of image Base64 and are unnecessary for naming.
+    let value = super::domain::execute(json!({
+        "action":"result_name",
+        "document":document,
+        "job":{"shot":job["shot"]}
+    }))?;
     if let Some(error) = value.get("error") {
         anyhow::bail!("生成结果命名失败：{error}");
     }
@@ -16,3 +21,7 @@ pub fn result_name(db: &Connection, job: &Value) -> Result<String> {
         .map(str::to_owned)
         .context("生成结果缺少任务名称")
 }
+
+#[cfg(test)]
+#[path = "production_names_tests.rs"]
+mod tests;

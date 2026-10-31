@@ -37,5 +37,9 @@
     }
   },
   "plugin": "dashscope",
-  "serviceEndpoint": "https://your-workspace-id.cn-beijing.maas.aliyuncs.com"
+  "serviceEndpoint": "https://your-workspace-id.cn-beijing.maas.aliyuncs.com",
+  "family": {
+    "id": "wan-3.0",
+    "name": "Wan 3.0"
+  }
 }

@@ -34,10 +34,10 @@ export function changeBatch(
       !task.submissionId
     )
       next = saveTask(next, { ...task, status: "READY", error: undefined });
-    // Reset the same task. Unknown outcomes and partial results are not replayed.
+    // Reset the same task, retaining any existing results.
     if (
       action === "retry" &&
-      task.status === "FAILED" &&
+      ["FAILED", "UNKNOWN"].includes(task.status ?? "") &&
       task.modelId &&
       !task.resultAssetId &&
       !task.resultAssetIds?.length

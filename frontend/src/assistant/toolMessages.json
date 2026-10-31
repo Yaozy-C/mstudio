@@ -100,5 +100,6 @@
   "分镜图仅支持 assetId、title、prompt": "Storyboard frames support only assetId, title and prompt",
   "分镜图必须是本项目的图片": "Storyboard frame must be an image in this project",
   "分镜图标题或描述无效": "Invalid frame title or prompt",
-  "同一镜头不能重复关联同一张分镜图": "Cannot attach the same frame twice to one shot"
+  "同一镜头不能重复关联同一张分镜图": "Cannot attach the same frame twice to one shot",
+  "此资源尚未确认为镜头资产。请先在资产库确认，再用于镜头制作；原素材会保留。": "This resource is not a confirmed shot asset. Confirm it in the asset library before shot production; its source material remains available."
 }

@@ -173,6 +173,8 @@ fn visit(s: &Value, v: &Value, path: &str, out: &mut Vec<Issue>) {
                         )
                     ),
                 });
+            } else if s["additionalProperties"].is_object() {
+                visit(&s["additionalProperties"], item, &child_path, out);
             }
         }
     }

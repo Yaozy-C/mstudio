@@ -1,12 +1,10 @@
 import { freeResultPosition } from "./resultLayout";
 import { mediaCardSize } from "./mediaCardSize";
 import { resultTask, resultTaskName } from "./taskResultNames";
-import { materializeFrameCards } from "./frameCards";
-import { resultOrigin } from "./resultOrigin";
 import { uid, type Asset, type Project } from "../model";
 import { takesOf, shotBasis } from "../creative/document";
 import { framesOf } from "./frames";
-import { itemKey, type ProductionSource, type ProductionTask } from "./types";
+import { type ProductionSource, type ProductionTask } from "./types";
 
 export function saveTask(p: Project, task: ProductionTask): Project {
   return {
@@ -66,12 +64,15 @@ export function receiveProductionResult(
     generated: true,
     usage: current.generationPurpose === "asset" ? "asset" : "material",
     inLibrary: undefined,
+    inMaterials: false,
+    assetStatus:
+      current.generationPurpose === "asset" ? "candidate" : undefined,
   };
   const original = source.canvasGeneration;
   const ownerId =
     original.task.generationPurpose === "asset"
       ? undefined
-      : resultOrigin(p, original.task).ownerId;
+      : original.task.ownerId;
   const data = {
     ...original,
     task: { ...original.task, title: current.title, ownerId },
@@ -97,8 +98,7 @@ export function receiveProductionResult(
         ]),
       ],
     });
-  // Library membership and shot usage are independent of canvas visibility.
-  // Reference generation creates a standalone card like other unassigned media.
+  // Shot outputs stay on their shot; only exploratory work gets a draft card.
   const node = p.nodes.find((n) => n.id === data.task.ownerId && n.shot);
   if (
     node &&
@@ -106,20 +106,12 @@ export function receiveProductionResult(
       takesOf(node).some((t) => t.assetId === asset.id))
   )
     return p;
-  if (!node && p.nodes.some((n) => n.assetId === asset.id)) return p;
+  if (!node && p.assets.some((a) => a.id === asset.id)) return p;
   const assets = p.assets.some((a) => a.id === asset.id)
     ? p.assets
     : [...p.assets, asset];
-  let key: string | undefined;
-  const position = freeResultPosition(
-    p,
-    data.task,
-    data.task.position ?? { x: data.x, y: data.y },
-    mediaCardSize(asset),
-  );
   let nodes = p.nodes;
   if (node?.shot) {
-    if (asset.kind === "video") key = itemKey("take", node.id, asset.id);
     const shot =
       asset.kind === "image"
         ? {
@@ -146,9 +138,14 @@ export function receiveProductionResult(
             ],
           };
     nodes = nodes.map((n) => (n.id === node.id ? { ...n, shot } : n));
-  } else {
+  } else if (data.task.generationPurpose !== "asset") {
     const id = uid();
-    key = itemKey("node", id);
+    const position = freeResultPosition(
+      p,
+      data.task,
+      data.task.position ?? { x: data.x, y: data.y },
+      mediaCardSize(asset),
+    );
     nodes = [
       ...nodes,
       {
@@ -157,25 +154,9 @@ export function receiveProductionResult(
         assetId: asset.id,
         title: asset.name,
         text: "",
-        x: data.x,
-        y: data.y,
+        ...position,
       },
     ];
   }
-  const result = materializeFrameCards({ ...p, assets, nodes });
-  if (!key) {
-    const card = result.nodes.find((n) => !n.shot && n.assetId === asset.id);
-    if (!card) throw new Error("分镜图缺少画布卡片");
-    key = itemKey("node", card.id);
-  }
-  return {
-    ...result,
-    production: {
-      ...result.production,
-      positions: {
-        ...result.production?.positions,
-        [key]: position,
-      },
-    },
-  };
+  return { ...p, assets, nodes };
 }

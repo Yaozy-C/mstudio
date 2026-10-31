@@ -109,7 +109,7 @@ export function inputFor(
   let seconds = 0;
   const files = refs.map((r, index) => {
     const asset = referenceAsset(p, r.assetId);
-    if (!asset || !["image", "video"].includes(asset.kind))
+    if (!asset || !["image", "video", "audio"].includes(asset.kind))
       throw failure("VALIDATION_FAILED", "素材已移除，或不支持用于媒体生成");
     if (asset.kind === "video") {
       const start = r.start ?? 0,
@@ -141,7 +141,7 @@ export function inputFor(
       throw failure("VALIDATION_FAILED", "参考素材上传不完整，请重试");
     return {
       assetId: r.assetId,
-      kind: asset.kind as "image" | "video",
+      kind: asset.kind as ModelInput["kind"],
       role,
       url:
         file?.url ??

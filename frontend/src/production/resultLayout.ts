@@ -1,5 +1,5 @@
 import type { Project } from "../model";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import type { ProductionTask } from "./types";
 
 export const resultSize = (kind: ProductionTask["kind"]) => ({
@@ -11,7 +11,7 @@ export const resultSize = (kind: ProductionTask["kind"]) => ({
 // stays available when importing its result; terminal runs leave only cards.
 export function resultObstacles(project: Project, task: ProductionTask) {
   return [
-    ...productionItems(project),
+    ...draftItems(project),
     ...Object.values(project.production?.drafts ?? {})
       .filter(
         (run) =>

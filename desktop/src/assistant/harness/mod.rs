@@ -26,7 +26,7 @@ mod operation_tools;
 mod outcomes;
 mod read_failure;
 mod read_reuse;
-mod read_tools;
+pub(super) mod read_tools;
 mod registry;
 mod saved_work;
 mod scheduler;

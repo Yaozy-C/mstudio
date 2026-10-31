@@ -54,9 +54,6 @@
 .studio-shell .dock-agent {
   background: color-mix(in srgb, var(--desk-bg) 55%, var(--desk-sidebar));
 }
-.studio-shell .dock-media {
-  background: var(--desk-sidebar);
-}
 .radix-themes .studio-shell .dock-heading {
   min-height: 60px;
   padding: 18px 20px 10px;
@@ -100,13 +97,6 @@
   color: var(--desk-text);
   box-shadow: 0 1px 2px #22221f06;
 }
-.radix-themes .studio-shell .dock-media .import-box {
-  min-height: 32px;
-  padding: 5px 8px;
-  border-color: var(--desk-control);
-  border-radius: var(--ui-radius);
-  margin-bottom: 14px;
-}
 .media-toolbar {
   display: flex;
   align-items: center;
@@ -126,22 +116,9 @@
   text-align: center;
   padding: 32px 8px;
 }
-.studio-shell .dock-media .media-list {
-  padding: 0 2px;
-  gap: 16px 10px;
-}
-.radix-themes .studio-shell .dock-media .media-thumbnail {
-  border: 1px solid var(--ui-rule);
-  border-radius: var(--ui-radius);
-  background: color-mix(in srgb, var(--desk-bg) 45%, var(--desk-sidebar));
-}
 .radix-themes .studio-shell .media-thumbnail[aria-pressed="true"] {
   border-color: var(--desk-accent);
   box-shadow: 0 0 0 2px var(--ui-focus);
-}
-.studio-shell .dock-media .media-caption span {
-  font-size: var(--ui-caption);
-  line-height: 18px;
 }
 .studio-shell .media-section-label {
   margin-bottom: 10px;

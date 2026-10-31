@@ -1,4 +1,4 @@
-import { isStoryAsset, isLibraryAsset } from "../workspace/assetLibrary";
+import { isConfirmedStoryAsset } from "../workspace/assetLibrary";
 import {
   assertGenerationReferences,
   replaceTaskReferences,
@@ -82,7 +82,11 @@ export function requestTask(
       ? turn.task
       : undefined);
   let task = source ? structuredClone(source) : createTask(p, [], kind);
-  task = { ...task, kind };
+  task = {
+    ...task,
+    kind,
+    targetNodeId: typeof ownerId === "string" ? ownerId : undefined,
+  };
   if (kind === "image" && op.mode !== undefined)
     throw failure("VALIDATION_FAILED", "图片任务不接受视频素材组合方式");
   const mode = op.mode ?? task.mode;
@@ -102,6 +106,7 @@ export function requestTask(
                 : r.role,
           })),
         };
+  task = { ...task, generationPurpose: assetTask ? "asset" : undefined };
   // A shot may supply its approved story assets. Other media require explicit
   // task inputs or this call's references; never sweep the project library.
   const defaults =
@@ -113,8 +118,7 @@ export function requestTask(
               (a) =>
                 a.id === r.assetId &&
                 a.kind === "image" &&
-                isStoryAsset(a) &&
-                isLibraryAsset(a),
+                isConfirmedStoryAsset(a),
             ),
           )
       : undefined;
@@ -151,7 +155,7 @@ export function requestTask(
     kind,
     mode: task.mode,
     inputs: task.inputs,
-    ownerId: undefined,
+    ownerId: typeof ownerId === "string" ? ownerId : undefined,
     targetNodeId: typeof ownerId === "string" ? ownerId : undefined,
     prompt,
     parameters:
@@ -181,8 +185,9 @@ export function requestTask(
       "VALIDATION_FAILED",
       "本批次最多创建 500 个生成任务，请在新一轮继续",
     );
-  run.position =
-    saved?.position ??
-    resultPlacement(p, run, turn.canvas?.size, turn.canvas?.view);
+  if (!run.targetNodeId && !run.ownerId && run.generationPurpose !== "asset")
+    run.position =
+      saved?.position ??
+      resultPlacement(p, run, turn.canvas?.size, turn.canvas?.view);
   return saveTask(p, run);
 }

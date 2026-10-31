@@ -1,36 +1,88 @@
 ---
 name: ad-script
-description: Develop a selected concept or concrete user premise into a complete audiovisual advertising script, with exact words, action, sound and segment timing. Leave direction selection, shot design and media execution to their specialists.
+description: Write a selected one-scene advertising concept as a complete, playable scene with exact words, action, product action, sound and timing. Do not turn a scene into a montage, world or non-narrative mood piece.
 ---
 
 # Audiovisual screenwriting
 
-Write the complete piece promised by the chosen concept. Own what happens and what is said, shown as text and heard, including the time those passages need.
+## Write the scene, not a montage
 
-## Take up the premise
+A concept is a **scene**: one place, one protagonist, one want, one obstacle, one product action, one turn, one cost, one last line. The card is a summary; this Skill writes the scene at full resolution.
 
-Carry the audience, market, finished-film language, duration and explicit requirements. Work from the selected concept or a sufficiently concrete user premise. Preserve its central buying reason and expressive connection. Develop the selected concept into executable content while preserving any user-locked wording or events.
+Read the selected card and its scene contract. If the card is a world, a montage, a hero universe, a collective without one protagonist, or a product that is never used, **return the conflict**; do not invent a montage to cover it. Do not silently replace the selected scene.
 
-If the task still needs campaign direction development or comparison, return that need to the coordinator for creative planning. Do not silently replace a selected direction. Within it, invent the actions, dialogue and structure needed to make the script work; the writer does not need permission for ordinary writing decisions.
+If the user explicitly asks for a visual essay or a non-narrative piece, write that form; even then it needs a visual argument, a turn and a product action. The default for a product ad is a scene with a protagonist.
 
-Use original product material and accessible research. Keep supported facts, fictional events and genuine testimony distinct. An unmeasured qualitative capability can be expressed qualitatively. Creative framing does not supply evidence for exact outcomes, product specifications or a real customer's history.
+## The scene contract
 
-## Compose the audiovisual passage
+Preserve these from the card:
 
-Start with the material that carries the idea: an event, exchange, image, observation, process or sound. Develop it into the audience's experience before arranging timed rows. Let the chosen premise supply the action rather than automatically showing the product's operating sequence.
+- **Who** — one visible protagonist, or one group with a single shared want. Not "the city" or "everyone".
+- **Where** — one location; at most one hard cut between two. No world-hopping.
+- **Want** — what the protagonist wants now.
+- **Obstacle** — what stops them; a person, a rule, a cost, a social pressure.
+- **Product action** — what the product does in the scene; it must be visible, not voice-over.
+- **Turn** — the moment the product action changes the situation.
+- **Cost** — what the protagonist loses or gives up.
+- **Last line** — the line or action that changes the meaning of the first image.
+- **First image / last image** — the two frames the film must earn.
 
-Carry forward what makes the chosen premise interesting, as well as its message. Develop the consequences, implications or variations of that relationship or experience. A new scene can fit the theme while abandoning the original attraction. Add characters, misunderstandings or emotional resolution when they reveal or change something particular in this piece; they are not default ways to complete its second half. Let the ending answer the experience the passage has set in motion. A quiet, sensory or non-narrative piece need not acquire a plot or a moral.
+If any of these is missing, solve it inside the scene or return the conflict. Do not add a second location, a crowd, a flashback, a photo that started a tradition or a world-building voice-over to make the scene work.
 
-Write concrete changes, exact words and meaningful responses. Give a speaker an intention and a relationship to the listener; let vocabulary and timing express them. For nonverbal work, write the perceptible sequence itself. Words and pictures can complete or reinterpret each other rather than repeating the same feature. A sound or pause belongs in the script when it changes meaning or rhythm.
+## Compose the scene
 
-Keep the advertised value active in the chosen expression. An end card can identify or clarify the offer; the passage itself should carry the relevant thought. Preserve the contribution of supporting props without attributing their properties to the product.
+Start with the first image and the protagonist's want. Make the obstacle concrete. Let the product action be the **cause** of the turn, not a demonstration inserted into the scene.
 
-For techniques that help develop an existing idea, use [craft](references/craft.md). Choose only what serves this premise. No particular hook, conflict, reversal, mechanism explanation or CTA is mandatory.
+- The product must be **used**: opened, shared, fitted, carried, divided, kept, handed over. The turn must fail without that action.
+- The action must be visible. A line of voice-over, a title card or a photo of the product is not a product action.
+- The cost must be real: the protagonist risks embarrassment, belonging, status, money, being judged, losing the argument, or giving up something.
+- The last line must change what the first image meant; a slogan that explains the film is not a turn.
 
-## Shape and deliver the script
+Write the scene as **beats**, not paragraphs of theme. Each beat states what is visible/audible and what changes. Use exact dialogue, not a description of the dialogue's intent.
 
-Arrange the content to sustain its thought and give the audience time to understand it. Estimate paragraph durations from actual speech, visible action and useful overlaps. Distinguish the user's locked runtime from provisional allocations. Model generation lengths do not determine screenplay beats.
+Carry the audience, market, finished-film language, duration and explicit user requirements. Preserve user-locked wording and events. If the scene cannot fit the requested duration, cut beats or compress action; do not add a world to fill time.
 
-Deliver the requested script with paragraph timing, visible action, exact dialogue or narration, on-screen text and meaningful sound. A content-level reveal or essential ordering can belong in the script; the director decides the shots, camera and staging that realize it. Physical performance detail and exact cut points remain director or editor decisions unless the user already specified them.
+## Duration and speech
 
-Carry consequential assumptions outside the film text. A requested first draft is a complete draft, without an appended score or unsolicited revision round. For a local revision, preserve unaffected passages and existing associations. For Mstudio saving and handoff, use [integration](references/mstudio.md); the available tools and schema govern the write. This Skill authors screenplay content, not shots, model prompts, generated media or timeline edits.
+Estimate timing from actual speech, visible action and meaningful overlaps. Fit speech to the available speaking time. Keep pauses that change meaning. Word counts and assumed delivery rates are planning estimates, not proof of a read.
+
+If the scene needs more than the duration allows, remove a beat or change the scene with the user; do not turn it into a montage or a trailer. A 15–30s scene cannot establish a city, a hero universe or a photo that started a tradition.
+
+## Scene tests
+
+Run these before delivering:
+
+1. **One-sentence test** — can you say the scene, with the product action, in one sentence?
+2. **Cover test** — cover the product; does the scene still play? If yes, the product is decoration.
+3. **Cause test** — does the product action cause the turn, or is it merely present?
+4. **Cost test** — what does the protagonist lose or give up? If nothing, the scene is a mood.
+5. **One-scene test** — can it be shot in one location (or one hard cut) without a montage?
+6. **Last-line test** — remove the last line; does the film still mean the same? If yes, it was a slogan.
+7. **Retell test** — would a viewer describe this as a scene ("a bear on trial opens a lunch and feeds the jury"), not a world ("a city stops at noon")?
+
+If a test fails, fix the scene or return the conflict to concept. Do not add a montage, a world or a second protagonist.
+
+## Deliver
+
+Deliver the scene with:
+
+- paragraph/beat timing,
+- visible action,
+- exact dialogue or narration,
+- on-screen text,
+- meaningful sound,
+- first image and last image.
+
+Keep physical performance detail and exact cut points for the director unless the user already specified them. The scene's causal spine is fixed; the director may choose viewpoint, staging and cuts that realize it, but may not replace the scene.
+
+For Mstudio saving and handoff, use [integration](references/mstudio.md); the available tools and schema govern the write. This Skill authors scene content, not shots, model prompts, generated media or timeline edits.
+
+## Do not
+
+- Turn the scene into a world, a montage, a "day in the life" or a trailer.
+- Use a collective, a voice-over or a title card as the protagonist.
+- Put the product in a photo, a ledge, a curb or a line of voice-over instead of the action.
+- Add a second location, crowd or flashback to make the scene feel bigger.
+- Use a slogan as the last line.
+- Hide a missing product action behind "mood", "sensory" or "non-narrative".
+- Change the selected scene, its cost or its last line without the user.

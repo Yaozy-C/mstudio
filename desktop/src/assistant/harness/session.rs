@@ -238,7 +238,7 @@ pub fn start_in(
         project,
         turn,
         "session/start",
-        json!({"binding":binding,"messages":messages}),
+        json!({"binding":binding,"messages":messages,"contextMode":"continuous"}),
     )
 }
 

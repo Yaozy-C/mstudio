@@ -1,7 +1,11 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowsOut, Broom, FolderOpen, Palette } from "@phosphor-icons/react";
 import { bridge, native } from "../../bridge";
-import { isLibraryAsset } from "../assetLibrary";
+import {
+  isMaterial,
+  isStoryAsset,
+  isConfirmedStoryAsset,
+} from "../assetLibrary";
 import type { Asset } from "../../model";
 import { t, useLanguage } from "../../i18n";
 import { ActionButton } from "../../ui/ActionButton";
@@ -75,7 +79,10 @@ export function ImageProcessingPreview({
     : asset;
   const original = versions[0];
   const pending = !!currentVersion && currentVersion.id !== referenceId;
-  const isReference = !pending && isLibraryAsset(asset);
+  const confirmed = isStoryAsset(asset)
+    ? isConfirmedStoryAsset(asset)
+    : isMaterial(asset);
+  const isReference = !pending && confirmed;
   useEffect(() => {
     onPendingVersion?.(pending);
   }, [pending, onPendingVersion]);
@@ -84,7 +91,7 @@ export function ImageProcessingPreview({
       v.operation
         ? `V${index} · ${t(v.operation.kind === "restore" ? "AI 修复" : v.operation.kind === "upscale" ? "超分辨率" : "LUT")}${v.operation.kind === "restore" && v.operation.denoise !== undefined ? ` · ${v.operation.denoise.toFixed(2)}` : ""}`
         : t("原图"),
-      v.id === referenceId && isLibraryAsset(asset) ? t("当前参考") : "",
+      v.id === referenceId && confirmed ? t("当前参考") : "",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -184,7 +191,8 @@ export function ImageProcessingPreview({
     setBusy("reference");
     setError(undefined);
     try {
-      await context.selectReference(asset.id, currentVersion.id);
+      if (isReference) await context.clearReference(asset.id);
+      else await context.selectReference(asset.id, currentVersion.id);
       if (!mounted.current) return;
       setVersions(await context.versions(imageId));
     } catch (error) {
@@ -235,7 +243,9 @@ export function ImageProcessingPreview({
             )}
             <AsyncButton
               busy={busy === "reference"}
-              disabled={!!busy || isReference}
+              disabled={!!busy}
+              aria-pressed={isReference}
+              aria-label={isReference ? t("取消参考") : t("设为参考")}
               onClick={() => void selectReference()}
             >
               {isReference ? t("当前参考") : t("设为参考")}
@@ -243,11 +253,6 @@ export function ImageProcessingPreview({
           </div>
         )}
       </div>
-      {currentVersion && !isReference && (
-        <div className="image-version-notice" role="status">
-          {t("设为参考会让此资产采用选定版本，资产 ID 保持不变。")}
-        </div>
-      )}
       {!tool && error != null && <ErrorNotice error={error} />}
       <div className="image-processing-body">
         <div className="image-processing-stage">

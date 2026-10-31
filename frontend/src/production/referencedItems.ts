@@ -1,11 +1,11 @@
 import type { AttachmentRef } from "../assistant/attachments";
 import type { Project } from "../model";
 import { attachmentInput } from "./attachmentInput";
-import type { ProductionItem, ProductionTask } from "./types";
+import type { DraftItem, ProductionTask } from "./types";
 
 export function referencedItems(
   project: Project,
-  items: ProductionItem[],
+  items: DraftItem[],
   task: ProductionTask | undefined,
   attachments: AttachmentRef[],
 ): Set<string> {

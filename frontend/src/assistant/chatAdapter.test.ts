@@ -35,7 +35,7 @@ test("failed canvas request retries original context without consuming the next 
   f.thread.composer.setText("修改这张图片");
   const sending = f.thread.composer.send();
   await until(() => Object.keys(f.sent).length === 1);
-  expect(f.context.canvas!.task!.inputs).toEqual([]);
+  expect(f.context.canvas!.task!.inputs).toEqual(original.inputs);
   f.context.canvas!.task = {
     ...original,
     key: "selected-b",

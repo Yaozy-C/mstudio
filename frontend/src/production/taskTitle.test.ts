@@ -103,9 +103,7 @@ test("asset names default when absent and become result display names without re
     path: result.path,
     id: result.id,
   });
-  expect(next.nodes.find((n) => n.assetId === result.id)?.title).toBe(
-    "小满 · 人物资产",
-  );
+  expect(next.nodes.some((n) => n.assetId === result.id)).toBe(false);
   expect(result.name).toBe("生成结果-123.png");
 });
 

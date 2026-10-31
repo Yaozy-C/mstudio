@@ -1,4 +1,3 @@
-import { deleteAssets } from "../workspace/deleteAssets";
 import { removeNodes } from "../canvas/removeNodes";
 import { type ComposerMode, referenceIssue } from "./referenceMode";
 import { changeBatch } from "./batch";
@@ -10,7 +9,11 @@ import { preparePrompt } from "./preparePrompt";
 import { directTask, acceptDirectTask } from "./directTask";
 import { setFrameInput, type FrameRole } from "./frameInputs";
 import { collectAsset } from "../workspace/assetLibrary";
-import { useCardLayout } from "./useCardLayout";
+import {
+  canUseTaskReference,
+  MATERIAL_REFERENCE_ERROR,
+} from "../workspace/resourceRoles";
+import { referenceAsset } from "../previs/media";
 import { useEffect, useMemo, useState } from "react";
 import { native, bridge } from "../bridge";
 import { runsOf } from "./requestTask";
@@ -19,13 +22,13 @@ import { attachmentInput, sameInput } from "./attachmentInput";
 import { referencedItems } from "./referencedItems";
 import { type Asset, type Project } from "../model";
 import { useGenerationAgent } from "../creation/useGenerationAgent";
-import { productionItems } from "./items";
+import { draftItems } from "./items";
 import { createTask, taskKey } from "./tasks";
 import { saveTask } from "./document";
 import type {
   ChangeProject,
   GenerationPreferences,
-  ProductionItem,
+  DraftItem,
   ProductionTask,
 } from "./types";
 
@@ -36,22 +39,22 @@ export function useProduction(
   flush: () => Promise<void>,
   open: () => void,
   attachments: AttachmentDraft,
+  targetNodeId?: string,
 ) {
-  const rawItems = useMemo(
-    () => productionItems(project),
-    [
-      project.nodes,
-      project.assets,
-      project.production?.positions,
-      project.production?.hidden,
-    ],
+  const items = useMemo(
+    () => draftItems(project),
+    [project.nodes, project.assets, project.production?.positions],
   );
-  const { items, measure } = useCardLayout(rawItems, project);
   const [composerMode, setComposerMode] = useState<ComposerMode>("agent");
   const [selection, setSelection] = useState<string[]>([]);
   const selected = selection.filter((id) => items.some((n) => n.key === id));
-  const key = taskKey([]);
-  const task = project.production?.drafts?.[key] ?? createTask(project, []);
+  const key = taskKey(targetNodeId ? [targetNodeId] : []);
+  const task = {
+    ...(project.production?.drafts?.[key] ?? createTask(project, [])),
+    key,
+    targetNodeId,
+    ownerId: targetNodeId,
+  };
   const media = useGenerationAgent();
   const [focus, setFocus] = useState<{
     id?: string;
@@ -67,7 +70,7 @@ export function useProduction(
           ...(p.production?.drafts?.[targetKey] ?? task),
           error: undefined,
           ...patch,
-          ...(targetKey === key ? { ownerId: undefined } : {}),
+          ...(targetKey === key ? { ownerId: targetNodeId, targetNodeId } : {}),
         }),
       false,
     );
@@ -105,19 +108,36 @@ export function useProduction(
     setSelection(ids);
   }
   useEffect(() => {
-    if (!attachments.items.length) return;
+    if (composerMode === "agent" || !attachments.items.length) return;
     const current = get().production?.drafts?.[key] ?? task;
     const inputs = [...current.inputs];
-    for (const ref of attachments.items) {
+    const accepted = attachments.items.filter((ref) => {
+      const input = attachmentInput(get(), ref);
+      const asset = referenceAsset(get(), input?.assetId);
+      return (
+        input &&
+        (!input.assetId ||
+          (asset && canUseTaskReference(get(), asset, current)))
+      );
+    });
+    for (const ref of accepted) {
       const input = attachmentInput(get(), ref);
       if (input && !inputs.some((r) => sameInput(r, input))) inputs.push(input);
     }
     update({ inputs });
-    attachments.consume(attachments.items);
-  }, [attachments.items]);
+    attachments.consume(accepted);
+  }, [attachments.items, composerMode]);
   function attach(ref: AttachmentRef, role?: FrameRole) {
+    if (composerMode === "agent" && !role) {
+      attachments.add([ref]);
+      open();
+      return;
+    }
     const task = get().production?.drafts?.[key] ?? createTask(get(), []);
     const input = attachmentInput(get(), ref);
+    const asset = referenceAsset(get(), input?.assetId);
+    if (input?.assetId && (!asset || !canUseTaskReference(get(), asset, task)))
+      throw new Error(MATERIAL_REFERENCE_ERROR);
     if (role) {
       if (!input) throw new Error("请选择图片");
       update(setFrameInput(task, get(), role, input));
@@ -154,6 +174,8 @@ export function useProduction(
         next.inputs.push(input);
     }
     next.key = key;
+    next.targetNodeId = targetNodeId;
+    next.ownerId = targetNodeId;
     change((p) => saveTask(p, next), false);
     return next;
   }
@@ -165,12 +187,8 @@ export function useProduction(
         positions: { ...p.production?.positions, [id]: { x, y } },
       },
     }));
-  const remove = (item: ProductionItem) => {
-    change((p) =>
-      item.assetId
-        ? deleteAssets(p, [item.assetId])
-        : removeNodes(p, [item.nodeId ?? item.ownerId ?? ""]),
-    );
+  const remove = (item: DraftItem) => {
+    change((p) => removeNodes(p, [item.nodeId ?? ""]));
     choose(selected.filter((id) => id !== item.key));
   };
   return {
@@ -186,7 +204,12 @@ export function useProduction(
         });
     },
     execute: async (active: () => boolean = () => true) => {
-      const current = structuredClone(get().production?.drafts?.[key] ?? task);
+      const current = structuredClone({
+        ...task,
+        ...get().production?.drafts?.[key],
+        targetNodeId,
+        ownerId: targetNodeId,
+      });
       const modelId =
         current.modelId || get().production?.models?.[current.kind];
       const model = media.models.find((m) => m.id === modelId);
@@ -214,12 +237,13 @@ export function useProduction(
       const bounds = document
         .querySelector(".creation-canvas")
         ?.getBoundingClientRect();
-      prepared.position = resultPlacement(
-        get(),
-        prepared,
-        bounds,
-        canvasViewport(get()),
-      );
+      if (!targetNodeId)
+        prepared.position = resultPlacement(
+          get(),
+          prepared,
+          bounds,
+          canvasViewport(get()),
+        );
       const run = directTask(get(), prepared, model, crypto.randomUUID());
       run.instruction = current.prompt;
       change((p) => acceptDirectTask(p, current, run), false);
@@ -228,10 +252,14 @@ export function useProduction(
       return run;
     },
     ...taskPanel,
-    measure,
     items,
     selected,
-    referenced: referencedItems(project, items, task, attachments.items),
+    referenced: referencedItems(
+      project,
+      items,
+      composerMode === "agent" ? undefined : task,
+      attachments.items,
+    ),
     task: task as ProductionTask | undefined,
     media,
     submitting,
@@ -250,28 +278,18 @@ export function useProduction(
     modelPreferences: project.production?.models ?? {},
     attach,
     reference: (ids: string[]) => {
-      const current = get().production?.drafts?.[key] ?? task;
-      const added = createTask(
-        get(),
-        items.filter((n) => ids.includes(n.key)),
-      ).inputs.map((r) => ({
-        ...r,
-        role: r.assetId
-          ? get().assets.find((a) => a.id === r.assetId)?.kind === "video"
-            ? ("video-reference" as const)
-            : ("reference" as const)
-          : ("script" as const),
-      }));
-      const inputs = [...current.inputs];
-      for (const input of added)
-        if (
-          !inputs.some(
-            (r) =>
-              r.key === input.key || (r.assetId && r.assetId === input.assetId),
-          )
-        )
-          inputs.push(input);
-      update({ inputs });
+      setComposerMode("agent");
+      attachments.add(
+        items
+          .filter((n) => ids.includes(n.key))
+          .flatMap((n): AttachmentRef[] =>
+            n.assetId
+              ? [{ kind: "asset", id: n.assetId }]
+              : n.nodeId
+                ? [{ kind: "node", id: n.nodeId }]
+                : [],
+          ),
+      );
       open();
     },
     referenceAsset: async (asset: Asset, global = false, role?: FrameRole) => {

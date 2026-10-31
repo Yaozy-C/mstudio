@@ -41,9 +41,18 @@ export function GenerationResults({
             }}
             locate={() => {
               canvas.setTaskPanelOpen(false);
-              window.dispatchEvent(new Event("studio-show-canvas"));
-              const item = canvas.items.find((n) => n.assetId === id);
-              if (item) canvas.focusItem(item.key);
+              const owner = task.targetNodeId ?? task.ownerId;
+              if (owner)
+                window.dispatchEvent(
+                  new CustomEvent("studio-show-shot", { detail: owner }),
+                );
+              else if (task.generationPurpose === "asset")
+                window.dispatchEvent(new Event("studio-show-assets"));
+              else {
+                window.dispatchEvent(new Event("studio-show-canvas"));
+                const item = canvas.items.find((n) => n.assetId === id);
+                if (item) canvas.focusItem(item.key);
+              }
             }}
           />
         ))}

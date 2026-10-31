@@ -82,7 +82,7 @@ pub fn save_merged(store: &Store, document: Value, base: Value) -> anyhow::Resul
     let mut db = store.db.lock().unwrap();
     let tx = db.transaction()?;
     let current = crate::project_service::load(&tx, id)?;
-    let result = crate::project_service::runtime::execute(
+    let result = crate::project_service::domain::execute(
         serde_json::json!({"action":"merge","base":base,"document":document,"current":current}),
     )?;
     anyhow::ensure!(

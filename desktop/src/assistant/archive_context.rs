@@ -34,7 +34,7 @@ pub fn snapshot(doc: &Value) -> Value {
     json!({"total":archived.len(),"items":archived.iter().take(20).map(|t|summary(doc,t)).collect::<Vec<_>>(),"more":"Use mstudio_read_generation to page compact history; taskKey reads full details on demand."})
 }
 // Resume and fork checkpoints containing old tool transcripts must not reintroduce
-// newly archived work. New turns use bounded chat history plus fresh summaries.
+// newly archived work. A changed projection rebuilds chat context with fresh facts.
 pub fn revision(doc: &Value) -> Value {
     json!({"archived":tasks(doc).iter().map(|t|t["key"].clone()).collect::<Vec<_>>()})
 }

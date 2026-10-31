@@ -178,5 +178,17 @@
   "任务名称": "Task name",
   "例如：小满 · 人物资产、海滩 · 黄昏场景": "For example: Xiaoman · character, Beach · sunset",
   "后台处理已停止，请处理错误后重启应用。": "Background processing has stopped. Resolve the error and restart the app.",
-  "本次启动未完成项目任务同步，请查看错误详情。": "Project task synchronization did not finish during this startup. See the error details."
+  "本次启动未完成项目任务同步，请查看错误详情。": "Project task synchronization did not finish during this startup. See the error details.",
+  "全参考": "Full reference",
+  "未指定": "Not specified",
+  "取消参考": "Remove as reference",
+  "开启": "On",
+  "生成质量": "Quality",
+  "输出尺寸": "Output size",
+  "输出格式": "Output format",
+  "随机种子": "Seed",
+  "ASMR 音效": "ASMR audio",
+  "音效描述": "Sound description",
+  "配乐描述": "Music description",
+  "不支持": "Unsupported"
 }

@@ -8,6 +8,7 @@ function setup(durations = [4 / 3, 4 / 3]) {
   const project = fixture();
   const videos = durations.map((duration, i) => ({
     ...asset(`video-${i}`, "video"),
+    usage: "asset" as const,
     duration,
   }));
   project.assets.push(...videos);

@@ -4,6 +4,11 @@ import { bridge } from "../../bridge";
 import type { AttachmentDraft } from "../../assistant/useAttachments";
 import { ImageReviewContext, type ImageVersion } from "./ImageReviewContext";
 import { imageReviewController } from "./imageReviewController";
+import {
+  uncollectAsset,
+  unconfirmStoryAsset,
+  isStoryAsset,
+} from "../assetLibrary";
 
 export function ImageReviewProvider({
   workspace,
@@ -27,6 +32,14 @@ export function ImageReviewProvider({
             projectId: workspace.get().id,
             imageId,
           }),
+        clearReference: async (assetId) => {
+          workspace.change((p) =>
+            p.assets.some((a) => a.id === assetId && isStoryAsset(a))
+              ? unconfirmStoryAsset(p, assetId)
+              : uncollectAsset(p, assetId),
+          );
+          await workspace.flush();
+        },
         selectReference: async (assetId, versionId) => {
           await workspace.flush();
           const asset = await bridge<Asset>("select_image_reference", {

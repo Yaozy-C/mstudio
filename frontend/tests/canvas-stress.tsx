@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Theme } from "@radix-ui/themes";
 import { newProject, type Project } from "../src/model";
-import { ProductionCanvas } from "../src/production/ProductionCanvas";
-import { productionItems } from "../src/production/items";
+import { DraftCanvas } from "../src/production/DraftCanvas";
+import { draftItems } from "../src/production/items";
 import type { ProductionController } from "../src/production/useProduction";
 import "@radix-ui/themes/styles.css";
 import "../src/styles/base.css";
@@ -62,7 +62,7 @@ function Stress() {
     return () => observer.disconnect();
   }, []);
   const items = useMemo(
-    () => productionItems(project),
+    () => draftItems(project),
     [project.nodes, project.assets, project.production?.positions],
   );
   const canvas = useMemo(
@@ -114,11 +114,10 @@ function Stress() {
         <span>合成封面，无真实视频或付费请求</span>
       </header>
       <div id="canvas-test" style={{ height: "calc(100vh - 65px)" }}>
-        <ProductionCanvas
+        <DraftCanvas
           project={project}
           change={(fn: (p: Project) => Project) => setProject(fn)}
           canvas={canvas}
-          onAdd={() => {}}
         />
       </div>
     </>

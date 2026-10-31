@@ -1,9 +1,8 @@
-import { CanvasPreview } from "../production/CanvasPreview";
-import { productionItems } from "../production/items";
+import { ShotEditor } from "../production/ShotEditor";
 import { NodeEditor } from "../canvas/NodeEditor";
 import { canvasViewport } from "../canvas/viewportMemory";
 import type { Asset, BoardNode, Project } from "../model";
-import { deleteCanvasNodes } from "./deleteAssets";
+import { removeNodes } from "../canvas/removeNodes";
 export function StudioNodeEditor({
   node,
   project,
@@ -19,18 +18,9 @@ export function StudioNodeEditor({
   reference: (id: string) => void;
   add: (asset: Asset) => void;
 }) {
-  const script = productionItems(project).find(
-    (item) => item.nodeId === node.id && item.kind === "script",
-  );
-  if (script)
+  if (node.shot)
     return (
-      <CanvasPreview
-        onAdd={add}
-        item={script}
-        project={project}
-        change={change}
-        close={close}
-      />
+      <ShotEditor node={node} project={project} change={change} close={close} />
     );
   const asset = project.assets.find(
     (a) =>
@@ -45,7 +35,7 @@ export function StudioNodeEditor({
       onClose={close}
       onReference={() => reference(node.id)}
       onRemove={() => {
-        change((p) => deleteCanvasNodes(p, [node.id]));
+        change((p) => removeNodes(p, [node.id]));
         close();
       }}
       onAdd={() => {

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { fixture, asset, model } from "./fixtures.test-helper";
 import { framesOf } from "./frames";
-import { productionItems } from "./items";
+import { shotSources } from "./fixtures.test-helper";
 import { createTask, withMode } from "./tasks";
 import { canvasSnapshot, inputFor } from "./request";
 import { receiveProductionResult, saveTask, jobStatus } from "./document";
@@ -11,7 +11,7 @@ test("selected frames can generate video directly, including after script and pr
   const p = fixture();
   const task = createTask(
     p,
-    productionItems(p).filter((n) => n.kind === "image"),
+    shotSources(p).filter((n) => n.kind === "image"),
     "video",
   );
   expect(
@@ -23,11 +23,13 @@ test("selected frames can generate video directly, including after script and pr
   p.nodes[1].shot!.frames![0].prompt = "Closer";
   expect(() => canvasSnapshot(p, task, { x: 0, y: 0 })).not.toThrow();
   p.nodes[1].shot!.frames = [];
-  expect(() => canvasSnapshot(p, task, { x: 0, y: 0 })).not.toThrow();
+  expect(() => canvasSnapshot(p, task, { x: 0, y: 0 })).toThrow(
+    "所选分镜图已移除",
+  );
 });
 test("first/last roles map exactly; unsupported model or incomplete roles fail before upload", () => {
   let p = fixture();
-  const items = productionItems(p).filter((n) => n.kind === "image");
+  const items = shotSources(p).filter((n) => n.kind === "image");
   const task = {
     ...withMode(createTask(p, items, "video"), "ends"),
     prompt: "Close the lid",
@@ -60,7 +62,7 @@ test("mixed references preserve intervals and never claim video editing support"
   const task = {
     ...createTask(
       p,
-      productionItems(p).filter(
+      shotSources(p).filter(
         (n) => n.kind === "image" || n.key.startsWith("take:"),
       ),
       "video",
@@ -96,7 +98,7 @@ test("result uses the frozen task; importing twice is idempotent and preserves o
   const task = {
     ...createTask(
       p,
-      productionItems(p)
+      shotSources(p)
         .filter((n) => n.kind === "image")
         .slice(0, 1),
     ),
@@ -145,7 +147,7 @@ test("video results retain exact media roles and undo never rewinds paid job sta
     ...withMode(
       createTask(
         p,
-        productionItems(p).filter((n) => n.kind === "image"),
+        shotSources(p).filter((n) => n.kind === "image"),
         "video",
       ),
       "ends",
@@ -184,7 +186,7 @@ test("video results retain exact media roles and undo never rewinds paid job sta
 
 test("one storyboard image stays a reference rather than becoming an exact first frame", () => {
   const p = fixture();
-  const board = productionItems(p).find((n) => n.assetId === "a")!;
+  const board = shotSources(p).find((n) => n.assetId === "a")!;
   const task = {
     ...createTask(p, [board], "video"),
     prompt: "Use four phases in one continuous take",
@@ -216,9 +218,7 @@ test("results target an empty shot and a generated image can immediately become 
   };
   const result = receiveProductionResult(p, image, source);
   expect(result.nodes[1].shot?.frames?.[0]?.assetId).toBe(image.id);
-  const selected = productionItems(result).filter(
-    (n) => n.assetId === image.id,
-  );
+  const selected = shotSources(result).filter((n) => n.assetId === image.id);
   const videoSource = {
     ...result.nodes[1],
     canvasGeneration: canvasSnapshot(

@@ -52,10 +52,12 @@
 }
 .hub-tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin: 16px 0;
 }
 .hub-tags span {
+  white-space: nowrap;
   font-size: 10px;
   color: var(--desk-muted);
   background: var(--desk-sidebar);

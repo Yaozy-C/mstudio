@@ -143,9 +143,9 @@ fn generation_duration_is_validated_against_the_selected_model_before_saving() {
 }
 
 #[test]
-fn embedded_generation_accepts_http_references_before_and_after_upload() {
+fn native_generation_accepts_http_references_before_and_after_upload() {
     let (store, mut doc, _) = fixture();
-    doc["assets"] = json!([{"id":"image","kind":"image","name":"Reference","path":"/synthetic.png","width":1024,"height":1024,"duration":0}]);
+    doc["assets"] = json!([{"id":"image","kind":"image","usage":"asset","name":"Reference","path":"/synthetic.png","width":1024,"height":1024,"duration":0}]);
     doc["production"] = json!({"drafts":{"task":{"key":"task","title":"Reference video","position":{"x":0,"y":0},"kind":"video","mode":"multi","prompt":"Synthetic action","inputs":[{"key":"image","assetId":"image","role":"reference","purpose":"Identity"}],"status":"READY"}}});
     let model = json!({
         "id":"model","name":"Video","plugin":"fal","endpoint":"minimax/h3/reference-to-video",
@@ -162,7 +162,9 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
         }
     });
     let base = json!({"action":"prepare_generation","document":doc,"taskKey":"task","model":model});
-    let preflight = runtime::execute(base.clone()).unwrap();
+    let preflight =
+        super::generation_prepare::prepare(&base["document"], "task", &base["model"], None)
+            .unwrap();
     assert!(preflight.get("error").is_none(), "{preflight}");
     for url in [
         "https://cdn.example.com/reference.png?token=synthetic",
@@ -170,8 +172,14 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
     ] {
         let mut request = base.clone();
         request["uploaded"] = json!([{"assetId":"image","kind":"image","url":url}]);
-        let result = runtime::execute(request).unwrap();
-        assert!(result.get("error").is_none(), "{result}");
+        let uploaded = request["uploaded"].take();
+        let result = super::generation_prepare::prepare(
+            &request["document"],
+            "task",
+            &request["model"],
+            Some(uploaded),
+        )
+        .unwrap();
         assert_eq!(result["input"]["reference_image_urls"][0], url);
     }
     for url in [
@@ -182,7 +190,16 @@ fn embedded_generation_accepts_http_references_before_and_after_upload() {
     ] {
         let mut request = base.clone();
         request["uploaded"] = json!([{"assetId":"image","kind":"image","url":url}]);
-        assert!(runtime::execute(request).unwrap().get("error").is_some());
+        let uploaded = request["uploaded"].take();
+        assert!(
+            super::generation_prepare::prepare(
+                &request["document"],
+                "task",
+                &request["model"],
+                Some(uploaded)
+            )
+            .is_err()
+        );
     }
     let root = store.root.clone();
     drop(store);

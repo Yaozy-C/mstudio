@@ -1,0 +1,219 @@
+.story-assets-workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  padding: 28px clamp(16px, 3vw, 40px);
+  gap: 20px;
+  container-type: inline-size;
+}
+.story-assets-heading,
+.story-assets-heading-actions,
+.story-assets-tools,
+.story-asset-meta,
+.story-asset-actions,
+.story-assets-picker > header,
+.story-asset-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.story-assets-heading,
+.story-assets-tools {
+  flex-wrap: wrap;
+  flex: none;
+}
+.story-assets-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.asset-shot-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+.asset-shot-choices > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+}
+.asset-shot-choices > button > span {
+  flex: 1;
+}
+.asset-shot-choices > button[aria-pressed="true"] {
+  border-color: var(--desk-accent);
+  background: var(--ui-selected);
+}
+.story-assets-heading h1 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 500;
+}
+.story-assets-heading p,
+.story-assets-hint,
+.story-asset-meta,
+.story-assets-empty p {
+  color: var(--desk-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.story-assets-scopes {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.radix-themes .story-assets-scopes button {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  padding: 10px 0;
+  display: flex;
+  gap: 8px;
+  color: var(--desk-muted);
+}
+.radix-themes .story-assets-scopes button[aria-pressed="true"] {
+  color: var(--desk-accent);
+  border-bottom-color: var(--desk-accent);
+}
+.story-assets-scopes span {
+  font-variant-numeric: tabular-nums;
+}
+.story-assets-tools nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.radix-themes .story-assets-tools nav button {
+  border-color: transparent;
+  background: transparent;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.radix-themes .story-assets-tools nav button[aria-pressed="true"] {
+  color: var(--desk-accent);
+  background: var(--ui-selected);
+  border-color: var(--desk-rule);
+}
+.story-assets-tools input {
+  width: 190px;
+  min-width: 0;
+  flex: 1 1 150px;
+  max-width: 280px;
+}
+.story-assets-results {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  padding: 2px 4px 12px 2px;
+}
+.story-assets-hint {
+  margin-bottom: 16px;
+}
+.story-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.story-asset-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--desk-rule);
+  background: var(--desk-surface);
+  border-radius: var(--ui-card-radius);
+}
+.story-asset-card:has(.media-thumbnail[aria-pressed="true"]) {
+  border-color: var(--desk-accent);
+}
+.story-asset-card .media-item {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  min-width: 0;
+}
+.radix-themes .story-asset-card .media-thumbnail {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  background: var(--desk-sidebar);
+}
+.story-asset-card .media-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.story-asset-card .media-caption {
+  padding: 12px 0 4px;
+}
+.story-asset-card .media-version-count {
+  display: block;
+  color: var(--desk-muted);
+  font-size: 11px;
+}
+.story-asset-meta {
+  margin: 6px 0;
+}
+.story-asset-actions {
+  border-top: 1px solid var(--desk-rule);
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+.story-assets-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--desk-muted);
+  padding: 64px 16px;
+}
+.story-assets-empty h2 {
+  margin: 0;
+  color: var(--desk-text);
+  font-size: 18px;
+  font-weight: 500;
+}
+.story-assets-empty p {
+  max-width: 420px;
+}
+.story-assets-picker > header h1 {
+  margin: 0;
+}
+.story-assets-picker > input {
+  width: 100%;
+  margin: 16px 0;
+}
+.story-assets-choices {
+  max-height: 50vh;
+  overflow: auto;
+}
+.story-asset-choice {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--desk-rule);
+}
+.story-asset-choice > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.story-asset-choice > button {
+  flex-shrink: 0;
+}
+.story-assets-picker footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+@container (max-width: 400px) {
+  .story-assets-tools input {
+    max-width: none;
+  }
+}

@@ -37,7 +37,27 @@ pub fn tools(profile: &AgentProfile) -> Vec<OperationTool> {
                 operation.clone(),
                 fixed,
                 None,
-                "Create one task awaiting user confirmation using the complete prompt and actual references. Reusable reference images are standalone: create them directly, without a placeholder asset node or target ID. Never submits to the generation service. Update an existing task instead of creating a duplicate. Only the user can start generation.",
+                "Create one task awaiting user confirmation using the complete prompt and actual references. Reusable reference images are standalone: create them directly, without a placeholder asset node or target ID. Never submits to the generation service. Update an existing task instead of creating a duplicate. Only the user can start generation. Generated reusable references are candidates until explicit asset confirmation; collecting them as materials does not approve them or remove source memberships.",
+            );
+        } else if op == "remove_concepts" {
+            add(
+                &mut out,
+                "remove_concepts",
+                op,
+                operation.clone(),
+                Default::default(),
+                None,
+                "Delete only the specified concept card IDs, including the last card. Use only when the user requests deletion. Rejected directions normally stay on the board with status=killed. Does not remove scripts, shots or media.",
+            );
+        } else if op == "save_concepts" {
+            add(
+                &mut out,
+                "save_concepts",
+                op,
+                operation.clone(),
+                Default::default(),
+                None,
+                "Save the project concept board. Each concept has title, oneLine, truth, brandIdea, participant, want, ritual, evidence, reframe, risk, optional cost and status (rough/developed/selected/killed). truth must be a specific human observation that survives without the product; brandIdea must be a worldview, not a feature or positioning line. A format (ASMR, POV, pack-with-me, three-ways) is not a concept. mode=merge upserts by id; mode=replace rewrites the board. This does not write a screenplay, shot or timeline.",
             );
         } else if op == "add_node" {
             for kind in operation["properties"]["kind"]["enum"]

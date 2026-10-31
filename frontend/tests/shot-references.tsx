@@ -2,8 +2,7 @@ import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Theme } from "@radix-ui/themes";
 import { newProject } from "../src/model";
-import { CanvasPreview } from "../src/production/CanvasPreview";
-import { productionItems } from "../src/production/items";
+import { ShotEditor } from "../src/production/ShotEditor";
 import "@radix-ui/themes/styles.css";
 import "../src/styles/base.css";
 import "../src/styles/dialogs.css";
@@ -43,12 +42,11 @@ function App() {
       <button onClick={() => setOpen(true)}>打开镜头</button>
       <output>{JSON.stringify(project.nodes[0].references)}</output>
       {open && (
-        <CanvasPreview
-          item={productionItems(project)[0]}
+        <ShotEditor
+          node={project.nodes[0]}
           project={project}
           change={(fn) => setProject(fn(project))}
           close={() => setOpen(false)}
-          onAdd={() => {}}
         />
       )}
     </Theme>

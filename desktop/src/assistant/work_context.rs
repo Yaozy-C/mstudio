@@ -5,7 +5,17 @@ pub fn resolve(doc: &Value, work: &Value, target: Option<&str>) -> Result<Value,
         return Ok(Value::Null);
     }
     let view = work["view"].as_str().ok_or("缺少工作区类型")?;
-    if !["script", "storyboard", "film"].contains(&view) {
+    if ![
+        "drafts",
+        "concepts",
+        "script",
+        "materials",
+        "assets",
+        "storyboard",
+        "film",
+    ]
+    .contains(&view)
+    {
         return Err("工作区类型无效".into());
     }
     if view != "script" {
@@ -41,6 +51,22 @@ pub fn resolve(doc: &Value, work: &Value, target: Option<&str>) -> Result<Value,
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn assets_context_does_not_resolve_a_stale_script_selection() {
+        let work = json!({"view":"assets","screenplayId":"removed","paragraphId":"gone"});
+        assert_eq!(
+            resolve(&json!({"nodes":[]}), &work, Some("removed")).unwrap(),
+            json!({"view":"assets"})
+        );
+    }
+    #[test]
+    fn concept_board_context_does_not_resolve_a_stale_script_selection() {
+        let work = json!({"view":"concepts","screenplayId":"removed","paragraphId":"gone"});
+        assert_eq!(
+            resolve(&json!({"nodes":[]}), &work, Some("removed")).unwrap(),
+            json!({"view":"concepts"})
+        );
+    }
     #[test]
     fn explicit_target_overrides_focused_paragraph_and_missing_objects_fail() {
         let doc = json!({"nodes":[{"id":"a","kind":"screenplay","screenplay":{"script":[{"id":"p"}]}},{"id":"b","kind":"screenplay"}]});

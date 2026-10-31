@@ -23,13 +23,18 @@ export function AgentTools({
       selected.delete(id);
       if (id === "project-read")
         for (const tool of selected)
-          if (tool.startsWith("project-") || tool === "media-read")
+          if (
+            tool.startsWith("project-") ||
+            tool === "media-read" ||
+            tool === "material-read"
+          )
             selected.delete(tool);
     } else {
       selected.add(id);
       if (
         (id.startsWith("project-") && id !== "project-read") ||
-        id === "media-read"
+        id === "media-read" ||
+        id === "material-read"
       )
         selected.add("project-read");
     }

@@ -1,6 +1,44 @@
 use super::{production_recovery::*, tests::fixture, *};
 
 #[test]
+fn legacy_unknown_tasks_recover_as_failed_with_or_without_a_job() {
+    for reserved in [false, true] {
+        let (store, mut document, _) = fixture();
+        let issue = crate::app_error::AppError::new(
+            "SUBMISSION_UNKNOWN",
+            "submit",
+            "size 须为 WIDTHxHEIGHT",
+        );
+        let task = json!({"key":"run","title":"Portrait","kind":"image","mode":"multi","prompt":"Keep","inputs":[],"jobId":"job","submissionId":"job","status":"UNKNOWN","error":issue.to_string(),"trackingPaused":true});
+        document["production"] = json!({"drafts":{"run":task}});
+        crate::projects::write_document(&store, document, false).unwrap();
+        if reserved {
+            let job = json!({"id":"job","projectId":"p","status":"UNKNOWN","error":issue.to_string(),"shot":{"canvasGeneration":{"task":task,"x":0,"y":0}}});
+            store
+                .conn()
+                .unwrap()
+                .execute("INSERT INTO jobs VALUES('job','p',?1)", [job.to_string()])
+                .unwrap();
+        }
+        crate::job_recovery::recover_interrupted_submissions(&store.conn().unwrap()).unwrap();
+        let report = recover(&store).unwrap();
+        assert!(report.deferred.is_empty());
+        let document = load(&store.conn().unwrap(), "p").unwrap();
+        let task = &document["production"]["drafts"]["run"];
+        assert_eq!(task["status"], "FAILED");
+        assert_eq!(task["prompt"], "Keep");
+        assert_ne!(task["trackingPaused"], true);
+        let issue: crate::app_error::AppError =
+            serde_json::from_str(task["error"].as_str().unwrap()).unwrap();
+        assert_eq!(issue.code, "GENERATION_FAILED");
+        assert_eq!(issue.details, "size 须为 WIDTHxHEIGHT");
+        let root = store.root.clone();
+        drop(store);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[test]
 fn stale_recovery_never_overwrites_concurrent_edits_or_job_changes() {
     let (store, mut doc, _) = fixture();
     let before = snapshot(&store.conn().unwrap(), "p").unwrap().unwrap();

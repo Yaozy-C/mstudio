@@ -28,7 +28,11 @@ export function GenerationReferences({
     <>
       <div className="generation-settings-references">
         <header>
-          <span>{t("参考素材")}</span>
+          <span>
+            {draft.generationPurpose === "asset"
+              ? t("资产来源")
+              : t("资产与制作结果")}
+          </span>
           <GenerationReferencePicker {...{ project, draft, model, patch }} />
         </header>
         {draft.inputs
@@ -40,18 +44,20 @@ export function GenerationReferences({
           .map((r) => {
             const a = referenceAsset(project, r.assetId);
             const roles: ProductionInput["role"][] =
-              draft.kind === "image"
-                ? ["edit", "reference"]
-                : a?.kind === "video"
-                  ? ["video-reference"]
-                  : [
-                      "reference",
-                      ...(frames ? ["first-frame" as const] : []),
-                      ...(tail ? ["last-frame" as const] : []),
-                    ];
+              a?.kind === "audio"
+                ? ["reference"]
+                : draft.kind === "image"
+                  ? ["edit", "reference"]
+                  : a?.kind === "video"
+                    ? ["video-reference"]
+                    : [
+                        "reference",
+                        ...(frames ? ["first-frame" as const] : []),
+                        ...(tail ? ["last-frame" as const] : []),
+                      ];
             return (
               <div key={r.key}>
-                {a && (
+                {a && a.kind !== "audio" && (
                   <img
                     className="generation-reference-thumbnail"
                     src={mediaUrl(a.preview || a.path)}

@@ -44,5 +44,9 @@
       }
     },
     "ratioFromReference": true
+  },
+  "family": {
+    "id": "minimax-h3",
+    "name": "MiniMax H3"
   }
 }

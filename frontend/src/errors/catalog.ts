@@ -11,10 +11,7 @@ export const errorCatalog = {
   RATE_LIMITED: ["请求过于频繁", "稍后重试，或检查服务商的并发限制。"],
   SERVICE_UNAVAILABLE: ["生成服务暂时不可用", "稍后重新查询原任务。"],
   NETWORK_ERROR: ["暂时无法连接服务", "检查网络后重试。"],
-  SUBMISSION_UNKNOWN: [
-    "尚不能确认是否提交成功",
-    "请先在服务商核查原任务，避免重复生成。",
-  ],
+  SUBMISSION_UNKNOWN: ["本次生成未完成", "保留了原设置，可以调整后重新生成。"],
   GENERATION_FAILED: ["本次生成未完成", "保留了原设置，可以调整后重新生成。"],
   CONTENT_REJECTED: [
     "内容未通过服务审核",
@@ -23,7 +20,7 @@ export const errorCatalog = {
   JOB_NOT_FOUND: ["暂时无法找到原任务", "到服务商核查任务记录后再处理。"],
   RESULT_UNAVAILABLE: [
     "服务商无法再查询原任务",
-    "请先到服务商核查任务与结果，再决定如何处理。",
+    "保留了原设置，可以调整后重新生成。",
   ],
   JOB_CANCEL_FAILED: ["任务尚未取消", "重新查询任务状态，或到服务商取消。"],
   JOB_CANCELLED: ["任务已取消", "可以保留原设置重新生成。"],
@@ -167,7 +164,8 @@ export function normalizeError(
       "code" in data &&
       Object.hasOwn(errorCatalog, data.code)
     ) {
-      const code = data.code as ErrorCode;
+      const code: ErrorCode =
+        data.code === "SUBMISSION_UNKNOWN" ? "GENERATION_FAILED" : data.code;
       const result = issue(
         code,
         typeof data.details === "string" ? data.details : undefined,
@@ -176,13 +174,18 @@ export function normalizeError(
           httpStatus:
             typeof data.httpStatus === "number" ? data.httpStatus : undefined,
           stage: typeof data.stage === "string" ? data.stage : undefined,
-          outcome: ["rejected", "unknown", "failed", "cancelled"].includes(
-            data.outcome,
-          )
-            ? data.outcome
-            : undefined,
+          outcome:
+            data.code === "SUBMISSION_UNKNOWN"
+              ? "failed"
+              : ["rejected", "unknown", "failed", "cancelled"].includes(
+                    data.outcome,
+                  )
+                ? data.outcome
+                : undefined,
         },
       );
+      if (code === "SERVICE_UNAVAILABLE" && result.outcome === "failed")
+        result.recovery = errorCatalog.GENERATION_FAILED[1];
       if (code === "VALIDATION_FAILED") {
         const hint =
           typeof data.message === "string" ? data.message : data.details;
